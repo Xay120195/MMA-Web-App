@@ -1,4 +1,10 @@
 {
-	"auth": {},
-	"api": {}
+    "auth": {},
+    "api": {},
+    "hosting": {
+        "amplifyhosting": {
+            "service": "amplifyhosting",
+            "type": "cicd"
+        }
+    }
 }
