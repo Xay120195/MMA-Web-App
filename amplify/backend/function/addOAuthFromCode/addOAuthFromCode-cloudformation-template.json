@@ -62,7 +62,7 @@
 				"Runtime": "nodejs10.x",
 				"Timeout": "25",
 				"Code": {
-					"S3Bucket": "amplify-lophils-shared-110907-deployment",
+					"S3Bucket": "amplify-lophils-staging-91326-deployment",
 					"S3Key": "amplify-builds/addOAuthFromCode-695847387136794d5456-build.zip"
 				}
 			}

@@ -90,14 +90,12 @@
             "AmplifyAppId": "d2cdb85228fr3n"
         },
         "categories": {
-            "auth": {
-                "userPoolGroups": {},
-                "lophilsuserpool": {}
-            },
             "function": {
                 "listEmailsByUser": {},
-                "addOAuthFromCode": {},
-                "lambdaauthorizer": {}
+                "addOAuthFromCode": {}
+            },
+            "auth": {
+                "lophils9ddcd152": {}
             }
         }
     }
