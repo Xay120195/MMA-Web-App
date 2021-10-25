@@ -1,12 +1,5 @@
 {
-	"auth": {
-		"mmawebappdc30b81a": {
-			"service": "Cognito",
-			"providerPlugin": "awscloudformation",
-			"dependsOn": [],
-			"customAuth": false
-		}
-	},
+	"auth": {},
 	"api": {
 		"mmawebappGQL": {
 			"service": "AppSync",
