@@ -1,104 +1,28 @@
 {
-    "shared": {
-        "awscloudformation": {
-            "AuthRoleName": "amplify-lophils-shared-110907-authRole",
-            "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-lophils-shared-110907-unauthRole",
-            "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-lophils-shared-110907-authRole",
-            "Region": "ap-southeast-1",
-            "DeploymentBucketName": "amplify-lophils-shared-110907-deployment",
-            "UnauthRoleName": "amplify-lophils-shared-110907-unauthRole",
-            "StackName": "amplify-lophils-shared-110907",
-            "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-lophils-shared-110907/d15a87b0-0a08-11ec-ba81-023477035e84",
-            "AmplifyAppId": "d2cdb85228fr3n"
-        },
-        "categories": {
-            "auth": {
-                "lophils9ddcd152": {}
-            },
-            "function": {
-                "listEmailsByUser": {},
-                "addOAuthFromCode": {}
-            }
-        }
-    },
-    "demo": {
-        "awscloudformation": {
-            "AuthRoleName": "amplify-lophils-demo-150900-authRole",
-            "UnauthRoleArn": "arn:aws:iam::057475856597:role/amplify-lophils-demo-150900-unauthRole",
-            "AuthRoleArn": "arn:aws:iam::057475856597:role/amplify-lophils-demo-150900-authRole",
-            "Region": "ap-southeast-1",
-            "DeploymentBucketName": "amplify-lophils-demo-150900-deployment",
-            "UnauthRoleName": "amplify-lophils-demo-150900-unauthRole",
-            "StackName": "amplify-lophils-demo-150900",
-            "StackId": "arn:aws:cloudformation:ap-southeast-1:057475856597:stack/amplify-lophils-demo-150900/df214b90-f03b-11eb-9618-0225679e83c8",
-            "AmplifyAppId": "d374bymxx7ooan"
-        },
-        "categories": {
-            "function": {
-                "listEmailsByUser": {
-                    "deploymentBucketName": "amplify-lophils-demo-150900-deployment",
-                    "s3Key": "amplify-builds/listEmailsByUser-3738754c396877386d4e-build.zip"
-                },
-                "addOAuthFromCode": {
-                    "deploymentBucketName": "amplify-lophils-demo-150900-deployment",
-                    "s3Key": "amplify-builds/addOAuthFromCode-636e6854726d6f687536-build.zip"
-                },
-                "lambdaauthorizer": {
-                    "deploymentBucketName": "amplify-lophils-demo-150900-deployment",
-                    "s3Key": "amplify-builds/lambdaauthorizer-486d345243676d665572-build.zip"
-                }
-            },
-            "auth": {
-                "lophilsuserpool": {}
-            }
-        }
-    },
     "production": {
         "awscloudformation": {
-            "AuthRoleName": "amplify-lophils-production-91117-authRole",
-            "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-lophils-production-91117-unauthRole",
-            "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-lophils-production-91117-authRole",
+            "AuthRoleName": "amplify-mma-web-app-production-180422-authRole",
+            "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-production-180422-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-production-180422-authRole",
             "Region": "ap-southeast-1",
-            "DeploymentBucketName": "amplify-lophils-production-91117-deployment",
-            "UnauthRoleName": "amplify-lophils-production-91117-unauthRole",
-            "StackName": "amplify-lophils-production-91117",
-            "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-lophils-production-91117/cc839fd0-320b-11ec-b789-026ca6728f9a",
-            "AmplifyAppId": "d2cdb85228fr3n"
-        },
-        "categories": {
-            "auth": {
-                "userPoolGroups": {},
-                "lophilsuserpool": {}
-            },
-            "function": {
-                "listEmailsByUser": {},
-                "addOAuthFromCode": {},
-                "lambdaauthorizer": {}
-            }
+            "DeploymentBucketName": "amplify-mma-web-app-production-180422-deployment",
+            "UnauthRoleName": "amplify-mma-web-app-production-180422-unauthRole",
+            "StackName": "amplify-mma-web-app-production-180422",
+            "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-mma-web-app-production-180422/f07cdd80-357a-11ec-bd8e-0afd446500e0",
+            "AmplifyAppId": "d3bhf42tem9b8e"
         }
     },
     "staging": {
         "awscloudformation": {
-            "AuthRoleName": "amplify-lophils-staging-91326-authRole",
-            "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-lophils-staging-91326-unauthRole",
-            "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-lophils-staging-91326-authRole",
+            "AuthRoleName": "amplify-mma-web-app-staging-180645-authRole",
+            "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-staging-180645-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-staging-180645-authRole",
             "Region": "ap-southeast-1",
-            "DeploymentBucketName": "amplify-lophils-staging-91326-deployment",
-            "UnauthRoleName": "amplify-lophils-staging-91326-unauthRole",
-            "StackName": "amplify-lophils-staging-91326",
-            "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-lophils-staging-91326/19922fd0-320c-11ec-8a24-0240db8f8746",
-            "AmplifyAppId": "d2cdb85228fr3n"
-        },
-        "categories": {
-            "auth": {
-                "userPoolGroups": {},
-                "lophilsuserpool": {}
-            },
-            "function": {
-                "listEmailsByUser": {},
-                "addOAuthFromCode": {},
-                "lambdaauthorizer": {}
-            }
+            "DeploymentBucketName": "amplify-mma-web-app-staging-180645-deployment",
+            "UnauthRoleName": "amplify-mma-web-app-staging-180645-unauthRole",
+            "StackName": "amplify-mma-web-app-staging-180645",
+            "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-mma-web-app-staging-180645/43e874c0-357b-11ec-8226-0a5cfba129ec",
+            "AmplifyAppId": "d3bhf42tem9b8e"
         }
     }
 }
