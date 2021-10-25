@@ -1,57 +1,30 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreateThread = /* GraphQL */ `
-  subscription OnCreateThread {
-    onCreateThread {
+export const onCreateTodo = /* GraphQL */ `
+  subscription OnCreateTodo {
+    onCreateTodo {
       id
-      snippet
-      historyId
+      name
+      description
     }
   }
 `;
-export const onUpdateThread = /* GraphQL */ `
-  subscription OnUpdateThread {
-    onUpdateThread {
+export const onUpdateTodo = /* GraphQL */ `
+  subscription OnUpdateTodo {
+    onUpdateTodo {
       id
-      snippet
-      historyId
+      name
+      description
     }
   }
 `;
-export const onDeleteThread = /* GraphQL */ `
-  subscription OnDeleteThread {
-    onDeleteThread {
+export const onDeleteTodo = /* GraphQL */ `
+  subscription OnDeleteTodo {
+    onDeleteTodo {
       id
-      snippet
-      historyId
-    }
-  }
-`;
-export const onCreateUserOAuth = /* GraphQL */ `
-  subscription OnCreateUserOAuth {
-    onCreateUserOAuth {
-      username
-      email
-      token
-    }
-  }
-`;
-export const onUpdateUserOAuth = /* GraphQL */ `
-  subscription OnUpdateUserOAuth {
-    onUpdateUserOAuth {
-      username
-      email
-      token
-    }
-  }
-`;
-export const onDeleteUserOAuth = /* GraphQL */ `
-  subscription OnDeleteUserOAuth {
-    onDeleteUserOAuth {
-      username
-      email
-      token
+      name
+      description
     }
   }
 `;
