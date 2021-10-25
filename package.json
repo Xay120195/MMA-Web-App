@@ -1,0 +1,59 @@
+{
+  "name": "lophils",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "@fullhuman/postcss-purgecss": "^4.0.0",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "autoprefixer": "^10.2.4",
+    "aws-amplify": "^4.2.2",
+    "aws-amplify-react": "^5.0.15",
+    "googleapis": "^39.2.0",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.2.4",
+    "postcss-cli": "^8.3.1",
+    "postcss-import": "^14.0.0",
+    "query-string": "^7.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-google-login": "^5.2.2",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "react-select": "^4.3.1",
+    "react-table": "^7.7.0",
+    "react-toastify": "^8.0.2",
+    "tailwindcss": "^2.0.2",
+    "web-vitals": "^1.0.1"
+  },
+  "scripts": {
+    "watch:style": "postcss -w src/assets/tailwind/styles.css -o src/assets/styles/styles.css",
+    "build:style": "NODE_ENV=production postcss src/assets/tailwind/styles.css -o src/assets/styles/styles.css",
+    "start:react": "react-scripts start",
+    "build:react": "react-scripts build",
+    "start": "npm-run-all -p watch:style start:react",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
