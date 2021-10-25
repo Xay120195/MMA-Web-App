@@ -1,80 +1,39 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const addOAuthFromCode = /* GraphQL */ `
-  mutation AddOAuthFromCode($code: String!) {
-    addOAuthFromCode(code: $code)
-  }
-`;
-export const createThread = /* GraphQL */ `
-  mutation CreateThread(
-    $input: CreateThreadInput!
-    $condition: ModelThreadConditionInput
+export const createTodo = /* GraphQL */ `
+  mutation CreateTodo(
+    $input: CreateTodoInput!
+    $condition: ModelTodoConditionInput
   ) {
-    createThread(input: $input, condition: $condition) {
+    createTodo(input: $input, condition: $condition) {
       id
-      snippet
-      historyId
+      name
+      description
     }
   }
 `;
-export const updateThread = /* GraphQL */ `
-  mutation UpdateThread(
-    $input: UpdateThreadInput!
-    $condition: ModelThreadConditionInput
+export const updateTodo = /* GraphQL */ `
+  mutation UpdateTodo(
+    $input: UpdateTodoInput!
+    $condition: ModelTodoConditionInput
   ) {
-    updateThread(input: $input, condition: $condition) {
+    updateTodo(input: $input, condition: $condition) {
       id
-      snippet
-      historyId
+      name
+      description
     }
   }
 `;
-export const deleteThread = /* GraphQL */ `
-  mutation DeleteThread(
-    $input: DeleteThreadInput!
-    $condition: ModelThreadConditionInput
+export const deleteTodo = /* GraphQL */ `
+  mutation DeleteTodo(
+    $input: DeleteTodoInput!
+    $condition: ModelTodoConditionInput
   ) {
-    deleteThread(input: $input, condition: $condition) {
+    deleteTodo(input: $input, condition: $condition) {
       id
-      snippet
-      historyId
-    }
-  }
-`;
-export const createUserOAuth = /* GraphQL */ `
-  mutation CreateUserOAuth(
-    $input: CreateUserOAuthInput!
-    $condition: ModelUserOAuthConditionInput
-  ) {
-    createUserOAuth(input: $input, condition: $condition) {
-      username
-      email
-      token
-    }
-  }
-`;
-export const updateUserOAuth = /* GraphQL */ `
-  mutation UpdateUserOAuth(
-    $input: UpdateUserOAuthInput!
-    $condition: ModelUserOAuthConditionInput
-  ) {
-    updateUserOAuth(input: $input, condition: $condition) {
-      username
-      email
-      token
-    }
-  }
-`;
-export const deleteUserOAuth = /* GraphQL */ `
-  mutation DeleteUserOAuth(
-    $input: DeleteUserOAuthInput!
-    $condition: ModelUserOAuthConditionInput
-  ) {
-    deleteUserOAuth(input: $input, condition: $condition) {
-      username
-      email
-      token
+      name
+      description
     }
   }
 `;

@@ -17,6 +17,9 @@
                     "appId": "d3bhf42tem9b8e",
                     "type": "cicd"
                 }
+            },
+            "auth": {
+                "mmawebapp7589ba45": {}
             }
         }
     },
