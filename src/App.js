@@ -1,39 +1,15 @@
 import React from 'react';
-import Amplify from 'aws-amplify';
-import { AmplifyAuthenticator, AmplifySignUp, AmplifySignOut } from '@aws-amplify/ui-react';
-import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
-import awsconfig from './aws-exports';
+import Routes from './Routes';
 
-Amplify.configure(awsconfig);
+import Amplify from "@aws-amplify/core";
+import PubSub from "@aws-amplify/pubsub";
+import awsmobile from "./aws-exports";
 
-const App = () => {
-    const [authState, setAuthState] = React.useState();
-    const [user, setUser] = React.useState();
+Amplify.configure(awsmobile);
+PubSub.configure(awsmobile);
 
-    React.useEffect(() => {
-        return onAuthUIStateChange((nextAuthState, authData) => {
-            setAuthState(nextAuthState);
-            setUser(authData)
-        });
-    }, []);
-
-  return authState === AuthState.SignedIn && user ? (
-      <div className="App">
-          <div>Hello, {user.username}</div>
-          <AmplifySignOut />
-      </div>
-    ) : (
-      <AmplifyAuthenticator>
-        <AmplifySignUp
-          slot="sign-up"
-          formFields={[
-            { type: "username" },
-            { type: "password" },
-            { type: "email" }
-          ]}
-        />
-      </AmplifyAuthenticator>
-  );
+function App() {
+  return <Routes />;
 }
 
 export default App;
