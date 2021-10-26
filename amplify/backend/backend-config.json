@@ -1,5 +1,12 @@
 {
-	"auth": {},
+	"auth": {
+		"mmawebapp7589ba45": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": [],
+			"customAuth": false
+		}
+	},
 	"api": {
 		"mmawebappgql": {
 			"service": "AppSync",
