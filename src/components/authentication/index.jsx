@@ -21,11 +21,11 @@ const Authentication = () => {
       </>
     ) : (
 
-        <figure class="md:flex bg-gray-100 rounded-xl p-8 md:p-0">
-            <div class="pt-6 md:p-8 text-center md:text-left space-y-4">
-                <p> Test </p>
-                </div>
-            <div class="pt-6 md:p-8 text-center md:text-left space-y-4">
+        // <figure class="md:flex bg-gray-100 rounded-xl p-8 md:p-0">
+        //     <div class="pt-6 md:p-8 text-center md:text-left space-y-4">
+        //         <p> Test </p>
+        //         </div>
+        //     <div class="pt-6 md:p-8 text-center md:text-left space-y-4">
 
       <AmplifyAuthenticator>
         <AmplifySignIn 
@@ -42,8 +42,8 @@ const Authentication = () => {
           ]}
         />
       </AmplifyAuthenticator>
-      </div>
-      </figure>
+    //   </div>
+    //   </figure>
   );
 }
 
