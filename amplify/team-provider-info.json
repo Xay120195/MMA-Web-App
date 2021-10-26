@@ -1,4 +1,17 @@
 {
+    "staging": {
+        "awscloudformation": {
+            "AuthRoleName": "amplify-mma-web-app-staging-180645-authRole",
+            "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-staging-180645-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-staging-180645-authRole",
+            "Region": "ap-southeast-1",
+            "DeploymentBucketName": "amplify-mma-web-app-staging-180645-deployment",
+            "UnauthRoleName": "amplify-mma-web-app-staging-180645-unauthRole",
+            "StackName": "amplify-mma-web-app-staging-180645",
+            "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-mma-web-app-staging-180645/43e874c0-357b-11ec-8226-0a5cfba129ec",
+            "AmplifyAppId": "d3bhf42tem9b8e"
+        }
+    },
     "production": {
         "awscloudformation": {
             "AuthRoleName": "amplify-mma-web-app-production-180422-authRole",
