@@ -10,6 +10,14 @@
             "StackName": "amplify-mma-web-app-production-180422",
             "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-mma-web-app-production-180422/f07cdd80-357a-11ec-bd8e-0afd446500e0",
             "AmplifyAppId": "d3bhf42tem9b8e"
+        },
+        "categories": {
+            "hosting": {
+                "amplifyhosting": {
+                    "appId": "d3bhf42tem9b8e",
+                    "type": "cicd"
+                }
+            }
         }
     }
 }
