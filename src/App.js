@@ -1,26 +1,17 @@
-import Routes from "./Routes";
-import { withAuthenticator } from "aws-amplify-react";
-import "./assets/styles/styles.css";
-
-import Amplify from "@aws-amplify/core";
-import PubSub from "@aws-amplify/pubsub";
-import awsmobile from "./aws-exports";
-
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-Amplify.configure(awsmobile);
-PubSub.configure(awsmobile);
+import logo from './logo.svg';
+import './App.css';
 
 function App() {
-  return <>
-  <Routes />
-  <ToastContainer/>
-  </>;
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          Develop Environment
+        </p>
+      </header>
+    </div>
+  );
 }
 
-export default withAuthenticator(App, {
-  signUpConfig: {
-    hiddenDefaults: ["phone_number"],
-  },
-});
+export default App;
