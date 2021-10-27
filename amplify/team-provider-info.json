@@ -14,6 +14,12 @@
         "categories": {
             "auth": {
                 "mmawebapp8fb79124": {}
+            },
+            "hosting": {
+                "amplifyhosting": {
+                    "appId": "d3bhf42tem9b8e",
+                    "type": "cicd"
+                }
             }
         }
     },
