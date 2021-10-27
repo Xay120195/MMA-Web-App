@@ -1,17 +1,14 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import Routes from './Routes';
+
+import Amplify from "@aws-amplify/core";
+import PubSub from "@aws-amplify/pubsub";
+import awsmobile from "./aws-exports";
+import './assets/styles/styles.css';
+Amplify.configure(awsmobile);
+PubSub.configure(awsmobile);
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Test Changes from feature branch created using Sourcetree.
-        </p>
-      </header>
-    </div>
-  );
+  return <Routes />;
 }
-
 export default App;
