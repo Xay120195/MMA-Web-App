@@ -1,6 +1,6 @@
 {
 	"auth": {
-		"mmawebappf7b4c0c5": {
+		"mmawebapp8fb79124": {
 			"service": "Cognito",
 			"providerPlugin": "awscloudformation",
 			"dependsOn": [],
