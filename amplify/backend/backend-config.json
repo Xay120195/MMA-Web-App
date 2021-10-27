@@ -1,5 +1,12 @@
 {
-	"auth": {},
+	"auth": {
+		"mmawebappf7b4c0c5": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": [],
+			"customAuth": false
+		}
+	},
 	"api": {},
 	"hosting": {
 		"amplifyhosting": {
