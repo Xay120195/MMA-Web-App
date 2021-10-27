@@ -1,12 +1,5 @@
 {
-	"auth": {
-		"mmawebapp4b1be555": {
-			"service": "Cognito",
-			"providerPlugin": "awscloudformation",
-			"dependsOn": [],
-			"customAuth": false
-		}
-	},
+	"auth": {},
 	"api": {},
 	"hosting": {
 		"amplifyhosting": {
