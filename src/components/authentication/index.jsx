@@ -6,7 +6,7 @@ import '../../assets/styles/Auth.css'
 
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
-//import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline'
+//import { BellIcon, MenuIcon, XIcon, LogoutIcon } from '@heroicons/react/outline'
 
 const navigation = [
   { name: 'Contact', href: '/contact', current: false },
@@ -14,10 +14,58 @@ const navigation = [
   { name: 'Signup', href: '/signup', current: false }
 ]
 
-function classNames(...classes) {
+function mergeClassNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
+
+const signUpFields = [
+  {
+    type: "text",
+    label: "First Name",
+    placeholder: "",
+    required: true,
+  },
+  {
+    type: "text",
+    label: "Last Name",
+    placeholder: "",
+    required: true,
+  },
+  {
+    type: "text",
+    label: "Company Name",
+    placeholder: "",
+    required: true,
+  },
+  {
+    type: "email",
+    label: "Email Address",
+    placeholder: "",
+    required: true,
+  },
+  {
+    type: "password",
+    label: "Password",
+    placeholder: "",
+    required: true,
+  },
+];
+
+const signInFields = [
+  {
+    type: "email",
+    label: "Email Address",
+    placeholder: "",
+    required: true,
+  },
+  {
+    type: "password",
+    label: "Password",
+    placeholder: "",
+    required: true,
+  },
+];
 
 const Authentication = () => {
     const [authState, setAuthState] = React.useState();
@@ -39,7 +87,7 @@ const Authentication = () => {
         <Disclosure as="nav">
       {({ open }) => (
         <>
-          <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 mb-4">
             <div className="relative flex items-center justify-between h-16">
                 {/* Mobile menu button*/}
                 {/* <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -66,8 +114,8 @@ const Authentication = () => {
                     alt="Workflow"
                   /> */}
                 </div>
-                <div className="hidden sm:block sm:ml-6 items-center">
-                  <div className="flex space-x-4">
+                <div className="hidden sm:block sm:ml-6 text-center">
+                  <div className="flex space-x-4 title">
                     <h1>AFFIDAVITS &amp; RFI </h1>
                   </div>
                 </div>
@@ -78,13 +126,14 @@ const Authentication = () => {
                       <a
                         key={item.name}
                         href={item.href}
-                        className={classNames(
-                          item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                          'px-3 py-2 rounded-md text-sm font-medium'
+                        className={mergeClassNames(
+                          item.current ? ' text-link-active' : '',
+                          'px-3 py-2 rounded-md text-sm font-medium w-full',
+                          item.name === 'Signup' ? 'signup-btn text-white':''
                         )}
                         aria-current={item.current ? 'page' : undefined}
                       >
-                        {item.name}
+                        {item.name} 
                       </a>
                     ))}
                 
@@ -92,45 +141,35 @@ const Authentication = () => {
             </div>
           </div>
 
-          <Disclosure.Panel className="sm:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {navigation.map((item) => (
-                <Disclosure.Button
-                  key={item.name}
-                  as="a"
-                  href={item.href}
-                  className={classNames(
-                    item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                    'block px-3 py-2 rounded-md text-base font-medium'
-                  )}
-                  aria-current={item.current ? 'page' : undefined}
-                >
-                  {item.name}
-                </Disclosure.Button>
-              ))}
-            </div>
-          </Disclosure.Panel>
+          
         </>
       )}
     </Disclosure>
+    <div className="grid grid-cols-2 gap-4">
+      <div className="welcome-message">
+        <h1>A Software Built for Managing Affidavits and Exchanging RFIs with your Clients</h1>
+      </div>
 
-      <AmplifyAuthenticator>
+      <div className="authcontainer">
+      <AmplifyAuthenticator hideDefault={true} >
         <AmplifySignIn 
           slot="sign-in" 
           usernameAlias="email"  
-          headerText="My Custom Sign In Text"
+          headerText="Welcome Back!"
+          hideSignUp
+          formFields={signInFields}
         />
         <AmplifySignUp
           slot="sign-up"
-          formFields={[
-            { type: "username" },
-            { type: "password" },
-            { type: "email" }
-          ]}
+          formFields={signUpFields}
+          headerText="Start Your Free Trial Now"
         />
       </AmplifyAuthenticator>
+      </div>
+      </div>
     </>
   );
 }
+
 
 export default Authentication;
