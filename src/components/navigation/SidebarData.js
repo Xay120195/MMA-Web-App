@@ -2,17 +2,18 @@ import React from 'react';
 import * as FaIcons from 'react-icons/fa';
 import * as AiIcons from 'react-icons/ai';
 import * as IoIcons from 'react-icons/io';
+import { AppRoutes } from "../../constants/AppRoutes";
 
 export const SidebarData = [
   {
     title: 'Dashboard',
-    path: '/',
+    path: AppRoutes.DASHBOARD,
     icon: <AiIcons.AiFillHome />,
     cName: 'nav-text'
   },
   {
     title: 'Matters Page',
-    path: '../pages/matterspage/',
+    path: AppRoutes.MATTERSPAGE,
     icon: <IoIcons.IoIosPaper />,
     cName: 'nav-text'
   }
