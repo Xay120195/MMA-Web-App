@@ -16,5 +16,17 @@ export const SidebarData = [
     path: AppRoutes.MATTERS,
     icon: <IoIcons.IoIosPaper />,
     cName: 'nav-text'
+  },
+  {
+    title: 'Users Access',
+    path: AppRoutes.USERACCESS,
+    icon: <IoIcons.IoIosPeople />,
+    cName: 'nav-text'
+  },
+  {
+    title: 'Profile',
+    path: AppRoutes.PROFILE,
+    icon: <IoIcons.IoIosContacts />,
+    cName: 'nav-text'
   }
 ];

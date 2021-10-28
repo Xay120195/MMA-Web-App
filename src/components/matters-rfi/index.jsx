@@ -5,7 +5,7 @@ function Matters() {
   return (
     <>
       <Navbar />
-      <h1>Matter Library</h1>
+      <h1>Matters RFI</h1>
     </>
   );
 }
