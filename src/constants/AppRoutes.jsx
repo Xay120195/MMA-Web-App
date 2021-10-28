@@ -1,4 +1,4 @@
 export const AppRoutes = {
     DASHBOARD: '/dashboard',
-    MATTERSPAGE: '/matterspage'
+    MATTERS: '/matters'
 }

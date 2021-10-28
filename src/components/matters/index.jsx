@@ -1,7 +1,7 @@
 import React from "react";
 import Navbar from '../navigation/Navbar.jsx';
 
-function MattersPage() {
+function Matters() {
   return (
     <>
       <Navbar />
@@ -9,4 +9,4 @@ function MattersPage() {
   );
 }
 
-export default MattersPage;
+export default Matters;
