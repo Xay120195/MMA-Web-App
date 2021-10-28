@@ -2,9 +2,7 @@ import React, { Component } from "react";
 import { Auth } from "aws-amplify";
 import Navbar from '../navigation/Navbar.js';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import Home from '../../pages/Home';
-import Page1 from '../../pages/Page1';
-import Page2 from '../../pages/Page2';
+import { AppRoutes } from "../../constants/AppRoutes";
 
 export default class Dashboard extends Component {
 
@@ -25,9 +23,9 @@ export default class Dashboard extends Component {
             <Router>
                 <Navbar />
                 <Switch>
-                <Route path='/' exact component={Dashboard} />
-                <Route path='/page1' component={Page1} />
-                <Route path='/page2' component={Page2} />
+                <Route path='/' />
+                <Route path={AppRoutes.DASHBOARD} />
+                <Route path={AppRoutes.MATTERSPAGE} />
                 </Switch>
             </Router>
             </>
