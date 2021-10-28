@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import { Auth } from "aws-amplify";
-import Navbar from '../navigation/Navbar.js';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { AppRoutes } from "../../constants/AppRoutes";
+import Navbar from '../navigation/Navbar.jsx';
 
 export default class Dashboard extends Component {
 
