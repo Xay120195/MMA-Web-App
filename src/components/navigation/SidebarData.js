@@ -19,7 +19,7 @@ export const SidebarData = [
   {
     title: 'Page 2',
     path: '/page2',
-    icon: <FaIcons.FaCartPlus />,
+    icon: <FaIcons.IoIosPaper />,
     cName: 'nav-text'
   }
 ];
