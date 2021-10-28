@@ -151,16 +151,14 @@ const Authentication = () => {
       </div>
 
       <div className="authcontainer">
-      <AmplifyAuthenticator hideDefault={true} >
+      <AmplifyAuthenticator hideDefault={true} usernameAlias="email">
         <AmplifySignIn 
           slot="sign-in" 
-          usernameAlias="email"  
           headerText="Welcome Back!"
           formFields={signInFields}
         />
         <AmplifySignUp
           slot="sign-up"
-          usernameAlias="email"
           formFields={signUpFields}
           headerText="Start Your Free Trial Now"
         />
