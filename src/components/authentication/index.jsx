@@ -20,7 +20,7 @@ function mergeClassNames(...classes) {
 
 
 const signUpFields = [
-  {
+  /*{
     type: "text",
     label: "First Name",
     placeholder: "",
@@ -37,7 +37,7 @@ const signUpFields = [
     label: "Company Name",
     placeholder: "",
     required: true,
-  },
+  },*/
   {
     type: "email",
     label: "Email Address",
@@ -156,11 +156,11 @@ const Authentication = () => {
           slot="sign-in" 
           usernameAlias="email"  
           headerText="Welcome Back!"
-          hideSignUp
           formFields={signInFields}
         />
         <AmplifySignUp
           slot="sign-up"
+          usernameAlias="email"
           formFields={signUpFields}
           headerText="Start Your Free Trial Now"
         />
