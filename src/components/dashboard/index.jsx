@@ -28,6 +28,7 @@ export default class Dashboard extends Component {
                 <Route path={AppRoutes.MATTERSPAGE} />
                 </Switch>
             </Router>
+            <button class="bg-transparent hover:bg-black-500 text-black-700 font-semibold py-2 px-4 border border-black-500" onClick={this.clickLogout} >LOG OUT</button>
             </>
         )
     }

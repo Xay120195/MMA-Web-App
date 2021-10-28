@@ -1,11 +1,5 @@
 import React from 'react';
 
-function Page1() {
-  return (
-    <div className='page1'>
-      <h1>Page1</h1>
-    </div>
-  );
-}
-
-export default Page1;
+  <div>
+    <h1>MattersPage Library</h1>
+  </div>

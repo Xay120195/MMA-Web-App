@@ -36,9 +36,6 @@ function Navbar() {
                 </li>
               );
             })}
-            <li>
-              <button class="bg-transparent hover:bg-black-500 text-black-700 font-semibold hover:text-white py-2 px-4 border border-black-500 hover:border-transparent rounded" >LOG OUT</button>
-            </li>
           </ul>
         </nav>
       </IconContext.Provider>
