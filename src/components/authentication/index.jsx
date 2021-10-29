@@ -1,43 +1,50 @@
 import React from 'react';
-import { Redirect } from "react-router-dom";
-import { AmplifyAuthenticator, AmplifySignUp, AmplifySignIn } from '@aws-amplify/ui-react';
+import { Redirect, useLocation } from "react-router-dom";
+import { AmplifyAuthenticator, AmplifySignUp, AmplifySignIn, AmplifyForgotPassword } from '@aws-amplify/ui-react';
+
 import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
 import '../../assets/styles/Auth.css'
-
-import { Fragment } from 'react'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
+import { Disclosure } from '@headlessui/react'
 //import { BellIcon, MenuIcon, XIcon, LogoutIcon } from '@heroicons/react/outline'
 
 const navigation = [
   { name: 'Contact', href: '/contact', current: false },
-  { name: 'Login', href: '/login', current: true },
-  { name: 'Signup', href: '/signup', current: false }
+  { name: 'Login', href: '/#login', current: true },
+  { name: 'Signup', href: '/#signup', current: false }
 ]
 
 function mergeClassNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-
 const signUpFields = [
-  /*{
-    type: "text",
+  {
+    type: "given_name",
     label: "First Name",
     placeholder: "",
     required: true,
   },
   {
-    type: "text",
+    type: "family_name",
     label: "Last Name",
     placeholder: "",
     required: true,
   },
   {
-    type: "text",
-    label: "Company Name",
+    type: "email",
+    label: "Email Address",
     placeholder: "",
     required: true,
-  },*/
+  },
+  {
+    type: "password",
+    label: "Password",
+    placeholder: "",
+    required: true,
+  },
+];
+
+const logInFields = [
   {
     type: "email",
     label: "Email Address",
@@ -52,30 +59,36 @@ const signUpFields = [
   },
 ];
 
-const signInFields = [
+const forgotPasswordFields = [
   {
     type: "email",
     label: "Email Address",
     placeholder: "",
     required: true,
-  },
-  {
-    type: "password",
-    label: "Password",
-    placeholder: "",
-    required: true,
-  },
-];
+  }
+]
+
+
 
 const Authentication = () => {
-    const [authState, setAuthState] = React.useState();
+    const [authState, setAuthState] = React.useState(AuthState.SignIn);
     const [user, setUser] = React.useState();
+    
+    // const routeLocation = useLocation();
+    // React.useEffect(()=>{
+    //   let hashLoc = routeLocation.hash;
+    //   console.log('Location changed ', routeLocation);
+    //   if(hashLoc === '#signup'){
+    //     setAuthState(AuthState.SignUp);
+    //   }
+
+    // }, [routeLocation]);
 
     React.useEffect(() => {
-        return onAuthUIStateChange((nextAuthState, authData) => {
-            setAuthState(nextAuthState);
-            setUser(authData)
-        });
+      return onAuthUIStateChange((nextAuthState, authData) => {
+        setAuthState(nextAuthState);
+        setUser(authData);
+      });
     }, []);
 
   return authState === AuthState.SignedIn && user ? (
@@ -151,23 +164,32 @@ const Authentication = () => {
       </div>
 
       <div className="authcontainer">
-      <AmplifyAuthenticator hideDefault={true} usernameAlias="email">
+      <AmplifyAuthenticator hideDefault={true}>
         <AmplifySignIn 
+          usernameAlias="email"
           slot="sign-in" 
           headerText="Welcome Back!"
-          formFields={signInFields}
+          formFields={logInFields}
         />
         <AmplifySignUp
+          usernameAlias="email"
           slot="sign-up"
           formFields={signUpFields}
           headerText="Start Your Free Trial Now"
         />
+
+        <AmplifyForgotPassword 
+          usernameAlias="email"
+          slot="forgot-password"
+          formFields={forgotPasswordFields}
+          headerText="Forgot Password"
+        />
+      
       </AmplifyAuthenticator>
       </div>
       </div>
     </>
   );
 }
-
 
 export default Authentication;
