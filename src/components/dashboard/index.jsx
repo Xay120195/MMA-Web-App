@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Auth } from "aws-amplify";
+import Navbar from '../navigation';
 
 export default class Dashboard extends Component {
 
@@ -9,16 +10,15 @@ export default class Dashboard extends Component {
             pin: '',
             location: ''
         };
-
         this.clickLogout = this.clickLogout.bind(this);
-
     }
        
     render(){
         return (
             <>
-            <h1>Dashboard Page!</h1>
-            <button onClick={this.clickLogout}>LOG OUT</button>
+            <Navbar />
+            <h1>Welcome to Dashboard!</h1>
+            <button className="bg-transparent hover:bg-black-500 text-black-700 font-semibold py-2 px-4 border border-black-500" onClick={this.clickLogout} >LOG OUT</button>
             </>
         )
     }
