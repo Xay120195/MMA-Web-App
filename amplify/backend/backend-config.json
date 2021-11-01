@@ -1,13 +1,13 @@
 {
   "auth": {
-    "mmawebapp7dd70d7f": {
+    "mmawebapp18a2c5fa": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
       "customAuth": false,
       "frontendAuthConfig": {
         "loginMechanisms": [
-          "PREFERRED_USERNAME"
+          "EMAIL"
         ],
         "signupAttributes": [
           "EMAIL"
