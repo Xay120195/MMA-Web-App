@@ -12,8 +12,8 @@
     ],
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
-    "emailVerificationSubject": "MMA Password Reset Confirmation",
-    "emailVerificationMessage": "There was recently a request to change the password on your account. If you requested this password change, please enter the following verification code to reset your password.\n<br/><br/>\n{####}\n<br/><br/>\nThanks!\n<br/><br/>\nRegards,\nMMA Team",
+    "emailVerificationSubject": "MMA Verification Code",
+    "emailVerificationMessage": "<p>Please see below verification code.</p><h1>{####}</h1><p>Thanks!</p><p>Regards,<br/><b>MMA Team</b></p>",
     "defaultPasswordPolicy": false,
     "passwordPolicyMinLength": 8,
     "passwordPolicyCharacters": [
