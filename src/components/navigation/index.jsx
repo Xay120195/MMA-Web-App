@@ -1,15 +1,32 @@
 import React, { useState } from 'react';
 import * as FaIcons from 'react-icons/fa';
 import * as AiIcons from 'react-icons/ai';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import { Auth } from "aws-amplify";
 import { SidebarData } from './SidebarData';
 import '../../assets/styles/Navbar.css';
 import { IconContext } from 'react-icons';
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);
-
   const showSidebar = () => setSidebar(!sidebar);
+  
+  let history = useHistory();
+
+  const clickLogout = async (e) => {
+    e.preventDefault();
+    if(window.confirm("Are you sure you want to logout?")){
+      try {
+        await Auth.signOut();
+        console.log('Sign out completed.');
+        history.push("/");
+      } catch (error) {
+        console.log('Error signing out: ', error);
+      }
+    } else {
+      return false;
+    }
+  }
 
   return (
     <>
@@ -36,11 +53,16 @@ function Navbar() {
                 </li>
               );
             })}
+            <li className='logoutButton' onClick={clickLogout} >
+            <button className="bg-transparent hover:bg-black-500 text-black-700 font-semibold py-2 px-4 border border-black-500" >LOG OUT</button>
+            </li>
           </ul>
         </nav>
       </IconContext.Provider>
     </>
   );
 }
+
+
 
 export default Navbar;
