@@ -25,6 +25,8 @@ const navigation = [
   { name: 'Signup', href: '/#signup', current: false }
 ]
 
+
+
 function mergeClassNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -119,6 +121,7 @@ const Authentication = () => {
         <Disclosure as="nav">
       {({ open }) => (
         <>
+        
           <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 mb-4">
             <div className="relative flex items-center justify-between h-16">
                 {/* Mobile menu button*/}
@@ -152,7 +155,7 @@ const Authentication = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 hidden">
                 
               {navigation.map((item) => (
                       <a
@@ -184,6 +187,7 @@ const Authentication = () => {
 
       <div className="authcontainer">
       <AmplifyAuthenticator usernameAlias="email">
+      
         <AmplifySignIn 
           usernameAlias="email"
           slot="sign-in" 

@@ -17,14 +17,12 @@ body {
 .welcome-message h1 {
   font-size: calc(46px + 2vmin);
   font-weight: bolder;
-  
 }
 
 .authcontainer {
   padding: -10% 0 10% 0;
   justify-content: unset !important;
 }
-
 
 .text-link-active {
   color: #1CC1E9;
@@ -38,47 +36,13 @@ body {
     --amplify-primary-color: #1CC1E9;
     --amplify-primary-tint: #32C7EB;
     --amplify-primary-shade: #19ADD1;
-    --amplify-toast: {
-      border-color: #f5c6cb !important;
-      background-color: #f8d7da !important;
-      top: 10px !important;
-      right: 10px !important;
-      width: auto !important;
-    }
   }
 
-  amplify-toast {
-    border-color: #f5c6cb !important;
-    background-color: #f8d7da !important;
-    top: 10px !important;
-    right: 10px !important;
-    width: auto !important;
-  }
-/* 
-  :root --amplify-toast {
+  /* .toast {
     border-color: #f5c6cb !important;
     background-color: #f8d7da !important;
     top: 10px !important;
     right: 10px !important;
     width: auto !important;
   } */
-
-  .authcontainer .toast {
-    
-
-    /* display: flex;
-    justify-content: space-between;
-    position: absolute;
-    
-    z-index: 99;
-    box-shadow: rgb(0 0 0 / 30%) 0px 0px 5px 0px;
-    padding: 16px;
-    
-    
-    color: var(--color);
-    box-sizing: border-box;
-    border-radius: 5px 
-    font-family: var(--font-family);
-    */
-}
 
