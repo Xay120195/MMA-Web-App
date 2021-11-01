@@ -17,14 +17,12 @@ body {
 .welcome-message h1 {
   font-size: calc(46px + 2vmin);
   font-weight: bolder;
-  
 }
 
 .authcontainer {
   padding: -10% 0 10% 0;
   justify-content: unset !important;
 }
-
 
 .text-link-active {
   color: #1CC1E9;
@@ -39,3 +37,12 @@ body {
     --amplify-primary-tint: #32C7EB;
     --amplify-primary-shade: #19ADD1;
   }
+
+  /* .toast {
+    border-color: #f5c6cb !important;
+    background-color: #f8d7da !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+  } */
+

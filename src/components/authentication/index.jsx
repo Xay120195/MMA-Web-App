@@ -1,17 +1,31 @@
 import React from 'react';
 import { Redirect, useLocation } from "react-router-dom";
-import { AmplifyAuthenticator, AmplifySignUp, AmplifySignIn, AmplifyForgotPassword } from '@aws-amplify/ui-react';
-
-import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
+import { AmplifyAuthenticator, AmplifySignUp, AmplifySignIn, AmplifyForgotPassword, AmplifyToast } from '@aws-amplify/ui-react';
+import { I18n } from "aws-amplify";
+import { AuthState, onAuthUIStateChange, Translations } from '@aws-amplify/ui-components';
 import '../../assets/styles/Auth.css'
 import { Disclosure } from '@headlessui/react'
 //import { BellIcon, MenuIcon, XIcon, LogoutIcon } from '@heroicons/react/outline'
+
+I18n.setLanguage('en-AU');
+I18n.putVocabulariesForLanguage("en-AU", {
+  [Translations.CONFIRM_SIGN_UP_CODE_LABEL]: "Please enter your code below",
+  [Translations.CONFIRM_SIGN_UP_CODE_PLACEHOLDER]: "Verification Code",
+  [Translations.CONFIRM_SIGN_UP_HEADER_TEXT]: "Verify Your Account",
+  [Translations.CONFIRM_SIGN_UP_LOST_CODE]: "Didn't receive a code?",
+  [Translations.BACK_TO_SIGN_IN]: "Back to Login",
+  [Translations.SIGN_IN_ACTION]: "LOGIN",
+  [Translations.SIGN_IN_TEXT]: "Login",
+  [Translations.SIGN_UP_SUBMIT_BUTTON_TEXT]: "SIGNUP"
+});
 
 const navigation = [
   { name: 'Contact', href: '/contact', current: false },
   { name: 'Login', href: '/#login', current: true },
   { name: 'Signup', href: '/#signup', current: false }
 ]
+
+
 
 function mergeClassNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -22,23 +36,32 @@ const signUpFields = [
     type: "given_name",
     label: "First Name",
     placeholder: "",
-    required: true,
+    required: false,
   },
   {
     type: "family_name",
     label: "Last Name",
     placeholder: "",
+    required: false,
+  },
+  {
+    type:'custom:company_name',
+    key:'custom:company_name',
+    label: "Company Name *",
+    placeholder: "",
     required: true,
   },
   {
     type: "email",
-    label: "Email Address",
+    label: "Email Address *",
+    autoComplete: "off",
     placeholder: "",
     required: true,
   },
   {
     type: "password",
-    label: "Password",
+    label: "Password *",
+    autoComplete: "off",
     placeholder: "",
     required: true,
   },
@@ -47,13 +70,13 @@ const signUpFields = [
 const logInFields = [
   {
     type: "email",
-    label: "Email Address",
+    label: "Email Address *",
     placeholder: "",
     required: true,
   },
   {
     type: "password",
-    label: "Password",
+    label: "Password *",
     placeholder: "",
     required: true,
   },
@@ -62,12 +85,11 @@ const logInFields = [
 const forgotPasswordFields = [
   {
     type: "email",
-    label: "Email Address",
+    label: "Email Address *",
     placeholder: "",
     required: true,
   }
 ]
-
 
 
 const Authentication = () => {
@@ -84,22 +106,22 @@ const Authentication = () => {
 
     // }, [routeLocation]);
 
-    React.useEffect(() => {
-      return onAuthUIStateChange((nextAuthState, authData) => {
-        setAuthState(nextAuthState);
-        setUser(authData);
-      });
-    }, []);
+    
+  React.useEffect(() => {
+    return onAuthUIStateChange((nextAuthState, authData) => {
+      setAuthState(nextAuthState);
+      setUser(authData);
+    });
+  }, []);
 
   return authState === AuthState.SignedIn && user ? (
-      <>
-        <Redirect to="/dashboard" />
-      </>
-    ) : (
+    <Redirect to="/dashboard" />  
+  ) : (
         <>
         <Disclosure as="nav">
       {({ open }) => (
         <>
+        
           <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 mb-4">
             <div className="relative flex items-center justify-between h-16">
                 {/* Mobile menu button*/}
@@ -133,7 +155,7 @@ const Authentication = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 hidden">
                 
               {navigation.map((item) => (
                       <a
@@ -146,7 +168,7 @@ const Authentication = () => {
                         )}
                         aria-current={item.current ? 'page' : undefined}
                       >
-                        {item.name} 
+                        {item.name}
                       </a>
                     ))}
                 
@@ -164,7 +186,8 @@ const Authentication = () => {
       </div>
 
       <div className="authcontainer">
-      <AmplifyAuthenticator hideDefault={true}>
+      <AmplifyAuthenticator usernameAlias="email">
+      
         <AmplifySignIn 
           usernameAlias="email"
           slot="sign-in" 
@@ -175,6 +198,7 @@ const Authentication = () => {
           usernameAlias="email"
           slot="sign-up"
           formFields={signUpFields}
+          autoComplete="off"
           headerText="Start Your Free Trial Now"
         />
 
@@ -184,12 +208,18 @@ const Authentication = () => {
           formFields={forgotPasswordFields}
           headerText="Forgot Password"
         />
-      
+
       </AmplifyAuthenticator>
       </div>
       </div>
     </>
   );
+
+
 }
+
+
+
+
 
 export default Authentication;
