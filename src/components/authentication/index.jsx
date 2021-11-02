@@ -1,22 +1,26 @@
 import React from 'react';
 import { Redirect, useLocation } from "react-router-dom";
-import { AmplifyAuthenticator, AmplifySignUp, AmplifySignIn, AmplifyForgotPassword, AmplifyToast } from '@aws-amplify/ui-react';
+import { AmplifyAuthenticator, AmplifySignUp, AmplifySignIn, AmplifyForgotPassword } from '@aws-amplify/ui-react';
 import { I18n } from "aws-amplify";
 import { AuthState, onAuthUIStateChange, Translations } from '@aws-amplify/ui-components';
 import '../../assets/styles/Auth.css'
 import { Disclosure } from '@headlessui/react'
+import { AuthFields } from '../../constants/AuthFields'
+import { AuthLabels } from '../../constants/AuthLabels'
+import { AppRoutes } from '../../constants/AppRoutes';
+
 //import { BellIcon, MenuIcon, XIcon, LogoutIcon } from '@heroicons/react/outline'
 
 I18n.setLanguage('en-AU');
 I18n.putVocabulariesForLanguage("en-AU", {
-  [Translations.CONFIRM_SIGN_UP_CODE_LABEL]: "Please enter your code below",
-  [Translations.CONFIRM_SIGN_UP_CODE_PLACEHOLDER]: "Verification Code",
-  [Translations.CONFIRM_SIGN_UP_HEADER_TEXT]: "Verify Your Account",
-  [Translations.CONFIRM_SIGN_UP_LOST_CODE]: "Didn't receive a code?",
-  [Translations.BACK_TO_SIGN_IN]: "Back to Login",
-  [Translations.SIGN_IN_ACTION]: "LOGIN",
-  [Translations.SIGN_IN_TEXT]: "Login",
-  [Translations.SIGN_UP_SUBMIT_BUTTON_TEXT]: "SIGNUP"
+  [Translations.CONFIRM_SIGN_UP_CODE_LABEL]: AuthLabels.CONFIRM_SIGN_UP_CODE_LABEL,
+  [Translations.CONFIRM_SIGN_UP_CODE_PLACEHOLDER]: AuthLabels.CONFIRM_SIGN_UP_CODE_PLACEHOLDER,
+  [Translations.CONFIRM_SIGN_UP_HEADER_TEXT]: AuthLabels.CONFIRM_SIGN_UP_HEADER_TEXT,
+  [Translations.CONFIRM_SIGN_UP_LOST_CODE]: AuthLabels.CONFIRM_SIGN_UP_LOST_CODE,
+  [Translations.BACK_TO_SIGN_IN]: AuthLabels.BACK_TO_SIGN_IN,
+  [Translations.SIGN_IN_ACTION]: AuthLabels.SIGN_IN_ACTION,
+  [Translations.SIGN_IN_TEXT]: AuthLabels.SIGN_IN_TEXT,
+  [Translations.SIGN_UP_SUBMIT_BUTTON_TEXT]: AuthLabels.SIGN_UP_SUBMIT_BUTTON_TEXT
 });
 
 const navigation = [
@@ -24,73 +28,6 @@ const navigation = [
   { name: 'Login', href: '/#login', current: true },
   { name: 'Signup', href: '/#signup', current: false }
 ]
-
-
-
-function mergeClassNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
-
-const signUpFields = [
-  {
-    type: "given_name",
-    label: "First Name",
-    placeholder: "",
-    required: false,
-  },
-  {
-    type: "family_name",
-    label: "Last Name",
-    placeholder: "",
-    required: false,
-  },
-  {
-    type:'custom:company_name',
-    key:'custom:company_name',
-    label: "Company Name *",
-    placeholder: "",
-    required: true,
-  },
-  {
-    type: "email",
-    label: "Email Address *",
-    autoComplete: "off",
-    placeholder: "",
-    required: true,
-  },
-  {
-    type: "password",
-    label: "Password *",
-    autoComplete: "off",
-    placeholder: "",
-    required: true,
-  },
-];
-
-const logInFields = [
-  {
-    type: "email",
-    label: "Email Address *",
-    placeholder: "",
-    required: true,
-  },
-  {
-    type: "password",
-    label: "Password *",
-    placeholder: "",
-    required: true,
-  },
-];
-
-const forgotPasswordFields = [
-  {
-    type: "email",
-    label: "Email Address *",
-    placeholder: "",
-    required: true,
-  }
-]
-
 
 const Authentication = () => {
     const [authState, setAuthState] = React.useState(AuthState.SignIn);
@@ -106,7 +43,6 @@ const Authentication = () => {
 
     // }, [routeLocation]);
 
-    
   React.useEffect(() => {
     return onAuthUIStateChange((nextAuthState, authData) => {
       setAuthState(nextAuthState);
@@ -115,13 +51,12 @@ const Authentication = () => {
   }, []);
 
   return authState === AuthState.SignedIn && user ? (
-    <Redirect to="/dashboard" />  
+    <Redirect to={AppRoutes.DASHBOARD} />  
   ) : (
-        <>
-        <Disclosure as="nav">
+    <>
+    <Disclosure as="nav">
       {({ open }) => (
         <>
-        
           <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 mb-4">
             <div className="relative flex items-center justify-between h-16">
                 {/* Mobile menu button*/}
@@ -155,7 +90,7 @@ const Authentication = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 hidden">
+              <div className="absolute inset-y-0 right-0 items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 hidden">
                 
               {navigation.map((item) => (
                       <a
@@ -192,12 +127,12 @@ const Authentication = () => {
           usernameAlias="email"
           slot="sign-in" 
           headerText="Welcome Back!"
-          formFields={logInFields}
+          formFields={AuthFields.login}
         />
         <AmplifySignUp
           usernameAlias="email"
           slot="sign-up"
-          formFields={signUpFields}
+          formFields={AuthFields.signup}
           autoComplete="off"
           headerText="Start Your Free Trial Now"
         />
@@ -205,21 +140,21 @@ const Authentication = () => {
         <AmplifyForgotPassword 
           usernameAlias="email"
           slot="forgot-password"
-          formFields={forgotPasswordFields}
+          formFields={AuthFields.forgotpassword}
           headerText="Forgot Password"
         />
 
       </AmplifyAuthenticator>
       </div>
-      </div>
+    </div>
     </>
   );
-
-
 }
 
 
 
-
+function mergeClassNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
 
 export default Authentication;
