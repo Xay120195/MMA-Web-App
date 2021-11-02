@@ -17,7 +17,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
-
+.vscode
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -28,10 +28,11 @@ amplify/.config/local-*
 amplify/mock-data
 amplify/backend/amplify-meta.json
 amplify/backend/awscloudformation
+amplify/team-provider-info.json
 build/
 dist/
 node_modules/
-aws-exports.js
+src/aws-exports.js
 awsconfiguration.json
 amplifyconfiguration.json
 amplify-gradle-config.json

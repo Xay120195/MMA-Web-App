@@ -1,0 +1,48 @@
+body {
+  color: #454545;
+}
+
+.title h1 {
+  font-size: calc(18px + 2vmin);
+}
+
+.welcome-message {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  /* min-height: 60vh !important; */
+  padding-left: 20%;
+}
+
+.welcome-message h1 {
+  font-size: calc(46px + 2vmin);
+  font-weight: bolder;
+}
+
+.authcontainer {
+  padding: -10% 0 10% 0;
+  justify-content: unset !important;
+}
+
+.text-link-active {
+  color: #1CC1E9;
+}
+
+.signup-btn {
+  background-color: #454545;
+}
+
+  :root {
+    --amplify-primary-color: #1CC1E9;
+    --amplify-primary-tint: #32C7EB;
+    --amplify-primary-shade: #19ADD1;
+  }
+
+  /* .toast {
+    border-color: #f5c6cb !important;
+    background-color: #f8d7da !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+  } */
+
