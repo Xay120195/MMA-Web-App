@@ -5,6 +5,7 @@ import { I18n } from "aws-amplify";
 import { AuthState, onAuthUIStateChange, Translations } from '@aws-amplify/ui-components';
 import '../../assets/styles/Auth.css'
 import { Disclosure } from '@headlessui/react'
+import { AuthFields } from './AuthFields'
 //import { BellIcon, MenuIcon, XIcon, LogoutIcon } from '@heroicons/react/outline'
 
 I18n.setLanguage('en-AU');
@@ -25,72 +26,9 @@ const navigation = [
   { name: 'Signup', href: '/#signup', current: false }
 ]
 
-
-
 function mergeClassNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
-
-const signUpFields = [
-  {
-    type: "given_name",
-    label: "First Name",
-    placeholder: "",
-    required: false,
-  },
-  {
-    type: "family_name",
-    label: "Last Name",
-    placeholder: "",
-    required: false,
-  },
-  {
-    type:'custom:company_name',
-    key:'custom:company_name',
-    label: "Company Name *",
-    placeholder: "",
-    required: true,
-  },
-  {
-    type: "email",
-    label: "Email Address *",
-    autoComplete: "off",
-    placeholder: "",
-    required: true,
-  },
-  {
-    type: "password",
-    label: "Password *",
-    autoComplete: "off",
-    placeholder: "",
-    required: true,
-  },
-];
-
-const logInFields = [
-  {
-    type: "email",
-    label: "Email Address *",
-    placeholder: "",
-    required: true,
-  },
-  {
-    type: "password",
-    label: "Password *",
-    placeholder: "",
-    required: true,
-  },
-];
-
-const forgotPasswordFields = [
-  {
-    type: "email",
-    label: "Email Address *",
-    placeholder: "",
-    required: true,
-  }
-]
-
 
 const Authentication = () => {
     const [authState, setAuthState] = React.useState(AuthState.SignIn);
@@ -106,7 +44,6 @@ const Authentication = () => {
 
     // }, [routeLocation]);
 
-    
   React.useEffect(() => {
     return onAuthUIStateChange((nextAuthState, authData) => {
       setAuthState(nextAuthState);
@@ -155,7 +92,7 @@ const Authentication = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 hidden">
+              <div className="absolute inset-y-0 right-0 items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 hidden">
                 
               {navigation.map((item) => (
                       <a
@@ -192,12 +129,12 @@ const Authentication = () => {
           usernameAlias="email"
           slot="sign-in" 
           headerText="Welcome Back!"
-          formFields={logInFields}
+          formFields={AuthFields.login}
         />
         <AmplifySignUp
           usernameAlias="email"
           slot="sign-up"
-          formFields={signUpFields}
+          formFields={AuthFields.signup}
           autoComplete="off"
           headerText="Start Your Free Trial Now"
         />
@@ -205,7 +142,7 @@ const Authentication = () => {
         <AmplifyForgotPassword 
           usernameAlias="email"
           slot="forgot-password"
-          formFields={forgotPasswordFields}
+          formFields={AuthFields.forgotpassword}
           headerText="Forgot Password"
         />
 
