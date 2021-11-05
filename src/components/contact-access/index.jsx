@@ -98,7 +98,7 @@ const UserAccess =(props) => {
                           //stateIsChanged &&
                           featureAccessSwitch.map((feature, index) => (
                           < >
-                            <tr key={index} index={index}>
+                            <tr key={`${feature.id}_${index}`}>
                               <td colSpan="6" className="px-6 py-4 whitespace-nowrap">
                                 {feature.title}
                               </td>
@@ -106,12 +106,12 @@ const UserAccess =(props) => {
                             
                                 {
                                 feature.data.map((data, index)=> (
-                                  <tr key={index} index={index}>
+                                  <tr key={`${data.id}_${index}`}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{data.name}</td>
                                   
                                     {
                                       data.access.map((access, index)=> (
-                                        <td key={index} index={index} className="px-6 py-4 whitespace-nowrap w-44  place-items-center">
+                                        <td key={`${access.id}_${index}`} className="px-6 py-4 whitespace-nowrap w-44  place-items-center">
                                           <Switch access={access} row_index={index} />
                                         </td>
                                         ))
