@@ -14,19 +14,23 @@ const tableHeaders = ["Owner", "Legal Admin", "Barrister", "Expert", "Client"];
 const UserAccess =(props) => {
   const [pageAccess, setpageAccess] = useState(1);
   const [pageAccessSwitch, setpageAccessSwitch] = useState(pages.filter(page => parseInt(page.id) === 1));
-  const [featureAccessSwitch, setfeatureAccessSwitch] = useState(features.filter(feature => parseInt(feature.page_id) === 1));
+  const [featureAccessSwitch, setfeatureAccessSwitch] = useState(features);
   
   const handlePageChange = (page_id) => {
     setpageAccess(page_id);
     setpageAccessSwitch(pages.filter(page => parseInt(page.id) === parseInt(page_id)));
-    setfeatureAccessSwitch(features.filter(feature => parseInt(feature.page_id) === parseInt(page_id)));
+    
+    parseInt(page_id) === 1 ? 
+      setfeatureAccessSwitch(features) : 
+      setfeatureAccessSwitch(features.filter(feature => parseInt(feature.page_id) === parseInt(page_id)));
+    
+    
   }
 
   useEffect(() => {
     console.log(`Selected Page ID: ${pageAccess}`);
     console.log(`Selected Page Access:`, pageAccessSwitch);
     console.log(`Selected Feature Access:`, featureAccessSwitch);
-    
   }, [pageAccess, pageAccessSwitch, featureAccessSwitch]);
 
 
@@ -97,7 +101,7 @@ const UserAccess =(props) => {
                     {
                           //stateIsChanged &&
                           featureAccessSwitch.map((feature, index) => (
-                          < >
+                          <React.Fragment key={index}>
                             <tr key={`${feature.id}_${index}`}>
                               <td colSpan="6" className="px-6 py-4 whitespace-nowrap">
                                 {feature.title}
@@ -119,7 +123,7 @@ const UserAccess =(props) => {
                                   </tr>
                                 ))
                                 }
-                              </>
+                              </React.Fragment>
 
                             
                             //console.log(feature)
