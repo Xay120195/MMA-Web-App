@@ -1,5 +1,4 @@
 .navbar {
-  background-color: #7a7a7a;
   height: 80px;
   display: flex;
   justify-content: start;
@@ -27,6 +26,7 @@
 .nav-menu.active {
   left: 0;
   transition: 350ms;
+  z-index: 999;
 }
 
 .nav-text {
