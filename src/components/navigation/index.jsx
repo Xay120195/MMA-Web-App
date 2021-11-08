@@ -47,14 +47,13 @@ function Navbar() {
               return (
                 <li key={index} className={item.cName}>
                   <Link to={item.path}>
-                    {item.icon}
-                    <span>{item.title}</span>
+                    {item.icon}<span>{item.title}</span>
                   </Link>
                 </li>
               );
             })}
             <li className='logoutButton' onClick={clickLogout} >
-            <button className="bg-transparent hover:bg-black-500 text-black-700 font-semibold py-2 px-4 border border-black-500" >LOG OUT</button>
+            <button className="bg-transparent ml-8 mt-2 hover:bg-black-500 text-white font-semibold py-2 px-4 border" >LOG OUT</button>
             </li>
           </ul>
         </nav>
