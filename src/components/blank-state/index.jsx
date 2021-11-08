@@ -7,7 +7,7 @@ const BlankState = (props) => {
       <div className="BlankState">
         <div className="main-content">
           <div className="img-content">
-            <img src="assets/no-data.svg" />
+            <img src="images/no-data.svg" />
           </div>
           <div className="details-txt">
             <h1>You have not added any {props.title || 'affidavits'} yet.</h1>
