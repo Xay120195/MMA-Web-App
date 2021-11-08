@@ -16,7 +16,9 @@
   padding: 10px 15px;
   background-color: var(--darkGrey);
   border-radius: 5px;
-  margin-left: 2rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }
 
 .content-grid {

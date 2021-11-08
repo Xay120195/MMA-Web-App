@@ -10,19 +10,24 @@ import {PageList} from './page-list'
 import { useEffect, useState } from 'react';
 
 
-const title = "Link copied to clipboard!";
-const handleClick = () => {
-  console.log('Button was clicked!');
-}
-
 const tableHeaders = ["Owner", "Legal Admin", "Barrister", "Expert", "Client"];
 
 
 const UserAccess =(props) => {
+
+  const title = "All changes has been saved!";
+
+  const [showToast, setShowToast] = useState(false);
   const [pageAccess, setpageAccess] = useState(1);
   const [pageAccessSwitch, setpageAccessSwitch] = useState(pages.filter(page => parseInt(page.id) === 1));
   const [featureAccessSwitch, setfeatureAccessSwitch] = useState(features);
-  
+  const hideToast = () => {
+    setShowToast(false);
+  }
+  const switchChanged = () => {
+    setShowToast(!showToast);
+  }
+
   const handlePageChange = (page_id) => {
     setpageAccess(page_id);
     setpageAccessSwitch(pages.filter(page => parseInt(page.id) === parseInt(page_id)));
@@ -41,7 +46,7 @@ const UserAccess =(props) => {
   return (
     <>
       <Navbar />
-      <ToastNotification title={title} handleClick={handleClick}/>
+      {showToast && <ToastNotification title={title} hideToast={hideToast}/>}
       <div className="p-5">
         <div className="flex flex-col">
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -81,7 +86,7 @@ const UserAccess =(props) => {
                           pageAccessSwitch.map((page) => (
                             page.access.map((access, index)=> (
                             <td key={index} index={index} className="px-6 py-4 whitespace-nowrap w-44  place-items-center">
-                            <Switch access={access} row_index={index} />
+                            <Switch access={access} row_index={index} switchChanged={switchChanged} />
                             </td>
                             ))
                           ))
@@ -112,7 +117,7 @@ const UserAccess =(props) => {
                               {
                                 data.access.map((access, index)=> (
                                   <td key={`${access.id}_${index}`} className="px-6 py-4 whitespace-nowrap w-44  place-items-center">
-                                    <Switch access={access} row_index={index} />
+                                    <Switch access={access} row_index={index} switchChanged={switchChanged}/>
                                   </td>
                                 ))
                               }
