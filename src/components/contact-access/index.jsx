@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from '../navigation';
+import ToastNotification from "../toast-notification";
 
 import '../../assets/styles/ContactAccess.css'
 import { pages, features } from './data-source'
@@ -7,6 +8,12 @@ import { Info } from './info'
 import {Switch} from './switch'
 import {PageList} from './page-list'
 import { useEffect, useState } from 'react';
+
+
+const title = "Link copied to clipboard!";
+const handleClick = () => {
+  console.log('Button was clicked!');
+}
 
 const tableHeaders = ["Owner", "Legal Admin", "Barrister", "Expert", "Client"];
 
@@ -34,6 +41,7 @@ const UserAccess =(props) => {
   return (
     <>
       <Navbar />
+      <ToastNotification title={title} handleClick={handleClick}/>
       <div className="p-5">
         <div className="flex flex-col">
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
