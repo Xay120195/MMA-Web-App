@@ -1,11 +1,22 @@
 import React, { Component } from "react";
 import Navbar from '../navigation';
 import PropTypes from "prop-types";
+import BlankState from "../blank-state";
 
 export default function Matters({ color }) {
+    const matters_list = [];
+    const title = "affidavits";
+    const txtLink = "add row";
+
+    const handleClick = () => {
+        console.log('Button was clicked!');
+    }
     return (
       <>
       <Navbar />
+      {matters_list.length === 0 ? (
+        <BlankState title={title} txtLink={txtLink} handleClick={handleClick} />
+      ) : (
         <div
           className={
             "p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " +
@@ -138,6 +149,7 @@ export default function Matters({ color }) {
             </table>
           </div>
         </div>
+      )}
       </>
     );
   }
