@@ -16,6 +16,10 @@
   margin: 0;
 }
 
+span {
+    margin-left: 0;
+}
+
 .main-content {
   display: grid;
   grid-template-columns: 1fr;
