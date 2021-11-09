@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react';
 
 
 
-export const Switch = ({access, row_index}) => {
+export const Switch = ({access, row_index, switchChanged}) => {
 
   const [isChecked, setisChecked] = useState(access.has_access === 1)
   const [checkedValue, setcheckedValue] = useState(access.has_access)
   
   const handleChange = ()=> {
     setisChecked(!isChecked);
-    console.log('switched');
+    switchChanged();
   }
 
   useEffect(() => {
