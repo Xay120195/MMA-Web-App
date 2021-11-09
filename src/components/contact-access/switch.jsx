@@ -10,7 +10,6 @@ export const Switch = ({access, row_index, switchChanged}) => {
   
   const handleChange = ()=> {
     setisChecked(!isChecked);
-    console.log('switched');
     switchChanged();
   }
 

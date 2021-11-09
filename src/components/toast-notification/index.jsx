@@ -6,7 +6,7 @@ const ToastNotification = ({title, hideToast}) => {
     return (
       <>
         <div className="main-div">
-            <div class="content-grid">
+            <div className="content-grid">
                 <p>{title || 'Link copied to clipboard!'}</p>
                 <span><FaIcons.FaTimes onClick={hideToast} /></span>
             </div>

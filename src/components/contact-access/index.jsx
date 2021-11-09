@@ -25,7 +25,10 @@ const UserAccess =(props) => {
     setShowToast(false);
   }
   const switchChanged = () => {
-    setShowToast(!showToast);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 1000);
   }
 
   const handlePageChange = (page_id) => {
