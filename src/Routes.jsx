@@ -14,7 +14,7 @@ const Routes = () => {
       <Switch>
         <Route exact path='/' component={Authentication} />
         <Route exact path={AppRoutes.DASHBOARD} component={Dashboard} />
-        <Route exact path={AppRoutes.MATTERS} component={Matters} />
+        <Route exact path={`${AppRoutes.MATTERS}/:id`} component={Matters} />
         <Route exact path={AppRoutes.USERACCESS} component={UserAccess} />
         <Route exact path={AppRoutes.MATTERSAFFIDAVIT} component={MattersAffidavit} />
         <Route exact path={AppRoutes.MATTERSRFI} component={MattersRFI} />
