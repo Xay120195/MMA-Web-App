@@ -1,12 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faReact } from '@fortawesome/free-brands-svg-icons';
 import { faChevronDoubleRight, faSignOutAlt } from '@fortawesome/pro-duotone-svg-icons';
-import { faCaretRight } from '@fortawesome/pro-solid-svg-icons';
-import { faTachometer, faBooks, faUsers, faUsersCog } from '@fortawesome/pro-light-svg-icons';
 
+import { SidebarData } from './SidebarData';
+import { Link } from 'react-router-dom';
 import '../../assets/styles/SideNavigation.css';
 
-const Navigation = () => {
+const Navigation = ({showSidebar, clickLogout}) => {
 
     return (
         <>
@@ -14,10 +14,19 @@ const Navigation = () => {
                 <div className="main-grid">
                     <div className="logo-grid">
                         <FontAwesomeIcon icon={faReact} className="logo-icon" />
-                        <button><FontAwesomeIcon icon={faChevronDoubleRight} style={{ color: 'var(--mysteryGrey)' }} /></button>
+                        <button><FontAwesomeIcon onClick={showSidebar} icon={faChevronDoubleRight} style={{ color: 'var(--mysteryGrey)' }} /></button>
                     </div>
                     <ul className="nav-menus">
-                        <li className="nav-item">
+                        {SidebarData.map((item, index) => {
+                        return (
+                            <li key={index}>
+                            <Link className="nav-item" to={item.path}>
+                                {item.icon}<span>{item.title}</span>
+                            </Link>
+                            </li>
+                        );
+                        })}
+                        {/* <li className="nav-item">
                             <FontAwesomeIcon icon={faTachometer} style={{ color: 'var(--mysteryGrey)' }} />
                             <span>Dashboard</span>
                         </li>
@@ -33,11 +42,11 @@ const Navigation = () => {
                         <li className="nav-item">
                             <FontAwesomeIcon icon={faUsersCog} style={{ color: 'var(--mysteryGrey)' }} />
                             <span>User Type Access</span>
-                        </li>
+                        </li> */}
                     </ul>
                 </div>
                 <div className="bottom-grid">
-                    <div className="logout-btn" >
+                    <div className="logout-btn" onClick={clickLogout}>
                         <FontAwesomeIcon icon={faSignOutAlt} style={{ color: 'var(--white)' }} />
                         <span>Log out</span>
                     </div>

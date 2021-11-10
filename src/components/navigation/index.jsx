@@ -6,6 +6,7 @@ import { Auth } from "aws-amplify";
 import { SidebarData } from './SidebarData';
 import '../../assets/styles/Navbar.css';
 import { IconContext } from 'react-icons';
+import Navigation from '../side-navigation';
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);
@@ -36,7 +37,8 @@ function Navbar() {
             <FaIcons.FaBars onClick={showSidebar} />
           </Link>
         </div>
-        <nav className={sidebar ? 'nav-menu active' : 'nav-menu'}>
+        {sidebar && <Navigation showSidebar={showSidebar} clickLogout={clickLogout}/>}
+        {/* <nav className={sidebar ? 'nav-menu active' : 'nav-menu'}>
           <ul className='nav-menu-items' onClick={showSidebar}>
             <li className='navbar-toggle'>
               <Link to='#' className='menu-bars'>
@@ -56,7 +58,7 @@ function Navbar() {
             <button className="bg-transparent ml-8 mt-2 hover:bg-black-500 text-white font-semibold py-2 px-4 border" >LOG OUT</button>
             </li>
           </ul>
-        </nav>
+        </nav> */}
       </IconContext.Provider>
     </>
   );
