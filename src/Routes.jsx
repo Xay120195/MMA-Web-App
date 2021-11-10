@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Authentication from "./components/authentication";
 import Dashboard from "./components/dashboard";
-import Matters from "./components/matters";
+import Matters from "./components/matters-overview";
 import UserAccess from "./components/contact-access";
 import MattersAffidavit from "./components/matters-affidavit";
 import MattersRFI from "./components/matters-rfi";
