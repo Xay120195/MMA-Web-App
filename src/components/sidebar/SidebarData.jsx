@@ -18,10 +18,10 @@ export const SidebarData = [
     icon: <FaUsersCog style={{ color: 'var(--mysteryGrey)' }} />,
     cName: 'nav-text'
   },
-  {
-    title: 'Profile',
-    path: AppRoutes.PROFILE,
-    icon: <CgProfile style={{ color: 'var(--mysteryGrey)' }} />,
-    cName: 'nav-text'
-  }
+  // {
+  //   title: 'Profile',
+  //   path: AppRoutes.PROFILE,
+  //   icon: <CgProfile style={{ color: 'var(--mysteryGrey)' }} />,
+  //   cName: 'nav-text'
+  // }
 ];
