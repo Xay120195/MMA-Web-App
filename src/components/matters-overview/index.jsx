@@ -37,8 +37,11 @@ export default function Matters({ color }) {
                 </div>
                 
                 <div className="absolute right-0">
+
+                  <Link to={AppRoutes.DASHBOARD}>
                   <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                     Back &nbsp;<MdArrowForwardIos/></button>
+                  </Link>
                   <button className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
                     Share &nbsp;<HiOutlineShare/>
                   </button>
@@ -93,7 +96,7 @@ export default function Matters({ color }) {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
                             <Link to={`${AppRoutes.MATTERSAFFIDAVIT}/${wa.id}`}>
-                              <button className="bg-green-100 hover:bg-gray-100 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">View</button>
+                              <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">View</button>
                             </Link>
                           </td>
                         </tr>
