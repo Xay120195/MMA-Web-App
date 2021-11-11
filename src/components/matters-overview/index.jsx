@@ -7,7 +7,7 @@ import {MdArrowForwardIos} from 'react-icons/md'
 import { matter, witness_affidavits } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
 
-export default function Matters({ color }) {
+export default function MattersOverview({ color }) {
   
   const title = "affidavits";
   const txtLink = "add row";
@@ -32,7 +32,7 @@ export default function Matters({ color }) {
                   <h1 className="font-bold text-3xl">
                     {matter.name}
                   </h1>
-                  <p className={"text-sm mt-3 font-medium"}>MATTER AFFIDAVITS OVERVIEW</p>
+                  <span className={"text-sm mt-3 font-medium"}>MATTER AFFIDAVITS OVERVIEW</span>
                 </div>
                 
                 <div className="absolute right-0">
@@ -52,7 +52,7 @@ export default function Matters({ color }) {
             <div className="mt-7">
                   <div>
                     <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                    Add Page &nbsp;<HiOutlinePlusCircle/>
+                    Add Row &nbsp;<HiOutlinePlusCircle/>
                     </button>
 
                     <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
@@ -95,7 +95,7 @@ export default function Matters({ color }) {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
                             <Link to={`${AppRoutes.MATTERSAFFIDAVIT}/${wa.id}`}>
-                              <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">View</button>
+                              <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">View</button>
                             </Link>
                           </td>
                         </tr>
@@ -111,10 +111,10 @@ export default function Matters({ color }) {
     );
   }
   
-  Matters.defaultProps = {
+  MattersOverview.defaultProps = {
     color: "light",
   };
   
-  Matters.propTypes = {
+  MattersOverview.propTypes = {
     color: PropTypes.oneOf(["light", "dark"]),
   };

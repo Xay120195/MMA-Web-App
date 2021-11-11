@@ -1,6 +1,6 @@
 export const AppRoutes = {
     DASHBOARD: '/dashboard',
-    MATTERS: '/matters-overview',
+    MATTERSOVERVIEW: '/matters-overview',
     MATTERSAFFIDAVIT: '/matters-affidavit',
     MATTERSRFI: '/matters-rfi',
     USERACCESS: '/contact-access',
