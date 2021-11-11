@@ -1,8 +1,6 @@
 import React, { useState, useEffect }  from 'react';
 import * as IoIcons from 'react-icons/io';
 import * as FaIcons from 'react-icons/fa';
-
-import Navbar from '../navigation';
 import imgDocs from '../../assets/images/docs.svg';
 import {Welcome} from './welcome'
 import {matters} from './data-source'
@@ -27,7 +25,7 @@ export default function Dashboard() {
 
     return userInfo ? (
       <>
-      <Navbar />
+
         <div className="p-5 font-sans">
             <div className="relative bg-gray-100 px-12 py-8 sm:px-12 sm:py-8 rounded-sm overflow-hidden mb-8">
 

@@ -23,7 +23,7 @@ const Sidebar = ({showSidebar, clickLogout}) => {
                     <ul className="nav-menus">
                         {SidebarData.map((item, index) => {
                         return (
-                            <li key={index}>
+                            <li key={index} onClick={showSidebar}>
                             <Link className="nav-item" to={item.path}>
                                 {item.icon}<span>{item.title}</span>
                             </Link>

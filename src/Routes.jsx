@@ -7,10 +7,12 @@ import MattersAffidavit from "./components/matters-affidavit";
 import MattersRFI from "./components/matters-rfi";
 import Profile from "./components/user-profile";
 import { AppRoutes } from "./constants/AppRoutes";
+import Navbar from './components/navigation';
 
 const Routes = () => {
   return (
     <Router>
+      <Navbar />
       <Switch>
         <Route exact path='/' component={Authentication} />
         <Route exact path={AppRoutes.DASHBOARD} component={Dashboard} />

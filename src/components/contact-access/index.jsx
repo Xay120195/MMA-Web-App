@@ -1,5 +1,4 @@
 import React from "react";
-import Navbar from '../navigation';
 import ToastNotification from "../toast-notification";
 
 import '../../assets/styles/ContactAccess.css'
@@ -48,7 +47,6 @@ const UserAccess =(props) => {
 
   return (
     <>
-      <Navbar />
       {showToast && <ToastNotification title={title} hideToast={hideToast}/>}
       <div className="p-5">
         <div className="flex flex-col">

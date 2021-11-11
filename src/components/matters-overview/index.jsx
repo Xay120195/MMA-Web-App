@@ -1,6 +1,5 @@
-import React, { Component } from "react";
+import React from "react";
 import { Link } from 'react-router-dom';
-import Navbar from '../navigation';
 import PropTypes from "prop-types";
 import BlankState from "../blank-state";
 import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter} from 'react-icons/hi';
@@ -20,7 +19,7 @@ export default function Matters({ color }) {
   }
     return (
       <>
-      <Navbar />
+      
       {witness_affidavits.length === 0 ? (
         <BlankState title={title} txtLink={txtLink} handleClick={handleClick} />
       ) : (
