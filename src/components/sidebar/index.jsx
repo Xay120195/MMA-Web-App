@@ -10,8 +10,9 @@ import { SidebarData } from './SidebarData';
 import { Link } from 'react-router-dom';
 import '../../assets/styles/SideNavigation.css';
 
-const Sidebar = ({showSidebar, clickLogout}) => {
+const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
 
+    console.log(userInfo);
     return (
         <>
             <div className="sidebar">
@@ -39,11 +40,13 @@ const Sidebar = ({showSidebar, clickLogout}) => {
                     </div>
                     <div className="avatar-grid">
                         <div className="avatar">
-                            TA
+                            {`${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`}
+
+                            
                         </div>
                         <div className="details-grid">
-                            <span>thomasa@mail.com</span>
-                            <span>Google Mail</span>
+                            <span>{userInfo.attributes.email}</span>
+                            <span>{userInfo.attributes['custom:company_name']}</span>
                         </div>
                     </div>
                 </div>
