@@ -1,4 +1,4 @@
-export const witness_affidavits = {
+export const matter_affidavit = {
   id:6956,
   name: 'Jack Pipper Stone',
   comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',

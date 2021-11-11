@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import BlankState from "../blank-state";
 import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter} from 'react-icons/hi';
 import {MdArrowForwardIos, MdDownload} from 'react-icons/md'
-import { witness_affidavits, statements } from './data-source'
+import { matter_affidavit, statements } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
 
 export default function MattersAffidavit({ color }) {
@@ -30,7 +30,7 @@ export default function MattersAffidavit({ color }) {
             <div className={"grid grid-cols-2"}>
                 <div>
                   <h1 className="text-3xl">
-                    Witness Affidavit of <span className="font-bold text-3xl">{witness_affidavits.name}</span>
+                    Witness Affidavit of <span className="font-bold text-3xl">{matter_affidavit.name}</span>
                   </h1>
                   <span className={"text-sm mt-3"}>MATTER AFFIDAVITS OVERVIEW</span> / <span className={"text-sm mt-3 font-medium"}>WITNESS AFFIDAVIT</span>
                 </div>
