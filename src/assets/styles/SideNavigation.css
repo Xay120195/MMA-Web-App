@@ -19,11 +19,6 @@
   padding: 0;
 }
 
-#root {
-  width: 266px;
-  height: 100vh;
-}
-
 .sidebar {
   height: -webkit-fill-available;
   align-content: space-between;
@@ -31,6 +26,12 @@
   display: grid;
   grid-gap: 1rem;
   border: 1px solid var(--defaultBorderColor);
+  width: 266px;
+  height: 100vh;
+  position: absolute;
+  background-color: var(--white);
+  z-index: 999;
+  top: 0;
 }
 
 .main-grid {
