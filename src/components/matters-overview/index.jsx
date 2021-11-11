@@ -1,10 +1,12 @@
 import React, { Component } from "react";
+import { Link } from 'react-router-dom';
 import Navbar from '../navigation';
 import PropTypes from "prop-types";
 import BlankState from "../blank-state";
 import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter} from 'react-icons/hi';
 import {MdArrowForwardIos} from 'react-icons/md'
 import { matter, witness_affidavits } from './data-source'
+import { AppRoutes } from "../../constants/AppRoutes";
 
 export default function Matters({ color }) {
   
@@ -90,7 +92,9 @@ export default function Matters({ color }) {
                             <p>{wa.comments}</p>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
-                            <button className="bg-green-100 hover:bg-gray-100 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">View</button>
+                            <Link to={`${AppRoutes.MATTERSAFFIDAVIT}/${wa.id}`}>
+                              <button className="bg-green-100 hover:bg-gray-100 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">View</button>
+                            </Link>
                           </td>
                         </tr>
                       ))

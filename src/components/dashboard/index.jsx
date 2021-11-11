@@ -5,7 +5,7 @@ import * as FaIcons from 'react-icons/fa';
 import Navbar from '../navigation';
 import imgDocs from '../../assets/images/docs.svg';
 import {Welcome} from './welcome'
-import {matters} from './matters-data-source'
+import {matters} from './data-source'
 import { MattersList } from './matters-list'
 import { Auth } from "aws-amplify";
 
