@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
+import { AppRoutes } from "../../constants/AppRoutes";
 
 export function MattersList({matter, view}) {
 
     return view === 'grid' ? (
-        <Link to={`/matters/${matter.id}`}>
+        <Link to={`${AppRoutes.MATTERS}/${matter.id}`}>
             <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
                 <div>
                     <h4 tabIndex="0" className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-3">{matter.name}</h4>
@@ -22,7 +23,7 @@ export function MattersList({matter, view}) {
         
         </Link>
     ):(
-        <Link to={`/matters/${matter.id}`}>
+        <Link to={`${AppRoutes.MATTERS}/${matter.id}`}>
             <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
                 <div>
                     <div className="grid grid-cols-4 gap-4">
@@ -39,5 +40,3 @@ export function MattersList({matter, view}) {
         </Link>
     )
 }
-
-
