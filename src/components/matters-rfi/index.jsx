@@ -1,6 +1,5 @@
 import React, {useState} from "react";
-import { Link } from 'react-router-dom';
-import PropTypes from "prop-types";
+import { Link, useHistory } from 'react-router-dom';
 import BlankState from "../blank-state";
 import {HiOutlinePlusCircle } from 'react-icons/hi';
 import {MdDownload, MdArrowForwardIos} from 'react-icons/md'
@@ -10,24 +9,48 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import Modal from "../modal";
 import ToastNotification from "../toast-notification";
 
-export default function MattersAffidavit({ color }) {
-  
-  const [showModal, setshowModal] = useState(false);
-  const [RFIname, setRFIname] = useState();
-  const tableHeaders = ["No.", "Question", "Response", "Link Chronology", "Link to RFI"];
-  const alertMessage = "RFI Name successfully created.";
+export default function MattersRFI() {
 
+  let history = useHistory();
+
+  const tableHeaders = ["No.", "Question", "Response", "Link Chronology", "Link to RFI"];
+  const modalRFIAlertMsg = "RFI Name successfully created.";
+  const modalUploadLinkAlertMsg = "Link to chronology successfully uploaded.";
+
+  const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
+  const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
+  const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
+  const [RFIname, setRFIname] = useState();
+  
   const hideToast = () => {
     setShowToast(false);
   }
   
-
   const handleBlankStateClick = () => {
     console.log('Blank State Button was clicked!');
   }
 
-  const handleSave = () => {
+  const handleSaveRFI = () => {
+    console.log('RFI name:', RFIname);
+
+    if(RFIname === undefined){
+      alert("RFI name is required.");
+      return false;
+    } else {
+      setalertMessage(modalRFIAlertMsg);
+      handleModalClose(false);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        history.push(`${AppRoutes.MATTERSRFI}/231`);
+      }, 3000);
+    }
+  }
+
+  const handleUploadLink = () => {
+    setalertMessage(modalUploadLinkAlertMsg);
     handleModalClose(false);
     setShowToast(true);
     setTimeout(() => {
@@ -35,12 +58,22 @@ export default function MattersAffidavit({ color }) {
     }, 3000);
   }
 
+  const handleSelectLink = () => {
+    handleModalClose(false);
+  }
+
   const handleRFINameChanged = (event) => {
     setRFIname(event.target.value);
   }
 
+  const handleUploadLinkChanged = (event) => {
+    console.log('Upload link handled', event);
+  }
+
   const handleModalClose = (action) => {
-    setshowModal(action);
+    setshowCreateRFIModal(action);
+    setshowUploadLinkModal(action);
+    setshowSelectLinkModal(action);
   }
 
     return (
@@ -48,7 +81,7 @@ export default function MattersAffidavit({ color }) {
         {questions.length === 0 ? (
           <BlankState title={'affidavits'} txtLink={'add row'} handleClick={handleBlankStateClick} />
         ) : (
-        <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " + (color === "light" ? "bg-white" : "bg-lightBlue-900 text-white") }>
+        <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white"}>
           <div className="relative w-full max-w-full flex-grow flex-1">
             <div className={"grid grid-cols-2"}>
                 <div>
@@ -106,13 +139,17 @@ export default function MattersAffidavit({ color }) {
                           </td>
                           <td className="px-6 py-4 w-4 align-top place-items-center text-center">
                             
-                              <button className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">UPLOAD</button>
-                              <button className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">SELECT</button>
+                              <button className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                              onClick={() => setshowUploadLinkModal(true)}>UPLOAD
+                              </button>
+                              <button className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+                              onClick={() => setshowSelectLinkModal(true)}>SELECT
+                              </button>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
                             <Link to={`${AppRoutes.MATTERSRFI}/${st.id}`}>
                               <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                                onClick={() => setshowModal(true)}>
+                                onClick={() => setshowCreateRFIModal(true)}>
                                 CREATE
                               </button>
                             </Link>
@@ -127,12 +164,28 @@ export default function MattersAffidavit({ color }) {
 
       )}
 
-      { showModal && <Modal 
+      { showCreateRFIModal && <Modal 
         title={'Create RFI'} 
-        content={<ContentComponent handleRFINameChanged={handleRFINameChanged} />} 
+        content={<CreateRFIContent handleRFINameChanged={handleRFINameChanged} />} 
         customCTAButton={'Create'} 
         customCancelButton={'Cancel'}
-        handleSave={handleSave} 
+        handleSave={handleSaveRFI} 
+        handleModalClose={handleModalClose} /> }
+
+      { showUploadLinkModal && <Modal 
+        title={'Upload link to chronology'} 
+        content={<UploadLinkContent handleUploadLinkChanged={handleUploadLinkChanged} />} 
+        customCTAButton={'Upload'} 
+        customCancelButton={'Cancel'}
+        handleSave={handleUploadLink} 
+        handleModalClose={handleModalClose} /> }
+      
+      { showSelectLinkModal && <Modal 
+        title={'Select link to chronology'} 
+        content={<SelectLinkContent />} 
+        customCTAButton={'Select'} 
+        customCancelButton={'Cancel'}
+        handleSave={handleSelectLink} 
         handleModalClose={handleModalClose} /> }
 
       { showToast && <ToastNotification title={alertMessage} hideToast={hideToast}/> }
@@ -141,16 +194,7 @@ export default function MattersAffidavit({ color }) {
     );
   }
   
-  MattersAffidavit.defaultProps = {
-    color: "light",
-  };
-  
-  MattersAffidavit.propTypes = {
-    color: PropTypes.oneOf(["light", "dark"]),
-  };
-
-
-  export const ContentComponent = (props) => {
+  export const CreateRFIContent = (props) => {
 
     const handleRFINameChanged = (event)=> {
         props.handleRFINameChanged(event);    
@@ -168,3 +212,28 @@ export default function MattersAffidavit({ color }) {
       </>
     )
   }
+
+export const UploadLinkContent = (props) => {
+  const handleUploadLinkChanged = (event)=> {
+    props.handleUploadLinkChanged(event);    
+  }
+
+  return(
+    <>
+      <p>Drop files here or browse</p>
+    </>
+  )
+}
+
+
+export const SelectLinkContent = (props) => {
+  const handleSelectLinkChanged = (event)=> {
+    props.handleSelectLinkChanged(event);    
+  }
+
+  return(
+    <>
+      <p>Select Link to Chronology</p>
+    </>
+  )
+}
