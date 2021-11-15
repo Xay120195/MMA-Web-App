@@ -8,20 +8,17 @@ import { matter, witness_affidavits } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
 
 export default function MattersOverview({ color }) {
-  
-  const title = "affidavits";
-  const txtLink = "add row";
 
   const tableHeaders = ["No.", "Witness Name", "RFIs", "Comments", "Affidavits"];
 
-  const handleClick = () => {
-      console.log('Button was clicked!');
+  const handleBlankStateClick = () => {
+    console.log('Blank State Button was clicked!');
   }
     return (
       <>
       
       {witness_affidavits.length === 0 ? (
-        <BlankState title={title} txtLink={txtLink} handleClick={handleClick} />
+        <BlankState title={'affidavits'} txtLink={'add row'} handleClick={handleBlankStateClick} />
       ) : (
         
         <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " + (color === "light" ? "bg-white" : "bg-lightBlue-900 text-white") }>
