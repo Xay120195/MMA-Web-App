@@ -2,26 +2,24 @@ import React from "react";
 import { Link } from 'react-router-dom';
 import PropTypes from "prop-types";
 import BlankState from "../blank-state";
-import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter} from 'react-icons/hi';
+import {HiOutlinePlusCircle} from 'react-icons/hi';
 import {MdArrowForwardIos, MdDownload} from 'react-icons/md'
 import { matter_affidavit, statements } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
 
 export default function MattersAffidavit({ color }) {
-  
-  const title = "affidavits";
-  const txtLink = "add row";
 
   const tableHeaders = ["No.", "Statement", "Comments", "Link Chronology", "Link to RFI"];
 
-  const handleClick = () => {
-      console.log('Button was clicked!');
+  const handleBlankStateClick = () => {
+    console.log('Blank State Button was clicked!');
   }
+
     return (
       <>
       
       {statements.length === 0 ? (
-        <BlankState title={title} txtLink={txtLink} handleClick={handleClick} />
+        <BlankState title={'affidavits'} txtLink={'add row'} handleClick={handleBlankStateClick} />
       ) : (
         
         <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " + (color === "light" ? "bg-white" : "bg-lightBlue-900 text-white") }>
