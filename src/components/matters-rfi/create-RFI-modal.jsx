@@ -1,29 +1,25 @@
 import React, { useState } from "react";
 import { GrClose } from "react-icons/gr";
 import { RiFileInfoLine } from "react-icons/ri";
+import { useForm } from "react-hook-form";
 
 export default function CreateRFIModal(props) {
-  const [RFIname, setRFIname] = useState();
+
+  const { register, formState: { errors }, handleSubmit } = useForm();
 
   const handleModalClose = () => {
     props.handleModalClose();
   };
 
-  const handleSave = () => {
-    if (RFIname === undefined || RFIname === "") {
-      alert("RFI name is required.");
-      return false;
-    } else {
-      props.handleSave(RFIname);
-    }
-  };
+  const handleSave = (data) => {
+    console.log(data);
 
-  const handleRFINameChanged = (event) => {
-    setRFIname(event.target.value);
+    let rfiName = data.rfiName;
+    props.handleSave(rfiName);
   };
 
   return (
-    <>
+    <form onSubmit={handleSubmit(handleSave)}>
       <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
         <div className="relative w-full my-6 mx-auto max-w-3xl">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
@@ -46,9 +42,10 @@ export default function CreateRFIModal(props) {
                   type="text"
                   className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
                   placeholder="RFI Name"
-                  onChange={handleRFINameChanged}
+                  {...register("rfiName", { required: true })}
                 />
               </div>
+              {errors.rfiName?.type === 'required' && <small className="text-red-400">RFI name is required</small>}
             </div>
             <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
               <button
@@ -60,8 +57,7 @@ export default function CreateRFIModal(props) {
               </button>
               <button
                 className="bg-green-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                type="button"
-                onClick={() => handleSave()}
+                type="submit"
               >
                 Create
               </button>
@@ -70,6 +66,6 @@ export default function CreateRFIModal(props) {
         </div>
       </div>
       <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
-    </>
+    </form>
   );
 }
