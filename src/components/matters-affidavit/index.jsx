@@ -197,9 +197,9 @@ export default function MattersAffidavit() {
         handleSave={handleSelectLink} 
         handleModalClose={handleModalClose} /> }
 
-      {showToast && (
+      {showToast && 
         <ToastNotification title={alertMessage} hideToast={hideToast} />
-      )}
+      }
     </>
   );
 }

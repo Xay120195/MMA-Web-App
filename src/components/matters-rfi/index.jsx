@@ -6,7 +6,9 @@ import { MdDownload, MdArrowForwardIos } from "react-icons/md";
 import { RiFileInfoLine } from "react-icons/ri";
 import { matter_rfi, questions } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
-import Modal from "../modal";
+import CreateRFIModal from "./create-RFI-modal";
+import UploadLinkModal from "./upload-linktochronology-modal"
+import SelectLinkModal from "./linktochronology-list-modal"
 import ToastNotification from "../toast-notification";
 
 export default function MattersRFI() {
@@ -25,38 +27,33 @@ export default function MattersRFI() {
   const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
   const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
+  
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-  const [RFIname, setRFIname] = useState();
-
-  const hideToast = () => {
-    setShowToast(false);
-  };
 
   const handleBlankStateClick = () => {
     console.log("Blank State Button was clicked!");
   };
 
-  const handleSaveRFI = () => {
-    console.log("RFI name:", RFIname);
+  const hideToast = () => {
+    setShowToast(false);
+  };
 
-    if (RFIname === undefined) {
-      alert("RFI name is required.");
-      return false;
-    } else {
-      setalertMessage(modalRFIAlertMsg);
-      handleModalClose(false);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        history.push(`${AppRoutes.MATTERSRFI}/231`);
-      }, 3000);
-    }
+  const handleSaveRFI = (rfiname) => {
+    console.log("RFI name:", rfiname);
+    setalertMessage(modalRFIAlertMsg);
+    handleModalClose();
+    setShowToast(true);
+
+    setTimeout(() => {
+      setShowToast(false);
+      history.push(`${AppRoutes.MATTERSRFI}/231`);
+    }, 3000);
   };
 
   const handleUploadLink = () => {
     setalertMessage(modalUploadLinkAlertMsg);
-    handleModalClose(false);
+    handleModalClose();
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -64,21 +61,13 @@ export default function MattersRFI() {
   };
 
   const handleSelectLink = () => {
-    handleModalClose(false);
+    handleModalClose();
   };
 
-  const handleRFINameChanged = (event) => {
-    setRFIname(event.target.value);
-  };
-
-  const handleUploadLinkChanged = (event) => {
-    console.log("Upload link handled", event);
-  };
-
-  const handleModalClose = (action) => {
-    setshowCreateRFIModal(action);
-    setshowUploadLinkModal(action);
-    setshowSelectLinkModal(action);
+  const handleModalClose = () => {
+    setshowCreateRFIModal(false);
+    setshowUploadLinkModal(false);
+    setshowSelectLinkModal(false);
   };
 
   return (
@@ -191,95 +180,26 @@ export default function MattersRFI() {
         </div>
       )}
 
-      {showCreateRFIModal && (
-        <Modal
-          title={"Create RFI"}
-          content={
-            <CreateRFIContent handleRFINameChanged={handleRFINameChanged} />
-          }
-          customCTAButton={"Create"}
-          customCancelButton={"Cancel"}
+{showCreateRFIModal && 
+        <CreateRFIModal
           handleSave={handleSaveRFI}
           handleModalClose={handleModalClose}
         />
-      )}
+      }
 
-      {showUploadLinkModal && (
-        <Modal
-          title={"Upload link to chronology"}
-          content={
-            <UploadLinkContent
-              handleUploadLinkChanged={handleUploadLinkChanged}
-            />
-          }
-          customCTAButton={"Upload"}
-          customCancelButton={"Cancel"}
-          handleSave={handleUploadLink}
-          handleModalClose={handleModalClose}
-        />
-      )}
+      { showUploadLinkModal && <UploadLinkModal 
+        handleSave={handleUploadLink} 
+        handleModalClose={handleModalClose} /> }
 
-      {showSelectLinkModal && (
-        <Modal
-          title={"Select link to chronology"}
-          content={<SelectLinkContent />}
-          customCTAButton={"Select"}
-          customCancelButton={"Cancel"}
-          handleSave={handleSelectLink}
-          handleModalClose={handleModalClose}
-        />
-      )}
+      { showSelectLinkModal && <SelectLinkModal 
+        handleSave={handleSelectLink} 
+        handleModalClose={handleModalClose} /> }
 
-      {showToast && (
+      {showToast && 
         <ToastNotification title={alertMessage} hideToast={hideToast} />
-      )}
+      }
+      
     </>
   );
 }
 
-export const CreateRFIContent = (props) => {
-  const handleRFINameChanged = (event) => {
-    props.handleRFINameChanged(event);
-  };
-
-  return (
-    <>
-      <p className="font-semi-bold text-sm">RFI Name *</p>
-      <div className="relative my-2">
-        <div className="absolute pin-r pin-t mt-4 mr-5 ml-2 text-purple-lighter">
-          <RiFileInfoLine />
-        </div>
-        <input
-          type="text"
-          className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
-          placeholder="RFI Name"
-          onChange={handleRFINameChanged}
-        />
-      </div>
-    </>
-  );
-};
-
-export const UploadLinkContent = (props) => {
-  const handleUploadLinkChanged = (event) => {
-    props.handleUploadLinkChanged(event);
-  };
-
-  return (
-    <>
-      <p>Drop files here or browse</p>
-    </>
-  );
-};
-
-export const SelectLinkContent = (props) => {
-  const handleSelectLinkChanged = (event) => {
-    props.handleSelectLinkChanged(event);
-  };
-
-  return (
-    <>
-      <p>Select Link to Chronology</p>
-    </>
-  );
-};
