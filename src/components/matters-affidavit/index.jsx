@@ -7,6 +7,7 @@ import { matter_affidavit, statements } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "./create-RFI-modal";
 import UploadLinkModal from "./upload-linktochronology-modal"
+import SelectLinkModal from "./linktochronology-list-modal"
 import ToastNotification from "../toast-notification";
 
 export default function MattersAffidavit() {
@@ -39,7 +40,7 @@ export default function MattersAffidavit() {
   const handleSaveRFI = (rfiname) => {
     console.log("RFI name:", rfiname);
     setalertMessage(modalRFIAlertMsg);
-    handleModalClose(false);
+    handleModalClose();
     setShowToast(true);
 
     setTimeout(() => {
@@ -50,11 +51,15 @@ export default function MattersAffidavit() {
 
   const handleUploadLink = () => {
     setalertMessage(modalUploadLinkAlertMsg);
-    handleModalClose(false);
+    handleModalClose();
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
+  };
+
+  const handleSelectLink = () => {
+    handleModalClose();
   };
 
   const handleModalClose = () => {
@@ -177,15 +182,19 @@ export default function MattersAffidavit() {
         </div>
       )}
 
-      {showCreateRFIModal && (
+      {showCreateRFIModal && 
         <CreateRFIModal
           handleSave={handleSaveRFI}
           handleModalClose={handleModalClose}
         />
-      )}
+      }
 
       { showUploadLinkModal && <UploadLinkModal 
         handleSave={handleUploadLink} 
+        handleModalClose={handleModalClose} /> }
+
+      { showSelectLinkModal && <SelectLinkModal 
+        handleSave={handleSelectLink} 
         handleModalClose={handleModalClose} /> }
 
       {showToast && (
