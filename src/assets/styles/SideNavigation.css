@@ -20,15 +20,14 @@
 }
 
 .sidebar {
-  height: -webkit-fill-available;
   align-content: space-between;
   padding: 1rem;
   display: grid;
   grid-gap: 1rem;
   border: 1px solid var(--defaultBorderColor);
   width: 266px;
-  height: 100vh;
-  position: absolute;
+  height: 100%;
+  position: fixed;
   background-color: var(--white);
   z-index: 999;
   top: 0;
@@ -123,4 +122,9 @@
   display: grid;
   font-size: var(--xSmallFont);
   color: var(--darkGrey);
+}
+
+.details-grid span {
+  width: 192px;
+  word-wrap: break-word;
 }
