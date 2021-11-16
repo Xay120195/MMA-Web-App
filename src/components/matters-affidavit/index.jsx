@@ -5,9 +5,9 @@ import { HiOutlinePlusCircle } from "react-icons/hi";
 import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_affidavit, statements } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
-import CreateRFIModal from "./create-RFI-modal";
-import UploadLinkModal from "./upload-linktochronology-modal"
-import SelectLinkModal from "./linktochronology-list-modal"
+import CreateRFIModal from "../matters-rfi/create-RFI-modal"; // shared functions/modal from matters-rfi
+import UploadLinkModal from "../matters-rfi/upload-linktochronology-modal" // shared functions/modal from matters-rfi
+import SelectLinkModal from "../matters-rfi/linktochronology-list-modal" // shared functions/modal from matters-rfi
 import ToastNotification from "../toast-notification";
 
 export default function MattersAffidavit() {
