@@ -147,12 +147,12 @@ export default function MattersRFI() {
                               </button>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
-                            <Link to={`${AppRoutes.MATTERSRFI}/${st.id}`}>
+                            
                               <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                                 onClick={() => setshowCreateRFIModal(true)}>
                                 CREATE
                               </button>
-                            </Link>
+                            
                           </td>
                         </tr>
                       ))
