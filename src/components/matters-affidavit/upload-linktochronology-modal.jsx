@@ -2,25 +2,19 @@ import React, { useState } from "react";
 import { GrClose } from "react-icons/gr";
 import { RiFileInfoLine } from "react-icons/ri";
 
-export default function CreateRFIModal(props) {
-  const [RFIname, setRFIname] = useState();
+export default function UploadLinkModal(props) {
+  
 
   const handleModalClose = () => {
     props.handleModalClose();
   };
 
   const handleSave = () => {
-    if (RFIname === undefined || RFIname === "") {
-      alert("RFI name is required.");
-      return false;
-    } else {
-      props.handleSave(RFIname);
-    }
+    
+      props.handleSave();
+    
   };
 
-  const handleRFINameChanged = (event) => {
-    setRFIname(event.target.value);
-  };
 
   return (
     <>
@@ -28,7 +22,7 @@ export default function CreateRFIModal(props) {
         <div className="relative w-full my-6 mx-auto max-w-3xl">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
             <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
-              <h3 className="text-3xl font-semibold">Create RFI</h3>
+              <h3 className="text-3xl font-semibold">Upload link to Chronology</h3>
               <button
                 className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
                 onClick={handleModalClose}
@@ -37,18 +31,12 @@ export default function CreateRFIModal(props) {
               </button>
             </div>
             <div className="relative p-6 flex-auto">
-              <p className="font-semi-bold text-sm">RFI Name *</p>
-              <div className="relative my-2">
-                <div className="absolute pin-r pin-t mt-4 mr-5 ml-2 text-purple-lighter">
-                  <RiFileInfoLine />
-                </div>
-                <input
-                  type="text"
-                  className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
-                  placeholder="RFI Name"
-                  onChange={handleRFINameChanged}
-                />
-              </div>
+              
+              {/**
+               * DROP FILES HERE
+              */}
+
+
             </div>
             <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
               <button
@@ -63,7 +51,7 @@ export default function CreateRFIModal(props) {
                 type="button"
                 onClick={() => handleSave()}
               >
-                Create
+                Upload
               </button>
             </div>
           </div>

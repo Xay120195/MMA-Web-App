@@ -6,6 +6,7 @@ import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_affidavit, statements } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "./create-RFI-modal";
+import UploadLinkModal from "./upload-linktochronology-modal"
 import ToastNotification from "../toast-notification";
 
 export default function MattersAffidavit() {
@@ -18,8 +19,12 @@ export default function MattersAffidavit() {
     "Link to RFI"
   ];
   const modalRFIAlertMsg = "RFI Name successfully created.";
+  const modalUploadLinkAlertMsg = "Link to chronology successfully uploaded.";
 
   const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
+  const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
+  const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
+
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
@@ -43,8 +48,19 @@ export default function MattersAffidavit() {
     }, 3000);
   };
 
+  const handleUploadLink = () => {
+    setalertMessage(modalUploadLinkAlertMsg);
+    handleModalClose(false);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
   const handleModalClose = () => {
     setshowCreateRFIModal(false);
+    setshowUploadLinkModal(false);
+    setshowSelectLinkModal(false);
   };
 
   return (
@@ -132,10 +148,16 @@ export default function MattersAffidavit() {
                       <p>{st.comments}</p>
                     </td>
                     <td className="px-6 py-4 w-4 align-top place-items-center text-center">
-                      <button className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                      <button 
+                        className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                        onClick={() => setshowUploadLinkModal(true)}
+                      >
                         UPLOAD
                       </button>
-                      <button className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
+                      <button 
+                        className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+                        onClick={() => setshowSelectLinkModal(true)}
+                      >
                         SELECT
                       </button>
                     </td>
@@ -161,6 +183,10 @@ export default function MattersAffidavit() {
           handleModalClose={handleModalClose}
         />
       )}
+
+      { showUploadLinkModal && <UploadLinkModal 
+        handleSave={handleUploadLink} 
+        handleModalClose={handleModalClose} /> }
 
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
