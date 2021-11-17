@@ -1,19 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from 'react-router-dom';
-import PropTypes from "prop-types";
 import BlankState from "../blank-state";
 import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter} from 'react-icons/hi';
+import { BsFillInfoCircleFill } from "react-icons/bs";
 import {MdArrowForwardIos} from 'react-icons/md'
 import { matter, witness_affidavits } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
 
-export default function MattersOverview({ color }) {
+export default function MattersOverview() {
 
   const tableHeaders = ["No.", "Witness Name", "RFIs", "Comments", "Affidavits"];
 
+  const [checkAllState, setcheckAllState] = useState(false);
   const handleBlankStateClick = () => {
     console.log('Blank State Button was clicked!');
   }
+
+  const handleCheckAllChange = (ischecked) => {
+    setcheckAllState(!checkAllState);
+
+    if (ischecked) {
+      setCheckedState(new Array(witness_affidavits.length).fill(true));
+      settotalChecked(witness_affidavits.length);
+    } else {
+      setCheckedState(new Array(witness_affidavits.length).fill(false));
+      settotalChecked(0);
+    }
+  };
+
+  const [checkedState, setCheckedState] = useState(
+    new Array(witness_affidavits.length).fill(false)
+  );
+
+  const [totalChecked, settotalChecked] = useState(0);
+
+  const handleCheckboxChange = (position) => {
+    const updatedCheckedState = checkedState.map((item, index) =>
+      index === position ? !item : item
+    );
+
+    setCheckedState(updatedCheckedState);
+
+    let tc = updatedCheckedState.filter((v) => v === true).length;
+    settotalChecked(tc);
+
+    if (tc !== witness_affidavits.length) {
+      if (checkAllState) {
+        setcheckAllState(false);
+      }
+    } else {
+      if (!checkAllState) {
+        setcheckAllState(true);
+      }
+    }
+  };
     return (
       <>
       
@@ -21,7 +61,7 @@ export default function MattersOverview({ color }) {
         <BlankState title={'affidavits'} txtLink={'add row'} handleClick={handleBlankStateClick} />
       ) : (
         
-        <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " + (color === "light" ? "bg-white" : "bg-lightBlue-900 text-white") }>
+        <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white" }>
 
           <div className="relative w-full max-w-full flex-grow flex-1">
             <div className={"grid grid-cols-2"}>
@@ -48,6 +88,14 @@ export default function MattersOverview({ color }) {
 
             <div className="mt-7">
                   <div>
+                    <input
+                      type="checkbox"
+                      name="check_all"
+                      id="check_all"
+                      className="cursor-pointer mr-2"
+                      checked={checkAllState}
+                      onChange={(e) => handleCheckAllChange(e.target.checked)}
+                    />
                     <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                     Add Row &nbsp;<HiOutlinePlusCircle/>
                     </button>
@@ -62,7 +110,23 @@ export default function MattersOverview({ color }) {
             
           </div>
 
-
+          {totalChecked > 0 && (
+            <div
+              className="bg-blue-50 border-blue-200 rounded-b text-blue-500 px-4 py-3 shadow-md mt-4"
+              role="alert"
+            >
+              <div className="flex">
+                <div className="py-1">
+                  <BsFillInfoCircleFill className="fill-current h-4 w-4 text-blue-500 mr-3" />
+                </div>
+                <div>
+                  <p className="font-light text-sm">
+                    <span className="font-bold">{totalChecked}</span> {totalChecked > 1 ? 'items' : 'item'} selected.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
@@ -79,16 +143,24 @@ export default function MattersOverview({ color }) {
                       witness_affidavits.map((wa, index)=> (
                         <tr key={index} index={index}>
                           <td className="px-6 py-4 whitespace-nowrap w-4 text-center">
-                            <p>{wa.id}</p>
+                          <input
+                            type="checkbox"
+                            name={`${wa.id}_${index}`}
+                            id={`${wa.id}_${index}`}
+                            className="cursor-pointer"
+                            checked={checkedState[index]}
+                            onChange={() => handleCheckboxChange(index)}
+                          />{" "}
+                      <span className="text-sm">{wa.id}</span>
                           </td>
                           <td className="px-6 py-4 w-10 align-top place-items-center">
-                            <p>{wa.name}</p>
+                            <p className="text-sm">{wa.name}</p>
                           </td>
                           <td className="px-6 py-4 w-10 align-top place-items-center">
-                            <p>{wa.rfi.name}</p>
+                            <p className="text-sm">{wa.rfi.name}</p>
                           </td>
                           <td className="px-6 py-4 w-1/2 align-top place-items-center">
-                            <p>{wa.comments}</p>
+                            <p className="text-sm">{wa.comments}</p>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
                             <Link to={`${AppRoutes.MATTERSAFFIDAVIT}/${wa.id}`}>
@@ -108,10 +180,4 @@ export default function MattersOverview({ color }) {
     );
   }
   
-  MattersOverview.defaultProps = {
-    color: "light",
-  };
   
-  MattersOverview.propTypes = {
-    color: PropTypes.oneOf(["light", "dark"]),
-  };

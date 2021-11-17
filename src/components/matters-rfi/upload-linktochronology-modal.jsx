@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { GrClose } from "react-icons/gr";
-import { RiFileInfoLine } from "react-icons/ri";
 
 export default function UploadLinkModal(props) {
   

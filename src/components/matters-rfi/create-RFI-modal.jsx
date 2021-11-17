@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { GrClose } from "react-icons/gr";
 import { RiFileInfoLine } from "react-icons/ri";
 import { useForm } from "react-hook-form";

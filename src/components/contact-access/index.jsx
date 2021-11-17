@@ -1,13 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import ToastNotification from "../toast-notification";
-
 import '../../assets/styles/ContactAccess.css'
 import { pages, features } from './data-source'
 import { Info } from './info'
 import {Switch} from './switch'
 import {PageList} from './page-list'
-import { useEffect, useState } from 'react';
-
 
 const tableHeaders = ["Owner", "Legal Admin", "Barrister", "Expert", "Client"];
 

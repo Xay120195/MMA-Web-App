@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { GrClose } from "react-icons/gr";
-import { RiFileInfoLine } from "react-icons/ri";
 import LinkToChronology from "../link-to-chronology"
 export default function SelectLinkModal(props) {
   const handleModalClose = () => {
