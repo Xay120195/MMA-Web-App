@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { GrClose } from "react-icons/gr";
 import { RiFileInfoLine } from "react-icons/ri";
-
+import LinkToChronology from "../link-to-chronology"
 export default function SelectLinkModal(props) {
   const handleModalClose = () => {
     props.handleModalClose();
@@ -14,7 +14,7 @@ export default function SelectLinkModal(props) {
   return (
     <>
       <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-        <div className="relative w-full my-6 mx-auto max-w-3xl">
+        <div className="relative w-full my-6 mx-auto max-w-7xl">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
             <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
               <h3 className="text-3xl font-semibold">
@@ -28,9 +28,7 @@ export default function SelectLinkModal(props) {
               </button>
             </div>
             <div className="relative p-6 flex-auto">
-              {/**
-               * DROP FILES HERE
-               */}
+              <LinkToChronology />
             </div>
             <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
               <button
