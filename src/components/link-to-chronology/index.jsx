@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
+import { BsFillInfoCircleFill } from 'react-icons/bs';
 import { chronology } from "./data-source";
 
 export default function LinkToChronology() {
@@ -12,11 +13,39 @@ export default function LinkToChronology() {
         "Category",
       ];
       
-      const handleCheckboxChange = (event) => {
-        console.log(event);
+      const [checkedState, setCheckedState] = useState(
+        new Array(chronology.length).fill(false)
+      );
+
+      const [totalChecked, settotalChecked] = useState(0);
+
+      const handleCheckboxChange = (position) => {
+        const updatedCheckedState = checkedState.map((item, index) =>
+            index === position ? !item : item
+        );
+
+        setCheckedState(updatedCheckedState);
+        settotalChecked(updatedCheckedState.filter((v) => v === true).length);
+        
       };
 
+      
+
   return (
+
+    <>
+    {totalChecked > 0 &&
+    <div className="bg-blue-50 border-blue-200 rounded-b text-blue-500 px-4 py-3 shadow-md mb-4" role="alert">
+          <div className="flex">
+            <div className="py-1">
+              <BsFillInfoCircleFill className="fill-current h-4 w-4 text-blue-500 mr-3" />
+            </div>
+            <div>
+              <p className="font-light text-sm"><span className="font-bold">{totalChecked}</span> link to chronology is selected.</p>
+            </div>
+          </div>
+        </div>
+}
     <div className="shadow overflow-auto border-b border-gray-200 sm:rounded-lg">
       <table className="min-w-full divide-y divide-gray-200 border-separate">
         <thead>
@@ -41,7 +70,8 @@ export default function LinkToChronology() {
                   name={`${link.id}_${index}`}
                   id={`${link.id}_${index}`}
                   className="cursor-pointer"
-                  onChange={handleCheckboxChange.bind(this)}
+                  checked={checkedState[index]}
+                  onChange={() => handleCheckboxChange(index)}
                 />{" "}
                 <span className="text-sm">{link.item}</span>
               </td>
@@ -79,5 +109,7 @@ export default function LinkToChronology() {
         </tbody>
       </table>
     </div>
+    </>
+
   );
 }
