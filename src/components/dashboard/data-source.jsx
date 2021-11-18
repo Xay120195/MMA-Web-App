@@ -2,8 +2,10 @@ export const matters = [{
     id: 6956,
     name: 'Matter 1',
     matter_number: '{M1-6956/155}',
-    client_id: 155,
-    client_name: 'Client Name 1',
+    client:{
+        id: 155,
+        name: 'Client Name 1'
+    },
     substantially_responsible: {
         id: 2,
         name: 'Adrian Silva',
@@ -14,8 +16,10 @@ export const matters = [{
     id: 8956,
     name: 'Test Matter',
     matter_number: '{TM-8956/210}',
-    client_id: 210,
-    client_name: 'Client Name 210',
+    client: {
+        id:210,
+        name: 'Client Name 210'
+    },
     substantially_responsible: {
         id: 2,
         name: 'Adrian Silva',
@@ -26,12 +30,27 @@ export const matters = [{
     id: 1816,
     name: 'Zeng 5626',
     matter_number: '{Z6-1816/210}',
-    client_id: 210,
-    client_name: 'Zeng Zac Homes',
+    client:{
+        id: 121,
+        name: 'Zeng Zac Homes'
+    },
     substantially_responsible: {
         id: 2,
         name: 'Adrian Silva',
         email: 'adrian.silva@lophils.com',
         profile_picture: 'https://as1.ftcdn.net/v2/jpg/00/53/01/86/1000_F_53018616_nxpsx4iXIGTMMkfCuusbrd0jIqupmhcP.jpg?auto=compress&cs=tinysrgb&h=650&w=940'
     }
+}];
+
+export const clients = [{
+    id: 121,
+    name: 'Zeng Zac Homes'
+},{
+    id: 155,
+    name: 'Client Name 1'
+},{
+    id: 210,
+    name: 'Client Name 210'
 }]
+
+export const client = [];
