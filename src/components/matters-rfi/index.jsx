@@ -10,6 +10,7 @@ import CreateRFIModal from "./create-RFI-modal";
 import UploadLinkModal from "./upload-linktochronology-modal"
 import SelectLinkModal from "./linktochronology-list-modal"
 import ToastNotification from "../toast-notification";
+import ContentEditable from 'react-contenteditable'; 
 
 export default function MattersRFI() {
   let history = useHistory();
@@ -107,6 +108,12 @@ export default function MattersRFI() {
         setcheckAllState(true);
       }
     }
+  };
+
+  const text = useState('');
+  const handleOnChangeTD = evt => {
+      text.current = evt.target.value;
+      console.log(text.current);
   };
 
   return (
@@ -217,10 +224,20 @@ export default function MattersRFI() {
                       <span className="text-sm">{st.id}</span>
                     </td>
                     <td className="px-6 py-4 w-1/3 align-top place-items-center">
-                      <p className="text-sm">{st.statement}</p>
+                      <ContentEditable
+                        html={st.statement}
+                        data-column="statement"
+                        className="content-editable text-sm p-2"
+                        onChange={handleOnChangeTD} 
+                      />
                     </td>
                     <td className="px-6 py-4 w-1/3 align-top place-items-center">
-                      <p className="text-sm">{st.comments}</p>
+                      <ContentEditable
+                        html={st.comments}
+                        data-column="comments"
+                        className="content-editable text-sm p-2"
+                        onChange={handleOnChangeTD} 
+                      />
                     </td>
                     <td className="px-6 py-4 w-4 align-top place-items-center text-center">
                       <button

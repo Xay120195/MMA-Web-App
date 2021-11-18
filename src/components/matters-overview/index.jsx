@@ -6,6 +6,7 @@ import { BsFillInfoCircleFill } from "react-icons/bs";
 import {MdArrowForwardIos} from 'react-icons/md'
 import { matter, witness_affidavits } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
+import ContentEditable from 'react-contenteditable'; 
 
 export default function MattersOverview() {
 
@@ -54,6 +55,13 @@ export default function MattersOverview() {
       }
     }
   };
+
+  const text = useState('');
+  const handleOnChangeTD = evt => {
+      text.current = evt.target.value;
+      console.log(text.current);
+  };
+
     return (
       <>
       
@@ -154,13 +162,28 @@ export default function MattersOverview() {
                       <span className="text-sm">{wa.id}</span>
                           </td>
                           <td className="px-6 py-4 w-10 align-top place-items-center">
-                            <p className="text-sm">{wa.name}</p>
+                              <ContentEditable
+                                html={wa.name}
+                                data-column="witnessname"
+                                className="content-editable text-sm p-2"
+                                onChange={handleOnChangeTD} 
+                              />
                           </td>
                           <td className="px-6 py-4 w-10 align-top place-items-center">
-                            <p className="text-sm">{wa.rfi.name}</p>
+                              <ContentEditable
+                                html={wa.rfi.name}
+                                data-column="rfiname"
+                                className="content-editable text-sm p-2"
+                                onChange={handleOnChangeTD} 
+                              />
                           </td>
                           <td className="px-6 py-4 w-1/2 align-top place-items-center">
-                            <p className="text-sm">{wa.comments}</p>
+                            <ContentEditable
+                                html={wa.comments}
+                                data-column="comments"
+                                className="content-editable text-sm p-2"
+                                onChange={handleOnChangeTD} 
+                              />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
                             <Link to={`${AppRoutes.MATTERSAFFIDAVIT}/${wa.id}`}>
