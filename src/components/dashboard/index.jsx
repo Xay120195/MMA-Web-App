@@ -6,6 +6,7 @@ import {Welcome} from './welcome'
 import {matters} from './data-source'
 import { MattersList } from './matters-list'
 import { Auth } from "aws-amplify";
+import '../../assets/styles/Dashboard.css';
 
 export default function Dashboard() {
     const [userInfo, setuserInfo] = useState(null);
@@ -26,7 +27,7 @@ export default function Dashboard() {
     return userInfo ? (
       <>
 
-        <div className="p-5 font-sans">
+        <div className="p-5 font-sans main-content-div">
             <div className="relative bg-gray-100 px-12 py-8 sm:px-12 sm:py-8 rounded-sm overflow-hidden mb-8">
 
                 <div className="grid grid-cols-4 gap-4">
