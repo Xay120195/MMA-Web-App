@@ -3,16 +3,18 @@ import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";
 import imgDocs from "../../assets/images/docs.svg";
 import { Welcome } from "./welcome";
-import { matters, client, clients } from "./data-source";
+import { matters, clients } from "./data-source";
 import { MattersList } from "./matters-list";
 import { Auth } from "aws-amplify";
 import Select from "react-select";
+import { useForm } from "react-hook-form";
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
   const [matterList, setmatterList] = useState(matters);
+  const { register, formState: { errors }, handleSubmit } = useForm();
 
   const clientNameOptions = clients
     .map(({ id, name }) => ({
@@ -48,7 +50,7 @@ export default function Dashboard() {
     );
   };
 
-  const handleNewMatter = (newValue) => {
+  const handleClientChanged = (newValue) => {
     console.group("Value Changed");
     console.log(newValue);
     console.groupEnd();
@@ -57,6 +59,10 @@ export default function Dashboard() {
   const handleSearchMatterChange = (e) => {
     console.log(e.target.value);
     setsearchMatter(e.target.value);
+  };
+
+  const handleNewMatter = (data) => {
+    console.log(data);
   };
 
   return userInfo ? (
@@ -70,6 +76,7 @@ export default function Dashboard() {
                 To start adding, type in the name and click the add button
                 below.
               </p>
+              <form onSubmit={handleSubmit(handleNewMatter)}>
               <div className="grid grid-flow-col grid-cols-3">
                 <div className="pr-2">
                   <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
@@ -80,7 +87,9 @@ export default function Dashboard() {
                       type="text"
                       placeholder="Matter"
                       className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+                      {...register("matterName", { required: true })}
                     />
+                    {errors.matterName?.type === 'required' && <small className="text-red-400">Matter is required</small>}
                   </div>
                 </div>
                 <div className="pr-2">
@@ -90,21 +99,24 @@ export default function Dashboard() {
                       options={clientNameOptions}
                       isClearable
                       isSearchable
-                      onChange={handleNewMatter}
+                      onChange={handleClientChanged}
                       placeholder="Client"
                       className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                     />
+                    {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
                   </div>
                 </div>
                 <div className="pr-2">
                   <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                    <button className="bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center">
+                    <button type="submit" className="bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center">
                       +
                     </button>
                   </div>
                 </div>
               </div>
+              </form>
             </div>
+            
             <div className="w-3/5 place-self-end">
               <img src={imgDocs} alt="rightside-illustration" />
             </div>
@@ -122,6 +134,7 @@ export default function Dashboard() {
               onChange={handleSearchMatterChange}
               className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
             />
+            
           </div>
           <div className="mb-3 py-5 w-1/6 text-right">
             {mattersView === "grid" ? (
