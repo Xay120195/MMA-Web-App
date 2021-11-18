@@ -8,6 +8,7 @@ import { MattersList } from "./matters-list";
 import { Auth } from "aws-amplify";
 import Select from "react-select";
 import { useForm } from "react-hook-form";
+import '../../assets/styles/Dashboard.css';
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
