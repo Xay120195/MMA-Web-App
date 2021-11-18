@@ -8,7 +8,6 @@ import { MattersList } from "./matters-list";
 import { Auth } from "aws-amplify";
 import Select from "react-select";
 import { useForm } from "react-hook-form";
-import '../../assets/styles/Dashboard.css';
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
@@ -103,9 +102,13 @@ export default function Dashboard() {
     console.log(matterList);
   };
 
+  const contentDiv = {
+    margin: "0 0 0 65px"
+  };
+
   return userInfo ? (
     <>
-      <div className="p-5 font-sans">
+      <div className="p-5 font-sans" style={contentDiv}>
         <div className="relative bg-gray-100 px-12 py-8 sm:px-12 sm:py-8 rounded-sm mb-8">
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">

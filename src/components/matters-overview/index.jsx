@@ -75,6 +75,10 @@ export default function MattersOverview() {
       }, 3000);
   };
 
+  const contentDiv = {
+    margin: "0 0 0 65px"
+  };
+
     return (
       <>
       
@@ -82,7 +86,7 @@ export default function MattersOverview() {
         <BlankState title={'affidavits'} txtLink={'add row'} handleClick={handleBlankStateClick} />
       ) : (
         
-        <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white" }>
+        <div className={"p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white" } style={contentDiv}>
 
           <div className="relative w-full max-w-full flex-grow flex-1">
             <div className={"grid grid-cols-2"}>
