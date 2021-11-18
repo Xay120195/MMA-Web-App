@@ -23,6 +23,7 @@ export default function MattersRFI() {
   ];
   const modalRFIAlertMsg = "RFI Name successfully created.";
   const modalUploadLinkAlertMsg = "Link to chronology successfully uploaded.";
+  const saveAlertTDChanges = "Successfully updated!";
 
   const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
@@ -110,10 +111,14 @@ export default function MattersRFI() {
     }
   };
 
-  const text = useState('');
-  const handleOnChangeTD = evt => {
-      text.current = evt.target.value;
-      console.log(text.current);
+  const HandleChangeToTD = evt => {
+      console.log(evt.target.innerHTML);
+
+      setalertMessage(saveAlertTDChanges);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
   };
 
   return (
@@ -228,7 +233,7 @@ export default function MattersRFI() {
                         html={st.statement}
                         data-column="statement"
                         className="content-editable text-sm p-2"
-                        onChange={handleOnChangeTD} 
+                        onBlur={HandleChangeToTD} 
                       />
                     </td>
                     <td className="px-6 py-4 w-1/3 align-top place-items-center">
@@ -236,7 +241,7 @@ export default function MattersRFI() {
                         html={st.comments}
                         data-column="comments"
                         className="content-editable text-sm p-2"
-                        onChange={handleOnChangeTD} 
+                        onBlur={HandleChangeToTD} 
                       />
                     </td>
                     <td className="px-6 py-4 w-4 align-top place-items-center text-center">

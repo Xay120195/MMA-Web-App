@@ -6,11 +6,20 @@ import { BsFillInfoCircleFill } from "react-icons/bs";
 import {MdArrowForwardIos} from 'react-icons/md'
 import { matter, witness_affidavits } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
+import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
 
 export default function MattersOverview() {
 
   const tableHeaders = ["No.", "Witness Name", "RFIs", "Comments", "Affidavits"];
+  const saveAlertTDChanges = "Successfully updated!";
+
+  const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
+
+  const hideToast = () => {
+    setShowToast(false);
+  };
 
   const [checkAllState, setcheckAllState] = useState(false);
   const handleBlankStateClick = () => {
@@ -56,10 +65,14 @@ export default function MattersOverview() {
     }
   };
 
-  const text = useState('');
-  const handleOnChangeTD = evt => {
-      text.current = evt.target.value;
-      console.log(text.current);
+  const HandleChangeToTD = evt => {
+      console.log(evt.target.innerHTML);
+
+      setalertMessage(saveAlertTDChanges);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
   };
 
     return (
@@ -166,7 +179,7 @@ export default function MattersOverview() {
                                 html={wa.name}
                                 data-column="witnessname"
                                 className="content-editable text-sm p-2"
-                                onChange={handleOnChangeTD} 
+                                onBlur={HandleChangeToTD} 
                               />
                           </td>
                           <td className="px-6 py-4 w-10 align-top place-items-center">
@@ -174,7 +187,7 @@ export default function MattersOverview() {
                                 html={wa.rfi.name}
                                 data-column="rfiname"
                                 className="content-editable text-sm p-2"
-                                onChange={handleOnChangeTD} 
+                                onBlur={HandleChangeToTD} 
                               />
                           </td>
                           <td className="px-6 py-4 w-1/2 align-top place-items-center">
@@ -182,7 +195,7 @@ export default function MattersOverview() {
                                 html={wa.comments}
                                 data-column="comments"
                                 className="content-editable text-sm p-2"
-                                onChange={handleOnChangeTD} 
+                                onBlur={HandleChangeToTD} 
                               />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
@@ -199,7 +212,12 @@ export default function MattersOverview() {
 
         </div>
       )}
+
+      {showToast && (
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
       </>
+      
     );
   }
   
