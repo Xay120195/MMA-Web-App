@@ -14,7 +14,13 @@ export default function Dashboard() {
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
   const [matterList, setmatterList] = useState(matters);
-  const { register, formState: { errors }, handleSubmit } = useForm();
+  const [clientName, setclientName] = useState([]);
+
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
 
   const clientNameOptions = clients
     .map(({ id, name }) => ({
@@ -54,6 +60,8 @@ export default function Dashboard() {
     console.group("Value Changed");
     console.log(newValue);
     console.groupEnd();
+
+    setclientName(newValue);
   };
 
   const handleSearchMatterChange = (e) => {
@@ -62,7 +70,36 @@ export default function Dashboard() {
   };
 
   const handleNewMatter = (data) => {
+    let client_name = clientName.label,
+      client_id = clientName.value,
+      matter_name = data.matterName,
+      matter_id = Math.floor(Math.random() * 1000),
+      matter_number = `${matter_name.charAt(0)}-${matter_id}/${client_id}`;
+
     console.log(data);
+    console.log(clientName.value);
+
+    setmatterList((previousState) => [
+      {
+        id: 198,
+        name: matter_name,
+        matter_number: matter_number,
+        client: {
+          id: client_id,
+          name: client_name,
+        },
+        substantially_responsible: {
+          id: 2,
+          name: "Adrian Silva",
+          email: "adrian.silva@lophils.com",
+          profile_picture:
+            "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
+        },
+      },
+      ...previousState,
+    ]);
+
+    console.log(matterList);
   };
 
   return userInfo ? (
@@ -73,50 +110,56 @@ export default function Dashboard() {
             <div className="col-span-3">
               <Welcome user={userInfo} matters={matters} />
               <p className="text-gray-400 text-sm">
-                To start adding, type in the name and click the add button
-                below.
+                To start adding, type in the name and click the add button below.
               </p>
               <form onSubmit={handleSubmit(handleNewMatter)}>
-              <div className="grid grid-flow-col grid-cols-3">
-                <div className="pr-2">
-                  <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                    <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
-                      <IoIcons.IoIosFolder />
-                    </span>
-                    <input
-                      type="text"
-                      placeholder="Matter"
-                      className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-                      {...register("matterName", { required: true })}
-                    />
-                    {errors.matterName?.type === 'required' && <small className="text-red-400">Matter is required</small>}
+                <div className="grid grid-flow-col grid-cols-3">
+                  <div className="pr-2">
+                    <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                      <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
+                        <IoIcons.IoIosFolder />
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Matter"
+                        className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+                        {...register("matterName", { required: true })}
+                      />
+                      {errors.matterName?.type === "required" && (
+                        <small className="text-red-400">
+                          Matter is required
+                        </small>
+                      )}
+                    </div>
+                  </div>
+                  <div className="pr-2">
+                    <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                      {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
+                      <Select
+                        options={clientNameOptions}
+                        isClearable
+                        isSearchable
+                        onChange={handleClientChanged}
+                        placeholder="Client"
+                        className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                      />
+                      {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
+                    </div>
+                  </div>
+                  <div className="pr-2">
+                    <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                      <button
+                        type="submit"
+                        className="bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="pr-2">
-                  <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                    {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
-                    <Select
-                      options={clientNameOptions}
-                      isClearable
-                      isSearchable
-                      onChange={handleClientChanged}
-                      placeholder="Client"
-                      className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                    />
-                    {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
-                  </div>
-                </div>
-                <div className="pr-2">
-                  <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                    <button type="submit" className="bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center">
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
               </form>
             </div>
-            
+
             <div className="w-3/5 place-self-end">
               <img src={imgDocs} alt="rightside-illustration" />
             </div>
@@ -134,7 +177,6 @@ export default function Dashboard() {
               onChange={handleSearchMatterChange}
               className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
             />
-            
           </div>
           <div className="mb-3 py-5 w-1/6 text-right">
             {mattersView === "grid" ? (
@@ -177,12 +219,6 @@ export default function Dashboard() {
             ))
           )}
         </div>
-
-        {/* <div className="grid grid-flow-row auto-rows-max">
-                { matters.map((matter, index) => 
-                    <MattersList key={index} index={index} matter={matter} view={'list'} />
-                )}
-            </div> */}
       </div>
     </>
   ) : (
