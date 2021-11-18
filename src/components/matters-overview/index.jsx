@@ -6,10 +6,20 @@ import { BsFillInfoCircleFill } from "react-icons/bs";
 import {MdArrowForwardIos} from 'react-icons/md'
 import { matter, witness_affidavits } from './data-source'
 import { AppRoutes } from "../../constants/AppRoutes";
+import ToastNotification from "../toast-notification";
+import ContentEditable from 'react-contenteditable'; 
 
 export default function MattersOverview() {
 
   const tableHeaders = ["No.", "Witness Name", "RFIs", "Comments", "Affidavits"];
+  const saveAlertTDChanges = "Successfully updated!";
+
+  const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
+
+  const hideToast = () => {
+    setShowToast(false);
+  };
 
   const [checkAllState, setcheckAllState] = useState(false);
   const handleBlankStateClick = () => {
@@ -54,6 +64,17 @@ export default function MattersOverview() {
       }
     }
   };
+
+  const HandleChangeToTD = evt => {
+      console.log(evt.target.innerHTML);
+
+      setalertMessage(saveAlertTDChanges);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+  };
+
     return (
       <>
       
@@ -154,13 +175,28 @@ export default function MattersOverview() {
                       <span className="text-sm">{wa.id}</span>
                           </td>
                           <td className="px-6 py-4 w-10 align-top place-items-center">
-                            <p className="text-sm">{wa.name}</p>
+                              <ContentEditable
+                                html={wa.name}
+                                data-column="witnessname"
+                                className="content-editable text-sm p-2"
+                                onBlur={HandleChangeToTD} 
+                              />
                           </td>
                           <td className="px-6 py-4 w-10 align-top place-items-center">
-                            <p className="text-sm">{wa.rfi.name}</p>
+                              <ContentEditable
+                                html={wa.rfi.name}
+                                data-column="rfiname"
+                                className="content-editable text-sm p-2"
+                                onBlur={HandleChangeToTD} 
+                              />
                           </td>
                           <td className="px-6 py-4 w-1/2 align-top place-items-center">
-                            <p className="text-sm">{wa.comments}</p>
+                            <ContentEditable
+                                html={wa.comments}
+                                data-column="comments"
+                                className="content-editable text-sm p-2"
+                                onBlur={HandleChangeToTD} 
+                              />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
                             <Link to={`${AppRoutes.MATTERSAFFIDAVIT}/${wa.id}`}>
@@ -176,7 +212,12 @@ export default function MattersOverview() {
 
         </div>
       )}
+
+      {showToast && (
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
       </>
+      
     );
   }
   

@@ -10,6 +10,7 @@ import CreateRFIModal from "./create-RFI-modal";
 import UploadLinkModal from "./upload-linktochronology-modal"
 import SelectLinkModal from "./linktochronology-list-modal"
 import ToastNotification from "../toast-notification";
+import ContentEditable from 'react-contenteditable'; 
 
 export default function MattersRFI() {
   let history = useHistory();
@@ -22,6 +23,7 @@ export default function MattersRFI() {
   ];
   const modalRFIAlertMsg = "RFI Name successfully created.";
   const modalUploadLinkAlertMsg = "Link to chronology successfully uploaded.";
+  const saveAlertTDChanges = "Successfully updated!";
 
   const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
@@ -107,6 +109,16 @@ export default function MattersRFI() {
         setcheckAllState(true);
       }
     }
+  };
+
+  const HandleChangeToTD = evt => {
+      console.log(evt.target.innerHTML);
+
+      setalertMessage(saveAlertTDChanges);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
   };
 
   return (
@@ -217,10 +229,20 @@ export default function MattersRFI() {
                       <span className="text-sm">{st.id}</span>
                     </td>
                     <td className="px-6 py-4 w-1/3 align-top place-items-center">
-                      <p className="text-sm">{st.statement}</p>
+                      <ContentEditable
+                        html={st.statement}
+                        data-column="statement"
+                        className="content-editable text-sm p-2"
+                        onBlur={HandleChangeToTD} 
+                      />
                     </td>
                     <td className="px-6 py-4 w-1/3 align-top place-items-center">
-                      <p className="text-sm">{st.comments}</p>
+                      <ContentEditable
+                        html={st.comments}
+                        data-column="comments"
+                        className="content-editable text-sm p-2"
+                        onBlur={HandleChangeToTD} 
+                      />
                     </td>
                     <td className="px-6 py-4 w-4 align-top place-items-center text-center">
                       <button
