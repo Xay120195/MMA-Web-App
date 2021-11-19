@@ -1,24 +1,13 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom';
 import { AppRoutes } from "../../constants/AppRoutes";
-import DeleteMatterModal from "./delete-matters-modal";
 
-export function MattersList({matter, view}) {
-    const modalDeleteAlertMsg = "Successfully deleted!";
-    const [showDeleteModal, setshowDeleteModal] = useState(false);
 
-    const handleModalClose = () => {
-        setshowDeleteModal(false);
-    };
-
-    const handleDeleteModal = () => {
-        //setalertMessage(modalDeleteAlertMsg);
-        handleModalClose();
-        //setShowToast(true);
-        setTimeout(() => {
-            //setShowToast(false);
-        }, 3000);
-    };
+export function MattersList({matter, view, onShowDeleteModal}) {
+    
+    const setshowDeleteModal = (value)=> {
+        onShowDeleteModal(value);    
+    }
 
     return (
         <>
@@ -64,10 +53,7 @@ export function MattersList({matter, view}) {
             
         )}
 
-        { showDeleteModal && <DeleteMatterModal 
-            handleSave={handleDeleteModal} 
-            handleModalClose={handleModalClose} /> 
-        }
+        
         </>
     )
 }

@@ -8,6 +8,7 @@ import { MattersList } from "./matters-list";
 import { Auth } from "aws-amplify";
 import Select from "react-select";
 import { useForm } from "react-hook-form";
+import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
 import '../../assets/styles/Dashboard.css';
 
@@ -23,10 +24,7 @@ export default function Dashboard() {
     formState: { errors },
     handleSubmit,
   } = useForm();
-
-  const [showToast, setShowToast] = useState(false);
-  const [alertMessage, setalertMessage] = useState();
-
+ 
   const clientNameOptions = clients
     .map(({ id, name }) => ({
       value: id,
@@ -107,13 +105,41 @@ export default function Dashboard() {
     console.log(matterList);
   };
 
+  const contentDiv = {
+    margin: "0 0 0 65px"
+  };
+
+
+  const modalDeleteAlertMsg = "Successfully deleted!";
+
+  const [showDeleteModal, setshowDeleteModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
+
+  const handleModalClose = () => {
+      setshowDeleteModal(false);
+  };
+
   const hideToast = () => {
     setShowToast(false);
   };
 
+  const handleShowDeleteModal = (value) => {
+    setshowDeleteModal(value)
+  }
+
+  const handleDeleteModal = () => {
+      setalertMessage(modalDeleteAlertMsg);
+      handleModalClose();
+      setShowToast(true);
+      setTimeout(() => {
+          setShowToast(false);
+      }, 3000);
+  };
+
   return userInfo ? (
     <>
-      <div className="p-5 font-sans">
+      <div className="p-5 font-sans" style={contentDiv}>
         <div className="relative bg-gray-100 px-12 py-8 sm:px-12 sm:py-8 rounded-sm mb-8">
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">
@@ -224,15 +250,21 @@ export default function Dashboard() {
                 index={index}
                 matter={matter}
                 view={mattersView}
+                onShowDeleteModal={handleShowDeleteModal} 
               />
             ))
           )}
+
+        { showDeleteModal && <DeleteMatterModal 
+            handleSave={handleDeleteModal} 
+            handleModalClose={handleModalClose} /> 
+        }
+
+      {showToast && (
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
         </div>
       </div>
-
-      {showToast && 
-        <ToastNotification title={alertMessage} hideToast={hideToast} />
-      }
     </>
   ) : (
     <p>Please wait ...</p>
