@@ -91,7 +91,7 @@ export default function Dashboard() {
     let client_name = clientName.label,
       client_id = clientName.value,
       matter_name = data.matterName,
-      matter_id = Math.floor(Math.random() * 1000),
+      matter_id = 123,
       matter_number = `${matter_name.charAt(0)}-${matter_id}/${client_id}`;
 
     console.log(data);
