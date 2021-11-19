@@ -8,6 +8,7 @@ import { MattersList } from "./matters-list";
 import { Auth } from "aws-amplify";
 import Select from "react-select";
 import { useForm } from "react-hook-form";
+import ToastNotification from "../toast-notification";
 import '../../assets/styles/Dashboard.css';
 
 export default function Dashboard() {
@@ -22,6 +23,9 @@ export default function Dashboard() {
     formState: { errors },
     handleSubmit,
   } = useForm();
+
+  const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
 
   const clientNameOptions = clients
     .map(({ id, name }) => ({
@@ -101,6 +105,10 @@ export default function Dashboard() {
     ]);
 
     console.log(matterList);
+  };
+
+  const hideToast = () => {
+    setShowToast(false);
   };
 
   return userInfo ? (
@@ -221,6 +229,10 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {showToast && 
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      }
     </>
   ) : (
     <p>Please wait ...</p>

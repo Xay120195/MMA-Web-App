@@ -3,9 +3,8 @@ import { GrClose } from "react-icons/gr";
 
 export default function DeleteMatterModal(props) {
   
-
   const handleModalClose = () => {
-    props.handleModalClose();
+      props.handleModalClose();
   };
 
   const handleSave = () => {
