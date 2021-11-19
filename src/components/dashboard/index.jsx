@@ -10,7 +10,7 @@ import Select from "react-select";
 import { useForm } from "react-hook-form";
 import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
-import '../../assets/styles/Dashboard.css';
+import "../../assets/styles/Dashboard.css";
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
@@ -18,13 +18,20 @@ export default function Dashboard() {
   const [searchMatter, setsearchMatter] = useState();
   const [matterList, setmatterList] = useState(matters);
   const [clientName, setclientName] = useState([]);
+  const [matterName, setmatterName] = useState();
+  const modalDeleteAlertMsg = "Successfully deleted!";
+  const createMatterAlertMsg = "Matter successfully added!";
+
+  const [showDeleteModal, setshowDeleteModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
 
   const {
     register,
     formState: { errors },
-    handleSubmit,
+    handleSubmit
   } = useForm();
- 
+
   const clientNameOptions = clients
     .map(({ id, name }) => ({
       value: id,
@@ -60,11 +67,19 @@ export default function Dashboard() {
   };
 
   const handleClientChanged = (newValue) => {
-    console.group("Value Changed");
+    console.group("Client Changed");
     console.log(newValue);
     console.groupEnd();
 
     setclientName(newValue);
+  };
+
+  const handleMatterChanged = (newValue) => {
+    console.group("Matter Changed");
+    console.log(newValue);
+    console.groupEnd();
+
+    setmatterName(newValue);
   };
 
   const handleSearchMatterChange = (e) => {
@@ -103,21 +118,24 @@ export default function Dashboard() {
     ]);
 
     console.log(matterList);
+    setalertMessage(createMatterAlertMsg);
+    handleModalClose();
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      setclientName([]);
+      setmatterName('');
+    }, 3000);
   };
 
   const contentDiv = {
-    margin: "0 0 0 65px"
+    margin: "0 0 0 65px",
   };
 
-
-  const modalDeleteAlertMsg = "Successfully deleted!";
-
-  const [showDeleteModal, setshowDeleteModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [alertMessage, setalertMessage] = useState();
+  
 
   const handleModalClose = () => {
-      setshowDeleteModal(false);
+    setshowDeleteModal(false);
   };
 
   const hideToast = () => {
@@ -125,16 +143,16 @@ export default function Dashboard() {
   };
 
   const handleShowDeleteModal = (value) => {
-    setshowDeleteModal(value)
-  }
+    setshowDeleteModal(value);
+  };
 
   const handleDeleteModal = () => {
-      setalertMessage(modalDeleteAlertMsg);
-      handleModalClose();
-      setShowToast(true);
-      setTimeout(() => {
-          setShowToast(false);
-      }, 3000);
+    setalertMessage(modalDeleteAlertMsg);
+    handleModalClose();
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
   };
 
   return userInfo ? (
@@ -145,7 +163,8 @@ export default function Dashboard() {
             <div className="col-span-3">
               <Welcome user={userInfo} matters={matters} />
               <p className="text-gray-400 text-sm">
-                To start adding, type in the name and click the add button below.
+                To start adding, type in the name and click the add button
+                below.
               </p>
               <form onSubmit={handleSubmit(handleNewMatter)}>
                 <div className="grid grid-flow-col grid-cols-3">
@@ -157,6 +176,7 @@ export default function Dashboard() {
                       <input
                         type="text"
                         placeholder="Matter"
+                        onChange={handleMatterChanged}
                         className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
                         {...register("matterName", { required: true })}
                       />
@@ -250,19 +270,21 @@ export default function Dashboard() {
                 index={index}
                 matter={matter}
                 view={mattersView}
-                onShowDeleteModal={handleShowDeleteModal} 
+                onShowDeleteModal={handleShowDeleteModal}
               />
             ))
           )}
 
-        { showDeleteModal && <DeleteMatterModal 
-            handleSave={handleDeleteModal} 
-            handleModalClose={handleModalClose} /> 
-        }
+          {showDeleteModal && (
+            <DeleteMatterModal
+              handleSave={handleDeleteModal}
+              handleModalClose={handleModalClose}
+            />
+          )}
 
-      {showToast && (
-        <ToastNotification title={alertMessage} hideToast={hideToast} />
-      )}
+          {showToast && (
+            <ToastNotification title={alertMessage} hideToast={hideToast} />
+          )}
         </div>
       </div>
     </>
