@@ -8,6 +8,7 @@ import { MattersList } from "./matters-list";
 import { Auth } from "aws-amplify";
 import Select from "react-select";
 import { useForm } from "react-hook-form";
+import ToastNotification from "../toast-notification";
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
@@ -15,6 +16,9 @@ export default function Dashboard() {
   const [searchMatter, setsearchMatter] = useState();
   const [matterList, setmatterList] = useState(matters);
   const { register, formState: { errors }, handleSubmit } = useForm();
+
+  const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
 
   const clientNameOptions = clients
     .map(({ id, name }) => ({
@@ -63,6 +67,10 @@ export default function Dashboard() {
 
   const handleNewMatter = (data) => {
     console.log(data);
+  };
+
+  const hideToast = () => {
+    setShowToast(false);
   };
 
   return userInfo ? (
@@ -184,6 +192,10 @@ export default function Dashboard() {
                 )}
             </div> */}
       </div>
+
+      {showToast && 
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      }
     </>
   ) : (
     <p>Please wait ...</p>
