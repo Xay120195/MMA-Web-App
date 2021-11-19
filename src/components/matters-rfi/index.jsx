@@ -125,6 +125,10 @@ export default function MattersRFI() {
     margin: "0 0 0 65px"
   };
 
+  const mainGrid = {
+    display: "grid",
+    gridtemplatecolumn: "1fr auto"
+  };
 
   return (
     <>
@@ -137,11 +141,11 @@ export default function MattersRFI() {
       ) : (
         <div
           className={
-            "p-5 relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded bg-white"
+            "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
           } style={contentDiv}
         >
-          <div className="relative w-full max-w-full flex-grow flex-1">
-            <div className={"grid grid-cols-2"}>
+          <div className="relative flex-grow flex-1">
+            <div style={mainGrid}>
               <div>
                 <h1 className="text-3xl">
                   <span className="font-bold text-3xl">{matter_rfi.name}</span>{" "}
