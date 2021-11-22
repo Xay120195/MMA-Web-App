@@ -20,7 +20,8 @@ I18n.putVocabulariesForLanguage("en-AU", {
   [Translations.BACK_TO_SIGN_IN]: AuthLabels.BACK_TO_SIGN_IN,
   [Translations.SIGN_IN_ACTION]: AuthLabels.SIGN_IN_ACTION,
   [Translations.SIGN_IN_TEXT]: AuthLabels.SIGN_IN_TEXT,
-  [Translations.SIGN_UP_SUBMIT_BUTTON_TEXT]: AuthLabels.SIGN_UP_SUBMIT_BUTTON_TEXT
+  [Translations.SIGN_UP_SUBMIT_BUTTON_TEXT]: AuthLabels.SIGN_UP_SUBMIT_BUTTON_TEXT,
+  [Translations.CREATE_ACCOUNT_TEXT]: AuthLabels.CREATE_ACCOUNT_TEXT
 });
 
 const navigation = [

@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap');
 
-:root {
+body {
   --mysteryGrey: #8A8A8A;
   --white: #ffffff;
   --defaultBorderColor: #E4E7E7;
