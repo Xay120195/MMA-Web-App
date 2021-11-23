@@ -40,7 +40,9 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                     </div>
                     <div className="avatar-grid">
                         <div className="avatar">
-                            {`${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`}
+                            { userInfo.attributes !== null &&
+                            `${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`
+                            }
 
                             
                         </div>
