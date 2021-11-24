@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import BlankState from "../blank-state";
-import { HiOutlinePlusCircle } from "react-icons/hi";
+import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter, HiMinus, HiMinusCircle, HiTrash} from 'react-icons/hi';
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_affidavit, statements } from "./data-source";
@@ -29,6 +29,7 @@ export default function MattersAffidavit() {
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
   const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
   const [checkAllState, setcheckAllState] = useState(false);
+  const [data, setData] = useState(statements);
 
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -130,6 +131,26 @@ export default function MattersAffidavit() {
     gridtemplatecolumn: "1fr auto"
   };
 
+  let tableRowIndex = 0;
+  
+  const handleAddRow = () => {
+    tableRowIndex = parseFloat(tableRowIndex) + 1
+    let updatedRows = [...data]
+    updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
+    setData(updatedRows)
+  }
+
+  const handleDeleteRow = () => {
+    let updatedRows = [...data];
+    checkedState.map(function(item, index) {
+        if(item){
+          let _data = updatedRows.filter((e, i) => i !== index);
+          console.log(_data);
+          setData(prevData => ([...prevData, ..._data])); 
+        }
+    });
+  };
+
   return (
     <>
       {statements.length === 0 ? (
@@ -182,7 +203,7 @@ export default function MattersAffidavit() {
                   checked={checkAllState}
                   onChange={(e) => handleCheckAllChange(e.target.checked)}
                 />
-                <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" onClick={() => handleAddRow()} >
                   Add Row &nbsp;
                   <HiOutlinePlusCircle />
                 </button>
@@ -190,6 +211,10 @@ export default function MattersAffidavit() {
                 <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
                   Export &nbsp;
                   <MdDownload />
+                </button>
+
+                <button className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2" onClick={() => handleDeleteRow(this)} >
+                    Delete &nbsp;<HiTrash/>
                 </button>
               </div>
             </div>
