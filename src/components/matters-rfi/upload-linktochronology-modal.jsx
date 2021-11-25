@@ -1,58 +1,89 @@
-import React, { useState } from "react";
-import { GrClose } from "react-icons/gr";
-import { RiFileInfoLine } from "react-icons/ri";
+import React, { useState, useEfect } from 'react';
+import { GrClose, GrLinkDown, GrTrash } from "react-icons/gr";
+import '../../assets/styles/UploadLink.css';
 
 export default function UploadLinkModal(props) {
-  
+
+  const [selectedFiles, setSelectedFiles] = useState([])
+
+  const deleteBtn = (index) => {
+    let tempArray = selectedFiles;
+    tempArray = tempArray.filter((item, i) => i !== index);
+
+    setSelectedFiles(tempArray);
+  }
+
+  const onSelectFile = e => {
+    if (!e.target.files || e.target.files.length === 0) {
+      setSelectedFiles([])
+      return
+    }
+    const tempArr = [];
+
+    [...e.target.files].forEach(file => {
+      console.log("file >>> ", file);
+      tempArr.push({
+        data: file,
+        url: URL.createObjectURL(file)
+      });
+    });
+
+    setSelectedFiles(tempArr);
+  }
 
   const handleModalClose = () => {
     props.handleModalClose();
   };
 
   const handleSave = () => {
-    
-      props.handleSave();
-    
+    props.handleSave(selectedFiles);
   };
 
-
+  console.log(selectedFiles, "selectedFiles");
   return (
     <>
       <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-        <div className="relative w-full my-6 mx-auto max-w-3xl">
-          <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-            <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
-              <h3 className="text-3xl font-semibold">Upload link to Chronology</h3>
-              <button
-                className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                onClick={handleModalClose}
-              >
-                <GrClose />
-              </button>
+        <div className="relative w-full my-6 mx-auto max-w-lg">
+          <div className="main-upload">
+            <div className="title-grid">
+              <p className="title-txt">Upload link to Chronology</p>
+              <GrClose className="close-btn" onClick={handleModalClose} style={{ color: 'var(--mysteryGrey)' }} />
             </div>
-            <div className="relative p-6 flex-auto">
-              
-              {/**
-               * DROP FILES HERE
-              */}
-
-
-            </div>
-            <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
-              <button
-                className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                type="button"
-                onClick={handleModalClose}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-green-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                type="button"
-                onClick={() => handleSave()}
-              >
-                Upload
-              </button>
+            <div className="file-grid">
+              <div className="upload-grid">
+                <div className="upload-area">
+                  <GrLinkDown className="arrow-btn" style={{ color: 'var(--darkGrey)' }} />
+                  <input type="file" multiple="multiple" id="file" onChange={onSelectFile} hidden />
+                  <p className="title-txt drop-txt">Drop files here or <label for="file">browse</label></p>
+                </div>
+              </div>
+              {selectedFiles.length ?
+                <div className="upload-details">
+                  <div className="line-separator">
+                    <span>Items Uploaded</span>
+                  </div>
+                  <div className="items-grid">
+                    {selectedFiles?.map((selectedFile, index) =>
+                      <div id="uploadDivContent" key={index}>
+                        <img className="img-content" src={selectedFile.url} />
+                        <div className="details-content">
+                          <span>{selectedFile.data.name}</span>
+                          <span>{selectedFile.data.size}</span>
+                        </div>
+                        <GrTrash className="deleteBtn" onClick={() => deleteBtn(index)} />
+                      </div>
+                    )}
+                  </div>
+                </div> : null
+              }
+              <div className="btn-grid">
+                <div className="cancel-btn" onClick={handleModalClose}>
+                  <span>Cancel</span>
+                </div>
+                <div className="upload-btn" onClick={() => handleSave()}>
+                  <span>Upload</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
