@@ -1,7 +1,7 @@
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faReact } from '@fortawesome/free-brands-svg-icons';
 // import { faChevronDoubleRight, faSignOutAlt } from '@fortawesome/pro-duotone-svg-icons';
-
+import React, { useState } from 'react';
 import { BiLogOut } from "react-icons/bi";
 import { FaReact } from "react-icons/fa";
 import { HiChevronDoubleLeft } from "react-icons/hi";
@@ -13,6 +13,9 @@ import '../../assets/styles/SideNavigation.css';
 const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
 
     console.log(userInfo);
+
+    const [activePage, setActivePage] = useState();
+    
     return (
         <>
             <div className="sidebar">
@@ -24,7 +27,7 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                     <ul className="nav-menus">
                         {SidebarData.map((item, index) => {
                         return (
-                            <li key={index} onClick={showSidebar}>
+                            <li key={index} onClick={showSidebar, () => setActivePage(item.title)} className={activePage === item.title ? "bg-gray-300" : ""}>
                             <Link className="nav-item" to={item.path}>
                                 {item.icon}<span>{item.title}</span>
                             </Link>

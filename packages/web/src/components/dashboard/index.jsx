@@ -62,7 +62,7 @@ export default function Dashboard() {
         (x) =>
           x.name.toLowerCase().indexOf(v.toLowerCase()) !== -1 ||
           x.client.name.toLowerCase().indexOf(v.toLowerCase()) !== -1
-      )
+      ).sort((a, b) => a.name.localeCompare(b.name))
     );
   };
 
