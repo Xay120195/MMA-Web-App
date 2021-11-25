@@ -4,7 +4,7 @@
 
 import { BiLogOut } from "react-icons/bi";
 import { FaReact } from "react-icons/fa";
-import { HiChevronDoubleRight } from "react-icons/hi";
+import { HiChevronDoubleLeft } from "react-icons/hi";
 
 import { SidebarData } from './SidebarData';
 import { Link } from 'react-router-dom';
@@ -19,7 +19,7 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                 <div className="main-grid">
                     <div className="logo-grid">
                         <FaReact className="logo-icon" style={{ color: 'var(--mysteryGrey)' }} />
-                        <button><HiChevronDoubleRight onClick={showSidebar} style={{ color: 'var(--mysteryGrey)' }} /></button>
+                        <button><HiChevronDoubleLeft onClick={showSidebar} style={{ color: 'var(--mysteryGrey)' }} /></button>
                     </div>
                     <ul className="nav-menus">
                         {SidebarData.map((item, index) => {
@@ -40,7 +40,9 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                     </div>
                     <div className="avatar-grid">
                         <div className="avatar">
-                            {`${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`}
+                            { userInfo.attributes !== null &&
+                            `${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`
+                            }
 
                             
                         </div>
@@ -51,6 +53,7 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                     </div>
                 </div>
             </div>
+            <div className="spacer-div"> </div>
         </>
     )
 }

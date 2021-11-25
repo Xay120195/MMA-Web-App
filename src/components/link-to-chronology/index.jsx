@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { BsFillInfoCircleFill } from 'react-icons/bs';
 import { chronology } from "./data-source";
 
@@ -27,6 +27,15 @@ export default function LinkToChronology() {
         setCheckedState(updatedCheckedState);
         settotalChecked(updatedCheckedState.filter((v) => v === true).length);
         
+        // const totalPrice = updatedCheckedState.reduce(
+        //     (sum, currentState, index) => {
+        //       if (currentState === true) {
+        //         return sum + toppings[index].price;
+        //       }
+        //       return sum;
+        //     },
+        //     0
+        //   );
       };
 
       
@@ -34,8 +43,8 @@ export default function LinkToChronology() {
   return (
 
     <>
-    {totalChecked > 0 &&
-    <div className="bg-blue-50 border-blue-200 rounded-b text-blue-500 px-4 py-3 shadow-md mb-4" role="alert">
+    { totalChecked > 0 &&
+        <div className="bg-blue-50 border-blue-200 rounded-b text-blue-500 px-4 py-3 shadow-md mb-4" role="alert">
           <div className="flex">
             <div className="py-1">
               <BsFillInfoCircleFill className="fill-current h-4 w-4 text-blue-500 mr-3" />
@@ -45,7 +54,7 @@ export default function LinkToChronology() {
             </div>
           </div>
         </div>
-}
+    }
     <div className="shadow overflow-auto border-b border-gray-200 sm:rounded-lg">
       <table className="min-w-full divide-y divide-gray-200 border-separate">
         <thead>
