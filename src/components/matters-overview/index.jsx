@@ -88,9 +88,9 @@ export default function MattersOverview() {
 
   const handleAddRow = () => {
     tableRowIndex = parseFloat(tableRowIndex) + 1
-    let updatedRows = [...data]
+    let updatedRows = [...witnessaffidavitsDatadata]
     updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
-    setData(updatedRows)
+    setWitnessaffidavitsData(updatedRows)
  }
 
   const handleDeleteRow = () => {
