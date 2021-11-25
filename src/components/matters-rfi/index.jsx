@@ -135,7 +135,7 @@ export default function MattersRFI() {
 
   const handleAddRow = () => {
     tableRowIndex = parseFloat(tableRowIndex) + 1
-    let updatedRows = [...data]
+    let updatedRows = [...questionsData]
     updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
     setQuestionsData(updatedRows)
  }
@@ -146,7 +146,7 @@ export default function MattersRFI() {
         if(item){
           let _data = updatedRows.filter((e, i) => i !== index);
           console.log(_data);
-          setData(prevData => ([...prevData, ..._data])); 
+          setQuestionsData(prevData => ([...prevData, ..._data])); 
         }
     });
   };

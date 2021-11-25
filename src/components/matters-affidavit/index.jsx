@@ -136,9 +136,9 @@ export default function MattersAffidavit() {
   
   const handleAddRow = () => {
     tableRowIndex = parseFloat(tableRowIndex) + 1
-    let updatedRows = [...data]
+    let updatedRows = [...statementsData]
     updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
-    setData(updatedRows)
+    setStatementsData(updatedRows)
   }
 
   const handleDeleteRow = () => {
