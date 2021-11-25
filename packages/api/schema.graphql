@@ -1,0 +1,20 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  colors: [Color]
+  hello: String
+}
+
+type Mutation {
+  addColor(name: String!, hex: String!): Color
+  addTwoNumbers(first: Int, second: Int): Int
+}
+
+type Color {
+  id: ID!
+  name: String
+  hex: String
+}
