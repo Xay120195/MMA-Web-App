@@ -12,7 +12,7 @@ import ContentEditable from 'react-contenteditable';
 export default function MattersOverview() {
 
   const tableHeaders = ["No.", "Witness Name", "RFIs", "Comments", "Affidavits"];
-  const [data, setData] = useState(witness_affidavits);
+  const [witnessaffidavitsDatadata, setWitnessaffidavitsData] = useState(witness_affidavits);
   const saveAlertTDChanges = "Successfully updated!";
 
   const [showToast, setShowToast] = useState(false);
@@ -94,12 +94,12 @@ export default function MattersOverview() {
  }
 
   const handleDeleteRow = () => {
-    let updatedRows = [...data];
+    let updatedRows = [...witnessaffidavitsDatadata];
     checkedState.map(function(item, index) {
         if(item){
           let _data = updatedRows.filter((e, i) => i !== index);
           console.log(_data);
-          setData(prevData => ([...prevData, ..._data])); 
+          setWitnessaffidavitsData(prevData => ([...prevData, ..._data])); 
         }
     });
   };

@@ -29,7 +29,7 @@ export default function MattersRFI() {
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
   const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
   const [checkAllState, setcheckAllState] = useState(false);
-  const [data, setData] = useState(questions);
+  const [questionsData, setQuestionsData] = useState(questions);
 
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -137,11 +137,11 @@ export default function MattersRFI() {
     tableRowIndex = parseFloat(tableRowIndex) + 1
     let updatedRows = [...data]
     updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
-    setData(updatedRows)
+    setQuestionsData(updatedRows)
  }
 
   const handleDeleteRow = () => {
-    let updatedRows = [...data];
+    let updatedRows = [...questionsData];
     checkedState.map(function(item, index) {
         if(item){
           let _data = updatedRows.filter((e, i) => i !== index);
