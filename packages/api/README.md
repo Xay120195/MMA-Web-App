@@ -14,11 +14,13 @@ This lab will immerse students about the components of [AWS AppSync](https://aws
 
 **1. Install pnpm**
 
-Go to packages/api - app directory
+Go to packages/api - app directory and execute
 
     pnpm install
 
 **2. Run Docker**
+
+Open docker app. Make sure that the docker engine is running, then execute
 
     docker-compose up 
 
