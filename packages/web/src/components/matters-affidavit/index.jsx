@@ -29,7 +29,7 @@ export default function MattersAffidavit() {
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
   const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
   const [checkAllState, setcheckAllState] = useState(false);
-  const [statementsData, setStatementsData] = useState(statements);
+  const [data, setData] = useState(statements);
 
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -136,18 +136,18 @@ export default function MattersAffidavit() {
   
   const handleAddRow = () => {
     tableRowIndex = parseFloat(tableRowIndex) + 1
-    let updatedRows = [...statementsData]
+    let updatedRows = [...data]
     updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
-    setStatementsData(updatedRows)
+    setData(updatedRows)
   }
 
   const handleDeleteRow = () => {
-    let updatedRows = [...statementsData];
+    let updatedRows = [...data];
     checkedState.map(function(item, index) {
         if(item){
           let _data = updatedRows.filter((e, i) => i !== index);
           console.log(_data);
-          setStatementsData(prevData => ([...prevData, ..._data])); 
+          setData(prevData => ([...prevData, ..._data])); 
         }
     });
   };

@@ -17,6 +17,7 @@ function Navbar() {
   const [location, setlocation] = useState(window.location.pathname);
   const [userInfo, setuserInfo] = useState(null);
 
+  const [activePage, setActivePage] = useState();
 
   let history = useHistory();
 
@@ -57,16 +58,10 @@ function Navbar() {
     getUser();
   }, []);
 
-
   return (
     <>
       {location !== '/' &&
         <IconContext.Provider value={{ color: '#fff' }}>
-          {/* <div className='navbar'>
-            <Link to='#' className='menu-bars bg-gray-400' >
-              <FaBars onClick={showSidebar} />
-            </Link>
-          </div> */}
           <div className="sidebar-collapsed sidebar">
             <div className="main-grid">
               <div className="logo-grid-collapsed">
@@ -76,8 +71,8 @@ function Navbar() {
               <ul className="nav-menus">
                 {SidebarData.map((item, index) => {
                   return (
-                    // <li key={index} onClick={showSidebar}>
-                    <li key={index}>
+                    <li onClick={() => setActivePage(item.title)} className={activePage === item.title ? "bg-gray-300" : ""} 
+                    key={index}>
                       <Link className="nav-item-collapsed nav-item" to={item.path}>
                         {item.icon}
                       </Link>

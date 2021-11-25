@@ -8,7 +8,7 @@ import { AppRoutes } from "../../constants/AppRoutes";
 
 export const SidebarData = [
   {
-    // title: 'Dashboard',
+    title: 'Dashboard',
     path: AppRoutes.DASHBOARD,
     icon: <FaTachometerAlt style={{ color: 'var(--mysteryGrey)' }} />,
     cName: 'nav-text'
