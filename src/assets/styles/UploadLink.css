@@ -1,0 +1,235 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --mysteryGrey: #8A8A8A;
+    --defaultBgColor: #F9F9F9;
+    --defaultBorderColor: #E4E7E7;
+    --mysteryGrey: #8A8A8A;
+    --white: #ffffff;
+    --darkGrey: #454545;
+    --primaryDefault: #1CC1E9;
+    --largeFont: 21px;
+    --mediumFont: 18px;
+    --smallFont: 16px;
+    --xSmallFont: 14px;
+    --xxSmallFont: 10px;
+    --fontFamily: 'Poppins', sans-serif;
+}
+
+* {
+    font-family: var(--fontFamily);
+    margin: 0;
+}
+
+.main-upload {
+    max-width: 500px;
+    padding: 1.5rem;
+    display: grid;
+    grid-gap: 1.5rem;
+    background-color: var(--white);
+    border-radius: 1rem;
+    box-shadow: 0px 0px 8px 0px #0000001A;
+}
+
+@media screen and (min-width: 700px) {
+    .main-upload {
+        width: 500px;
+    }
+}
+
+.title-grid {
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+
+.title-txt {
+    font-size: var(--xSmallFont);
+    line-height: 28px;
+    letter-spacing: 1px;
+    color: var(--darkGrey);
+}
+
+@media screen and (min-width: 700px) {
+    .title-txt {
+        font-size: var(--mediumFont);
+    }
+}
+
+.close-btn {
+    cursor: pointer;
+}
+
+.drop-txt {
+    text-align: center;
+}
+
+@media screen and (min-width: 700px) {
+    .drop-txt {
+        text-align: left;
+    }
+}
+
+.file-grid {
+    display: grid;
+    grid-gap: 1.5rem;
+}
+
+.upload-grid {
+    display: grid;
+    grid-gap: 1rem;
+    padding: 2rem;
+    background-color: var(--defaultBgColor);
+    border: 1px dashed var(--defaultBorderColor);
+    border-radius: 1rem;
+    width: -webkit-fill-available;
+}
+
+.upload-area {
+    display: grid;
+    grid-gap: 1rem;
+    justify-self: center;
+    justify-items: center;
+}
+
+.upload-area label{
+    padding: 0;
+    color: var(--primaryDefault);
+    border-color: none;
+    cursor: pointer;
+    font-size: var(--mediumFont);
+}
+
+.upload-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 1rem;
+}
+
+.line-separator {
+    text-transform: uppercase;
+    color: var(--mysteryGrey);
+    text-align: center;
+    border-bottom: 1px solid var(--defaultBorderColor);
+    line-height: 0.1em;
+    width: 100%;
+}
+
+.line-separator span {
+    background: var(--white);
+    padding: 0 .8rem;
+    font-size: var(--xxSmallFont);
+}
+
+.items-grid {
+    display: grid;
+    grid-gap: .5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+/* Scrollbar*/
+::-webkit-scrollbar {
+    width: 5px;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--defaultBgColor); 
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--defaultBorderColor); 
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--mysteryGrey); 
+    border-radius: 10px;
+}
+
+#uploadDivContent {
+    display: grid;
+    grid-template-columns: 50px 1fr auto;
+    grid-gap: 1rem;
+    align-items: center;
+    margin-right: 1rem;
+}
+
+.img-content {
+    width: 50px;
+    height: auto;
+    background-color: var(--defaultBgColor);
+    border-radius: 10px;
+    place-content: center;
+    display: grid;
+    padding: .25rem;
+}
+
+.details-content {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem;
+    align-items: center;
+    font-weight: 300;
+    color: var(--darkGrey);
+}
+
+.details-content span:nth-child(1) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.details-content span:nth-child(2) {
+    color: var(--mysteryGrey);
+}
+
+.deleteBtn {
+    color: var(--mysteryGrey);
+    cursor: pointer;
+}
+
+.clear-btn {
+    padding-top: 1rem;
+    border-top: 1px solid var(--defaultBorderColor);
+    text-align: center
+}
+
+.arrow-btn {
+    font-size: var(--largeFont);
+}
+
+.btn-grid {
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-columns: auto auto;
+    justify-self: end;
+    cursor: pointer;
+}
+
+.btn-grid span {
+    font-size: var(--xSmallFont);
+}
+
+@media screen and (min-width: 700px) {
+    .btn-grid span {
+        font-size: var(--smallFont);
+    }
+}
+
+.cancel-btn {
+    border-radius: 5px;
+    padding: .5rem 1rem;
+    color: var(--darkGrey);
+    border: 1px solid var(--defaultBorderColor);
+}
+
+.upload-btn {
+    border-radius: 5px;
+    padding: .5rem 1rem;
+    color: var(--white);
+    background-color: var(--primaryDefault);
+}

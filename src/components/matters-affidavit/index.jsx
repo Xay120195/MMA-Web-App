@@ -54,7 +54,8 @@ export default function MattersAffidavit() {
     }, 3000);
   };
 
-  const handleUploadLink = () => {
+  const handleUploadLink = (uploadFiles) => {
+    console.log(uploadFiles, "handleFiles");
     setalertMessage(modalUploadLinkAlertMsg);
     handleModalClose();
     setShowToast(true);
