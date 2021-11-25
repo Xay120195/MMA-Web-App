@@ -22,6 +22,9 @@ importers:
 
   packages/web:
     specifiers:
+      '@aws-amplify/core': ^4.3.8
+      '@aws-amplify/pubsub': ^4.2.2
+      '@aws-amplify/ui-components': ^1.9.6
       '@aws-amplify/ui-react': ^1.2.21
       '@fortawesome/fontawesome-svg-core': ^1.2.36
       '@fortawesome/free-solid-svg-icons': ^5.15.4
@@ -47,6 +50,9 @@ importers:
       tailwindcss: ^2.2.17
       web-vitals: ^1.0.1
     dependencies:
+      '@aws-amplify/core': 4.3.8
+      '@aws-amplify/pubsub': 4.2.2
+      '@aws-amplify/ui-components': 1.9.6_aws-amplify@4.3.8
       '@aws-amplify/ui-react': 1.2.26_b1d9e769e5d6c8226ad01e9844148909
       '@fortawesome/fontawesome-svg-core': 1.2.36
       '@fortawesome/free-solid-svg-icons': 5.15.4
@@ -293,7 +299,7 @@ packages:
     resolution: {integrity: sha512-8K0b1672qbv05chSoKpwGZ3fhvVp28Fg3AVHVkEHFl2lTLChO7wD/hTyyo8ING7uc31uZRt7bNra/hA74Td7Tw==}
     dependencies:
       '@aws-crypto/util': 1.2.2
-      '@aws-sdk/types': 3.6.1
+      '@aws-sdk/types': 3.40.0
       tslib: 1.14.1
     dev: false
 
@@ -373,8 +379,8 @@ packages:
   /@aws-crypto/util/1.2.2:
     resolution: {integrity: sha512-H8PjG5WJ4wz0UXAFXeJjWCW1vkvIJ3qUUD+rGRwJ2/hj+xT58Qle2MTql/2MGzkU+1JLAFuR6aJpLAjHwhmwwg==}
     dependencies:
-      '@aws-sdk/types': 3.6.1
-      '@aws-sdk/util-utf8-browser': 3.6.1
+      '@aws-sdk/types': 3.40.0
+      '@aws-sdk/util-utf8-browser': 3.37.0
       tslib: 1.14.1
     dev: false
 
