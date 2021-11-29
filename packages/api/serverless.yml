@@ -29,6 +29,8 @@ functions:
     handler: src/handlers/addTwoNumbers/index.handler
   hello-fn:
     handler: src/handlers/helloFn/index.handler
+  company-fn:
+    handler: src/handlers/graphql/company/index.handler
 
 custom:
   dynamodb:
@@ -74,12 +76,12 @@ custom:
         field: hello
         request: false
         response: false
-      - dataSource: DynamoDBCompanyTableDS
-        type: Query
-        field: company
-        request: false
-        response: false
-      - dataSource: DynamoDBCompanyTableDS
+      # - dataSource: DynamoDBCompanyTableDS
+      #   type: Query
+      #   field: company
+      #   request: false
+      #   response: false
+      - dataSource: LambdaCompanyDS
         type: Mutation
         field: companyCreate
         request: false
@@ -98,10 +100,10 @@ custom:
         name: LambdaHelloDS
         config:
           functionName: hello-fn
-      - type: AMAZON_DYNAMODB
-        name: DynamoDBCompanyTableDS
+      - type: AWS_LAMBDA
+        name: LambdaCompanyDS
         config:
-          tableName: !Ref CompanyTable
+          functionName: company-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

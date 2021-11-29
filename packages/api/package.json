@@ -21,9 +21,13 @@
     "serverless": "^2.66.1"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.42.0",
+    "@aws-sdk/util-dynamodb": "^3.42.0",
+    "aws-sdk": "^2.1036.0",
     "serverless-appsync-plugin": "^1.12.1",
     "serverless-appsync-simulator": "^0.19.2",
     "serverless-dynamodb-local": "^0.2.40",
-    "serverless-offline": "^8.2.0"
+    "serverless-offline": "^8.2.0",
+    "uuid": "^8.3.2"
   }
 }
