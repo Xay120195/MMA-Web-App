@@ -74,6 +74,16 @@ custom:
         field: hello
         request: false
         response: false
+      - dataSource: DynamoDBCompanyTableDS
+        type: Query
+        field: company
+        request: false
+        response: false
+      - dataSource: DynamoDBCompanyTableDS
+        type: Mutation
+        field: companyCreate
+        request: false
+        response: false
 
     dataSources:
       - type: AWS_LAMBDA
@@ -88,6 +98,10 @@ custom:
         name: LambdaHelloDS
         config:
           functionName: hello-fn
+      - type: AMAZON_DYNAMODB
+        name: DynamoDBCompanyTableDS
+        config:
+          tableName: !Ref CompanyTable
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

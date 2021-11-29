@@ -6,15 +6,68 @@ schema {
 type Query {
   colors: [Color]
   hello: String
+  company: [Company]
 }
 
 type Mutation {
   addColor(name: String!, hex: String!): Color
   addTwoNumbers(first: Int, second: Int): Int
+  companyCreate(name: String, phone: String): Company
 }
 
 type Color {
   id: ID!
   name: String
   hex: String
+}
+
+type Company {
+  id: ID!
+  name: String
+  address: [Address]
+  phone: String
+  email: String
+  representative: [User]
+  logo: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Address {
+  id: ID!
+  addressLine1: String
+  addressLine2: String
+  city: String
+  state: String
+  zipCode: Int
+  country: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type CompanyUser {
+  id: ID!
+  company: [Company]
+  user: [User]
+}
+
+type User {
+  id: ID!
+  firstName: String
+  lastName: String
+  emailAddress: String
+  contactNumber: String
+  userType: [UserType]
+  profilePicture: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+enum UserType {
+  Owner
+  LegalAdmin
+  Barrister
+  Expert
+  Client
+  Witness
 }
