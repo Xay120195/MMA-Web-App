@@ -27,8 +27,12 @@
     display: grid;
     grid-gap: 1.5rem;
     background-color: var(--white);
-    border-radius: 1rem;
+    border-top-right-radius: 1rem;
+    border-top-left-radius: 1rem;
     box-shadow: 0px 0px 8px 0px #0000001A;
+    bottom: 0;
+    right: 1rem;
+    position: absolute;
 }
 
 @media screen and (min-width: 700px) {
@@ -40,7 +44,7 @@
 .title-grid {
     display: grid;
     grid-gap: 1rem;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
     align-items: center;
 }
 
@@ -55,6 +59,10 @@
     .title-txt {
         font-size: var(--mediumFont);
     }
+}
+
+.collapse-btn {
+    cursor: pointer;
 }
 
 .close-btn {
@@ -78,8 +86,8 @@
 
 .upload-grid {
     display: grid;
-    grid-gap: 1rem;
-    padding: 2rem;
+    grid-gap: .5rem;
+    padding: 1rem;
     background-color: var(--defaultBgColor);
     border: 1px dashed var(--defaultBorderColor);
     border-radius: 1rem;
@@ -98,7 +106,13 @@
     color: var(--primaryDefault);
     border-color: none;
     cursor: pointer;
-    font-size: var(--mediumFont);
+    font-size: var(--xSmallFont);
+}
+
+@media screen and (min-width: 700px) {
+    .upload-area label {
+        font-size: var(--mediumFont);
+    }
 }
 
 .upload-details {
@@ -124,7 +138,7 @@
 
 .items-grid {
     display: grid;
-    grid-gap: .5rem;
+    grid-gap: 1rem;
     max-height: 200px;
     overflow-y: auto;
     width: 100%;
@@ -152,7 +166,7 @@
 
 #uploadDivContent {
     display: grid;
-    grid-template-columns: 50px 1fr auto;
+    grid-template-columns: 50px 1fr auto auto;
     grid-gap: 1rem;
     align-items: center;
     margin-right: 1rem;
@@ -160,12 +174,17 @@
 
 .img-content {
     width: 50px;
-    height: auto;
+    height: 50px;
     background-color: var(--defaultBgColor);
     border-radius: 10px;
     place-content: center;
     display: grid;
     padding: .25rem;
+}
+
+.img-content img{
+    height: 100%;
+    width: 100%;;
 }
 
 .details-content {
@@ -204,8 +223,8 @@
 
 .btn-grid {
     display: grid;
-    grid-gap: 1rem;
-    grid-template-columns: auto auto;
+    grid-gap: .5rem;
+    grid-template-columns: auto auto auto;
     justify-self: end;
     cursor: pointer;
 }
@@ -232,4 +251,19 @@
     padding: .5rem 1rem;
     color: var(--white);
     background-color: var(--primaryDefault);
+}
+
+.upload-file {
+    padding: 0.1rem .5rem;
+    border: 1px dashed #E4E7E7;
+    box-sizing: border-box;
+    border-radius: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.upload-file a {
+    font-size: var(--xxSmallFont);
 }

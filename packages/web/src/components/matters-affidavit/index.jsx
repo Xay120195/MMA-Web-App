@@ -9,6 +9,7 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "../matters-rfi/create-RFI-modal"; // shared functions/modal from matters-rfi
 import UploadLinkModal from "../matters-rfi/upload-linktochronology-modal"; // shared functions/modal from matters-rfi
 import SelectLinkModal from "../matters-rfi/linktochronology-list-modal"; // shared functions/modal from matters-rfi
+import PreviewModal from "../matters-rfi/preview-linktochronology-modal"; // shared functions/modal from matters-rfi
 import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
 
@@ -34,6 +35,8 @@ export default function MattersAffidavit() {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
+  const [showPreviewModal, setshowPreviewModal] = useState(false);
+  
   const handleBlankStateClick = () => {
     console.log("Blank State Button was clicked!");
   };
@@ -71,6 +74,7 @@ export default function MattersAffidavit() {
   const handleModalClose = () => {
     setshowCreateRFIModal(false);
     setshowUploadLinkModal(false);
+    setshowPreviewModal(false);
     setshowSelectLinkModal(false);
   };
 
@@ -284,6 +288,14 @@ export default function MattersAffidavit() {
                       />
                     </td>
                     <td className="px-6 py-4 w-4 align-top place-items-center text-center">
+                      <div className="mb-4 upload-details">
+                        <div className="upload-file" onClick={() => setshowPreviewModal(true)}>
+                          <a>Matter 1_Payment Schedule for Claim No. 58711308181433_100521 03_58AM.pdf</a>
+                        </div>
+                        <div className="line-separator">
+                          <span>or</span>
+                        </div>
+                      </div>
                       <button
                         className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                         onClick={() => setshowUploadLinkModal(true)}
@@ -323,6 +335,12 @@ export default function MattersAffidavit() {
       {showUploadLinkModal && (
         <UploadLinkModal
           handleSave={handleUploadLink}
+          handleModalClose={handleModalClose}
+        />
+      )}
+
+      {showPreviewModal && (
+        <PreviewModal
           handleModalClose={handleModalClose}
         />
       )}
