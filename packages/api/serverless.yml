@@ -29,8 +29,10 @@ functions:
     handler: src/handlers/addTwoNumbers/index.handler
   hello-fn:
     handler: src/handlers/helloFn/index.handler
-  company-fn:
-    handler: src/handlers/graphql/company/index.handler
+  query-fn:
+    handler: src/handlers/graphql/query/index.handler
+  mutation-fn:
+    handler: src/handlers/graphql/mutation/index.handler
 
 custom:
   dynamodb:
@@ -103,7 +105,7 @@ custom:
       - type: AWS_LAMBDA
         name: LambdaCompanyDS
         config:
-          functionName: company-fn
+          functionName: query-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}
