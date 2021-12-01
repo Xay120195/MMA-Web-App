@@ -1,7 +1,7 @@
 import React, { useState, useEfect } from 'react';
 import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
 import '../../assets/styles/UploadLink.css';
-import Pie from "../matters-rfi/Pie";
+import Pie from "../link-to-chronology/Pie";
 
 export default function UploadLinkModal(props) {
 
@@ -70,7 +70,7 @@ export default function UploadLinkModal(props) {
                 <div className="upload-area">
                   <FiDownloadCloud className="arrow-btn" style={{ color: 'var(--darkGrey)' }} />
                   <input type="file" multiple="multiple" id="file" onChange={onSelectFile} hidden />
-                  <p className="title-txt drop-txt">Drop files here or <label for="file">browse</label></p>
+                  <p className="title-txt drop-txt">Drop files here or <label htmlFor="file">browse</label></p>
                 </div>
               </div>
               {selectedFiles.length ?

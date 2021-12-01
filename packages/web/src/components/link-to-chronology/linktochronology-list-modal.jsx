@@ -1,6 +1,6 @@
 import React from "react";
 import { GrClose } from "react-icons/gr";
-import LinkToChronology from "../link-to-chronology"
+import LinkToChronology from "."
 export default function SelectLinkModal(props) {
   const handleModalClose = () => {
     props.handleModalClose();

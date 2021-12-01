@@ -7,9 +7,9 @@ import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_affidavit, statements } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "../matters-rfi/create-RFI-modal"; // shared functions/modal from matters-rfi
-import UploadLinkModal from "../matters-rfi/upload-linktochronology-modal"; // shared functions/modal from matters-rfi
-import SelectLinkModal from "../matters-rfi/linktochronology-list-modal"; // shared functions/modal from matters-rfi
-import PreviewModal from "../matters-rfi/preview-linktochronology-modal"; // shared functions/modal from matters-rfi
+import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"; // shared functions/modal from link-to-chronology
+import SelectLinkModal from "../link-to-chronology/linktochronology-list-modal"; // shared functions/modal from link-to-chronology
+import PreviewModal from "../link-to-chronology/preview-linktochronology-modal"; // shared functions/modal from link-to-chronology
 import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
 

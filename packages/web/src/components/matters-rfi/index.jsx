@@ -7,8 +7,8 @@ import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_rfi, questions } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "./create-RFI-modal";
-import UploadLinkModal from "./upload-linktochronology-modal"
-import SelectLinkModal from "./linktochronology-list-modal"
+import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"
+import SelectLinkModal from "../link-to-chronology/linktochronology-list-modal"
 import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
 
