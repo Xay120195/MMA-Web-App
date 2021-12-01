@@ -76,11 +76,11 @@ custom:
         field: hello
         request: false
         response: false
-      # - dataSource: DynamoDBCompanyTableDS
-      #   type: Query
-      #   field: company
-      #   request: false
-      #   response: false
+      - dataSource: LambdaCompanyDS
+        type: Query
+        field: company
+        request: false
+        response: false
       - dataSource: LambdaCompanyDS
         type: Mutation
         field: companyCreate

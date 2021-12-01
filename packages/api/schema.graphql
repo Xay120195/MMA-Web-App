@@ -6,7 +6,8 @@ schema {
 type Query {
   colors: [Color]
   hello: String
-  company: [Company]
+  company(id: String): Company
+  # sampple ID 92608675-d140-4f96-9c47-9880987ec49f
 }
 
 type Mutation {
