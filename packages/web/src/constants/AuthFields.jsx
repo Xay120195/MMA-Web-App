@@ -5,12 +5,18 @@ export const AuthFields = {
           label: "First Name",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         },
         {
           type: "family_name",
           label: "Last Name",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         },
         {
           type:'custom:company_name',
@@ -18,6 +24,9 @@ export const AuthFields = {
           label: "Company Name",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         },
         {
           type: "email",
@@ -25,6 +34,9 @@ export const AuthFields = {
           autoComplete: "off",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         },
         {
           type: "password",
@@ -32,6 +44,9 @@ export const AuthFields = {
           autoComplete: "off",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         },
     ],
     login: [
@@ -40,12 +55,18 @@ export const AuthFields = {
           label: "Email Address",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         },
         {
           type: "password",
           label: "Password",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         },
     ],
     forgotpassword: [
@@ -54,6 +75,14 @@ export const AuthFields = {
           label: "Email Address *",
           placeholder: "",
           required: true,
+          handleInputChange: (event) => {
+            return event.target.value = clean_up(event.target.value);
+          }
         }
     ]
+}
+
+function clean_up(v) {
+  let c = v.replace(/\s+/g, ' ');
+  return c === ' ' ? '' : c;  
 }
