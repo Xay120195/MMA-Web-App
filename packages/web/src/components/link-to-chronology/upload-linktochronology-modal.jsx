@@ -1,6 +1,7 @@
 import React, { useState, useEfect } from 'react';
-import { GrClose, GrLinkDown, GrTrash } from "react-icons/gr";
+import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
 import '../../assets/styles/UploadLink.css';
+import Pie from "../link-to-chronology/Pie";
 
 export default function UploadLinkModal(props) {
 
@@ -40,21 +41,36 @@ export default function UploadLinkModal(props) {
   };
 
   console.log(selectedFiles, "selectedFiles");
+
+  const [random, setRandom] = useState({
+    percentage: 0,
+    colour: "hsl(0, 0%, 0%)"
+  });
+
+  const generateRandomValues = () => {
+    const rand = (n) => Math.random() * n;
+    setRandom({
+      percentage: rand(100),
+      colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`
+    });
+  };
+
+  const [isOpen, setIsOpen] = useState(true);
+  
   return (
     <>
-      <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-        <div className="relative w-full my-6 mx-auto max-w-lg">
           <div className="main-upload">
             <div className="title-grid">
               <p className="title-txt">Upload link to Chronology</p>
-              <GrClose className="close-btn" onClick={handleModalClose} style={{ color: 'var(--mysteryGrey)' }} />
+              <FiMinus className="collapse-btn" onClick={() => setIsOpen(!isOpen)} style={{ color: 'var(--mysteryGrey)' }} />
+              <FiX className="close-btn" onClick={handleModalClose} style={{ color: 'var(--mysteryGrey)' }} />
             </div>
-            <div className="file-grid">
+            {isOpen && <div className="file-grid">
               <div className="upload-grid">
                 <div className="upload-area">
-                  <GrLinkDown className="arrow-btn" style={{ color: 'var(--darkGrey)' }} />
+                  <FiDownloadCloud className="arrow-btn" style={{ color: 'var(--darkGrey)' }} />
                   <input type="file" multiple="multiple" id="file" onChange={onSelectFile} hidden />
-                  <p className="title-txt drop-txt">Drop files here or <label for="file">browse</label></p>
+                  <p className="title-txt drop-txt">Drop files here or <label htmlFor="file">browse</label></p>
                 </div>
               </div>
               {selectedFiles.length ?
@@ -65,18 +81,23 @@ export default function UploadLinkModal(props) {
                   <div className="items-grid">
                     {selectedFiles?.map((selectedFile, index) =>
                       <div id="uploadDivContent" key={index}>
-                        <img className="img-content" src={selectedFile.url} />
+                        <div className="img-content">
+                          <img src={selectedFile.url} />
+                        </div>
                         <div className="details-content">
                           <span>{selectedFile.data.name}</span>
                           <span>{selectedFile.data.size}</span>
                         </div>
-                        <GrTrash className="deleteBtn" onClick={() => deleteBtn(index)} />
+                        <FiTrash className="deleteBtn" onClick={() => deleteBtn(index)} />
+                        <Pie percentage={random.percentage} colour={random.colour} />
                       </div>
                     )}
                   </div>
                 </div> : null
               }
               <div className="btn-grid">
+                {/* for testing only */}
+                <button onClick={generateRandomValues}>Randomise</button>
                 <div className="cancel-btn" onClick={handleModalClose}>
                   <span>Cancel</span>
                 </div>
@@ -84,11 +105,8 @@ export default function UploadLinkModal(props) {
                   <span>Upload</span>
                 </div>
               </div>
-            </div>
+            </div>}
           </div>
-        </div>
-      </div>
-      <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
     </>
   );
 }
