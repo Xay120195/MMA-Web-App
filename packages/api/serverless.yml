@@ -1,4 +1,4 @@
-service: severless-appsync-lab
+service: mma-severless
 
 provider:
   name: aws
@@ -29,10 +29,10 @@ functions:
     handler: src/handlers/addTwoNumbers/index.handler
   hello-fn:
     handler: src/handlers/helloFn/index.handler
-  query-fn:
-    handler: src/handlers/graphql/query/index.handler
-  mutation-fn:
-    handler: src/handlers/graphql/mutation/index.handler
+  company-fn:
+    handler: src/handlers/graphql/company/index.handler
+  user-fn:
+    handler: src/handlers/graphql/user/index.handler
 
 custom:
   dynamodb:
@@ -88,6 +88,16 @@ custom:
         field: companyCreate
         request: false
         response: false
+      - dataSource: LambdaUserDS
+        type: Query
+        field: user
+        request: false
+        response: false
+      - dataSource: LambdaUserDS
+        type: Mutation
+        field: userCreate
+        request: false
+        response: false
 
     dataSources:
       - type: AWS_LAMBDA
@@ -105,7 +115,11 @@ custom:
       - type: AWS_LAMBDA
         name: LambdaCompanyDS
         config:
-          functionName: query-fn
+          functionName: company-fn
+      - type: AWS_LAMBDA
+        name: LambdaUserDS
+        config:
+          functionName: user-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

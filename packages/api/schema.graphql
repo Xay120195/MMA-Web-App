@@ -8,12 +8,21 @@ type Query {
   hello: String
   company(id: String): Company
   # sampple ID 92608675-d140-4f96-9c47-9880987ec49f
+  user(id: String): User
 }
 
 type Mutation {
   addColor(name: String!, hex: String!): Color
   addTwoNumbers(first: Int, second: Int): Int
-  companyCreate(name: String, phone: String): Company
+  companyCreate(name: String, phone: String, email: AWSEmail): Company
+  userCreate(
+    id: String
+    firstName: String
+    lastName: String
+    email: AWSEmail
+    contactNumber: String
+    userType: UserType
+  ): User
 }
 
 type Color {
@@ -24,12 +33,12 @@ type Color {
 
 type Company {
   id: ID!
-  name: String
-  address: [Address]
+  name: String!
+  address: Address
   phone: String
-  email: String
-  representative: [User]
-  logo: String
+  email: AWSEmail
+  representative: User
+  logo: AWSURL
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -48,17 +57,17 @@ type Address {
 
 type CompanyUser {
   id: ID!
-  company: [Company]
-  user: [User]
+  company: Company
+  user: User
 }
 
 type User {
   id: ID!
   firstName: String
   lastName: String
-  emailAddress: String
+  email: AWSEmail
   contactNumber: String
-  userType: [UserType]
+  userType: UserType
   profilePicture: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime

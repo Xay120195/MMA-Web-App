@@ -8,7 +8,10 @@ async function createCompany(data) {
     id: v4(),
     name: data.name,
     phone: data.phone,
+    email: data.email,
+    createdAt: new Date().toISOString()
   };
+
   const command = new PutItemCommand({
     TableName: "CompanyTable",
     Item: marshall(params),

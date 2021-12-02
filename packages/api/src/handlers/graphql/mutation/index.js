@@ -17,11 +17,33 @@ async function createCompany(data) {
   return params;
 }
 
+async function createUser(data) {
+  const params = {
+    id: data.id,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email,
+    contactNumber: data.contactNumber,
+    userType: data.userType,
+    createdAt: new Date().toISOString()
+  };
+
+  const command = new PutItemCommand({
+    TableName: "UserTable",
+    Item: marshall(params),
+  });
+  await client.send(command);
+  return params;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
       return createCompany(ctx.arguments);
     },
+    userCreate: async (ctx) => {
+      return createUser(ctx.arguments);
+    }
   },
   
 };
