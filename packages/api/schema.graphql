@@ -31,17 +31,6 @@ type Color {
   hex: String
 }
 
-type Company {
-  id: ID!
-  name: String!
-  address: Address
-  phone: String
-  email: AWSEmail
-  representative: User
-  logo: AWSURL
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
-}
 
 type Address {
   id: ID!
@@ -55,10 +44,16 @@ type Address {
   updatedAt: AWSDateTime
 }
 
-type CompanyUser {
+type Company {
   id: ID!
-  company: Company
-  user: User
+  name: String!
+  address: Address
+  phone: String
+  email: AWSEmail
+  representative: User
+  logo: AWSURL
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
 }
 
 type User {
@@ -67,11 +62,13 @@ type User {
   lastName: String
   email: AWSEmail
   contactNumber: String
+  company: Company
   userType: UserType
   profilePicture: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
+
 
 enum UserType {
   Owner
