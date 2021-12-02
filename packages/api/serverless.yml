@@ -54,7 +54,7 @@ custom:
     authenticationType: AMAZON_COGNITO_USER_POOLS
     userPoolConfig:
       defaultAction: ALLOW
-      userPoolId: ap-southeast-1_z3Ef0wdx1
+      userPoolId: !Ref CognitoUserPool
     mappingTemplatesLocation: src/mapping-templates
 
     mappingTemplates:

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 
 export default function ChangePassword() {
   const getCompanyById = `
-  query getCompanyById($id: ID!) {
+  query getCompanyById($id: String) {
     company(id: $id) {
       createdAt
       email

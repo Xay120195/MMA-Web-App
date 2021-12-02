@@ -46,7 +46,7 @@ type Address {
 
 type Company {
   id: ID!
-  name: String!
+  name: String
   address: Address
   phone: String
   email: AWSEmail
