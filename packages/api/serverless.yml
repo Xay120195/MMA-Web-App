@@ -29,6 +29,10 @@ functions:
     handler: src/handlers/addTwoNumbers/index.handler
   hello-fn:
     handler: src/handlers/helloFn/index.handler
+  query-fn:
+    handler: src/handlers/graphql/query/index.handler
+  mutation-fn:
+    handler: src/handlers/graphql/mutation/index.handler
 
 custom:
   dynamodb:
@@ -74,6 +78,26 @@ custom:
         field: hello
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: company
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: companyCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: user
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userCreate
+        request: false
+        response: false
 
     dataSources:
       - type: AWS_LAMBDA
@@ -88,6 +112,14 @@ custom:
         name: LambdaHelloDS
         config:
           functionName: hello-fn
+      - type: AWS_LAMBDA
+        name: LambdaQueryDS
+        config:
+          functionName: query-fn
+      - type: AWS_LAMBDA
+        name: LambdaMutationDS
+        config:
+          functionName: mutation-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

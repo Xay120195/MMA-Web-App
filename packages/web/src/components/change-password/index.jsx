@@ -1,8 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { Auth } from "aws-amplify";
+import { Auth, API } from "aws-amplify";
 import { useForm } from "react-hook-form";
 
 export default function ChangePassword() {
+  const getCompanyById = `
+  query getCompanyById($id: String) {
+    company(id: $id) {
+      createdAt
+      email
+      id
+      logo
+      name
+      phone
+      updatedAt
+    }
+  }
+`;
+
+async function getCompany() {
+  const res = await API.graphql({
+    query: getCompanyById,
+    variables: {
+      id: "d77851b6-2bd0-4253-a2db-481b79c83ab9"
+    }
+  });
+
+  console.log(res);
+}
+
+
+
   const {
     register,
     formState: { errors },
@@ -27,6 +54,12 @@ export default function ChangePassword() {
         alert(err);
       });
   };
+
+  useEffect(() => {
+    getCompany()
+  }, []);
+
+
 
   return (
     <form onSubmit={handleSubmit(handleSave)}>
@@ -72,3 +105,4 @@ export default function ChangePassword() {
     </form>
   );
 }
+
