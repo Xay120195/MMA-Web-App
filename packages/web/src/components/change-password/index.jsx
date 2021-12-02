@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Auth } from "aws-amplify";
+import { Auth, API, graphqlOperation } from "aws-amplify";
+
+import { company } from '../../../../api/src/handlers/graphql/company';
 import { useForm } from "react-hook-form";
+
 
 export default function ChangePassword() {
   const {
@@ -27,6 +30,19 @@ export default function ChangePassword() {
         alert(err);
       });
   };
+
+  useEffect(() => {
+    getPosts()
+  }, []);
+
+
+  const getPosts = async () => {
+    const res = await API.graphql(graphqlOperation(company, {
+      id: "92608675-d140-4f96-9c47-9880987ec49f"
+    }));
+    console.log(res);
+    
+  }
 
   return (
     <form onSubmit={handleSubmit(handleSave)}>
@@ -72,3 +88,4 @@ export default function ChangePassword() {
     </form>
   );
 }
+

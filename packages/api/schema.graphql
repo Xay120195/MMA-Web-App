@@ -7,7 +7,7 @@ type Query {
   colors: [Color]
   hello: String
   company(id: String): Company
-  # sampple ID 92608675-d140-4f96-9c47-9880987ec49f
+  # sampple ID d77851b6-2bd0-4253-a2db-481b79c83ab9
   user(id: String): User
 }
 
