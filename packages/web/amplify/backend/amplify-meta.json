@@ -55,12 +55,12 @@
         "IdentityPoolName": "mmawebapp18a2c5fa_identitypool_18a2c5fa__staging",
         "UserPoolName": "mmawebapp18a2c5fa_userpool_18a2c5fa"
       },
-      "lastPushTimeStamp": "2021-12-03T01:52:15.697Z",
+      "lastPushTimeStamp": "2021-12-03T06:57:17.402Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/auth/mmawebapp18a2c5fa-cloudformation-template.yml",
         "logicalId": "authmmawebapp18a2c5fa"
       },
-      "lastPushDirHash": "GLBXCZ0l6Webka9izg6c1+zJu54="
+      "lastPushDirHash": "w87VFpWvD3EStONumuAJplekJmM="
     }
   },
   "api": {},
