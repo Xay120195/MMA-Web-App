@@ -54,19 +54,13 @@ export const AuthFields = {
           type: "email",
           label: "Email Address",
           placeholder: "",
-          required: true,
-          handleInputChange: (event) => {
-            return event.target.value = clean_up(event.target.value);
-          }
+          required: true
         },
         {
           type: "password",
           label: "Password",
           placeholder: "",
-          required: true,
-          handleInputChange: (event) => {
-            return event.target.value = clean_up(event.target.value);
-          }
+          required: true
         },
     ],
     forgotpassword: [
@@ -74,10 +68,7 @@ export const AuthFields = {
           type: "email",
           label: "Email Address *",
           placeholder: "",
-          required: true,
-          handleInputChange: (event) => {
-            return event.target.value = clean_up(event.target.value);
-          }
+          required: true
         }
     ]
 }
