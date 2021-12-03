@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "mmawebapp2526b89e_identitypool_2526b89e",
+    "identityPoolName": "mmawebappaa31305d_identitypool_aa31305d",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "mmaweb2526b89e",
-    "userPoolName": "mmawebapp2526b89e_userpool_2526b89e",
+    "resourceNameTruncated": "mmawebaa31305d",
+    "userPoolName": "mmawebappaa31305d_userpool_aa31305d",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -32,12 +32,15 @@
     "userpoolClientRefreshTokenValidity": 30,
     "userpoolClientWriteAttributes": [],
     "userpoolClientReadAttributes": [],
-    "userpoolClientLambdaRole": "mmaweb2526b89e_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "mmawebaa31305d_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "2526b89e",
-    "resourceName": "mmawebapp2526b89e",
+    "sharedId": "aa31305d",
+    "resourceName": "mmawebappaa31305d",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "manual",
+    "usernameAttributes": [
+      "email, phone_number"
+    ],
     "userPoolGroupList": [],
     "serviceName": "Cognito",
     "useEnabledMfas": false,
