@@ -10,7 +10,7 @@ export const matter_affidavit = {
 
   export const statements = [
     {
-      id:1,
+      id:5,
       statement: 'Cras ac varius ligula. Aenean nisi erat, gravida et tempus quis, laoreet a justo. Praesent efficitur orci nec sagittis tempor.',
       comments: 'Phasellus purus massa, ullamcorper sed tempor quis, sollicitudin a mauris. Morbi facilisis lectus sed venenatis tempus. ',
       chronology: {
@@ -25,7 +25,7 @@ export const matter_affidavit = {
       }
     },
     {
-      id:2,
+      id:4,
       statement: 'Nulla maximus fringilla tellus eget dapibus. ',
       comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       chronology: {
@@ -55,7 +55,7 @@ export const matter_affidavit = {
       }
     },
     {
-      id:4,
+      id:2,
       statement: 'Suspendisse a vestibulum libero. Curabitur sed convallis lorem, nec volutpat massa.',
       comments: 'Vivamus sed pellentesque nunc, sit amet ultricies arcu. Suspendisse a vestibulum libero. Curabitur sed convallis lorem, nec volutpat massa.',
       chronology: {
@@ -70,7 +70,7 @@ export const matter_affidavit = {
       }
     },
     {
-      id:5,
+      id:1,
       statement: 'Phasellus sed sem eu ipsum accumsan finibus sit amet quis libero. Mauris nec tincidunt metus, et condimentum urna.',
       comments: 'Nunc sem lacus, maximus id massa ut, ultrices laoreet nisi. Suspendisse faucibus facilisis purus, ut interdum ante tempor at.',
       chronology: {

@@ -30,7 +30,7 @@ export default function MattersAffidavit() {
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
   const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
   const [checkAllState, setcheckAllState] = useState(false);
-  const [data, setData] = useState(statements);
+  const [datastatements, setstatements] = useState(statements);
 
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -136,29 +136,31 @@ export default function MattersAffidavit() {
     gridtemplatecolumn: "1fr auto"
   };
 
-  let tableRowIndex = 0;
-  
+  let tableRowIndex = datastatements.length;
   const handleAddRow = () => {
-    tableRowIndex = parseFloat(tableRowIndex) + 1
-    let updatedRows = [...data]
-    updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
-    setData(updatedRows)
+    tableRowIndex++;
+    setstatements((previousState) => [
+      {id: tableRowIndex, statement: "Sample Data", chronology: {id: 15, link:"", name: "Lorem Ipsum"}, comments: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", rfi: {id: 15, name: "Lorem Ipsum"}
+      },
+      ...previousState,
+    ]);
+    console.log(datastatements);
   }
-
+  
   const handleDeleteRow = () => {
-    let updatedRows = [...data];
+    var updatedRows = [...datastatements];
+    var _data = [];
     checkedState.map(function(item, index) {
         if(item){
-          let _data = updatedRows.filter((e, i) => i !== index);
-          console.log(_data);
-          setData(prevData => ([...prevData, ..._data])); 
+          _data = updatedRows.filter((e, i) => i !== index);
         }
     });
+    setstatements(_data);
   };
 
   return (
     <>
-      {statements.length === 0 ? (
+      {datastatements.length === 0 ? (
         <BlankState
           title={"affidavits"}
           txtLink={"add row"}
@@ -258,7 +260,7 @@ export default function MattersAffidavit() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {statements.map((st, index) => (
+                {datastatements.map((st, index) => (
                   <tr key={index} index={index}>
                     <td className="px-6 py-4 whitespace-nowrap w-4 text-center">
                       <input
@@ -318,7 +320,7 @@ export default function MattersAffidavit() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )).sort((a, b) => a.id > b.id ? 1 : -1)}
               </tbody>
             </table>
           </div>

@@ -10,9 +10,9 @@ import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
 
 export default function MattersOverview() {
+  const [datawitnessaffidavits, setWitnessAffidavits] = useState(witness_affidavits);
 
   const tableHeaders = ["No.", "Witness Name", "RFIs", "Comments", "Affidavits"];
-  const [data, setData] = useState(witness_affidavits);
   const saveAlertTDChanges = "Successfully updated!";
 
   const [showToast, setShowToast] = useState(false);
@@ -84,30 +84,34 @@ export default function MattersOverview() {
     gridtemplatecolumn: "1fr auto"
   };
 
-  let tableRowIndex = 0;
 
+  
+  let tableRowIndex = datawitnessaffidavits.length;
   const handleAddRow = () => {
-    tableRowIndex = parseFloat(tableRowIndex) + 1
-    let updatedRows = [...data]
-    updatedRows[tableRowIndex] = {index: tableRowIndex, id: "", name: "", comments: "", rfi:""}
-    setData(updatedRows)
- }
+    tableRowIndex++;
+    setWitnessAffidavits((previousState) => [
+      {id: tableRowIndex, name: "John D", comments: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", rfi: {id: 15, name: "Lorem Ipsum"}
+      },
+      ...previousState,
+    ]);
+    console.log(datawitnessaffidavits);
+  }
 
   const handleDeleteRow = () => {
-    let updatedRows = [...data];
+    var updatedRows = [...datawitnessaffidavits];
+    var _data = [];
     checkedState.map(function(item, index) {
         if(item){
-          let _data = updatedRows.filter((e, i) => i !== index);
-          console.log(_data);
-          setData(prevData => ([...prevData, ..._data])); 
+          _data = updatedRows.filter((e, i) => i !== index);
         }
     });
+    setWitnessAffidavits(_data);
   };
 
     return (
       <>
       
-      {witness_affidavits.length === 0 ? (
+      {datawitnessaffidavits.length === 0 ? (
         <BlankState title={'affidavits'} txtLink={'add row'} handleClick={handleBlankStateClick} />
       ) : (
         
@@ -194,7 +198,7 @@ export default function MattersOverview() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {
-                      witness_affidavits.map((wa, index)=> (
+                      datawitnessaffidavits.map((wa, index)=> (
                         <tr key={index} index={index}>
                           <td className="px-6 py-4 whitespace-nowrap w-4 text-center">
                           <input
@@ -237,7 +241,7 @@ export default function MattersOverview() {
                             </Link>
                           </td>
                         </tr>
-                      ))
+                      )).sort((a, b) => a.id > b.id ? 1 : -1)
                     }
                   </tbody>
                 </table>
