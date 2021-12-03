@@ -1,10 +1,10 @@
 {
-  "features": {
-    "graphqltransformer": {
-      "enableiterativegsiupdates": true
-    },
-    "project": {
-      "overrides": true
+    "features": {
+        "graphqltransformer": {
+            "enableiterativegsiupdates": true
+        },
+        "project": {
+            "overrides": true
+        }
     }
-  }
 }

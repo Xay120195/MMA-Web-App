@@ -13,15 +13,14 @@
     }
   },
   "auth": {
-    "mmawebapp18a2c5fa": {
+    "mmawebapp2526b89e": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
       "customAuth": false,
       "frontendAuthConfig": {
-        "loginMechanisms": [
-          "EMAIL"
-        ],
+        "socialProviders": [],
+        "usernameAttributes": [],
         "signupAttributes": [
           "EMAIL"
         ],
@@ -40,34 +39,33 @@
         ],
         "verificationMechanisms": [
           "EMAIL"
-        ],
-        "socialProviders": [],
-        "usernameAttributes": [
-          "EMAIL"
         ]
       },
       "output": {
-        "UserPoolId": "ap-southeast-1_z3Ef0wdx1",
-        "AppClientIDWeb": "4g0n9aqdgeh6ahlfpeq1ggeirr",
-        "AppClientID": "38v5fliflvbf02qu8pd8gj2hmt",
-        "IdentityPoolId": "ap-southeast-1:355080ac-c60b-42ac-ae0f-c51b48d3f3c9",
-        "UserPoolArn": "arn:aws:cognito-idp:ap-southeast-1:895454531446:userpool/ap-southeast-1_z3Ef0wdx1",
-        "IdentityPoolName": "mmawebapp18a2c5fa_identitypool_18a2c5fa__staging",
-        "UserPoolName": "mmawebapp18a2c5fa_userpool_18a2c5fa"
+        "CreatedSNSRole": "arn:aws:iam::895454531446:role/sns2526b89eapp-staging",
+        "UserPoolId": "ap-southeast-1_wWM3uz4jG",
+        "AppClientIDWeb": "5lp3kds5b659vuvpp2n8683lmu",
+        "AppClientID": "51mo5560v60ce0mrd1pus8kcjo",
+        "IdentityPoolId": "ap-southeast-1:60326654-b39e-47fb-a603-1d21a3b652ea",
+        "UserPoolArn": "arn:aws:cognito-idp:ap-southeast-1:895454531446:userpool/ap-southeast-1_wWM3uz4jG",
+        "IdentityPoolName": "mmawebapp2526b89e_identitypool_2526b89e__staging",
+        "UserPoolName": "mmawebapp2526b89e_userpool_2526b89e"
       },
-      "lastPushTimeStamp": "2021-12-03T06:57:17.402Z",
+      "lastPushTimeStamp": "2021-12-03T07:42:09.973Z",
       "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/auth/mmawebapp18a2c5fa-cloudformation-template.yml",
-        "logicalId": "authmmawebapp18a2c5fa"
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/auth/mmawebapp2526b89e-cloudformation-template.json",
+        "logicalId": "authmmawebapp2526b89e"
       },
-      "lastPushDirHash": "w87VFpWvD3EStONumuAJplekJmM="
+      "lastPushDirHash": "jNap+ugODV3/mxktqPe9gXzgnwU="
     }
   },
   "api": {},
   "hosting": {
     "amplifyhosting": {
       "service": "amplifyhosting",
-      "type": "cicd"
+      "type": "cicd",
+      "cicd": "cicd",
+      "lastPushTimeStamp": "2021-12-03T07:38:50.720Z"
     }
   }
 }

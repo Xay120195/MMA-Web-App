@@ -1,62 +1,64 @@
 {
-    "identityPoolName": "mmawebapp18a2c5fa_identitypool_18a2c5fa",
+  "version": "1",
+  "cognitoConfig": {
+    "identityPoolName": "mmawebapp2526b89e_identitypool_2526b89e",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "mmaweb18a2c5fa",
-    "userPoolName": "mmawebapp18a2c5fa_userpool_18a2c5fa",
+    "resourceNameTruncated": "mmaweb2526b89e",
+    "userPoolName": "mmawebapp2526b89e_userpool_2526b89e",
     "autoVerifiedAttributes": [
-        "email"
+      "email"
     ],
     "mfaConfiguration": "OFF",
     "mfaTypes": [
-        "SMS Text Message"
+      "SMS Text Message"
     ],
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
     "emailVerificationSubject": "MMA Verification Code",
-    "emailVerificationMessage": "<p>Please see below verification code.</p><h1>{####}</h1><p>Thanks!</p><p>Regards,<br/><b>MMA Team</b></p>",
+    "emailVerificationMessage": "<p>Please see below verification code.</p><h1>{####}</h1><p>Thank you!</p><p>Regards,<br/><b>MMA Team</b></p>",
     "defaultPasswordPolicy": false,
     "passwordPolicyMinLength": 8,
     "passwordPolicyCharacters": [
-        "Requires Lowercase",
-        "Requires Numbers",
-        "Requires Symbols",
-        "Requires Uppercase"
+      "Requires Lowercase",
+      "Requires Numbers",
+      "Requires Symbols",
+      "Requires Uppercase"
     ],
     "requiredAttributes": [
-        "email"
+      "email"
     ],
     "aliasAttributes": [],
     "userpoolClientGenerateSecret": false,
     "userpoolClientRefreshTokenValidity": 30,
     "userpoolClientWriteAttributes": [],
     "userpoolClientReadAttributes": [],
-    "userpoolClientLambdaRole": "mmaweb18a2c5fa_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "mmaweb2526b89e_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "18a2c5fa",
-    "resourceName": "mmawebapp18a2c5fa",
+    "sharedId": "2526b89e",
+    "resourceName": "mmawebapp2526b89e",
     "authSelections": "identityPoolAndUserPool",
-    "authRoleArn": {
-        "Fn::GetAtt": [
-            "AuthRole",
-            "Arn"
-        ]
-    },
-    "unauthRoleArn": {
-        "Fn::GetAtt": [
-            "UnauthRole",
-            "Arn"
-        ]
-    },
     "useDefault": "manual",
-    "usernameAttributes": [
-        "email"
-    ],
     "userPoolGroupList": [],
     "serviceName": "Cognito",
+    "useEnabledMfas": false,
+    "authRoleArn": {
+      "Fn::GetAtt": [
+        "AuthRole",
+        "Arn"
+      ]
+    },
+    "unauthRoleArn": {
+      "Fn::GetAtt": [
+        "UnauthRole",
+        "Arn"
+      ]
+    },
+    "breakCircularDependency": false,
     "dependsOn": [],
     "userPoolGroups": false,
     "adminQueries": false,
     "thirdPartyAuth": false,
     "authProviders": [],
     "hostedUI": false
+  }
 }

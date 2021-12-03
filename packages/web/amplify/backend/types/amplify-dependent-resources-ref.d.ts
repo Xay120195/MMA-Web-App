@@ -1,13 +1,14 @@
 export type AmplifyDependentResourcesAttributes = {
     "auth": {
-        "mmawebapp18a2c5fa": {
+        "mmawebapp2526b89e": {
             "IdentityPoolId": "string",
             "IdentityPoolName": "string",
             "UserPoolId": "string",
             "UserPoolArn": "string",
             "UserPoolName": "string",
             "AppClientIDWeb": "string",
-            "AppClientID": "string"
+            "AppClientID": "string",
+            "CreatedSNSRole": "string"
         }
     }
 }
