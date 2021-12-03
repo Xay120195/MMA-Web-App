@@ -14,7 +14,7 @@ export const matter = {
 
   export const witness_affidavits = [
     {
-      id:1,
+      id:3,
       name: 'Jack Pipper Stone',
       comments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       rfi: {
@@ -32,7 +32,7 @@ export const matter = {
       }
     },
     {
-      id:3,
+      id:1,
       name: 'Hanz Allen',
       comments: 'Vivamus sed pellentesque nunc, sit amet ultricies arcu. Suspendisse a vestibulum libero. Curabitur sed convallis lorem, nec volutpat massa.',
       rfi: {
