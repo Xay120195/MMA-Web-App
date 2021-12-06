@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { FaBars } from 'react-icons/fa';
-import { Link, useHistory } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { FaBars } from "react-icons/fa";
+import { Link, useHistory } from "react-router-dom";
 import { Auth } from "aws-amplify";
 // import '../../assets/styles/Navbar.css';
-import { IconContext } from 'react-icons';
-import Sidebar from '../sidebar';
-import { SidebarData } from './SidebarData';
+import { IconContext } from "react-icons";
+import Sidebar from "../sidebar";
+import { SidebarData } from "./SidebarData";
 
 import { BiLogOut } from "react-icons/bi";
 import { FaReact } from "react-icons/fa";
@@ -27,24 +27,19 @@ function Navbar() {
       setSidebar(false);
       try {
         await Auth.signOut();
-        console.log('Sign out completed.');
+        console.log("Sign out completed.");
         history.push("/");
-
       } catch (error) {
-        console.log('Error signing out: ', error);
+        console.log("Error signing out: ", error);
       }
     } else {
       return false;
     }
-  }
-
-  useEffect(() => {
-    // setSidebar(false); -- identify if the user changed the location/path
-  }, []);
+  };
 
   history.listen((location) => {
     setlocation(location.pathname);
-  })
+  });
 
   useEffect(() => {
     let getUser = async () => {
@@ -53,28 +48,42 @@ function Navbar() {
         await setuserInfo(user);
         console.log(user);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-    }
+    };
     getUser();
   }, []);
 
   return (
     <>
-      {location !== '/' &&
-        <IconContext.Provider value={{ color: '#fff' }}>
+      {location !== "/" && (
+        <IconContext.Provider value={{ color: "#fff" }}>
           <div className="sidebar-collapsed sidebar">
             <div className="main-grid">
               <div className="logo-grid-collapsed">
-                <FaReact className="logo-icon" style={{ color: 'var(--mysteryGrey)' }} />
-                <button><HiChevronDoubleRight onClick={showSidebar} style={{ color: 'var(--mysteryGrey)' }} /></button>
+                <FaReact
+                  className="logo-icon"
+                  style={{ color: "var(--mysteryGrey)" }}
+                />
+                <button>
+                  <HiChevronDoubleRight
+                    onClick={showSidebar}
+                    style={{ color: "var(--mysteryGrey)" }}
+                  />
+                </button>
               </div>
               <ul className="nav-menus">
                 {SidebarData.map((item, index) => {
                   return (
-                    <li onClick={() => setActivePage(item.title)} className={activePage === item.title ? "bg-gray-300" : ""} 
-                    key={index}>
-                      <Link className="nav-item-collapsed nav-item" to={item.path}>
+                    <li
+                      onClick={() => setActivePage(item.title)}
+                      className={activePage === item.title ? "bg-gray-300" : ""}
+                      key={index}
+                    >
+                      <Link
+                        className="nav-item-collapsed nav-item"
+                        to={item.path}
+                      >
                         {item.icon}
                       </Link>
                     </li>
@@ -83,24 +92,35 @@ function Navbar() {
               </ul>
             </div>
             <div className="bottom-grid">
-              <div className="logout-btn-collapsed logout-btn" onClick={clickLogout}>
-                <BiLogOut style={{ color: 'var(--white)' }} />
+              <div
+                className="logout-btn-collapsed logout-btn"
+                onClick={clickLogout}
+              >
+                <BiLogOut style={{ color: "var(--white)" }} />
               </div>
-              <div className="avatar-grid-collapsed">
-                <div className="avatar">
-                  CE
+              {userInfo !== null && (
+                <div className="avatar-grid-collapsed">
+                  <div className="avatar">
+                    {userInfo.attributes !== null &&
+                      `${userInfo.attributes.given_name.charAt(
+                        0
+                      )}${userInfo.attributes.family_name.charAt(0)}`}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
-          {sidebar && <Sidebar showSidebar={showSidebar} userInfo={userInfo} clickLogout={clickLogout} />}
-
+          {sidebar && (
+            <Sidebar
+              showSidebar={showSidebar}
+              userInfo={userInfo}
+              clickLogout={clickLogout}
+            />
+          )}
         </IconContext.Provider>
-      }
+      )}
     </>
   );
 }
-
-
 
 export default Navbar;

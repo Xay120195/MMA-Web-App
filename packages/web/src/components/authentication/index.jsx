@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Redirect, useLocation } from "react-router-dom";
 import {
   AmplifyAuthenticator,
@@ -17,8 +17,6 @@ import { Disclosure } from "@headlessui/react";
 import { AuthFields } from "../../constants/AuthFields";
 import { AuthLabels } from "../../constants/AuthLabels";
 import { AppRoutes } from "../../constants/AppRoutes";
-
-//import { BellIcon, MenuIcon, XIcon, LogoutIcon } from '@heroicons/react/outline'
 
 I18n.setLanguage("en-AU");
 I18n.putVocabulariesForLanguage("en-AU", {
@@ -45,12 +43,14 @@ const navigation = [
 ];
 
 const Authentication = () => {
-  const [authState, setAuthState] = React.useState(AuthState.SignIn);
-  const [user, setUser] = React.useState();
-  const [customCompanyName, setCustomCompanyName] = React.useState();
+  const [authState, setAuthState] = useState(AuthState.SignIn);
+  const [user, setUser] = useState();
+  const [customCompanyName, setCustomCompanyName] = useState();
+  const [firstName, setFirstName] = useState();
+  const [lastName, setLastName] = useState();
 
   // const routeLocation = useLocation();
-  // React.useEffect(()=>{
+  // useEffect(()=>{
   //   let hashLoc = routeLocation.hash;
   //   console.log('Location changed ', routeLocation);
   //   if(hashLoc === '#signup'){
@@ -59,27 +59,80 @@ const Authentication = () => {
 
   // }, [routeLocation]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return onAuthUIStateChange((nextAuthState, authData) => {
       setAuthState(nextAuthState);
       setUser(authData);
     });
   }, []);
 
+  function clean_up(v) {
+    let c = v.replace(/\s+/g, " ");
+    if (c === " ") {
+      c = "";
+    }
 
+    return c;
+  }
 
-function clean_up(v) {
-  let c = v.replace(/\s+/g, ' ');
-  
-  if(c === ' '){
-    c = ''
-  } 
-  
-
-  setCustomCompanyName(c);
-
-  return c;
-}
+  const signUpFields = [
+    {
+      type: "given_name",
+      key: "given_name",
+      label: "First Name",
+      autoComplete: "off",
+      placeholder: "",
+      required: true,
+      value: firstName,
+      handleInputChange: (event) => {
+        let i = clean_up(event.target.value);
+        setFirstName(i);
+        event.target.value = i;
+      },
+    },
+    {
+      type: "family_name",
+      key: "family_name",
+      label: "Last Name",
+      autoComplete: "off",
+      placeholder: "",
+      required: true,
+      value: lastName,
+      handleInputChange: (event) => {
+        let i = clean_up(event.target.value);
+        setLastName(i);
+        event.target.value = i;
+      },
+    },
+    {
+      type: "custom:company_name",
+      key: "custom:company_name",
+      label: "Company Name",
+      autoComplete: "off",
+      placeholder: "",
+      required: true,
+      value: customCompanyName,
+      handleInputChange: (event) => {
+        let i = clean_up(event.target.value);
+        setCustomCompanyName(i);
+        event.target.value = i;
+      },
+    },
+    {
+      type: "email",
+      label: "Email Address",
+      autoComplete: "off",
+      placeholder: "",
+      required: true,
+    },
+    {
+      type: "password",
+      label: "Password",
+      autoComplete: "off",
+      placeholder: "",
+      required: true,
+    },
+  ];
 
   return authState === AuthState.SignedIn && user ? (
     <Redirect to={AppRoutes.DASHBOARD} />
@@ -145,8 +198,7 @@ function clean_up(v) {
       <div className="grid grid-cols-2 gap-4">
         <div className="welcome-message">
           <h1>
-            A Software Built for Managing Affidavits and Exchanging RFIs with
-            your Clients
+            A Software Built for Managing Affidavits and Exchanging RFIs with your Clients
           </h1>
         </div>
 
@@ -161,53 +213,7 @@ function clean_up(v) {
             <AmplifySignUp
               usernameAlias="email"
               slot="sign-up"
-              formFields={[
-                {
-                  type: "given_name",
-                  label: "First Name",
-                  placeholder: "",
-                  required: true,
-                  // handleInputChange: (event) => {
-                  //   return event.target.value = clean_up(event.target.value);
-                  // }
-                },
-                {
-                  type: "family_name",
-                  label: "Last Name",
-                  placeholder: "",
-                  required: true,
-                  // handleInputChange: (event) => {
-                  //   return event.target.value = clean_up(event.target.value);
-                  // }
-                  
-                },
-                {
-                  type:'custom:company_name',
-                  key:'custom:company_name',
-                  label: "Company Name",
-                  placeholder: "",
-                  required: true,
-                  handleInputChange: (event) => {
-                    event.target.value = clean_up(event.target.value);
-                  },
-                  value:customCompanyName
-                },
-                {
-                  type: "email",
-                  label: "Email Address",
-                  autoComplete: "off",
-                  placeholder: "",
-                  required: true
-                },
-                {
-                  type: "password",
-                  label: "Password",
-                  autoComplete: "off",
-                  placeholder: "",
-                  required: true
-                },
-            ]}
-              autoComplete="off"
+              formFields={signUpFields}
               headerText="Start Your Free Trial Now"
             />
 
@@ -227,7 +233,5 @@ function clean_up(v) {
 function mergeClassNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
-
-
 
 export default Authentication;

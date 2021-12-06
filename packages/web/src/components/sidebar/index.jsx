@@ -41,19 +41,19 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                         <BiLogOut style={{ color: 'var(--white)' }} />
                         <span>Log out</span>
                     </div>
-                    <div className="avatar-grid">
-                        <div className="avatar">
-                            { userInfo.attributes !== null &&
-                            `${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`
-                            }
-
-                            
+                    { userInfo !== null &&
+                        <div className="avatar-grid">
+                            <div className="avatar">
+                                { userInfo.attributes !== null &&
+                                    `${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`
+                                }
+                            </div>
+                            <div className="details-grid">
+                                <span>{userInfo.attributes.email}</span>
+                                <span>{userInfo.attributes['custom:company_name']}</span>
+                            </div>
                         </div>
-                        <div className="details-grid">
-                            <span>{userInfo.attributes.email}</span>
-                            <span>{userInfo.attributes['custom:company_name']}</span>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
             <div className="spacer-div"> </div>
