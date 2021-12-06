@@ -47,6 +47,7 @@ const navigation = [
 const Authentication = () => {
   const [authState, setAuthState] = React.useState(AuthState.SignIn);
   const [user, setUser] = React.useState();
+  const [customCompanyName, setCustomCompanyName] = React.useState();
 
   // const routeLocation = useLocation();
   // React.useEffect(()=>{
@@ -64,6 +65,21 @@ const Authentication = () => {
       setUser(authData);
     });
   }, []);
+
+
+
+function clean_up(v) {
+  let c = v.replace(/\s+/g, ' ');
+  
+  if(c === ' '){
+    c = ''
+  } 
+  
+
+  setCustomCompanyName(c);
+
+  return c;
+}
 
   return authState === AuthState.SignedIn && user ? (
     <Redirect to={AppRoutes.DASHBOARD} />
@@ -145,7 +161,52 @@ const Authentication = () => {
             <AmplifySignUp
               usernameAlias="email"
               slot="sign-up"
-              formFields={AuthFields.signup}
+              formFields={[
+                {
+                  type: "given_name",
+                  label: "First Name",
+                  placeholder: "",
+                  required: true,
+                  // handleInputChange: (event) => {
+                  //   return event.target.value = clean_up(event.target.value);
+                  // }
+                },
+                {
+                  type: "family_name",
+                  label: "Last Name",
+                  placeholder: "",
+                  required: true,
+                  // handleInputChange: (event) => {
+                  //   return event.target.value = clean_up(event.target.value);
+                  // }
+                  
+                },
+                {
+                  type:'custom:company_name',
+                  key:'custom:company_name',
+                  label: "Company Name",
+                  placeholder: "",
+                  required: true,
+                  handleInputChange: (event) => {
+                    event.target.value = clean_up(event.target.value);
+                  },
+                  value:customCompanyName
+                },
+                {
+                  type: "email",
+                  label: "Email Address",
+                  autoComplete: "off",
+                  placeholder: "",
+                  required: true
+                },
+                {
+                  type: "password",
+                  label: "Password",
+                  autoComplete: "off",
+                  placeholder: "",
+                  required: true
+                },
+            ]}
               autoComplete="off"
               headerText="Start Your Free Trial Now"
             />
@@ -166,5 +227,7 @@ const Authentication = () => {
 function mergeClassNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
+
+
 
 export default Authentication;

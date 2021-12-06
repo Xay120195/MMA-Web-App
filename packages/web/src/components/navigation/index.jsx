@@ -51,6 +51,7 @@ function Navbar() {
       try {
         let user = await Auth.currentAuthenticatedUser();
         await setuserInfo(user);
+        console.log(user);
       } catch (error) {
         console.log(error)
       }

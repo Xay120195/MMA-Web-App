@@ -54,7 +54,7 @@
         "IdentityPoolName": "mmawebappaa31305d_identitypool_aa31305d__staging",
         "UserPoolName": "mmawebappaa31305d_userpool_aa31305d"
       },
-      "lastPushTimeStamp": "2021-12-03T10:17:35.649Z",
+      "lastPushTimeStamp": "2021-12-06T00:41:02.666Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/auth/mmawebappaa31305d-cloudformation-template.json",
         "logicalId": "authmmawebappaa31305d"
