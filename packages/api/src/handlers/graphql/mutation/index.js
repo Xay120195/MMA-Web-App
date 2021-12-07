@@ -7,8 +7,7 @@ async function createCompany(data) {
   const params = {
     id: v4(),
     name: data.name,
-    phone: data.phone,
-    email: data.email,
+    representative: data.representative,
     createdAt: new Date().toISOString()
   };
   const command = new PutItemCommand({
@@ -25,8 +24,8 @@ async function createUser(data) {
     firstName: data.firstName,
     lastName: data.lastName,
     email: data.email,
-    contactNumber: data.contactNumber,
     userType: data.userType,
+    company: data.company,
     createdAt: new Date().toISOString()
   };
 

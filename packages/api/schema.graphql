@@ -14,15 +14,31 @@ type Query {
 type Mutation {
   addColor(name: String!, hex: String!): Color
   addTwoNumbers(first: Int, second: Int): Int
-  companyCreate(name: String, phone: String, email: AWSEmail): Company
+  companyCreate(
+    name: String
+    representative: representativeInput
+  ): Company
+
   userCreate(
-    id: String
+    id: ID!
     firstName: String
     lastName: String
     email: AWSEmail
-    contactNumber: String
     userType: UserType
+    company: companyInput
   ): User
+}
+
+input representativeInput {
+  id: ID!
+  firstName: String
+  lastName: String
+  email: AWSEmail
+}
+
+input companyInput {
+  id: ID!
+  name: String
 }
 
 type Color {
@@ -30,7 +46,6 @@ type Color {
   name: String
   hex: String
 }
-
 
 type Address {
   id: ID!
@@ -69,12 +84,11 @@ type User {
   updatedAt: AWSDateTime
 }
 
-
 enum UserType {
-  Owner
-  LegalAdmin
-  Barrister
-  Expert
-  Client
-  Witness
+  owner
+  legalAdmin
+  barrister
+  expert
+  client
+  witness
 }
