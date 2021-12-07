@@ -1,4 +1,4 @@
-import React, { useState, useEfect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
 import '../../assets/styles/UploadLink.css';
 import Pie from "../link-to-chronology/Pie";
@@ -42,6 +42,8 @@ export default function UploadLinkModal(props) {
 
   console.log(selectedFiles, "selectedFiles");
 
+  const [isOpen, setIsOpen] = useState(true);
+
   const [random, setRandom] = useState({
     percentage: 0,
     colour: "hsl(0, 0%, 0%)"
@@ -55,8 +57,44 @@ export default function UploadLinkModal(props) {
     });
   };
 
-  const [isOpen, setIsOpen] = useState(true);
-  
+  const dropRef = useRef();
+
+  useEffect(() => {
+    let div = dropRef.current
+    div.addEventListener('dragover', handleDrag)
+    div.addEventListener('drop', handleDrop)
+
+    return () => {
+      div.removeEventListener('dragover', handleDrag);
+      div.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
+      setSelectedFiles([])
+      return
+    }
+    const tempArr = [];
+
+    [...e.dataTransfer.files].forEach(file => {
+      console.log("file >>> ", file);
+      tempArr.push({
+        data: file,
+        url: URL.createObjectURL(file)
+      });
+    });
+
+    setSelectedFiles(tempArr);
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  };
+
   return (
     <>
           <div className="main-upload">
@@ -66,7 +104,7 @@ export default function UploadLinkModal(props) {
               <FiX className="close-btn" onClick={handleModalClose} style={{ color: 'var(--mysteryGrey)' }} />
             </div>
             {isOpen && <div className="file-grid">
-              <div className="upload-grid">
+              <div className="upload-grid" ref={dropRef}>
                 <div className="upload-area">
                   <FiDownloadCloud className="arrow-btn" style={{ color: 'var(--darkGrey)' }} />
                   <input type="file" multiple="multiple" id="file" onChange={onSelectFile} hidden />
