@@ -7,6 +7,7 @@ import MattersAffidavit from "./components/matters-affidavit";
 import MattersRFI from "./components/matters-rfi";
 import Profile from "./components/user-profile";
 import ChangePassword from "./components/change-password";
+import PostRegistration from "./components/authentication/post-registration";
 import { AppRoutes } from "./constants/AppRoutes";
 
 import Navbar from './components/navigation';
@@ -24,7 +25,7 @@ const Routes = () => {
         <Route exact path={`${AppRoutes.MATTERSRFI}/:id`} component={MattersRFI} />
         <Route exact path={AppRoutes.PROFILE} component={Profile} />
         <Route exact path={AppRoutes.CHANGEPASSWORD} component={ChangePassword} />
-        
+        <Route exact path={AppRoutes.POSTREGISTRATION} component={PostRegistration} />
       </Switch>
     </Router>
   );

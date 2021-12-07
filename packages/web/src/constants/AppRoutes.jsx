@@ -5,5 +5,6 @@ export const AppRoutes = {
     MATTERSRFI: '/matters-rfi',
     USERACCESS: '/contact-access',
     PROFILE: '/user-profile',
-    CHANGEPASSWORD: '/change-password'
+    CHANGEPASSWORD: '/change-password',
+    POSTREGISTRATION: '/post-registration'
 }
