@@ -6,5 +6,6 @@ export const AppRoutes = {
     USERACCESS: '/contact-access',
     PROFILE: '/user-profile',
     CHANGEPASSWORD: '/change-password',
-    POSTREGISTRATION: '/post-registration'
+    POSTREGISTRATION: '/post-registration',
+    POSTAUTHENTICATION: '/post-authentication'
 }

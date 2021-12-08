@@ -5,7 +5,7 @@ import { Auth } from "aws-amplify";
 // import '../../assets/styles/Navbar.css';
 import { IconContext } from "react-icons";
 import Sidebar from "../sidebar";
-import { SidebarData } from "./SidebarData";
+import { SidebarData } from "../sidebar/SidebarData";
 
 import { BiLogOut } from "react-icons/bi";
 import { FaReact } from "react-icons/fa";
@@ -16,10 +16,11 @@ function Navbar() {
   const showSidebar = () => setSidebar(!sidebar);
   const [location, setlocation] = useState(window.location.pathname);
   const [userInfo, setuserInfo] = useState(null);
-
   const [activePage, setActivePage] = useState();
 
   let history = useHistory();
+
+  const outsideState = ["/", "/post-registration", "/post-authentication"];
 
   const clickLogout = async (e) => {
     e.preventDefault();
@@ -42,21 +43,23 @@ function Navbar() {
   });
 
   useEffect(() => {
-    let getUser = async () => {
-      try {
-        let user = await Auth.currentAuthenticatedUser();
-        await setuserInfo(user);
-        console.log(user);
-      } catch (error) {
-        console.log(error);
-      }
+    
+    let ls = {
+      userId: localStorage.getItem('userId'),
+      email: localStorage.getItem('email'),
+      firstName: localStorage.getItem('firstName'),
+      lastName: localStorage.getItem('lastName'),
+      company: localStorage.getItem('company'),
+      userType: localStorage.getItem('userType')
     };
-    getUser();
+
+    setuserInfo(ls);
+
   }, []);
 
   return (
     <>
-      {location !== "/" && (
+      {!outsideState.includes(location) && (
         <IconContext.Provider value={{ color: "#fff" }}>
           <div className="sidebar-collapsed sidebar">
             <div className="main-grid">
@@ -101,10 +104,9 @@ function Navbar() {
               {userInfo !== null && (
                 <div className="avatar-grid-collapsed">
                   <div className="avatar">
-                    {userInfo.attributes !== null &&
-                      `${userInfo.attributes.given_name.charAt(
-                        0
-                      )}${userInfo.attributes.family_name.charAt(0)}`}
+                    {
+                      `${userInfo.firstName.charAt(0)}${userInfo.lastName.charAt(0)}`
+                    }
                   </div>
                 </div>
               )}

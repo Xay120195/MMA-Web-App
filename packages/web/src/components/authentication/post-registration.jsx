@@ -58,7 +58,7 @@ export default function PostRegistration() {
     console.log(user);
     await createUser(user).then((u) => {
       console.log(u);
-      history.push(AppRoutes.DASHBOARD);
+      history.push(AppRoutes.POSTAUTHENTICATION);
     });
   }
 
@@ -72,7 +72,8 @@ export default function PostRegistration() {
 
         resolve(request);
       } catch (e) {
-        reject(e);
+        setError(e.errors[0].message);
+        reject(e.errors[0].message);
       }
     });
 
@@ -89,7 +90,8 @@ export default function PostRegistration() {
 
         resolve(request);
       } catch (e) {
-        reject(e);
+        setError(e.errors[0].message);
+        reject(e.errors[0].message);
       }
     });
   }
@@ -146,10 +148,5 @@ export default function PostRegistration() {
   }
 `;
 
-  return (
-    <div>
-      {error ? `Oops... ${error}` : null}
-      <p>Please wait ...</p>
-    </div>
-  );
+  return <p>{error ? `Oops... ${error}` : null}</p>;
 }

@@ -12,8 +12,6 @@ import '../../assets/styles/SideNavigation.css';
 
 const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
 
-    console.log(userInfo);
-
     const [activePage, setActivePage] = useState();
     
     return (
@@ -27,7 +25,7 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                     <ul className="nav-menus">
                         {SidebarData.map((item, index) => {
                         return (
-                            <li key={index} onClick={showSidebar, () => setActivePage(item.title)} className={activePage === item.title ? "bg-gray-300" : ""}>
+                            <li key={index} onClick={showSidebar = () => setActivePage(item.title)} className={activePage === item.title ? "bg-gray-300" : ""}>
                             <Link className="nav-item" to={item.path}>
                                 {item.icon}<span>{item.title}</span>
                             </Link>
@@ -44,13 +42,13 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                     { userInfo !== null &&
                         <div className="avatar-grid">
                             <div className="avatar">
-                                { userInfo.attributes !== null &&
-                                    `${userInfo.attributes.given_name.charAt(0)}${userInfo.attributes.family_name.charAt(0)}`
+                                {
+                                    `${userInfo['firstName'].charAt(0)}${userInfo['lastName'].charAt(0)}`
                                 }
                             </div>
                             <div className="details-grid">
-                                <span>{userInfo.attributes.email}</span>
-                                <span>{userInfo.attributes['custom:company_name']}</span>
+                                <span>{userInfo['email']}</span>
+                                <span>{userInfo['company']}</span>
                             </div>
                         </div>
                     }
