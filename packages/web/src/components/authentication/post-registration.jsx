@@ -72,8 +72,7 @@ export default function PostRegistration() {
 
         resolve(request);
       } catch (e) {
-        setError(e.errors[0].message)
-        reject(e.errors[0].message);
+        reject(e);
       }
     });
 
@@ -90,8 +89,7 @@ export default function PostRegistration() {
 
         resolve(request);
       } catch (e) {
-        setError(e.errors[0].message)
-        reject(e.errors[0].message);
+        reject(e);
       }
     });
   }

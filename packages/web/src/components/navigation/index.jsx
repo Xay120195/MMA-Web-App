@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-//import { FaBars } from "react-icons/fa";
+import { FaBars } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
 import { Auth } from "aws-amplify";
 // import '../../assets/styles/Navbar.css';
@@ -42,24 +42,9 @@ function Navbar() {
   });
 
   useEffect(() => {
-
-    // query MyQuery {
-    //   user(id: "f764e5be-a4c6-4c12-b620-755bfbdd1bbc") {
-    //     company {
-    //       name
-    //     }
-    //     email
-    //     firstName
-    //     lastName
-    //   }
-    // }
-
-    
     let getUser = async () => {
       try {
-        let user = await Auth.currentAuthenticatedUser({
-          bypassCache: true
-        });
+        let user = await Auth.currentAuthenticatedUser();
         await setuserInfo(user);
         console.log(user);
       } catch (error) {
@@ -71,7 +56,7 @@ function Navbar() {
 
   return (
     <>
-      {location !== "/" && location !== "/post-registration" && (
+      {location !== "/" && (
         <IconContext.Provider value={{ color: "#fff" }}>
           <div className="sidebar-collapsed sidebar">
             <div className="main-grid">
