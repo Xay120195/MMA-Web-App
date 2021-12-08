@@ -29,7 +29,7 @@ export default function Dashboard() {
   const {
     register,
     formState: { errors },
-    handleSubmit
+    handleSubmit,
   } = useForm();
 
   const clientNameOptions = clients
@@ -42,7 +42,9 @@ export default function Dashboard() {
   useEffect(() => {
     let getUser = async () => {
       try {
-        let user = await Auth.currentAuthenticatedUser();
+        let user = await Auth.currentAuthenticatedUser({
+          bypassCache: true,
+        });
         await setuserInfo(user);
       } catch (error) {
         console.log(error);
@@ -58,11 +60,13 @@ export default function Dashboard() {
 
   const filter = (v) => {
     setmatterList(
-      matters.filter(
-        (x) =>
-          x.name.toLowerCase().indexOf(v.toLowerCase()) !== -1 ||
-          x.client.name.toLowerCase().indexOf(v.toLowerCase()) !== -1
-      ).sort((a, b) => a.name.localeCompare(b.name))
+      matters
+        .filter(
+          (x) =>
+            x.name.toLowerCase().indexOf(v.toLowerCase()) !== -1 ||
+            x.client.name.toLowerCase().indexOf(v.toLowerCase()) !== -1
+        )
+        .sort((a, b) => a.name.localeCompare(b.name))
     );
   };
 
@@ -124,15 +128,13 @@ export default function Dashboard() {
     setTimeout(() => {
       setShowToast(false);
       setclientName([]);
-      setmatterName('');
+      setmatterName("");
     }, 3000);
   };
 
   const contentDiv = {
     margin: "0 0 0 65px",
   };
-
-  
 
   const handleModalClose = () => {
     setshowDeleteModal(false);

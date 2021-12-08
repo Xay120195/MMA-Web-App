@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Redirect, useLocation } from "react-router-dom";
+import { Redirect, useHistory } from "react-router-dom";
 import {
   AmplifyAuthenticator,
   AmplifySignUp,
@@ -44,27 +44,32 @@ const navigation = [
 
 const Authentication = () => {
   const [authState, setAuthState] = useState(AuthState.SignIn);
+  const [prevAuthState, setPrevAuthState] = useState();
   const [user, setUser] = useState();
   const [customCompanyName, setCustomCompanyName] = useState();
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
 
-  // const routeLocation = useLocation();
-  // useEffect(()=>{
-  //   let hashLoc = routeLocation.hash;
-  //   console.log('Location changed ', routeLocation);
-  //   if(hashLoc === '#signup'){
-  //     setAuthState(AuthState.SignUp);
-  //   }
-
-  // }, [routeLocation]);
+  let history = useHistory();
 
   useEffect(() => {
     return onAuthUIStateChange((nextAuthState, authData) => {
+      console.log(authState, nextAuthState);
+      if (authState !== nextAuthState) {
+        setPrevAuthState(nextAuthState);
+      }
+
+      if (prevAuthState === undefined) {
+        setPrevAuthState(nextAuthState);
+      }
+
       setAuthState(nextAuthState);
       setUser(authData);
+
+      if (prevAuthState === "confirmSignUp" && nextAuthState === "signedin")
+        history.push(AppRoutes.POSTREGISTRATION);
     });
-  }, []);
+  }, [authState, prevAuthState, history]);
 
   function clean_up(v) {
     let c = v.replace(/\s+/g, " ");
@@ -198,7 +203,8 @@ const Authentication = () => {
       <div className="grid grid-cols-2 gap-4">
         <div className="welcome-message">
           <h1>
-            A Software Built for Managing Affidavits and Exchanging RFIs with your Clients
+            A Software Built for Managing Affidavits and Exchanging RFIs with
+            your Clients
           </h1>
         </div>
 
