@@ -10,6 +10,7 @@ import Select from "react-select";
 import { useForm } from "react-hook-form";
 import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
+import dateFormat from 'dateformat';
 import "../../assets/styles/Dashboard.css";
 
 export default function Dashboard() {
@@ -87,12 +88,15 @@ export default function Dashboard() {
     setsearchMatter(e.target.value);
   };
 
+  const datenow = new Date();
+
   const handleNewMatter = (data) => {
     let client_name = clientName.label,
       client_id = clientName.value,
       matter_name = data.matterName,
       matter_id = 123,
-      matter_number = `${matter_name.charAt(0)}-${matter_id}/${client_id}`;
+      matter_number = `${matter_name.charAt(0)}-${matter_id}/${client_id}`,
+      timestamp = dateFormat(datenow, "dd mmmm yyyy h:MM:ss TT");
 
     console.log(data);
     console.log(clientName.value);
@@ -113,6 +117,7 @@ export default function Dashboard() {
           profile_picture:
             "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
         },
+        timestamp: timestamp,
       },
       ...previousState,
     ]);
