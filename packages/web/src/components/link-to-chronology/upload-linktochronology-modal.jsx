@@ -3,33 +3,83 @@ import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
 import '../../assets/styles/UploadLink.css';
 import Pie from "../link-to-chronology/Pie";
 
+const useRefEventListener = (fn) => {
+  const fnRef = useRef(fn);
+  fnRef.current = fn;
+  return fnRef;
+};
+
 export default function UploadLinkModal(props) {
 
-  const [selectedFiles, setSelectedFiles] = useState([])
+  const [selectedFiles, _setSelectedFiles] = useState([])
 
-  const deleteBtn = (index) => {
-    let tempArray = selectedFiles;
-    tempArray = tempArray.filter((item, i) => i !== index);
-
-    setSelectedFiles(tempArray);
-  }
-
-  const onSelectFile = e => {
-    if (!e.target.files || e.target.files.length === 0) {
-      setSelectedFiles([])
+  const handleDrop = (e) => {
+    e.preventDefault()
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
       return
     }
     const tempArr = [];
 
-    [...e.target.files].forEach(file => {
-      console.log("file >>> ", file);
+    [...e.dataTransfer.files].forEach(file => {
       tempArr.push({
         data: file,
         url: URL.createObjectURL(file)
       });
     });
 
-    setSelectedFiles(tempArr);
+    setSelectedFiles([...selectedFiles, ...tempArr]);
+  };
+
+  const handleDropRef = useRefEventListener(handleDrop);
+
+  const handleDrag = (e) => {
+    e.preventDefault()
+  };
+
+  const dropRef = useRef();
+
+  const myCurrentRef = useRef(selectedFiles);
+  const setSelectedFiles = data => {
+    myCurrentRef.current = data;
+    _setSelectedFiles(data);
+  };
+
+  useEffect(() => {
+    let div = dropRef.current
+    div.addEventListener('dragover', handleDrag)
+    div.addEventListener('drop', (e) => handleDropRef.current(e))
+
+    return () => {
+      div.removeEventListener('dragover', handleDrag);
+      div.removeEventListener('drop', handleDropRef);
+    };
+  }, []);
+
+  const onDragEnter = () => dropRef.current.classList.add('dragover');
+  const onDragLeave = () => dropRef.current.classList.remove('dragover');
+  const onDrop = () => dropRef.current.classList.remove('dragover');
+
+  const onSelectFile = e => {
+    console.log(myCurrentRef.current)
+    if (!e.target.files || e.target.files.length === 0) {
+      return
+    }
+    const tempArr = [];
+
+    [...e.target.files].forEach(file => {
+      tempArr.push({
+        data: file,
+        url: URL.createObjectURL(file)
+      });
+    });
+    setSelectedFiles([...myCurrentRef.current, ...tempArr])
+  }
+
+  const deleteBtn = (index) => {
+    let tempArray = selectedFiles;
+    tempArray = tempArray.filter((item, i) => i !== index);
+
+    setSelectedFiles(tempArray);
   }
 
   const handleModalClose = () => {
@@ -39,8 +89,6 @@ export default function UploadLinkModal(props) {
   const handleSave = () => {
     props.handleSave(selectedFiles);
   };
-
-  console.log(selectedFiles, "selectedFiles");
 
   const [isOpen, setIsOpen] = useState(true);
 
@@ -57,44 +105,6 @@ export default function UploadLinkModal(props) {
     });
   };
 
-  const dropRef = useRef();
-
-  useEffect(() => {
-    let div = dropRef.current
-    div.addEventListener('dragover', handleDrag)
-    div.addEventListener('drop', handleDrop)
-
-    return () => {
-      div.removeEventListener('dragover', handleDrag);
-      div.removeEventListener('drop', handleDrop);
-    };
-  }, []);
-
-  const handleDrop = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
-      setSelectedFiles([])
-      return
-    }
-    const tempArr = [];
-
-    [...e.dataTransfer.files].forEach(file => {
-      console.log("file >>> ", file);
-      tempArr.push({
-        data: file,
-        url: URL.createObjectURL(file)
-      });
-    });
-
-    setSelectedFiles(tempArr);
-  };
-
-  const handleDrag = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-  };
-
   return (
     <>
           <div className="main-upload">
@@ -104,9 +114,9 @@ export default function UploadLinkModal(props) {
               <FiX className="close-btn" onClick={handleModalClose} style={{ color: 'var(--mysteryGrey)' }} />
             </div>
             {isOpen && <div className="file-grid">
-              <div className="upload-grid" ref={dropRef}>
+              <div className="upload-grid" ref={dropRef} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDrop={onDrop}>
                 <div className="upload-area">
-                  <FiDownloadCloud className="arrow-btn" style={{ color: 'var(--darkGrey)' }} />
+                  <FiDownloadCloud className="arrow-btn" style={{ color: 'var(--primaryDefault)' }} />
                   <input type="file" multiple="multiple" id="file" onChange={onSelectFile} hidden />
                   <p className="title-txt drop-txt">Drop files here or <label htmlFor="file">browse</label></p>
                 </div>
@@ -119,13 +129,7 @@ export default function UploadLinkModal(props) {
                   <div className="items-grid">
                     {selectedFiles?.map((selectedFile, index) =>
                       <div id="uploadDivContent" key={index}>
-                        <div className="img-content">
-                          <img src={selectedFile.url} />
-                        </div>
-                        <div className="details-content">
-                          <span>{selectedFile.data.name}</span>
-                          <span>{selectedFile.data.size}</span>
-                        </div>
+                        <span className="upload-name">{selectedFile.data.name}</span>
                         <FiTrash className="deleteBtn" onClick={() => deleteBtn(index)} />
                         <Pie percentage={random.percentage} colour={random.colour} />
                       </div>

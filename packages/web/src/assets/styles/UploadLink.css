@@ -32,7 +32,7 @@
     box-shadow: 0px 0px 8px 0px #0000001A;
     bottom: 0;
     right: 1rem;
-    position: absolute;
+    position: fixed;
 }
 
 @media screen and (min-width: 700px) {
@@ -88,10 +88,16 @@
     display: grid;
     grid-gap: .5rem;
     padding: 1rem;
-    background-color: var(--defaultBgColor);
-    border: 1px dashed var(--defaultBorderColor);
+    background-color: rgba(28, 193, 233, 0.1);
+    border: 1px dashed var(--primaryDefault);
     border-radius: 1rem;
     width: -webkit-fill-available;
+}
+
+.upload-grid:hover,
+.upload-grid.dragover {
+    background-color: var(--defaultBgColor);
+    border: 1px dashed var(--defaultBorderColor);
 }
 
 .upload-area {
@@ -166,47 +172,18 @@
 
 #uploadDivContent {
     display: grid;
-    grid-template-columns: 50px 1fr auto auto;
+    grid-template-columns: 1fr auto auto;
     grid-gap: 1rem;
     align-items: center;
     margin-right: 1rem;
 }
 
-.img-content {
-    width: 50px;
-    height: 50px;
-    background-color: var(--defaultBgColor);
-    border-radius: 10px;
-    padding: .25rem;
-    place-content: center;
-    display: grid;
-}
-
-.img-content img{
-    height: 100%;
-    width: 100%;
-    width: 50px;
-    height: 50px;
-    padding: .25rem;
-}
-
-.details-content {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.5rem;
-    align-items: center;
-    font-weight: 300;
-    color: var(--darkGrey);
-}
-
-.details-content span:nth-child(1) {
+.upload-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.details-content span:nth-child(2) {
-    color: var(--mysteryGrey);
+    font-weight: 300;
+    color: var(--darkGrey);
 }
 
 .deleteBtn {
