@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
   const [matterList, setmatterList] = useState(matters);
-  const [clientName, setclientName] = useState([]);
+  const [clientName, setclientName] = useState(null);
   const [matterName, setmatterName] = useState();
   const modalDeleteAlertMsg = "Successfully deleted!";
   const createMatterAlertMsg = "Matter successfully added!";
@@ -51,7 +51,7 @@ export default function Dashboard() {
     };
     getUser();
 
-    console.log(searchMatter);
+    console.log(matterList);
     if (searchMatter !== undefined) {
       filter(searchMatter);
     }
@@ -98,7 +98,7 @@ export default function Dashboard() {
       matter_number = `${matter_name.charAt(0)}-${matter_id}/${client_id}`,
       timestamp = dateFormat(datenow, "dd mmmm yyyy h:MM:ss TT");
 
-    console.log(data);
+    console.log(clientName);
     console.log(clientName.value);
 
     setmatterList((previousState) => [
@@ -128,7 +128,7 @@ export default function Dashboard() {
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
-      setclientName([]);
+      //setclientName([]);
       setmatterName('');
     }, 3000);
   };
