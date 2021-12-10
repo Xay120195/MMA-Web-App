@@ -61,8 +61,8 @@ export default function Dashboard() {
     setmatterList(
       matters.filter(
         (x) =>
-          x.name.toLowerCase().indexOf(v.toLowerCase()) !== -1 ||
-          x.client.name.toLowerCase().indexOf(v.toLowerCase()) !== -1
+          x.name.toLowerCase().includes(v.toLowerCase()) ||
+          x.client.name.toLowerCase().includes(v.toLowerCase())
       ).sort((a, b) => a.name.localeCompare(b.name))
     );
   };
@@ -84,7 +84,7 @@ export default function Dashboard() {
   };
 
   const handleSearchMatterChange = (e) => {
-    console.log(e.target.value);
+    console.log("L87" + e.target.value);
     setsearchMatter(e.target.value);
   };
 
@@ -103,7 +103,7 @@ export default function Dashboard() {
 
     setmatterList((previousState) => [
       {
-        id: 198,
+        id: 34857,
         name: matter_name,
         matter_number: matter_number,
         client: {
@@ -122,7 +122,6 @@ export default function Dashboard() {
       ...previousState,
     ]);
 
-    console.log(matterList);
     setalertMessage(createMatterAlertMsg);
     handleModalClose();
     setShowToast(true);
