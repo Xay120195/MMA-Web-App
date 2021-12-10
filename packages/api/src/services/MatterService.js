@@ -12,7 +12,7 @@ exports.generatePresignedUrl = async (Key) => {
     });
 
     /**
-     * Generate Pre-signed url using getSignedUrl
+     * Generate Pre-signed url using getSignedUrl expires after 1 hour
      */
     return getSignedUrl(client, command, { expiresIn: 3600 });
 }

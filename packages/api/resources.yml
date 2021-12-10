@@ -63,6 +63,5 @@ Resources:
 
   MatterFileS3Bucket:
     Type: "AWS::S3::Bucket"
-    DeletionPolicy: Retain
     Properties:
       BucketName: matter-files-bucket

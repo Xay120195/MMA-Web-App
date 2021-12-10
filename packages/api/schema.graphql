@@ -95,6 +95,7 @@ enum UserType {
 
 type File {
   id: ID
+  size: Int
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
