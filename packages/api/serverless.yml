@@ -25,14 +25,16 @@ plugins:
   - serverless-appsync-plugin
 
 functions:
-  addTwoNumbers-fn:
-    handler: src/handlers/addTwoNumbers/index.handler
-  hello-fn:
-    handler: src/handlers/helloFn/index.handler
+  # addTwoNumbers-fn:
+  #   handler: src/handlers/addTwoNumbers/index.handler
+  # hello-fn:
+  #   handler: src/handlers/helloFn/index.handler
   query-fn:
     handler: src/handlers/graphql/query/index.handler
   mutation-fn:
     handler: src/handlers/graphql/mutation/index.handler
+  file-fn:
+    handler: src/handlers/graphql/file/index.handler
 
 custom:
   dynamodb:
@@ -68,16 +70,16 @@ custom:
         field: addColor
         request: Mutation.addColor.request.vtl
         response: Mutation.addColor.response.vtl
-      - dataSource: LambdaAddTwoNumbersDS
-        type: Mutation
-        field: addTwoNumbers
-        request: false
-        response: false
-      - dataSource: LambdaHelloDS
-        type: Query
-        field: hello
-        request: false
-        response: false
+      # - dataSource: LambdaAddTwoNumbersDS
+      #   type: Mutation
+      #   field: addTwoNumbers
+      #   request: false
+      #   response: false
+      # - dataSource: LambdaHelloDS
+      #   type: Query
+      #   field: hello
+      #   request: false
+      #   response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: company
@@ -98,20 +100,36 @@ custom:
         field: userCreate
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matterFile
+        request: false
+        response: false
+      - dataSource: DynamoDBMatterFileTableDS
+        type: Query
+        field: matterFile
+      - dataSource: DynamoDBMatterFileTableDS
+        type: Mutation
+        field: matterFileCreate
+      - dataSource: LambdaFileDS
+        type: File
+        field: downloadURL
+        request: false
+        response: false
 
     dataSources:
-      - type: AWS_LAMBDA
-        name: LambdaAddTwoNumbersDS
-        config:
-          functionName: addTwoNumbers-fn
+      # - type: AWS_LAMBDA
+      #   name: LambdaAddTwoNumbersDS
+      #   config:
+      #     functionName: addTwoNumbers-fn
       - type: AMAZON_DYNAMODB
         name: DynamoDBColorTableDS
         config:
           tableName: !Ref ColorTable
-      - type: AWS_LAMBDA
-        name: LambdaHelloDS
-        config:
-          functionName: hello-fn
+      # - type: AWS_LAMBDA
+      #   name: LambdaHelloDS
+      #   config:
+      #     functionName: hello-fn
       - type: AWS_LAMBDA
         name: LambdaQueryDS
         config:
@@ -120,6 +138,14 @@ custom:
         name: LambdaMutationDS
         config:
           functionName: mutation-fn
+      - type: AWS_LAMBDA
+        name: LambdaFileDS
+        config:
+          functionName: file-fn
+      - type: AMAZON_DYNAMODB
+        name: DynamoDBMatterFileTableDS
+        config:
+          tableName: !Ref MatterFileTable
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}
