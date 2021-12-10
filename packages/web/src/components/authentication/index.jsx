@@ -71,8 +71,7 @@ const Authentication = () => {
 
       
       if (prevAuthState === "confirmSignUp" && nextAuthState === "signedin"){
-        //history.push(AppRoutes.POSTREGISTRATION);
-        history.push(AppRoutes.POSTAUTHENTICATION);
+        history.push(AppRoutes.POSTREGISTRATION);
       } else if(nextAuthState === "signedin"){
         history.push(AppRoutes.POSTAUTHENTICATION);
       }
