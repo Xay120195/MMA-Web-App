@@ -21,7 +21,7 @@ async function getCompany() {
   const res = await API.graphql({
     query: getCompanyById,
     variables: {
-      id: "d77851b6-2bd0-4253-a2db-481b79c83ab9"
+      id: "da5115db-fd2c-4179-b8f0-f83aabe14440"
     }
   });
 
