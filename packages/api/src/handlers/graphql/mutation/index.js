@@ -37,6 +37,23 @@ async function createUser(data) {
   return params;
 }
 
+async function createPage(data) {
+  const params = {
+    id: v4(),
+    name: data.name,
+    label: data.label,
+    route: data.route,
+    createdAt: new Date().toISOString()
+  };
+
+  const command = new PutItemCommand({
+    TableName: "PageTable",
+    Item: marshall(params),
+  });
+  await client.send(command);
+  return params;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -44,6 +61,9 @@ const resolvers = {
     },
     userCreate: async (ctx) => {
       return createUser(ctx.arguments);
+    },
+    pageCreate: async (ctx) => {
+      return createPage(ctx.arguments);
     }
   },
   

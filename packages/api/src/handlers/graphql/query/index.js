@@ -1,5 +1,5 @@
 const client = require("../../../lib/dynamodb-client");
-const { GetItemCommand } = require("@aws-sdk/client-dynamodb");
+const { GetItemCommand, ScanCommand } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function getCompany(data) {
@@ -11,6 +11,20 @@ async function getCompany(data) {
   });
   const response = await client.send(command);
   return unmarshall(response.Item)
+}
+
+async function listPages() {
+  const command = new ScanCommand({
+    TableName: "PageTable"
+  });
+
+  const response = await client.send(command);
+  const paraseResponse = response.Items.map(
+    (data) => unmarshall(data)
+);
+
+console.log(paraseResponse);
+  return paraseResponse;
 }
 
 async function getUser(data) {
@@ -29,6 +43,9 @@ const resolvers = {
     company: async (ctx) => {
       return getCompany(ctx.arguments);
     },
+    page: async()=>{
+      return listPages()
+    },
     user: async (ctx) => {
       return getUser(ctx.arguments);
     }
@@ -46,3 +63,4 @@ exports.handler = async (ctx) => {
   }
   throw new Error("Resolver not found.");
 };
+
