@@ -236,7 +236,7 @@ export default function MattersOverview() {
                               />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
-                            <Link to={`${AppRoutes.MATTERSAFFIDAVIT}/${wa.id}`}>
+                            <Link to={`${AppRoutes.WITNESSAFFIDAVIT}/${wa.id}`}>
                               <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">View</button>
                             </Link>
                           </td>

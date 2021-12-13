@@ -1,9 +1,9 @@
 export const AppRoutes = {
     DASHBOARD: '/dashboard',
     MATTERSOVERVIEW: '/matters-overview',
-    MATTERSAFFIDAVIT: '/matters-affidavit',
+    WITNESSAFFIDAVIT: '/witness-affidavit',
     MATTERSRFI: '/matters-rfi',
-    USERACCESS: '/contact-access',
+    USERTYPEACCESS: '/usertype-access',
     PROFILE: '/user-profile',
     CHANGEPASSWORD: '/change-password',
     POSTREGISTRATION: '/post-registration',

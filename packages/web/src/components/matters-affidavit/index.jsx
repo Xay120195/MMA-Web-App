@@ -13,7 +13,7 @@ import PreviewModal from "../link-to-chronology/preview-linktochronology-modal";
 import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
 
-export default function MattersAffidavit() {
+export default function WitnessAffidavit() {
   let history = useHistory();
   const tableHeaders = [
     "No.",

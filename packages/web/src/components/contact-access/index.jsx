@@ -8,7 +8,7 @@ import { PageList } from "./page-list";
 
 const tableHeaders = ["Owner", "Legal Admin", "Barrister", "Expert", "Client"];
 
-const UserAccess = (props) => {
+const UserTypeAccess = (props) => {
   const title = "All changes has been saved!";
 
   const [showToast, setShowToast] = useState(false);
@@ -167,4 +167,4 @@ const UserAccess = (props) => {
   );
 };
 
-export default UserAccess;
+export default UserTypeAccess;
