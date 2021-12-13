@@ -14,7 +14,7 @@ export const SidebarData = [
     cName: 'nav-text'
   },{
     title: 'Users Access',
-    path: AppRoutes.USERACCESS,
+    path: AppRoutes.USERTYPEACCESS,
     icon: <FaUsersCog style={{ color: 'var(--mysteryGrey)' }} />,
     cName: 'nav-text'
   },

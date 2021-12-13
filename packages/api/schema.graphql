@@ -5,10 +5,9 @@ schema {
 
 type Query {
   colors: [Color]
-  hello: String
   company(id: String): Company
-  # sampple ID d77851b6-2bd0-4253-a2db-481b79c83ab9
   user(id: String): User
+  page: [Page]
   matterFile(id: ID!): File
 }
 
@@ -16,7 +15,7 @@ type Mutation {
   addColor(name: String!, hex: String!): Color
   addTwoNumbers(first: Int, second: Int): Int
   companyCreate(name: String, representative: representativeInput): Company
-
+  pageCreate(name: String, label: String, route: String): Page
   userCreate(
     id: ID!
     firstName: String
@@ -80,6 +79,15 @@ type User {
   company: Company
   userType: UserType
   profilePicture: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Page {
+  id: ID!
+  name: String
+  label: String
+  route: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
