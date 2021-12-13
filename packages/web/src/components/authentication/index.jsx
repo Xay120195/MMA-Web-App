@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Redirect, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import {
   AmplifyAuthenticator,
   AmplifySignUp,
@@ -53,9 +53,6 @@ const Authentication = () => {
   let history = useHistory();
 
   useEffect(() => {
-
-    
-
     return onAuthUIStateChange((nextAuthState, authData) => {
       console.log(authState, nextAuthState);
       if (authState !== nextAuthState) {
@@ -69,16 +66,13 @@ const Authentication = () => {
       setAuthState(nextAuthState);
       setUser(authData);
 
-      
-      if (prevAuthState === "confirmSignUp" && nextAuthState === "signedin"){
+      if (prevAuthState === "confirmSignUp" && nextAuthState === "signedin") {
         history.push(AppRoutes.POSTREGISTRATION);
-      } else if(nextAuthState === "signedin"){
+      } else if (nextAuthState === "signedin") {
         history.push(AppRoutes.POSTAUTHENTICATION);
       }
       console.log(authState, prevAuthState);
     });
-
-    
   }, [authState, prevAuthState, history]);
 
   function clean_up(v) {
@@ -152,7 +146,7 @@ const Authentication = () => {
   // return authState === AuthState.SignedIn && user ? (
   //   <>
   //     {
-        
+
   //       authState === 'signedin' && prevAuthState === 'confirmSignUp' ? (
   //         <Redirect to={AppRoutes.POSTREGISTRATION} />
   //       ):(
@@ -161,7 +155,8 @@ const Authentication = () => {
   //     }
   //   </>
   // ) : (
-    return <>
+  return (
+    <>
       <Disclosure as="nav">
         {({ open }) => (
           <>
@@ -252,6 +247,7 @@ const Authentication = () => {
         </div>
       </div>
     </>
+  );
   //);
 };
 

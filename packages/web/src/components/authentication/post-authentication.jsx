@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Auth } from "aws-amplify";
+import { Auth, API } from "aws-amplify";
 import { useHistory } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 
@@ -11,25 +11,54 @@ export default function PostRegistration() {
   useEffect(() => {
     clearLocalStorage();
 
+    const userDetails = `
+      query user($id: String) {
+        user(id: $id) {
+          company {
+            name
+          }
+          email
+          firstName
+          lastName
+          userType
+        }
+      }
+    `;
+
     let getUser = async () => {
       try {
         await Auth.currentAuthenticatedUser({
           bypassCache: true,
         })
           .then((cognitoUser) => {
-            localStorage.setItem("userId", cognitoUser.attributes["sub"]);
-            localStorage.setItem("email", cognitoUser.attributes["email"]);
-            localStorage.setItem("firstName",cognitoUser.attributes["given_name"]);
-            localStorage.setItem("lastName",cognitoUser.attributes["family_name"]);
-            localStorage.setItem("company",cognitoUser.attributes["custom:company_name"]);
-            localStorage.setItem("userType", cognitoUser.attributes[""]);
-            history.push(AppRoutes.DASHBOARD);
+
+            
+            var userId = cognitoUser.attributes["sub"];
+
+            API.graphql({
+              query: userDetails,
+              variables: {
+                id: userId
+              }
+            }).then((userInfo) =>{
+              localStorage.setItem("userId", userId);
+              localStorage.setItem("email", userInfo.data.user["email"]);
+              localStorage.setItem("firstName",userInfo.data.user["firstName"]);
+              localStorage.setItem("lastName",userInfo.data.user["lastName"]);
+              localStorage.setItem("company",userInfo.data.user.company["name"]);
+              localStorage.setItem("userType", userInfo.data.user["userType"]);
+              history.push(AppRoutes.DASHBOARD);
+            });
           })
-          .catch((err) => setError(err));
+          //.catch((err) => setError(err));
+
       } catch (e) {
-        setError(e.errors[0].message);
+        console.log(e);
+        //setError(e.errors[0].message);
       }
     };
+
+    
     getUser();
   }, []);
 

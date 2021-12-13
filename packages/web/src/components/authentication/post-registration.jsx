@@ -13,11 +13,9 @@ export default function PostRegistration() {
       try {
         await Auth.currentAuthenticatedUser({
           bypassCache: true, // Optional, By default is false. If set to true, this call will send a request to Cognito to get the latest user data
-        })
-          .then((cognitoUserInfo) => {
-            setAccountDetails(cognitoUserInfo);
-          })
-          .catch((err) => setError(err));
+        }).then((cognitoUserInfo) => {
+          setAccountDetails(cognitoUserInfo);
+        });
       } catch (e) {
         setError(e);
       }
@@ -95,31 +93,6 @@ export default function PostRegistration() {
       }
     });
   }
-
-  async function getCompany() {
-    const res = await API.graphql({
-      query: getCompanyById,
-      variables: {
-        id: "d77851b6-2bd0-4253-a2db-481b79c83ab9",
-      },
-    });
-
-    console.log(res);
-  }
-
-  const getCompanyById = `
-  query getCompanyById($id: String) {
-    company(id: $id) {
-      createdAt
-      email
-      id
-      logo
-      name
-      phone
-      updatedAt
-    }
-  }
-`;
 
   const mCreateCompany = `
   mutation createCompany($name: String, $representative: representativeInput){

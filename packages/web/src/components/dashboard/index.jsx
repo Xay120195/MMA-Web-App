@@ -5,7 +5,6 @@ import imgDocs from "../../assets/images/docs.svg";
 import { Welcome } from "./welcome";
 import { matters, clients } from "./data-source";
 import { MattersList } from "./matters-list";
-import { Auth } from "aws-amplify";
 import Select from "react-select";
 import { useForm } from "react-hook-form";
 import DeleteMatterModal from "./delete-matters-modal";
@@ -41,15 +40,17 @@ export default function Dashboard() {
     .sort((a, b) => a.label.localeCompare(b.label));
 
   useEffect(() => {
-    let getUser = async () => {
-      try {
-        let user = await Auth.currentAuthenticatedUser();
-        await setuserInfo(user);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getUser();
+    if (userInfo === null) {
+      let ls = {
+        userId: localStorage.getItem("userId"),
+        email: localStorage.getItem("email"),
+        firstName: localStorage.getItem("firstName"),
+        lastName: localStorage.getItem("lastName"),
+        company: localStorage.getItem("company"),
+        userType: localStorage.getItem("userType"),
+      };
+      setuserInfo(ls);
+    }
 
     console.log(matterList);
     if (searchMatter !== undefined) {
