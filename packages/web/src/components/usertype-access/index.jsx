@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import "../../assets/styles/ContactAccess.css";
 import { pages, features } from "./data-source";
 import { Info } from "./info";
 import { Switch } from "./switch";
 import { PageList } from "./page-list";
+import { API } from "aws-amplify";
 
 const tableHeaders = ["Owner", "Legal Admin", "Barrister", "Expert", "Client"];
 
@@ -46,11 +47,30 @@ const UserTypeAccess = (props) => {
     margin: "0 0 0 65px",
   };
 
-  // useEffect(() => {
-  //   console.log(`Selected Page ID: ${pageAccess}`);
-  //   console.log(`Selected Page Access:`, pageAccessSwitch);
-  //   console.log(`Selected Feature Access:`, featureAccessSwitch);
-  // }, [pageAccess, pageAccessSwitch, featureAccessSwitch]);
+  useEffect(() => {
+    const getAllPages = `
+  query getAllPages {
+    page {
+      id
+      label
+      features {
+        id
+        label
+      }
+    }
+  }
+`;
+
+    let getCompany = async () => {
+      const res = await API.graphql({
+        query: getAllPages
+      });
+
+      console.log(res);
+    };
+
+    getCompany();
+  }, []);
 
   return (
     <>

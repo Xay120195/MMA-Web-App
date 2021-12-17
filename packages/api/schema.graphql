@@ -1,44 +1,3 @@
-schema {
-  query: Query
-  mutation: Mutation
-}
-
-type Query {
-  colors: [Color]
-  company(id: String): Company
-  user(id: String): User
-  page: [Page]
-  matterFile(id: ID!): File
-}
-
-type Mutation {
-  addColor(name: String!, hex: String!): Color
-  addTwoNumbers(first: Int, second: Int): Int
-  companyCreate(name: String, representative: representativeInput): Company
-  pageCreate(name: String, label: String, route: String): Page
-  userCreate(
-    id: ID!
-    firstName: String
-    lastName: String
-    email: AWSEmail
-    userType: UserType
-    company: companyInput
-  ): User
-
-  matterFileCreate(matterId: ID, s3ObjectKey: String): File
-}
-
-input representativeInput {
-  id: ID!
-  firstName: String
-  lastName: String
-  email: AWSEmail
-}
-
-input companyInput {
-  id: ID!
-  name: String
-}
 
 type Color {
   id: ID!
@@ -88,17 +47,27 @@ type Page {
   name: String
   label: String
   route: String
+  features: [Feature]
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Feature {
+  id: ID!
+  name: String
+  label: String
+  page: Page
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
 
 enum UserType {
-  owner
-  legalAdmin
-  barrister
-  expert
-  client
-  witness
+  OWNER
+  LEGALADMIN
+  BARRISTER
+  EXPERT
+  CLIENT
+  WITNESS
 }
 
 type File {
@@ -107,4 +76,59 @@ type File {
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  colors: [Color]
+  company(id: String): Company
+  user(id: String): User
+  page: [Page]
+  feature(id: String): Feature
+  matterFile(id: ID!): File
+}
+
+type Mutation {
+  addColor(name: String!, hex: String!): Color
+  addTwoNumbers(first: Int, second: Int): Int
+  companyCreate(name: String, representative: representativeInput): Company
+  userCreate(
+    id: ID!
+    firstName: String
+    lastName: String
+    email: AWSEmail
+    userType: UserType
+    company: companyInput
+  ): User
+  pageCreate(name: String, label: String, route: String, features: [featureInput]): Page
+  featureCreate(name: String, label: String, page: pageInput): Feature
+  matterFileCreate(matterId: ID, s3ObjectKey: String): File
+}
+
+input companyInput {
+  id: ID!
+  name: String
+}
+
+input pageInput {
+  id: ID!
+  name: String
+}
+
+input representativeInput {
+  id: ID!
+  firstName: String
+  lastName: String
+  email: AWSEmail
+}
+
+input featureInput {
+  id: ID!
+  name: String
+  label: String
 }

@@ -39,7 +39,7 @@ export default function PostRegistration() {
       lastName: cognitoUserInfo.attributes["family_name"],
       email: cognitoUserInfo.attributes["email"],
       company: company,
-      userType: "owner",
+      userType: "OWNER",
     };
 
     createAccount(company, user);

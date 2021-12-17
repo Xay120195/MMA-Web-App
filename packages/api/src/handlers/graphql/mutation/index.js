@@ -43,11 +43,28 @@ async function createPage(data) {
     name: data.name,
     label: data.label,
     route: data.route,
+    features: data.features,
     createdAt: new Date().toISOString()
   };
 
   const command = new PutItemCommand({
     TableName: "PageTable",
+    Item: marshall(params),
+  });
+  await client.send(command);
+  return params;
+}
+
+async function createFeature(data) {
+  const params = {
+    id: v4(),
+    name: data.name,
+    label: data.label,
+    page: data.page,
+    createdAt: new Date().toISOString()
+  };
+  const command = new PutItemCommand({
+    TableName: "FeatureTable",
     Item: marshall(params),
   });
   await client.send(command);
@@ -64,6 +81,9 @@ const resolvers = {
     },
     pageCreate: async (ctx) => {
       return createPage(ctx.arguments);
+    },
+    featureCreate: async (ctx) => {
+      return createFeature(ctx.arguments);
     }
   },
   
