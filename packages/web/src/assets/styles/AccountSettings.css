@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+body {
+  --mysteryGrey: #8A8A8A;
+  --darkGrey: #454545;
+  --primaryDefault: #1CC1E9;
+  --largeFont: 30px;
+  --mediumFont: 20px;
+  --smallFont: 16px;
+  --xSmallFont: 14px;
+  --fontFamily: 'Poppins', sans-serif;
+}
+
+* {
+  font-family: var(--fontFamily);
+  margin: 0;
+}
+
+.settings-grid {
+    margin: 0 0 0 65px;
+    padding: 1rem;
+}

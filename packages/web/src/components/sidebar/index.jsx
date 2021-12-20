@@ -2,18 +2,18 @@
 // import { faReact } from '@fortawesome/free-brands-svg-icons';
 // import { faChevronDoubleRight, faSignOutAlt } from '@fortawesome/pro-duotone-svg-icons';
 import React, { useState } from 'react';
-import { BiLogOut } from "react-icons/bi";
+import { CgLogOut } from "react-icons/cg";
 import { FaReact } from "react-icons/fa";
 import { HiChevronDoubleLeft } from "react-icons/hi";
 
 import { SidebarData } from './SidebarData';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import '../../assets/styles/SideNavigation.css';
 
-const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
+const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
 
-    const [activePage, setActivePage] = useState();
-    
+    const location = useLocation();
+
     return (
         <>
             <div className="sidebar">
@@ -24,22 +24,23 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                     </div>
                     <ul className="nav-menus">
                         {SidebarData.map((item, index) => {
-                        return (
-                            <li key={index} onClick={showSidebar = () => setActivePage(item.title)} className={activePage === item.title ? "bg-gray-300" : ""}>
-                            <Link className="nav-item" to={item.path}>
-                                {item.icon}<span>{item.title}</span>
-                            </Link>
-                            </li>
-                        );
+                            return (
+                                <li key={index} className={location.pathname === item.path ? "active-page" : ""}>
+                                    <Link className="nav-item" to={item.path}>
+                                        {item.icon}<span>{item.title}</span>
+                                    </Link>
+                                </li>
+                            );
                         })}
                     </ul>
-                </div>
-                <div className="bottom-grid">
+                    <hr/>
                     <div className="logout-btn" onClick={clickLogout}>
-                        <BiLogOut style={{ color: 'var(--white)' }} />
+                        <CgLogOut style={{ color: 'var(--mysteryGrey)' }} />
                         <span>Log out</span>
                     </div>
-                    { userInfo !== null &&
+                </div>
+                <div>
+                    {userInfo !== null &&
                         <div className="avatar-grid">
                             <div className="avatar">
                                 {
@@ -47,7 +48,7 @@ const Sidebar = ({showSidebar, userInfo, clickLogout}) => {
                                 }
                             </div>
                             <div className="details-grid">
-                                <span>{userInfo['email']}</span>
+                                <span className="name-txt">{userInfo['firstName']} {userInfo['lastName']}</span>
                                 <span>{userInfo['company']}</span>
                             </div>
                         </div>
