@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FaBars } from "react-icons/fa";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { Auth } from "aws-amplify";
 // import '../../assets/styles/Navbar.css';
 import { IconContext } from "react-icons";
 import Sidebar from "../sidebar";
 import { SidebarData } from "../sidebar/SidebarData";
 
-import { BiLogOut } from "react-icons/bi";
+import { CgLogOut } from "react-icons/cg";
 import { FaReact } from "react-icons/fa";
 import { HiChevronDoubleRight } from "react-icons/hi";
 
@@ -16,7 +16,7 @@ function Navbar() {
   const showSidebar = () => setSidebar(!sidebar);
   //const [location, setlocation] = useState(window.location.pathname);
   const [userInfo, setuserInfo] = useState(null);
-  const [activePage, setActivePage] = useState();
+  const location = useLocation();
 
   let history = useHistory();
   const clickLogout = async (e) => {
@@ -85,8 +85,7 @@ function Navbar() {
             {SidebarData.map((item, index) => {
               return (
                 <li
-                  onClick={() => setActivePage(item.title)}
-                  className={activePage === item.title ? "bg-gray-300" : ""}
+                  className={location.pathname === item.path ? "active-page" : ""}
                   key={index}
                 >
                   <Link className="nav-item-collapsed nav-item" to={item.path}>
@@ -96,14 +95,15 @@ function Navbar() {
               );
             })}
           </ul>
-        </div>
-        <div className="bottom-grid">
+          <hr/>
           <div
             className="logout-btn-collapsed logout-btn"
             onClick={clickLogout}
           >
-            <BiLogOut style={{ color: "var(--white)" }} />
+            <CgLogOut style={{ color: "var(--mysteryGrey)" }} />
           </div>
+        </div>
+        <div>
           {userInfo !== null && (
             <div className="avatar-grid-collapsed">
               <div className="avatar">
