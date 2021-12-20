@@ -6,7 +6,11 @@ export default function ChangePassword() {
   const {
     register,
     formState: { errors },
+    reset,
     handleSubmit,
+    getValues,
+    setError,
+    clearErrors,
   } = useForm();
 
   const handleSave = async (formdata) => {
@@ -19,9 +23,8 @@ export default function ChangePassword() {
       })
       .then((data) => {
         if (data === "SUCCESS") {
-          alert(
-            "Password successfully updated! Next time you log in, use your new password."
-          );
+          alert("Your password has been changed.");
+          reset({ oldPassword: "", newPassword: "" });
         }
       })
       .catch((err) => {
@@ -99,6 +102,11 @@ export default function ChangePassword() {
               className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
               placeholder="Old Password"
               {...register("oldPassword", { required: true })}
+              onChange={(elm)=>{
+                if(elm.target.value){
+                  clearErrors("oldPassword")  
+                }
+              }}
             />
           </div>
           {errors.oldPassword?.type === "required" && (
@@ -113,16 +121,43 @@ export default function ChangePassword() {
               className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
               placeholder="New Password"
               {...register("newPassword", { required: true })}
+              onChange={(elm) => {
+                
+                const values = getValues();
+
+                if(values.oldPassword){
+                  clearErrors("newPassword")  
+                }
+                
+                if(values.oldPassword && elm.target.value){
+                  if (values.oldPassword === elm.target.value) {
+                    setError("comparePassword", {
+                      type: "manual",
+                      message: "The new password you entered is the same as your old password. Enter a different password.",
+                    });
+                  }  
+                } else {
+                  clearErrors("comparePassword") 
+                }
+                
+                console.log(errors);
+              }}
             />
           </div>
           {errors.newPassword?.type === "required" && (
             <small className="text-red-400">New Password is required</small>
           )}
+
+          {errors.comparePassword && (
+            <small className="text-red-400">
+              {errors.comparePassword.message}
+            </small>
+          )}
         </div>
 
         <div className="flex items-center justify-end p-6 ">
           <button
-            className="bg-green-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+            className="bg-green-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mb-1 ease-linear transition-all duration-150"
             type="submit"
           >
             Change Password
