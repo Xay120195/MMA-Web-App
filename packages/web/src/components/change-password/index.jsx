@@ -3,6 +3,21 @@ import { Auth, API } from "aws-amplify";
 import { useForm } from "react-hook-form";
 
 export default function ChangePassword() {
+
+  const getUserById = `
+      query user($id: String) {
+        user(id: $id) {
+          company {
+            name
+          }
+          email
+          firstName
+          lastName
+          userType
+        }
+      }
+    `;
+
   const getCompanyById = `
   query getCompanyById($id: String) {
     company(id: $id) {
@@ -27,6 +42,20 @@ async function getCompany() {
 
   console.log(res);
 }
+
+async function getUser() {
+  const res = await API.graphql({
+    query: getUserById,
+    variables: {
+      id: "0c3f9e9e-98e0-492b-a2f3-8b635560c786"
+    }
+  });
+
+  console.log(res);
+}
+
+
+
 
 
 
@@ -56,7 +85,8 @@ async function getCompany() {
   };
 
   useEffect(() => {
-    getCompany()
+    //getCompany()
+    getUser()
   }, []);
 
 

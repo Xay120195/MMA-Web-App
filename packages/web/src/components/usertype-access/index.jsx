@@ -53,6 +53,7 @@ const UserTypeAccess = (props) => {
     page {
       id
       label
+      name
       features {
         id
         label
