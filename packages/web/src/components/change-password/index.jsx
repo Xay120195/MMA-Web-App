@@ -1,13 +1,66 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Auth, API } from "aws-amplify";
 import { useForm } from "react-hook-form";
 
 export default function ChangePassword() {
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
+
+  const handleSave = async (formdata) => {
+    const { oldPassword, newPassword } = formdata;
+
+    await Auth.currentAuthenticatedUser()
+      .then((user) => {
+        console.log(user);
+        return Auth.changePassword(user, oldPassword, newPassword);
+      })
+      .then((data) => {
+        if (data === "SUCCESS") {
+          alert(
+            "Password successfully updated! Next time you log in, use your new password."
+          );
+        }
+      })
+      .catch((err) => {
+        alert(err);
+      });
+  };
+
+  useEffect(() => {
+    getCompany();
+    getUser();
+  });
+
+  async function getCompany() {
+    const res = await API.graphql({
+      query: getCompanyById,
+      variables: {
+        id: "5d21d259-9288-46de-b66f-fee37241bab0",
+      },
+    });
+
+    console.log(res);
+  }
+
+  async function getUser() {
+    const res = await API.graphql({
+      query: getUserById,
+      variables: {
+        id: "0c3f9e9e-98e0-492b-a2f3-8b635560c786",
+      },
+    });
+
+    console.log(res);
+  }
 
   const getUserById = `
       query user($id: String) {
         user(id: $id) {
           company {
+            id
             name
           }
           email
@@ -32,68 +85,12 @@ export default function ChangePassword() {
   }
 `;
 
-async function getCompany() {
-  const res = await API.graphql({
-    query: getCompanyById,
-    variables: {
-      id: "da5115db-fd2c-4179-b8f0-f83aabe14440"
-    }
-  });
-
-  console.log(res);
-}
-
-async function getUser() {
-  const res = await API.graphql({
-    query: getUserById,
-    variables: {
-      id: "0c3f9e9e-98e0-492b-a2f3-8b635560c786"
-    }
-  });
-
-  console.log(res);
-}
-
-
-
-
-
-
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm();
-
-  const handleSave = async (formdata) => {
-    const { oldPassword, newPassword } = formdata;
-
-    console.log("oldPassword", oldPassword);
-    console.log("newPassword", newPassword);
-
-    await Auth.currentAuthenticatedUser()
-      .then((user) => {
-        console.log(user);
-        return Auth.changePassword(user, oldPassword, newPassword);
-      })
-      .then((data) => {
-        alert(data);
-      })
-      .catch((err) => {
-        alert(err);
-      });
-  };
-
-  useEffect(() => {
-    //getCompany()
-    getUser()
-  }, []);
-
-
-
   return (
     <form onSubmit={handleSubmit(handleSave)}>
-      <div className="container pl-20">
+      <div className="container p-10 w-1/2 items-center">
+        <div>
+          <p className="text-lg font-bold">Change Password</p>
+        </div>
         <div className="relative p-6 flex-auto">
           <p className="font-semi-bold text-sm">Old Password</p>
           <div className="relative my-2">
@@ -123,7 +120,7 @@ async function getUser() {
           )}
         </div>
 
-        <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
+        <div className="flex items-center justify-end p-6 ">
           <button
             className="bg-green-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
             type="submit"
@@ -135,4 +132,3 @@ async function getUser() {
     </form>
   );
 }
-
