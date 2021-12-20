@@ -36,10 +36,12 @@ type User {
   email: AWSEmail
   contactNumber: String
   company: Company
+  access: Page
   userType: UserType
   profilePicture: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+
 }
 
 type Page {
@@ -96,38 +98,38 @@ type Query {
 type Mutation {
   addColor(name: String!, hex: String!): Color
   addTwoNumbers(first: Int, second: Int): Int
-  companyCreate(name: String, representative: representativeInput): Company
+  companyCreate(name: String, representative: RepresentativeInput): Company
   userCreate(
     id: ID!
     firstName: String
     lastName: String
     email: AWSEmail
     userType: UserType
-    company: companyInput
+    company: CompanyInput
   ): User
-  pageCreate(name: String, label: String, route: String, features: [featureInput]): Page
-  featureCreate(name: String, label: String, page: pageInput): Feature
+  pageCreate(name: String, label: String, route: String, features: [FeatureInput]): Page
+  featureCreate(name: String, label: String, page: PageInput): Feature
   matterFileCreate(matterId: ID, s3ObjectKey: String): File
 }
 
-input companyInput {
+input CompanyInput {
   id: ID!
   name: String
 }
 
-input pageInput {
+input PageInput {
   id: ID!
   name: String
 }
 
-input representativeInput {
+input RepresentativeInput {
   id: ID!
   firstName: String
   lastName: String
   email: AWSEmail
 }
 
-input featureInput {
+input FeatureInput {
   id: ID!
   name: String
   label: String

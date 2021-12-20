@@ -6,47 +6,61 @@ async function getCompany(data) {
   const command = new GetItemCommand({
     TableName: "CompanyTable",
     Key: marshall({
-      id:data.id
-    })
+      id: data.id,
+    }),
   });
   const response = await client.send(command);
-  return unmarshall(response.Item)
+  return unmarshall(response.Item);
 }
 
 async function listPages() {
   const command = new ScanCommand({
-    TableName: "PageTable"
+    TableName: "PageTable",
   });
 
   const response = await client.send(command);
-  const paraseResponse = response.Items.map(
-    (data) => unmarshall(data)
-);
+  const paraseResponse = response.Items.map((data) => unmarshall(data));
 
-console.log(paraseResponse);
+  console.log(paraseResponse);
   return paraseResponse;
 }
 
 async function getUser(data) {
-  const command = new GetItemCommand({
-    TableName: "UserTable",
-    Key: marshall({
-      id:data.id
-    })
-  });
-  const response = await client.send(command);
-  return unmarshall(response.Item)
+  try {
+    const params = {
+      TableName: "UserTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+
+    const { Item } = await client.send(command);
+
+    response = Item ? unmarshall(Item) : {};
+
+  } catch (e) {
+    response = {
+      message: "Failed to retrieve user.",
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500
+    };
+  }
+
+  return response;
 }
 
 async function getFeature(data) {
   const command = new GetItemCommand({
     TableName: "FeatureTable",
     Key: marshall({
-      id:data.id
-    })
+      id: data.id,
+    }),
   });
   const response = await client.send(command);
-  return unmarshall(response.Item)
+  return unmarshall(response.Item);
 }
 
 const resolvers = {
@@ -54,17 +68,16 @@ const resolvers = {
     company: async (ctx) => {
       return getCompany(ctx.arguments);
     },
-    page: async()=>{
-      return listPages()
+    page: async () => {
+      return listPages();
     },
     user: async (ctx) => {
       return getUser(ctx.arguments);
     },
     feature: async (ctx) => {
       return getFeature(ctx.arguments);
-    }
-  }
-  
+    },
+  },
 };
 
 exports.handler = async (ctx) => {
@@ -77,4 +90,3 @@ exports.handler = async (ctx) => {
   }
   throw new Error("Resolver not found.");
 };
-

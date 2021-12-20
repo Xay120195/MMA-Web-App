@@ -1,5 +1,5 @@
 const client = require("../../../lib/dynamodb-client");
-const { PutItemCommand } = require("@aws-sdk/client-dynamodb");
+const { PutItemCommand, UpdateItemCommand } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
