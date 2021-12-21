@@ -45,7 +45,7 @@ export default function PostRegistration() {
               localStorage.setItem("email", userInfo.data.user["email"]);
               localStorage.setItem("firstName",userInfo.data.user["firstName"]);
               localStorage.setItem("lastName",userInfo.data.user["lastName"]);
-              localStorage.setItem("company",userInfo.data.user.company["name"]);
+              localStorage.setItem("company",userInfo.data.user["company"]["name"]);
               localStorage.setItem("userType", userInfo.data.user["userType"]);
               history.push(AppRoutes.DASHBOARD);
             });
