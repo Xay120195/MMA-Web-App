@@ -95,7 +95,7 @@ export default function PostRegistration() {
   }
 
   const mCreateCompany = `
-  mutation createCompany($name: String, $representative: representativeInput){
+  mutation createCompany($name: String, $representative: RepresentativeInput){
     companyCreate(
       name: $name
       representative: $representative
@@ -107,7 +107,7 @@ export default function PostRegistration() {
 `;
 
   const mCreateUser = `
-  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: companyInput){
+  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput){
     userCreate(
       id: $id
       email: $email
