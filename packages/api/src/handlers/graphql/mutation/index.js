@@ -1,5 +1,5 @@
 const client = require("../../../lib/dynamodb-client");
-const { PutItemCommand, UpdateItemCommand } = require("@aws-sdk/client-dynamodb");
+const { PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
@@ -8,7 +8,7 @@ async function createCompany(data) {
     id: v4(),
     name: data.name,
     representative: data.representative,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
   const command = new PutItemCommand({
     TableName: "CompanyTable",
@@ -19,22 +19,41 @@ async function createCompany(data) {
 }
 
 async function createUser(data) {
-  const params = {
+
+  try {
+  const rawParams = {
     id: data.id,
     firstName: data.firstName,
     lastName: data.lastName,
     email: data.email,
     userType: data.userType,
     company: data.company,
-    createdAt: new Date().toISOString()
+    access: data.access,
+    createdAt: new Date().toISOString(),
   };
+
+  const params = marshall(rawParams);
 
   const command = new PutItemCommand({
     TableName: "UserTable",
-    Item: marshall(params),
+    Item: params,
   });
-  await client.send(command);
-  return params;
+
+  const request = await client.send(command);
+  
+  response = unmarshall(params);
+
+} catch (e) {
+  response = {
+    error: e.message,
+    errorStack: e.stack,
+    statusCode: 500
+  };
+}
+
+return response;
+
+
 }
 
 async function createPage(data) {
@@ -44,7 +63,7 @@ async function createPage(data) {
     label: data.label,
     route: data.route,
     features: data.features,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   const command = new PutItemCommand({
@@ -61,12 +80,13 @@ async function createFeature(data) {
     name: data.name,
     label: data.label,
     page: data.page,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
   const command = new PutItemCommand({
     TableName: "FeatureTable",
     Item: marshall(params),
   });
+
   await client.send(command);
   return params;
 }
@@ -84,9 +104,8 @@ const resolvers = {
     },
     featureCreate: async (ctx) => {
       return createFeature(ctx.arguments);
-    }
+    },
   },
-  
 };
 
 exports.handler = async (ctx) => {
