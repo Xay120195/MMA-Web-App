@@ -21,9 +21,24 @@ export default function PostRegistration() {
       }
     };
     getUser();
-  }, []);
+  });
 
   const setAccountDetails = async (cognitoUserInfo) => {
+    const getAllPages = `
+    query getAllPages {
+      page {
+        id
+        features {
+          id
+        }
+      }
+    }
+  `;
+
+    const access = await API.graphql({
+      query: getAllPages,
+    });
+
     const company = {
       name: cognitoUserInfo.attributes["custom:company_name"],
       representative: {
@@ -40,6 +55,7 @@ export default function PostRegistration() {
       email: cognitoUserInfo.attributes["email"],
       company: company,
       userType: "OWNER",
+      access: access.data.page,
     };
 
     createAccount(company, user);
@@ -47,13 +63,13 @@ export default function PostRegistration() {
 
   async function createAccount(company, user) {
     console.group("createAccount");
-
     console.log(company);
+    console.log(user);
+
     await createCompany(company).then((c) => {
       user["company"] = c.data.companyCreate;
     });
 
-    console.log(user);
     await createUser(user).then((u) => {
       console.log(u);
       history.push(AppRoutes.POSTAUTHENTICATION);
@@ -95,7 +111,7 @@ export default function PostRegistration() {
   }
 
   const mCreateCompany = `
-  mutation createCompany($name: String, $representative: representativeInput){
+  mutation createCompany($name: String, $representative: RepresentativeInput){
     companyCreate(
       name: $name
       representative: $representative
@@ -107,7 +123,7 @@ export default function PostRegistration() {
 `;
 
   const mCreateUser = `
-  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: companyInput){
+  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput, $access: [AccessInput]){
     userCreate(
       id: $id
       email: $email
@@ -115,11 +131,12 @@ export default function PostRegistration() {
       lastName: $lastName
       userType: $userType
       company: $company
+      access: $access
     ) {
       id
     }
   }
 `;
 
-  return <p>{error ? `Oops... ${error}` : null}</p>;
+  return <p>{error ? `Oops! Something went wrong. ${error}` : null}</p>;
 }

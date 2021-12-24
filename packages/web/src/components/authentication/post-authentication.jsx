@@ -29,38 +29,33 @@ export default function PostRegistration() {
       try {
         await Auth.currentAuthenticatedUser({
           bypassCache: true,
-        })
-          .then((cognitoUser) => {
+        }).then((cognitoUser) => {
+          var userId = cognitoUser.attributes["sub"];
 
-            
-            var userId = cognitoUser.attributes["sub"];
-
-            API.graphql({
-              query: userDetails,
-              variables: {
-                id: userId
-              }
-            }).then((userInfo) =>{
-              localStorage.setItem("userId", userId);
-              localStorage.setItem("email", userInfo.data.user["email"]);
-              localStorage.setItem("firstName",userInfo.data.user["firstName"]);
-              localStorage.setItem("lastName",userInfo.data.user["lastName"]);
-              localStorage.setItem("company",userInfo.data.user.company["name"]);
-              localStorage.setItem("userType", userInfo.data.user["userType"]);
-              history.push(AppRoutes.DASHBOARD);
-            });
-          })
-          //.catch((err) => setError(err));
-
+          API.graphql({
+            query: userDetails,
+            variables: {
+              id: userId,
+            },
+          }).then((userInfo) => {
+            localStorage.setItem("userId", userId);
+            localStorage.setItem("email", userInfo.data.user["email"]);
+            localStorage.setItem("firstName", userInfo.data.user["firstName"]);
+            localStorage.setItem("lastName", userInfo.data.user["lastName"]);
+            localStorage.setItem("company", userInfo.data.user["company"]["name"]);
+            localStorage.setItem("userType", userInfo.data.user["userType"]);
+            history.push(AppRoutes.DASHBOARD);
+          });
+        });
+        //.catch((err) => setError(err));
       } catch (e) {
         console.log(e);
         //setError(e.errors[0].message);
       }
     };
 
-    
     getUser();
-  }, []);
+  });
 
   function clearLocalStorage() {
     localStorage.removeItem("userId");

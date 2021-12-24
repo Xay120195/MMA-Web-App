@@ -62,7 +62,7 @@ const UserTypeAccess = (props) => {
   }
 `;
 
-    let getCompany = async () => {
+    let getPageAccess = async () => {
       const res = await API.graphql({
         query: getAllPages
       });
@@ -70,7 +70,7 @@ const UserTypeAccess = (props) => {
       console.log(res);
     };
 
-    getCompany();
+    getPageAccess();
   }, []);
 
   return (

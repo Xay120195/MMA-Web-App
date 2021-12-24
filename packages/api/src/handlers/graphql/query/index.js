@@ -19,10 +19,10 @@ async function listPages() {
   });
 
   const response = await client.send(command);
-  const paraseResponse = response.Items.map((data) => unmarshall(data));
+  const parseResponse = response.Items.map((data) => unmarshall(data));
 
-  console.log(paraseResponse);
-  return paraseResponse;
+  console.log(parseResponse);
+  return parseResponse;
 }
 
 async function getUser(data) {
@@ -42,7 +42,6 @@ async function getUser(data) {
 
   } catch (e) {
     response = {
-      message: "Failed to retrieve user.",
       error: e.message,
       errorStack: e.stack,
       statusCode: 500
