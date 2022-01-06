@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import ToastNotification from "../toast-notification";
 import { Auth, API } from "aws-amplify";
 import { useForm } from "react-hook-form";
+import InfoMessage from "../info-message";
+
+import { AiFillInfoCircle } from 'react-icons/ai';
+import { MdSave } from 'react-icons/md';
+import '../../assets/styles/AccountSettings.css';
 
 export default function ChangePassword() {
   const [showToast, setShowToast] = useState(false);
@@ -118,86 +123,76 @@ export default function ChangePassword() {
   // `;
 
   return (
-    <form onSubmit={handleSubmit(handleSave)}>
-      <div className="container p-10 w-1/2 items-center">
-        <div>
-          <p className="text-lg font-bold">Change Password</p>
-        </div>
-        <div className="relative p-6 flex-auto">
-          <p className="font-semi-bold text-sm">Old Password</p>
+    <form className="grid gap-4" onSubmit={handleSubmit(handleSave)}>
+      <InfoMessage title={'Change Password'} desc={'Your new password must be different from previous used passwords.'} />
+      <div className="input-grid">
+        <div className="relative flex-auto">
+          <p className="input-name">Old Password</p>
           <div className="relative my-2">
-            <input
-              type="password"
-              className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
-              placeholder="Old Password"
-              {...register("oldPassword", { required: true })}
-              onChange={(op_elm) => {
-                if (op_elm.target.value) {
-                  clearErrors("oldPassword");
+            <input type="password" className="input-field" placeholder="Old Password"
+              {...register("oldPassword", { required: true })} onChange={(elm) => {
+                if (elm.target.value) {
+                  clearErrors("oldPassword")
                 }
               }}
             />
           </div>
           {errors.oldPassword?.type === "required" && (
-            <small className="text-red-400">Old Password is required</small>
+            <div className="error-msg">
+              <AiFillInfoCircle />
+              <p>Old Password is required</p>
+            </div>
           )}
         </div>
-        <div className="relative p-6 flex-auto">
-          <p className="font-semi-bold text-sm">New Password</p>
+        <div className="relative flex-auto">
+          <p className="input-name">New Password</p>
           <div className="relative my-2">
-            <input
-              type="password"
-              className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
-              placeholder="New Password"
-              {...register("newPassword", { required: true })}
-              onChange={(np_elm) => {
+            <input type="password" className="input-field" placeholder="New Password"
+              {...register("newPassword", { required: true })} onChange={(elm) => {
                 const values = getValues();
-
                 if (values.oldPassword) {
-                  clearErrors("newPassword");
+                  clearErrors("newPassword")
                 }
-
-                if (values.oldPassword && np_elm.target.value) {
-                  if (values.oldPassword === np_elm.target.value) {
+                if (values.oldPassword && elm.target.value) {
+                  if (values.oldPassword === elm.target.value) {
                     setError("comparePassword", {
                       type: "manual",
                       message:
                         "The new password you entered is the same as your old password. Enter a different password.",
                     });
                   } else {
-                    clearErrors("comparePassword");
+                    clearErrors("comparePassword")
                   }
                 } else {
-                  clearErrors("comparePassword");
+                  clearErrors("comparePassword")
                 }
                 console.log(errors);
               }}
             />
           </div>
           {errors.newPassword?.type === "required" && (
-            <small className="text-red-400">New Password is required</small>
+            <div className="error-msg">
+              <AiFillInfoCircle />
+              <p>New Password is required</p>
+            </div>
           )}
-
           {errors.comparePassword && (
-            <small className="text-red-400">
+            <div className="error-msg">
+              <AiFillInfoCircle />
               {errors.comparePassword.message}
-            </small>
+            </div>
           )}
         </div>
-
-        <div className="flex items-center justify-end p-6 ">
-          <button
-            className="bg-green-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mb-1 ease-linear transition-all duration-150"
-            type="submit"
-          >
-            Change Password
-          </button>
-        </div>
-
-        {showToast && resultMessage && (
+      </div>
+      <div className="grid justify-end">
+        <button className="save-btn" type="submit">
+          <p>Save Changes</p>
+          <MdSave />
+        </button>
+      </div>
+      {showToast && resultMessage && (
           <ToastNotification title={resultMessage} hideToast={hideToast} />
         )}
-      </div>
     </form>
   );
 }
