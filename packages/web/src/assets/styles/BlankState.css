@@ -35,6 +35,23 @@ span {
   }
 }
 
+.account-settings-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 2rem;
+  padding: 1.5rem;
+  justify-items: end;
+  background-color: var(--defaultBgColor);
+  border-radius: .5rem;
+}
+
+@media screen and (min-width: 1000px) {
+  .account-settings-content {
+    grid-template-columns: 1fr auto;
+    justify-items: left;
+  }
+}
+
 .img-content {
   padding: 1rem;
 }
@@ -44,22 +61,21 @@ span {
   height: 134px;
 }
 
-.details-txt {
-  display: grid;
-  grid-gap: 0.5rem;
-  align-self: center;
-  text-align: center;
+.account-img-content img {
+  height: 100px;
 }
 
-@media screen and (min-width: 800px) {
-  .details-txt {
-    text-align: left;
-  }
+.details-txt {
+  display: grid;
+  align-self: center;
+  text-align: left;
+  width: 100%;
 }
 
 .details-txt h1 {
   font-size: var(--mediumFont);
   color: var(--darkGrey);
+  font-weight: var(--fontWeightLight);
 }
 
 @media screen and (min-width: 580px) {
@@ -80,7 +96,6 @@ span {
     line-height: 24px;
   }
 }
-
 
 .details-txt span {
   color: var(--primaryDefault);
