@@ -19,41 +19,37 @@ async function createCompany(data) {
 }
 
 async function createUser(data) {
-
   try {
-  const rawParams = {
-    id: data.id,
-    firstName: data.firstName,
-    lastName: data.lastName,
-    email: data.email,
-    userType: data.userType,
-    company: data.company,
-    access: data.access,
-    createdAt: new Date().toISOString(),
-  };
+    const rawParams = {
+      id: data.id,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      userType: data.userType,
+      company: data.company,
+      //access: data.access,
+      createdAt: new Date().toISOString(),
+    };
 
-  const params = marshall(rawParams);
+    const params = marshall(rawParams);
 
-  const command = new PutItemCommand({
-    TableName: "UserTable",
-    Item: params,
-  });
+    const command = new PutItemCommand({
+      TableName: "UserTable",
+      Item: params,
+    });
 
-  const request = await client.send(command);
-  
-  response = unmarshall(params);
+    const request = await client.send(command);
 
-} catch (e) {
-  response = {
-    error: e.message,
-    errorStack: e.stack,
-    statusCode: 500
-  };
-}
+    response = unmarshall(params);
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
 
-return response;
-
-
+  return response;
 }
 
 async function createPage(data) {
@@ -91,6 +87,37 @@ async function createFeature(data) {
   return params;
 }
 
+async function createCompanyAccessType(data) {
+  try {
+    const rawParams = {
+      id: v4(),
+      companyId: data.companyId,
+      userType: data.userType,
+      access: data.access,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+
+    const command = new PutItemCommand({
+      TableName: "CompanyAccessTypeTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+
+    response = unmarshall(params);
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -104,6 +131,9 @@ const resolvers = {
     },
     featureCreate: async (ctx) => {
       return createFeature(ctx.arguments);
+    },
+    companyAccessTypeCreate: async (ctx) => {
+      return createCompanyAccessType(ctx.arguments);
     },
   },
 };

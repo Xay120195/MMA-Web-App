@@ -1,5 +1,5 @@
 const client = require("../../../lib/dynamodb-client");
-const { GetItemCommand, ScanCommand } = require("@aws-sdk/client-dynamodb");
+const { GetItemCommand, ScanCommand, QueryCommand } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function getCompany(data) {
@@ -39,7 +39,32 @@ async function getUser(data) {
     const { Item } = await client.send(command);
 
     response = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
 
+  return response;
+}
+
+async function getCompanyAccessType(data) {
+  console.log(data);
+  try {
+    const params = {
+      TableName: "CompanyAccessTypeTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: 'companyId = :companyId',
+      ExpressionAttributeNames: marshall({
+          ":companyId": data.companyId,
+        }),
+    };
+
+    const command = new QueryCommand(params);
+    const { Item } = await client.send(command);
+    response = Item ? unmarshall(Item) : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -48,6 +73,7 @@ async function getUser(data) {
     };
   }
 
+  console.log(response);
   return response;
 }
 
@@ -75,6 +101,10 @@ const resolvers = {
     },
     feature: async (ctx) => {
       return getFeature(ctx.arguments);
+    },
+
+    companyAccessType: async (ctx) => {
+      return getCompanyAccessType(ctx.arguments);
     },
   },
 };

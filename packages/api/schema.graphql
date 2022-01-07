@@ -28,6 +28,15 @@ type Company {
   updatedAt: AWSDateTime
 }
 
+type CompanyAccessType {
+  id: ID
+  companyId: ID
+  userType: UserType
+  access: [Page]
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 type User {
   id: ID!
   firstName: String
@@ -35,7 +44,6 @@ type User {
   email: AWSEmail
   contactNumber: String
   company: Company
-  access: [Page]
   userType: UserType
   profilePicture: String
   createdAt: AWSDateTime
@@ -54,7 +62,7 @@ type Page {
 
 type Feature {
   id: ID!
-  name: String
+  name: String 
   label: String
   page: Page
   createdAt: AWSDateTime
@@ -86,6 +94,7 @@ schema {
 type Query {
   colors: [Color]
   company(id: String): Company
+  companyAccessType(companyId: String): CompanyAccessType
   user(id: String): User
   page: [Page]
   feature(id: String): Feature
@@ -96,6 +105,7 @@ type Mutation {
   addColor(name: String!, hex: String!): Color
   addTwoNumbers(first: Int, second: Int): Int
   companyCreate(name: String, representative: RepresentativeInput): Company
+  companyAccessTypeCreate(companyId: String, userType: UserType, access: [AccessInput]): CompanyAccessType
   userCreate(
     id: ID!
     firstName: String
@@ -103,7 +113,6 @@ type Mutation {
     email: AWSEmail
     userType: UserType
     company: CompanyInput
-    access: [AccessInput]
   ): User
   pageCreate(
     name: String
@@ -119,6 +128,13 @@ input AccessInput {
   id: ID!
   features: [FeatureInput]
 }
+
+input FeatureInput {
+  id: ID!
+  name: String
+  label: String
+}
+
 
 input CompanyInput {
   id: ID!
@@ -137,8 +153,3 @@ input RepresentativeInput {
   email: AWSEmail
 }
 
-input FeatureInput {
-  id: ID!
-  name: String
-  label: String
-}

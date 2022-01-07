@@ -61,6 +61,28 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
+
+  CompanyAccessTypeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyAccessTypeTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
   MatterFileTable:
     Type: AWS::DynamoDB::Table
     Properties:
