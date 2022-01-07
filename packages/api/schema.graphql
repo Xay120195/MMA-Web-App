@@ -62,7 +62,7 @@ type Page {
 
 type Feature {
   id: ID!
-  name: String 
+  name: String
   label: String
   page: Page
   createdAt: AWSDateTime
@@ -94,7 +94,7 @@ schema {
 type Query {
   colors: [Color]
   company(id: String): Company
-  companyAccessType(companyId: String): CompanyAccessType
+  companyAccessType(companyId: String): [CompanyAccessType]
   user(id: String): User
   page: [Page]
   feature(id: String): Feature
@@ -105,7 +105,11 @@ type Mutation {
   addColor(name: String!, hex: String!): Color
   addTwoNumbers(first: Int, second: Int): Int
   companyCreate(name: String, representative: RepresentativeInput): Company
-  companyAccessTypeCreate(companyId: String, userType: UserType, access: [AccessInput]): CompanyAccessType
+  companyAccessTypeCreate(
+    companyId: String
+    userType: UserType
+    access: [AccessInput]
+  ): CompanyAccessType
   userCreate(
     id: ID!
     firstName: String
@@ -135,7 +139,6 @@ input FeatureInput {
   label: String
 }
 
-
 input CompanyInput {
   id: ID!
   name: String
@@ -152,4 +155,3 @@ input RepresentativeInput {
   lastName: String
   email: AWSEmail
 }
-

@@ -61,7 +61,6 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
-
   CompanyAccessTypeTable:
     Type: AWS::DynamoDB::Table
     Properties:
