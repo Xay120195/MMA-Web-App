@@ -58,16 +58,33 @@ export default function PostRegistration() {
       access: access.data.page,
     };
 
-    createAccount(company, user);
+
+  
+
+    createAccount(company, access.data.page, user);
   };
 
-  async function createAccount(company, user) {
+  async function createAccount(company, pageAcess, user) {
     console.group("createAccount");
-    console.log(company);
-    console.log(user);
+    console.log("Company Details:", company);
+    console.log("User Details:", user);
 
     await createCompany(company).then((c) => {
       user["company"] = c.data.companyCreate;
+
+      let companyAccessType = {
+        companyId: c.data.companyCreate.id,
+        access: pageAcess
+      }
+      
+      // for restructure
+      createCompanyAccessType(companyAccessType, "OWNER");
+      // createCompanyAccessType(companyAccessType, "LEGALADMIN");
+      // createCompanyAccessType(companyAccessType, "BARRISTER");
+      // createCompanyAccessType(companyAccessType, "EXPERT");
+      // createCompanyAccessType(companyAccessType, "CLIENT");
+      // createCompanyAccessType(companyAccessType, "WITNESS");
+
     });
 
     await createUser(user).then((u) => {
@@ -90,8 +107,27 @@ export default function PostRegistration() {
         reject(e.errors[0].message);
       }
     });
+  }
 
-    //console.log(res.data.companyCreate);
+  function createCompanyAccessType(companyAccessType, userType) {
+    return new Promise((resolve, reject) => {
+      try {
+        // for restructure
+        companyAccessType['userType'] = userType;
+        
+        const request = API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: companyAccessType,
+        });
+        console.log(companyAccessType);
+        console.log("mCreateCompanyAccessType result");
+        console.log(request);
+        resolve(request);
+      } catch (e) {
+        setError(e.errors[0].message);
+        reject(e.errors[0].message);
+      }
+    });
   }
 
   async function createUser(user) {
@@ -122,8 +158,20 @@ export default function PostRegistration() {
   }
 `;
 
+  const mCreateCompanyAccessType = `
+  mutation createCompanyAccessType($companyId: String, $userType: UserType, $access: [AccessInput]){
+    companyAccessTypeCreate(
+      companyId: $companyId
+      userType: $userType
+      access: $access
+    ) {
+      id
+    }
+  }
+`;
+
   const mCreateUser = `
-  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput, $access: [AccessInput]){
+  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput){
     userCreate(
       id: $id
       email: $email
@@ -131,7 +179,6 @@ export default function PostRegistration() {
       lastName: $lastName
       userType: $userType
       company: $company
-      access: $access
     ) {
       id
     }
