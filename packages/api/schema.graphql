@@ -78,6 +78,13 @@ type File {
   updatedAt: AWSDateTime
 }
 
+type Client {
+  id: ID!
+  clientName: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 schema {
   query: Query
   mutation: Mutation
@@ -90,6 +97,7 @@ type Query {
   page: [Page]
   feature(id: String): Feature
   matterFile(id: ID!): File
+  client(id: ID!): Client
 }
 
 type Mutation {
@@ -113,6 +121,9 @@ type Mutation {
   ): Page
   featureCreate(name: String, label: String, page: PageInput): Feature
   matterFileCreate(matterId: ID, s3ObjectKey: String): File
+  clientCreate(
+    clientName: String
+  ): Client
 }
 
 input AccessInput {

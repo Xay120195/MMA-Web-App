@@ -91,6 +91,23 @@ async function createFeature(data) {
   return params;
 }
 
+async function createClient(data) {
+  const params = {
+    id: v4(),
+    clientName: data.clientName,
+    createdAt: new Date().toISOString(),
+  };
+
+  console.log(params);
+
+  /*const command = new PutItemCommand({
+    TableName: "ClientTable",
+    Item: marshall(params),
+  });
+  await client.send(command);*/
+  return params;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -104,6 +121,9 @@ const resolvers = {
     },
     featureCreate: async (ctx) => {
       return createFeature(ctx.arguments);
+    },
+    clientCreate: async (ctx) => {
+      return createClient(ctx.arguments);
     },
   },
 };

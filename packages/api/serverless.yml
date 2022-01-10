@@ -123,6 +123,16 @@ custom:
         field: downloadURL
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: client
+        request: false
+        response: false
 
     dataSources:
       - type: AMAZON_DYNAMODB

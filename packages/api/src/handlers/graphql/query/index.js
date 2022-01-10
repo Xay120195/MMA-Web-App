@@ -62,6 +62,17 @@ async function getFeature(data) {
   return unmarshall(response.Item);
 }
 
+async function getClient(data) {
+  const command = new GetItemCommand({
+    TableName: "ClientTable",
+    Key: marshall({
+      id: data.id,
+    }),
+  });
+  const response = await client.send(command);
+  return unmarshall(response.Item);
+}
+
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -75,6 +86,9 @@ const resolvers = {
     },
     feature: async (ctx) => {
       return getFeature(ctx.arguments);
+    },
+    client: async (ctx) => {
+      return getClient(ctx.arguments);
     },
   },
 };
