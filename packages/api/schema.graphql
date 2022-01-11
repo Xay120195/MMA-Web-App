@@ -139,6 +139,7 @@ type Mutation {
 
 input AccessInput {
   id: ID!
+  name: String
   features: [FeatureInput]
 }
 
