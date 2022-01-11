@@ -58,37 +58,16 @@ export default function PostRegistration() {
       access: access.data.page,
     };
 
-
-  
-
     createAccount(company, access.data.page, user);
   };
 
   async function createAccount(company, pageAcess, user) {
-    console.group("createAccount");
-    console.log("Company Details:", company);
-    console.log("User Details:", user);
-
     await createCompany(company).then((c) => {
       user["company"] = c.data.companyCreate;
-
-      let companyAccessType = {
-        companyId: c.data.companyCreate.id,
-        access: pageAcess
-      }
-      
-      // for restructure
-      createCompanyAccessType(companyAccessType, "OWNER");
-      // createCompanyAccessType(companyAccessType, "LEGALADMIN");
-      // createCompanyAccessType(companyAccessType, "BARRISTER");
-      // createCompanyAccessType(companyAccessType, "EXPERT");
-      // createCompanyAccessType(companyAccessType, "CLIENT");
-      // createCompanyAccessType(companyAccessType, "WITNESS");
-
+      createCompanyAccessType(c.data.companyCreate.id, pageAcess);
     });
 
     await createUser(user).then((u) => {
-      console.log(u);
       history.push(AppRoutes.POSTAUTHENTICATION);
     });
   }
@@ -109,20 +88,67 @@ export default function PostRegistration() {
     });
   }
 
-  function createCompanyAccessType(companyAccessType, userType) {
+  async function createCompanyAccessType(companyId, pageAccess) {
     return new Promise((resolve, reject) => {
       try {
-        // for restructure
-        companyAccessType['userType'] = userType;
-        
-        const request = API.graphql({
+        // For Restructure
+        // Change to batch write method
+
+        API.graphql({
           query: mCreateCompanyAccessType,
-          variables: companyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "OWNER",
+          },
         });
-        console.log(companyAccessType);
-        console.log("mCreateCompanyAccessType result");
-        console.log(request);
-        resolve(request);
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "LEGALADMIN",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "BARRISTER",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "EXPERT",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "CLIENT",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "WITNESS",
+          },
+        });
+
+        resolve();
       } catch (e) {
         setError(e.errors[0].message);
         reject(e.errors[0].message);
