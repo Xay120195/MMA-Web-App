@@ -125,7 +125,7 @@ async function createClient(data) {
   try {
     const rawParams = {
       id: v4(),
-      clientName: data.clientName,
+      name: data.name,
       createdAt: new Date().toISOString(),
     };
 
