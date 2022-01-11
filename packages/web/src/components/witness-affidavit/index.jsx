@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 import BlankState from "../blank-state";
 import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter, HiMinus, HiMinusCircle, HiTrash} from 'react-icons/hi';
@@ -31,6 +31,7 @@ export default function WitnessAffidavit() {
   const [showSelectLinkModal, setshowSelectLinkModal] = useState(false);
   const [checkAllState, setcheckAllState] = useState(false);
   const [datastatements, setstatements] = useState(statements);
+  const [searchTable, setSearchTable] = useState();
 
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -158,9 +159,31 @@ export default function WitnessAffidavit() {
     setstatements(_data);
   };
 
+  const handleSearchChange = (e) => {
+    console.log("L114" + e.target.value);
+    setSearchTable(e.target.value);
+  };
+
+  useEffect(() => {
+    if (searchTable !== undefined) {
+      filter(searchTable);
+      console.log("L121" + searchTable);
+    }
+  }, [searchTable]);
+
+  const filter = (v) => {
+    setstatements(
+      statements.filter(
+        (x) =>
+          x.statement.toLowerCase().includes(v.toLowerCase()) ||
+          x.comments.toLowerCase().includes(v.toLowerCase())
+      )
+    );
+  };
+
   return (
     <>
-      {datastatements.length === 0 ? (
+      {datastatements === undefined ? (
         <BlankState
           title={"affidavits"}
           txtLink={"add row"}
@@ -223,6 +246,13 @@ export default function WitnessAffidavit() {
                 <button className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2" onClick={() => handleDeleteRow(this)} >
                     Delete &nbsp;<HiTrash/>
                 </button>
+
+                <input
+                  type="search"
+                  placeholder="Search ..."
+                  onChange={handleSearchChange}
+                  className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12"
+                />
               </div>
             </div>
           </div>
