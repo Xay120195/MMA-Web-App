@@ -49,25 +49,39 @@ const UserTypeAccess = (props) => {
 
   useEffect(() => {
     const getAllPages = `
-  query getAllPages {
+  query getPagesAndAccess($companyId: String) {
     page {
       id
       label
-      name
       features {
         id
         label
+      }
+    }
+    companyAccessType(companyId: $companyId) {
+      userType
+      access {
+        id
+        features {
+          id
+        }
       }
     }
   }
 `;
 
     let getPageAccess = async () => {
-      const res = await API.graphql({
-        query: getAllPages
-      });
+      await API.graphql({
+        query: getAllPages,
+        variables: {
+          companyId: localStorage.getItem("companyId"),
+        },
+      }).then((pages) => {
+        const { page, companyAccessType } = pages.data;
 
-      console.log(res);
+        console.log(page);
+        console.log(companyAccessType);
+      });
     };
 
     getPageAccess();

@@ -4,18 +4,31 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
 async function createCompany(data) {
-  const params = {
-    id: v4(),
-    name: data.name,
-    representative: data.representative,
-    createdAt: new Date().toISOString(),
-  };
-  const command = new PutItemCommand({
-    TableName: "CompanyTable",
-    Item: marshall(params),
-  });
-  await client.send(command);
-  return params;
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      representative: data.representative,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "CompanyTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
 }
 
 async function createUser(data) {
@@ -27,20 +40,17 @@ async function createUser(data) {
       email: data.email,
       userType: data.userType,
       company: data.company,
-      //access: data.access,
       createdAt: new Date().toISOString(),
     };
 
     const params = marshall(rawParams);
-
     const command = new PutItemCommand({
       TableName: "UserTable",
       Item: params,
     });
 
     const request = await client.send(command);
-
-    response = unmarshall(params);
+    response = request ? unmarshall(params) : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -53,53 +63,89 @@ async function createUser(data) {
 }
 
 async function createPage(data) {
-  const params = {
-    id: v4(),
-    name: data.name,
-    label: data.label,
-    route: data.route,
-    features: data.features,
-    createdAt: new Date().toISOString(),
-  };
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      label: data.label,
+      route: data.route,
+      features: data.features,
+      createdAt: new Date().toISOString(),
+    };
 
-  const command = new PutItemCommand({
-    TableName: "PageTable",
-    Item: marshall(params),
-  });
-  await client.send(command);
-  return params;
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "PageTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
 }
 
 async function createFeature(data) {
-  const params = {
-    id: v4(),
-    name: data.name,
-    label: data.label,
-    page: data.page,
-    createdAt: new Date().toISOString(),
-  };
-  const command = new PutItemCommand({
-    TableName: "FeatureTable",
-    Item: marshall(params),
-  });
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      label: data.label,
+      page: data.page,
+      createdAt: new Date().toISOString(),
+    };
 
-  await client.send(command);
-  return params;
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "FeatureTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
 }
 
 async function createClient(data) {
-  const params = {
-    id: v4(),
-    clientName: data.clientName,
-    createdAt: new Date().toISOString(),
-  };
+  try {
+    const rawParams = {
+      id: v4(),
+      clientName: data.clientName,
+      createdAt: new Date().toISOString(),
+    };
 
-  const command = new PutItemCommand({
-    TableName: "ClientTable",
-    Item: marshall(params),
-  });
-  await client.send(command);
-  return params;
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "ClientTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
 }
 async function createCompanyAccessType(data) {
   try {
@@ -112,15 +158,14 @@ async function createCompanyAccessType(data) {
     };
 
     const params = marshall(rawParams);
-
     const command = new PutItemCommand({
       TableName: "CompanyAccessTypeTable",
       Item: params,
     });
 
+    console.log(unmarshall(params));
     const request = await client.send(command);
-
-    response = unmarshall(params);
+    response = request ? unmarshall(params) : {};
   } catch (e) {
     response = {
       error: e.message,

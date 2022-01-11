@@ -15,6 +15,7 @@ export default function PostRegistration() {
       query user($id: String) {
         user(id: $id) {
           company {
+            id
             name
           }
           email
@@ -42,6 +43,7 @@ export default function PostRegistration() {
             localStorage.setItem("email", userInfo.data.user["email"]);
             localStorage.setItem("firstName", userInfo.data.user["firstName"]);
             localStorage.setItem("lastName", userInfo.data.user["lastName"]);
+            localStorage.setItem("companyId", userInfo.data.user["company"]["id"]);
             localStorage.setItem("company", userInfo.data.user["company"]["name"]);
             localStorage.setItem("userType", userInfo.data.user["userType"]);
             history.push(AppRoutes.DASHBOARD);
@@ -63,6 +65,7 @@ export default function PostRegistration() {
     localStorage.removeItem("firstName");
     localStorage.removeItem("lastName");
     localStorage.removeItem("company");
+    localStorage.removeItem("companyId");
   }
 
   return <p>{error ? `Oops! Something went wrong. ${error}` : null}</p>;
