@@ -58,20 +58,16 @@ export default function PostRegistration() {
       access: access.data.page,
     };
 
-    createAccount(company, user);
+    createAccount(company, access.data.page, user);
   };
 
-  async function createAccount(company, user) {
-    console.group("createAccount");
-    console.log(company);
-    console.log(user);
-
+  async function createAccount(company, pageAcess, user) {
     await createCompany(company).then((c) => {
       user["company"] = c.data.companyCreate;
+      createCompanyAccessType(c.data.companyCreate.id, pageAcess);
     });
 
     await createUser(user).then((u) => {
-      console.log(u);
       history.push(AppRoutes.POSTAUTHENTICATION);
     });
   }
@@ -90,8 +86,74 @@ export default function PostRegistration() {
         reject(e.errors[0].message);
       }
     });
+  }
 
-    //console.log(res.data.companyCreate);
+  async function createCompanyAccessType(companyId, pageAccess) {
+    return new Promise((resolve, reject) => {
+      try {
+        // For Restructure
+        // Change to batch write method
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "OWNER",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "LEGALADMIN",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "BARRISTER",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "EXPERT",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "CLIENT",
+          },
+        });
+
+        API.graphql({
+          query: mCreateCompanyAccessType,
+          variables: {
+            companyId: companyId,
+            access: pageAccess,
+            userType: "WITNESS",
+          },
+        });
+
+        resolve();
+      } catch (e) {
+        setError(e.errors[0].message);
+        reject(e.errors[0].message);
+      }
+    });
   }
 
   async function createUser(user) {
@@ -122,8 +184,20 @@ export default function PostRegistration() {
   }
 `;
 
+  const mCreateCompanyAccessType = `
+  mutation createCompanyAccessType($companyId: String, $userType: UserType, $access: [AccessInput]){
+    companyAccessTypeCreate(
+      companyId: $companyId
+      userType: $userType
+      access: $access
+    ) {
+      id
+    }
+  }
+`;
+
   const mCreateUser = `
-  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput, $access: [AccessInput]){
+  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput){
     userCreate(
       id: $id
       email: $email
@@ -131,7 +205,6 @@ export default function PostRegistration() {
       lastName: $lastName
       userType: $userType
       company: $company
-      access: $access
     ) {
       id
     }

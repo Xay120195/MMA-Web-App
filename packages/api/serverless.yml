@@ -109,6 +109,16 @@ custom:
         response: false
       - dataSource: LambdaQueryDS
         type: Query
+        field: companyAccessType
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: companyAccessTypeCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
         field: matterFile
         request: false
         response: false

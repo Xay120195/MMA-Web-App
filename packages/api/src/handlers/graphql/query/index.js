@@ -1,5 +1,9 @@
 const client = require("../../../lib/dynamodb-client");
-const { GetItemCommand, ScanCommand } = require("@aws-sdk/client-dynamodb");
+const {
+  GetItemCommand,
+  ScanCommand,
+  QueryCommand,
+} = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function getCompany(data) {
@@ -21,7 +25,6 @@ async function listPages() {
   const response = await client.send(command);
   const parseResponse = response.Items.map((data) => unmarshall(data));
 
-  console.log(parseResponse);
   return parseResponse;
 }
 
@@ -39,12 +42,38 @@ async function getUser(data) {
     const { Item } = await client.send(command);
 
     response = Item ? unmarshall(Item) : {};
-
   } catch (e) {
     response = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function getCompanyAccessType(data) {
+  try {
+    const params = {
+      TableName: "CompanyAccessTypeTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": data.companyId,
+      }),
+    };
+
+    const command = new QueryCommand(params);
+    const result = await client.send(command);
+
+    const parseResponse = result.Items.map((data) => unmarshall(data));
+    response = result ? parseResponse : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
     };
   }
 
@@ -89,6 +118,9 @@ const resolvers = {
     },
     client: async (ctx) => {
       return getClient(ctx.arguments);
+    },
+    companyAccessType: async (ctx) => {
+      return getCompanyAccessType(ctx.arguments);
     },
   },
 };
