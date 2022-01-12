@@ -25,46 +25,56 @@ export default function PostRegistration() {
         }
       }
     `;
-
-
-    // find a way to fetch access in user
-    // 
-    // const getAccountAccess = `
-    //   query getPagesAndAccess($companyId: String, $userType: UserType) {
-    //     companyAccessType(companyId: $companyId, userType: $userType) {
-    //       access {
-    //         id
-    //         name
-    //         features {
-    //           id
-    //           name
-    //         }
-    //       }
-    //     }
-    //   }
-    //   `;
+    
+    const getAccountAccess = `
+      query getPagesAndAccess($companyId: String, $userType: UserType) {
+        companyAccessType(companyId: $companyId, userType: $userType) {
+          access {
+            id
+            name
+            features {
+              id
+              name
+            }
+          }
+        }
+      }
+      `;
 
     let getUser = async () => {
       try {
         await Auth.currentAuthenticatedUser({
           bypassCache: true,
-        }).then((cognitoUser) => {
+        }).then(async (cognitoUser) => {
           var userId = cognitoUser.attributes["sub"];
 
-          API.graphql({
+          await API.graphql({
             query: userDetails,
             variables: {
               id: userId,
             },
-          }).then((userInfo) => {
+          }).then(async (userInfo) => {
+
             localStorage.setItem("userId", userId);
             localStorage.setItem("email", userInfo.data.user["email"]);
             localStorage.setItem("firstName", userInfo.data.user["firstName"]);
             localStorage.setItem("lastName", userInfo.data.user["lastName"]);
-            localStorage.setItem("companyId",userInfo.data.user["company"]["id"]);
-            localStorage.setItem("company",userInfo.data.user["company"]["name"]);
+            localStorage.setItem("companyId", userInfo.data.user["company"]["id"]);
+            localStorage.setItem("company", userInfo.data.user["company"]["name"]);
             localStorage.setItem("userType", userInfo.data.user["userType"]);
-            history.push(AppRoutes.DASHBOARD);
+
+            await API.graphql({
+              query: getAccountAccess,
+              variables: {
+                companyId: userInfo.data.user["company"]["id"],
+                userType: userInfo.data.user["userType"]
+              },
+            }).then((access) => {
+              const userAccess = access.data.companyAccessType[0].access;
+              localStorage.setItem("access", JSON.stringify(userAccess));
+              history.push(AppRoutes.DASHBOARD);
+            });
+            
           });
         });
         //.catch((err) => setError(err));
