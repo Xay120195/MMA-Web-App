@@ -88,7 +88,7 @@ type File {
 
 type Client {
   id: ID!
-  clientName: String
+  name: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -101,7 +101,7 @@ schema {
 type Query {
   colors: [Color]
   company(id: String): Company
-  companyAccessType(companyId: String): [CompanyAccessType]
+  companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
   user(id: String): User
   page: [Page]
   feature(id: String): Feature
@@ -134,13 +134,12 @@ type Mutation {
   ): Page
   featureCreate(name: String, label: String, page: PageInput): Feature
   matterFileCreate(matterId: ID, s3ObjectKey: String): File
-  clientCreate(
-    clientName: String
-  ): Client
+  clientCreate(name: String): Client
 }
 
 input AccessInput {
   id: ID!
+  name: String
   features: [FeatureInput]
 }
 

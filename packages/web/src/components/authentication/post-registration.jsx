@@ -28,8 +28,10 @@ export default function PostRegistration() {
     query getAllPages {
       page {
         id
+        name
         features {
           id
+          name
         }
       }
     }

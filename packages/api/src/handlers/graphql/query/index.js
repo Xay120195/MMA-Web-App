@@ -35,7 +35,7 @@ async function getUser(data) {
       TableName: "UserTable",
       Key: marshall({
         id: data.id,
-      })
+      }),
     };
 
     const command = new GetItemCommand(params);
@@ -55,7 +55,7 @@ async function getUser(data) {
 async function listPages() {
   try {
     const params = {
-      TableName: "PageTable"
+      TableName: "PageTable",
     };
 
     const command = new ScanCommand(params);
@@ -81,12 +81,18 @@ async function getCompanyAccessType(data) {
       KeyConditionExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
         ":companyId": data.companyId,
-      })
+      }),
     };
 
     const command = new QueryCommand(params);
     const request = await client.send(command);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
+    var parseResponse = request.Items.map((data) => unmarshall(data));
+
+    if (data.userType) {
+      parseResponse = request.Items.map((data) => unmarshall(data)).filter(
+        (userType) => userType.userType === data.userType
+      );
+    }
     response = request ? parseResponse : {};
   } catch (e) {
     response = {
