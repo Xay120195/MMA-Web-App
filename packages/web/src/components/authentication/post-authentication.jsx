@@ -26,6 +26,24 @@ export default function PostRegistration() {
       }
     `;
 
+
+    // find a way to fetch access in user
+    // 
+    // const getAccountAccess = `
+    //   query getPagesAndAccess($companyId: String, $userType: UserType) {
+    //     companyAccessType(companyId: $companyId, userType: $userType) {
+    //       access {
+    //         id
+    //         name
+    //         features {
+    //           id
+    //           name
+    //         }
+    //       }
+    //     }
+    //   }
+    //   `;
+
     let getUser = async () => {
       try {
         await Auth.currentAuthenticatedUser({
@@ -43,8 +61,8 @@ export default function PostRegistration() {
             localStorage.setItem("email", userInfo.data.user["email"]);
             localStorage.setItem("firstName", userInfo.data.user["firstName"]);
             localStorage.setItem("lastName", userInfo.data.user["lastName"]);
-            localStorage.setItem("companyId", userInfo.data.user["company"]["id"]);
-            localStorage.setItem("company", userInfo.data.user["company"]["name"]);
+            localStorage.setItem("companyId",userInfo.data.user["company"]["id"]);
+            localStorage.setItem("company",userInfo.data.user["company"]["name"]);
             localStorage.setItem("userType", userInfo.data.user["userType"]);
             history.push(AppRoutes.DASHBOARD);
           });
