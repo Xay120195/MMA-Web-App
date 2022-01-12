@@ -79,6 +79,7 @@ const UserTypeAccess = (props) => {
       }).then((pages) => {
         const { page, companyAccessType } = pages.data;
 
+        console.log(process.env)
         console.log(page);
         console.log(companyAccessType);
       });
