@@ -53,6 +53,7 @@ const Authentication = () => {
   let history = useHistory();
 
   useEffect(() => {
+    clearLocalStorage();
     return onAuthUIStateChange((nextAuthState, authData) => {
       console.log(authState, nextAuthState);
       if (authState !== nextAuthState) {
@@ -65,6 +66,7 @@ const Authentication = () => {
 
       setAuthState(nextAuthState);
       setUser(authData);
+      
 
       if (prevAuthState === "confirmSignUp" && nextAuthState === "signedin") {
         history.push(AppRoutes.POSTREGISTRATION);
@@ -82,6 +84,18 @@ const Authentication = () => {
     }
 
     return c;
+  }
+
+  function clearLocalStorage() {
+    console.log('clearLocalStorage');
+    localStorage.removeItem("userId");
+    localStorage.removeItem("email");
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+    localStorage.removeItem("userType");
+    localStorage.removeItem("company");
+    localStorage.removeItem("companyId");
+    localStorage.removeItem("access");
   }
 
   const signUpFields = [

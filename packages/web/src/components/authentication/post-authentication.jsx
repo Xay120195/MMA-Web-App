@@ -25,7 +25,7 @@ export default function PostRegistration() {
         }
       }
     `;
-    
+
     const getAccountAccess = `
       query getPagesAndAccess($companyId: String, $userType: UserType) {
         companyAccessType(companyId: $companyId, userType: $userType) {
@@ -45,16 +45,15 @@ export default function PostRegistration() {
       try {
         await Auth.currentAuthenticatedUser({
           bypassCache: true,
-        }).then(async (cognitoUser) => {
+        }).then((cognitoUser) => {
           var userId = cognitoUser.attributes["sub"];
-
-          await API.graphql({
+          var params = {
             query: userDetails,
             variables: {
               id: userId,
             },
-          }).then(async (userInfo) => {
-
+          };
+          API.graphql(params).then((userInfo) => {
             localStorage.setItem("userId", userId);
             localStorage.setItem("email", userInfo.data.user["email"]);
             localStorage.setItem("firstName", userInfo.data.user["firstName"]);
@@ -62,19 +61,23 @@ export default function PostRegistration() {
             localStorage.setItem("companyId", userInfo.data.user["company"]["id"]);
             localStorage.setItem("company", userInfo.data.user["company"]["name"]);
             localStorage.setItem("userType", userInfo.data.user["userType"]);
-
-            await API.graphql({
+            var params = {
               query: getAccountAccess,
               variables: {
                 companyId: userInfo.data.user["company"]["id"],
-                userType: userInfo.data.user["userType"]
+                userType: userInfo.data.user["userType"],
               },
-            }).then((access) => {
-              const userAccess = access.data.companyAccessType[0].access;
+            };
+
+            console.log(params);
+            API.graphql(params).then((ua) => {
+              console.log(ua);
+              const userAccess = ua.data.companyAccessType[0].access;
               localStorage.setItem("access", JSON.stringify(userAccess));
+              console.log("access", JSON.stringify(userAccess));
               history.push(AppRoutes.DASHBOARD);
+              
             });
-            
           });
         });
         //.catch((err) => setError(err));
@@ -92,8 +95,10 @@ export default function PostRegistration() {
     localStorage.removeItem("email");
     localStorage.removeItem("firstName");
     localStorage.removeItem("lastName");
+    localStorage.removeItem("userType");
     localStorage.removeItem("company");
     localStorage.removeItem("companyId");
+    localStorage.removeItem("access");
   }
 
   return <p>{error ? `Oops! Something went wrong. ${error}` : null}</p>;
