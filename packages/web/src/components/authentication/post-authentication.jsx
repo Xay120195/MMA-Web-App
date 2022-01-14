@@ -69,12 +69,11 @@ export default function PostRegistration() {
               },
             };
 
-            console.log(params);
+            
             API.graphql(params).then((ua) => {
-              console.log(ua);
+              
               const userAccess = ua.data.companyAccessType[0].access;
               localStorage.setItem("access", JSON.stringify(userAccess));
-              console.log("access", JSON.stringify(userAccess));
               history.push(AppRoutes.DASHBOARD);
               
             });

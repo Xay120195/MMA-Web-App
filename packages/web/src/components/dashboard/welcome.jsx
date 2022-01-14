@@ -1,7 +1,6 @@
 import React from "react";
 
 export const Welcome = (props) => {
-    console.log(props);
     return(
         <>
         <h3 className="font-semi-bold text-3xl">
