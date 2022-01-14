@@ -26,23 +26,20 @@ export default function PostRegistration() {
       }
     `;
 
-
-    // find a way to fetch access in user
-    // 
-    // const getAccountAccess = `
-    //   query getPagesAndAccess($companyId: String, $userType: UserType) {
-    //     companyAccessType(companyId: $companyId, userType: $userType) {
-    //       access {
-    //         id
-    //         name
-    //         features {
-    //           id
-    //           name
-    //         }
-    //       }
-    //     }
-    //   }
-    //   `;
+    const getAccountAccess = `
+      query getPagesAndAccess($companyId: String, $userType: UserType) {
+        companyAccessType(companyId: $companyId, userType: $userType) {
+          access {
+            id
+            name
+            features {
+              id
+              name
+            }
+          }
+        }
+      }
+      `;
 
     let getUser = async () => {
       try {
@@ -50,21 +47,37 @@ export default function PostRegistration() {
           bypassCache: true,
         }).then((cognitoUser) => {
           var userId = cognitoUser.attributes["sub"];
-
-          API.graphql({
+          var params = {
             query: userDetails,
             variables: {
               id: userId,
             },
-          }).then((userInfo) => {
+          };
+          API.graphql(params).then((userInfo) => {
             localStorage.setItem("userId", userId);
             localStorage.setItem("email", userInfo.data.user["email"]);
             localStorage.setItem("firstName", userInfo.data.user["firstName"]);
             localStorage.setItem("lastName", userInfo.data.user["lastName"]);
-            localStorage.setItem("companyId",userInfo.data.user["company"]["id"]);
-            localStorage.setItem("company",userInfo.data.user["company"]["name"]);
+            localStorage.setItem("companyId", userInfo.data.user["company"]["id"]);
+            localStorage.setItem("company", userInfo.data.user["company"]["name"]);
             localStorage.setItem("userType", userInfo.data.user["userType"]);
-            history.push(AppRoutes.DASHBOARD);
+            var params = {
+              query: getAccountAccess,
+              variables: {
+                companyId: userInfo.data.user["company"]["id"],
+                userType: userInfo.data.user["userType"],
+              },
+            };
+
+            console.log(params);
+            API.graphql(params).then((ua) => {
+              console.log(ua);
+              const userAccess = ua.data.companyAccessType[0].access;
+              localStorage.setItem("access", JSON.stringify(userAccess));
+              console.log("access", JSON.stringify(userAccess));
+              history.push(AppRoutes.DASHBOARD);
+              
+            });
           });
         });
         //.catch((err) => setError(err));
@@ -82,8 +95,10 @@ export default function PostRegistration() {
     localStorage.removeItem("email");
     localStorage.removeItem("firstName");
     localStorage.removeItem("lastName");
+    localStorage.removeItem("userType");
     localStorage.removeItem("company");
     localStorage.removeItem("companyId");
+    localStorage.removeItem("access");
   }
 
   return <p>{error ? `Oops! Something went wrong. ${error}` : null}</p>;

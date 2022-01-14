@@ -52,7 +52,9 @@ const UserTypeAccess = (props) => {
   query getPagesAndAccess($companyId: String) {
     page {
       id
+      name
       label
+      route
       features {
         id
         label
@@ -71,12 +73,15 @@ const UserTypeAccess = (props) => {
 `;
 
     let getPageAccess = async () => {
-      await API.graphql({
+
+      const params = {
         query: getAllPages,
         variables: {
           companyId: localStorage.getItem("companyId"),
         },
-      }).then((pages) => {
+      }
+      console.log(params);
+      await API.graphql(params).then((pages) => {
         const { page, companyAccessType } = pages.data;
 
         console.log(process.env)

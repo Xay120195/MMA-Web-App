@@ -48,6 +48,7 @@ export default function Dashboard() {
         lastName: localStorage.getItem("lastName"),
         company: localStorage.getItem("company"),
         userType: localStorage.getItem("userType"),
+        access: JSON.parse(localStorage.getItem("access"))
       };
       setuserInfo(ls);
     }

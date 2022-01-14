@@ -34,19 +34,30 @@ function Navbar() {
   };
 
   const signOut = async () => {
-    await Auth.signOut().then(()=>{
+    await Auth.signOut().then(() => {
+      clearLocalStorage();
       console.log("Sign out completed.");
       history.push("/");
     });
-  } 
+  };
+
+  function clearLocalStorage() {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("email");
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+    localStorage.removeItem("userType");
+    localStorage.removeItem("company");
+    localStorage.removeItem("companyId");
+    localStorage.removeItem("access");
+  }
 
   // history.listen((location) => {
   //   setlocation(location.pathname);
   // });
 
   useEffect(() => {
-
-    if(localStorage.getItem("userId") === null){
+    if (localStorage.getItem("userId") === null) {
       signOut();
     } else {
       if (userInfo === null) {
@@ -56,14 +67,13 @@ function Navbar() {
           firstName: localStorage.getItem("firstName"),
           lastName: localStorage.getItem("lastName"),
           company: localStorage.getItem("company"),
-          userType: localStorage.getItem("userType")
+          userType: localStorage.getItem("userType"),
+          access: JSON.parse(localStorage.getItem("access")),
         };
         setuserInfo(ls);
       }
     }
-    
-    
-  }, []);
+  });
 
   return (
     <IconContext.Provider value={{ color: "#fff" }}>
@@ -82,20 +92,30 @@ function Navbar() {
             </button>
           </div>
           <ul className="nav-menus">
-            {SidebarData.map((item, index) => {
-              return (
-                <li
-                  className={location.pathname === item.path ? "active-page" : ""}
-                  key={index}
-                >
-                  <Link className="nav-item-collapsed nav-item" to={item.path}>
-                    {item.icon}
-                  </Link>
-                </li>
-              );
-            })}
+            {userInfo &&
+              SidebarData.map((item, index) => {
+                return userInfo.access
+                  .map((page) => page.name)
+                  .includes(item.name) ||
+                  item.name === "DASHBOARD" ||
+                  item.name === "ACCOUNTSETTINGS" ? (
+                  <li
+                    className={
+                      location.pathname === item.path ? "active-page" : ""
+                    }
+                    key={index}
+                  >
+                    <Link
+                      className="nav-item-collapsed nav-item"
+                      to={item.path}
+                    >
+                      {item.icon}
+                    </Link>
+                  </li>
+                ) : null;
+              })}
           </ul>
-          <hr/>
+          <hr />
           <div
             className="logout-btn-collapsed logout-btn"
             onClick={clickLogout}
@@ -104,7 +124,7 @@ function Navbar() {
           </div>
         </div>
         <div>
-          {userInfo !== null && (
+          {userInfo && (
             <div className="avatar-grid-collapsed">
               <div className="avatar">
                 {`${userInfo.firstName.charAt(0)}${userInfo.lastName.charAt(
