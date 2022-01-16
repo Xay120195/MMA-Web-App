@@ -9,7 +9,7 @@ import Select from "react-select";
 import { useForm } from "react-hook-form";
 import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
-import dateFormat from 'dateformat';
+import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 
 export default function Dashboard() {
@@ -24,12 +24,14 @@ export default function Dashboard() {
 
   const [showDeleteModal, setshowDeleteModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const {
     register,
     formState: { errors },
-    handleSubmit
+    handleSubmit,
   } = useForm();
 
   const clientNameOptions = clients
@@ -48,24 +50,37 @@ export default function Dashboard() {
         lastName: localStorage.getItem("lastName"),
         company: localStorage.getItem("company"),
         userType: localStorage.getItem("userType"),
-        access: JSON.parse(localStorage.getItem("access"))
+        access: JSON.parse(localStorage.getItem("access")),
       };
       setuserInfo(ls);
     }
 
-    console.log(matterList);
     if (searchMatter !== undefined) {
       filter(searchMatter);
     }
-  }, [searchMatter]);
+
+    if (userInfo) {
+      featureAccessFilters(userInfo.access, "DASHBOARD");
+    }
+  }, [searchMatter, userInfo]);
+
+  const featureAccessFilters = (access, page) => {
+    const accessFeatures = access
+      .filter((p) => p.name === page)[0]
+      .features.map((f) => f.name);
+
+    setShowCreateMatter(accessFeatures.includes("ADDCLIENTANDMATTER"));
+  };
 
   const filter = (v) => {
     setmatterList(
-      matters.filter(
-        (x) =>
-          x.name.toLowerCase().includes(v.toLowerCase()) ||
-          x.client.name.toLowerCase().includes(v.toLowerCase())
-      ).sort((a, b) => a.name.localeCompare(b.name))
+      matters
+        .filter(
+          (x) =>
+            x.name.toLowerCase().includes(v.toLowerCase()) ||
+            x.client.name.toLowerCase().includes(v.toLowerCase())
+        )
+        .sort((a, b) => a.name.localeCompare(b.name))
     );
   };
 
@@ -130,15 +145,13 @@ export default function Dashboard() {
     setTimeout(() => {
       setShowToast(false);
       //setclientName([]);
-      setmatterName('');
+      setmatterName("");
     }, 3000);
   };
 
   const contentDiv = {
     margin: "0 0 0 65px",
   };
-
-  
 
   const handleModalClose = () => {
     setshowDeleteModal(false);
@@ -168,57 +181,62 @@ export default function Dashboard() {
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">
               <Welcome user={userInfo} matters={matters} />
-              <p className="text-gray-400 text-sm">
-                To start adding, type in the name and click the add button
-                below.
-              </p>
-              <form onSubmit={handleSubmit(handleNewMatter)}>
-                <div className="grid grid-flow-col grid-cols-3">
-                  <div className="pr-2">
-                    <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                      <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
-                        <IoIcons.IoIosFolder />
-                      </span>
-                      <input
-                        type="text"
-                        placeholder="Matter"
-                        onChange={handleMatterChanged}
-                        className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-                        {...register("matterName", { required: true })}
-                      />
-                      {errors.matterName?.type === "required" && (
-                        <small className="text-red-400">
-                          Matter is required
-                        </small>
-                      )}
+
+              {showCreateMatter && (
+                <>
+                  <p className="text-gray-400 text-sm">
+                    To start adding, type in the name and click the add button
+                    below.
+                  </p>
+                  <form onSubmit={handleSubmit(handleNewMatter)}>
+                    <div className="grid grid-flow-col grid-cols-3">
+                      <div className="pr-2">
+                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                          <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
+                            <IoIcons.IoIosFolder />
+                          </span>
+                          <input
+                            type="text"
+                            placeholder="Matter"
+                            onChange={handleMatterChanged}
+                            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+                            {...register("matterName", { required: true })}
+                          />
+                          {errors.matterName?.type === "required" && (
+                            <small className="text-red-400">
+                              Matter is required
+                            </small>
+                          )}
+                        </div>
+                      </div>
+                      <div className="pr-2">
+                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                          {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
+                          <Select
+                            options={clientNameOptions}
+                            isClearable
+                            isSearchable
+                            onChange={handleClientChanged}
+                            placeholder="Client"
+                            className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                          />
+                          {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
+                        </div>
+                      </div>
+                      <div className="pr-2">
+                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                          <button
+                            type="submit"
+                            className="bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="pr-2">
-                    <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                      {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
-                      <Select
-                        options={clientNameOptions}
-                        isClearable
-                        isSearchable
-                        onChange={handleClientChanged}
-                        placeholder="Client"
-                        className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                      />
-                      {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
-                    </div>
-                  </div>
-                  <div className="pr-2">
-                    <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                      <button
-                        type="submit"
-                        className="bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </form>
+                  </form>
+                </>
+              )}
             </div>
 
             <div className="w-3/5 place-self-end">
@@ -294,7 +312,5 @@ export default function Dashboard() {
         </div>
       </div>
     </>
-  ) : (
-    <p>Please wait ...</p>
-  );
+  ) : null;
 }
