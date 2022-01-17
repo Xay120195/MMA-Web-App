@@ -8,5 +8,6 @@ export const AppRoutes = {
     ACCOUNTSETTINGS: '/account-settings',
     CHANGEPASSWORD: '/change-password',
     POSTREGISTRATION: '/post-registration',
-    POSTAUTHENTICATION: '/post-authentication'
+    POSTAUTHENTICATION: '/post-authentication',
+    SIGNOUT: '/signout'
 }
