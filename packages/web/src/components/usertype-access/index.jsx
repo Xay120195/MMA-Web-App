@@ -7,40 +7,43 @@ import { Switch } from "./switch";
 import { PageList } from "./page-list";
 import { API } from "aws-amplify";
 
-const tableHeaders = ["Owner", "Legal Admin", "Barrister", "Expert", "Client"];
-
 const UserTypeAccess = (props) => {
   const title = "All changes has been saved!";
 
   const [showToast, setShowToast] = useState(false);
-  const [pageAccess, setpageAccess] = useState(1);
-  const [pageAccessSwitch, setpageAccessSwitch] = useState(
-    pages.filter((page) => parseInt(page.id) === 1)
-  );
-  const [featureAccessSwitch, setfeatureAccessSwitch] = useState(features);
+  const [tableHeaders, setTableHeaders] = useState(null);
+  const [defaultPages, setDefaultPages] = useState(null);
+  const [userAccessSwitch, setUserAccessSwitch] = useState(null);
   const hideToast = () => {
     setShowToast(false);
   };
-  const switchChanged = () => {
+
+  const switchChanged = (access, userType, isChecked) => {
+    console.group("switchChanged()");
+    console.log(userType, isChecked);
+    console.log(access);
+    updateTaggedPages(access, userType);
+
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
     }, 1000);
   };
 
-  const handlePageChange = (page_id) => {
-    setpageAccess(page_id);
-    setpageAccessSwitch(
-      pages.filter((page) => parseInt(page.id) === parseInt(page_id))
-    );
+  const updateTaggedPages = (new_access, user_type) => {
+    var removeSelectedTypeAccess = userAccessSwitch.filter(function (value) {
+      return value.userType !== user_type;
+    });
 
-    parseInt(page_id) === 1
-      ? setfeatureAccessSwitch(features)
-      : setfeatureAccessSwitch(
-          features.filter(
-            (feature) => parseInt(feature.page_id) === parseInt(page_id)
-          )
-        );
+    var newAccessPageSet = [
+      ...removeSelectedTypeAccess,
+      {
+        userType: user_type,
+        access: new_access,
+      },
+    ];
+
+    setUserAccessSwitch(newAccessPageSet);
   };
 
   const contentDiv = {
@@ -73,25 +76,50 @@ const UserTypeAccess = (props) => {
 `;
 
     let getPageAccess = async () => {
-
+      console.group("getPageAccess()");
       const params = {
         query: getAllPages,
         variables: {
           companyId: localStorage.getItem("companyId"),
         },
-      }
-      console.log(params);
+      };
+
       await API.graphql(params).then((pages) => {
         const { page, companyAccessType } = pages.data;
 
-        console.log(process.env)
-        console.log(page);
-        console.log(companyAccessType);
+        if (defaultPages === null) {
+          setDefaultPages(page);
+        }
+
+        if (userAccessSwitch === null) {
+          var userAccess = companyAccessType.sort((a, b) =>
+            a.userType.localeCompare(b.userType)
+          );
+
+          const firstItem = "OWNER";
+          userAccess = userAccess.sort((x, y) => {
+            return x.userType === firstItem
+              ? -1
+              : y.userType === firstItem
+              ? 1
+              : 0;
+          });
+
+          setUserAccessSwitch(userAccess);
+          setTableHeaders(userAccess.map((h) => h.userType));
+        }
+
+        console.log(defaultPages);
+        console.log(userAccessSwitch);
+        console.groupEnd();
       });
     };
 
+    // console.log(defaultPages);
+    console.log("userAccessSwitch", userAccessSwitch);
+
     getPageAccess();
-  }, []);
+  }, [defaultPages, userAccessSwitch]);
 
   return (
     <>
@@ -114,89 +142,71 @@ const UserTypeAccess = (props) => {
                       >
                         <span className="sr-only">Page/Feature Name</span>
                       </th>
-                      {tableHeaders.map((header, index) => (
-                        <th
-                          key={index}
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          {header}
-                        </th>
-                      ))}
+                      {tableHeaders !== null
+                        ? tableHeaders.map((header, index) => (
+                            <th
+                              key={index}
+                              scope="col"
+                              className="px-6 py-3 text-center text-sm font-semibold text-gray-500 uppercase tracking-wider"
+                            >
+                              {header}
+                            </th>
+                          ))
+                        : null}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    <tr>
-                      <td colSpan="6" className="border-t-2 border-b-2 p-3 m-3">
-                        <div className="uppercase whitespace-nowrap text-sm text-gray-700 font-semibold text-center">
-                          Page Restriction
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <PageList
-                          pages={pages}
-                          onPageSelect={handlePageChange}
-                        />
-                      </td>
-                      {pageAccessSwitch.map((page) =>
-                        page.access.map((access, index) => (
-                          <td
-                            key={index}
-                            index={index}
-                            className="px-6 py-4 whitespace-nowrap w-44  place-items-center"
-                          >
-                            <Switch
-                              access={access}
-                              row_index={index}
-                              switchChanged={switchChanged}
-                            />
-                          </td>
-                        ))
-                      )}
-                    </tr>
-
-                    <tr>
-                      <td colSpan="6" className="border-t-2 border-b-2 p-3 m-3">
-                        <div className="uppercase whitespace-nowrap text-sm text-gray-700 font-semibold text-center">
-                          Feature Restriction
-                        </div>
-                      </td>
-                    </tr>
-
-                    {featureAccessSwitch.map((feature, index) => (
-                      <React.Fragment key={index}>
-                        <tr key={`${feature.id}_${index}`}>
-                          <td
-                            colSpan="6"
-                            className="px-6 py-4 whitespace-nowrap"
-                          >
-                            {feature.title}
-                          </td>
-                        </tr>
-
-                        {feature.data.map((data, index) => (
-                          <tr key={`${data.id}_${index}`}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {data.name}
-                            </td>
-                            {data.access.map((access, index) => (
-                              <td
-                                key={`${access.id}_${index}`}
-                                className="px-6 py-4 whitespace-nowrap w-44  place-items-center"
-                              >
-                                <Switch
-                                  access={access}
-                                  row_index={index}
-                                  switchChanged={switchChanged}
-                                />
+                    {defaultPages !== null
+                      ? defaultPages.map((page, page_index) => (
+                          <React.Fragment key={page_index}>
+                            <tr key={`${page.id}_${page_index}`}>
+                              <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                {page.label}
                               </td>
+                              {userAccessSwitch !== null
+                                ? userAccessSwitch.map(
+                                    (user_access, access_index) => (
+                                      <td
+                                        key={`${user_access.id}_${access_index}`}
+                                        className="px-6 py-4 whitespace-nowrap w-44 place-items-center text-center"
+                                      >
+                                        <Switch
+                                          default_access={page}
+                                          user_access={user_access.access}
+                                          row_index={access_index}
+                                          user_type={user_access.userType}
+                                          switchChanged={switchChanged}
+                                        />
+                                      </td>
+                                    )
+                                  )
+                                : null}
+                            </tr>
+
+                            {page.features.map((data, index) => (
+                              <tr key={`${data.id}_${index}`}>
+                                <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-500 ">
+                                  {data.label}
+                                </td>
+                                {userAccessSwitch !== null
+                                  ? userAccessSwitch.map((access, index) => (
+                                      <td
+                                        key={`${access.id}_${index}`}
+                                        className="px-6 py-4 whitespace-nowrap w-44  place-items-center"
+                                      >
+                                        {/* <Switch
+                                          access={access}
+                                          row_index={index}
+                                          switchChanged={switchChanged}
+                                        /> */}
+                                      </td>
+                                    ))
+                                  : null}
+                              </tr>
                             ))}
-                          </tr>
-                        ))}
-                      </React.Fragment>
-                    ))}
+                          </React.Fragment>
+                        ))
+                      : null}
                   </tbody>
                 </table>
               </div>
