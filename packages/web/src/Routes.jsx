@@ -12,12 +12,15 @@ import PostRegistration from "./components/authentication/post-registration";
 import PostAuthentication from "./components/authentication/post-authentication";
 import { AppRoutes } from "./constants/AppRoutes";
 import Navbar from "./components/navigation";
+import Signout from "./components/authentication/signout";
+
 
 const Routes = () => {
   return (
     <Router>
       <Switch>
         <Route exact path="/" component={Authentication} />
+        <Route exact path={AppRoutes.SIGNOUT} component={Signout} />
         <Route exact path={AppRoutes.POSTREGISTRATION} component={PostRegistration} />
         <Route exact path={AppRoutes.POSTAUTHENTICATION} component={PostAuthentication} />
         <>

@@ -9,8 +9,6 @@ export default function PostRegistration() {
   let history = useHistory();
 
   useEffect(() => {
-    clearLocalStorage();
-
     const userDetails = `
       query user($id: String) {
         user(id: $id) {
@@ -69,36 +67,21 @@ export default function PostRegistration() {
               },
             };
 
-            
             API.graphql(params).then((ua) => {
-              
               const userAccess = ua.data.companyAccessType[0].access;
               localStorage.setItem("access", JSON.stringify(userAccess));
               history.push(AppRoutes.DASHBOARD);
-              
             });
           });
         });
-        //.catch((err) => setError(err));
       } catch (e) {
         console.log(e);
-        //setError(e.errors[0].message);
+        setError(e.errors[0].message);
       }
     };
 
     getUser();
   });
-
-  function clearLocalStorage() {
-    localStorage.removeItem("userId");
-    localStorage.removeItem("email");
-    localStorage.removeItem("firstName");
-    localStorage.removeItem("lastName");
-    localStorage.removeItem("userType");
-    localStorage.removeItem("company");
-    localStorage.removeItem("companyId");
-    localStorage.removeItem("access");
-  }
 
   return <p>{error ? `Oops! Something went wrong. ${error}` : null}</p>;
 }

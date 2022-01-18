@@ -23,34 +23,15 @@ function Navbar() {
     e.preventDefault();
     if (window.confirm("Are you sure you want to logout?")) {
       setSidebar(false);
-      try {
-        signOut();
-      } catch (error) {
-        console.log("Error signing out: ", error);
-      }
+      signOut();
     } else {
       return false;
     }
   };
 
-  const signOut = async () => {
-    await Auth.signOut().then(() => {
-      clearLocalStorage();
-      console.log("Sign out completed.");
-      history.push("/");
-    });
+  const signOut = () => {
+    history.push("/signout");
   };
-
-  function clearLocalStorage() {
-    localStorage.removeItem("userId");
-    localStorage.removeItem("email");
-    localStorage.removeItem("firstName");
-    localStorage.removeItem("lastName");
-    localStorage.removeItem("userType");
-    localStorage.removeItem("company");
-    localStorage.removeItem("companyId");
-    localStorage.removeItem("access");
-  }
 
   // history.listen((location) => {
   //   setlocation(location.pathname);
