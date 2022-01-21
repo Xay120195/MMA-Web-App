@@ -7,29 +7,17 @@ export const Switch = ({
   row_index,
   user_type,
   switchChanged,
+  switchIsClicked,
 }) => {
-  // console.group(user_type, row_index);
-  // // console.log(page_id);
-  // console.log("user_access", user_access);
-  // console.log("default_access", default_access);
-
   const pageIsFound = user_access
     .map((p) => p.id)
     .find((page) => page === default_access.id && page);
 
-  if (pageIsFound === undefined) {
-    //console.log("Not Found", default_access.id);
-  }
-
-  console.groupEnd();
   const [isChecked, setisChecked] = useState(pageIsFound !== undefined);
   const [accessPages, setAccessPages] = useState(user_access);
   const [userType, setUserType] = useState(user_type);
 
-  
-
   const handleChange = (s) => {
-    console.group("Handle Change");
     var newAccessPageSet;
     if (isChecked) {
       newAccessPageSet = accessPages.filter(function (value) {
@@ -47,13 +35,11 @@ export const Switch = ({
 
     setAccessPages(newAccessPageSet);
     setisChecked(!isChecked);
+    handleClick(!isChecked, default_access.id);
+  };
 
-    //setisChecked(!isChecked);
-    
-    // console.log("isChecked", isChecked);
-    // console.log("accessPages", accessPages);
-
-    console.groupEnd();
+  const handleClick = (is_checked, page_id) => {
+    switchIsClicked(is_checked, page_id, userType);
   };
 
   useEffect(() => {
@@ -61,20 +47,16 @@ export const Switch = ({
   }, [accessPages, userType, isChecked]);
 
   return (
-    <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+    <div className="relative inline-block w-8 mr-2 align-middle select-none transition duration-200 ease-in">
       <input
         type="checkbox"
-        name={`${user_access.name}_${row_index}`}
-        id={`${user_access.name}_${row_index}`}
-        className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+        name={row_index}
+        id={row_index}
+        className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
         checked={isChecked}
         onChange={handleChange.bind(this)}
       />
-      <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+      <label className="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
     </div>
   );
-
-  // function setCheckboxValue(){
-  //   console.log('changed');
-  // }
 };
