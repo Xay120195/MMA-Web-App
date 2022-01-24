@@ -16,48 +16,46 @@ const UserTypeAccess = (props) => {
   const [defaultPages, setDefaultPages] = useState(null);
   const [userAccessSwitch, setUserAccessSwitch] = useState(null);
   const [switchIsTriggered, setSwitchIsTriggered] = useState(null);
-  
+
   const hideToast = () => {
     setShowToast(false);
   };
 
-  const switchChanged = (access, userType, isChecked) => {
-    console.group("switchChanged()");
-    // console.log(userType, isChecked);
-    console.log(access);
-    console.log("isChecked", isChecked);
-    console.groupEnd();
-    
-    // if(isChecked){
-    //   setSwitchIsTriggered(true);
-    // }
-    updateTaggedPages(access, userType);
+  const switchChanged = (id, access, userType) => {
+    updateTaggedPages(id, access, userType);
   };
 
   const switchIsClicked = (isChecked, page_id, userType) => {
-    
-    console.log('switch is clicked call setSwitchIsTriggered', isChecked, userType, page_id);
-
-    
-      setSwitchIsTriggered({
-        'page_id': page_id,
-        'is_checked': isChecked
-      });
-      console.log("SWITCH: setSwitchIsTriggered", switchIsTriggered);
-    
-    
-  }
-
-  const lockChanged = (access, userType, isChecked) => {
-    console.group("lockChanged()");
-    // console.log(userType, isChecked);
-    // console.log(access);
-    console.groupEnd();
-    //updateTaggedPages(access, userType);
+    setSwitchIsTriggered({
+      page_id: page_id,
+      is_checked: isChecked,
+    });
   };
 
-  const updateTaggedPages = (new_access, user_type) => {
-    console.log("updateTaggedPages", user_type, new_access);
+  const lockChanged = (access, userType) => {
+    updateTaggedFeature(access, userType);
+  };
+
+  const updateTaggedFeature = (new_access, user_type) => {
+    userAccessSwitch.map((page) => {
+      if (page.userType === user_type) {
+        return (
+          new_access !== undefined &&
+          page.access.map((p) => {
+            if (p.id === new_access.id) {
+              return new_access;
+            }
+            return p;
+          })
+        );
+      }
+      return page;
+    });
+
+    updatePageAccess();
+  };
+
+  const updateTaggedPages = (id, new_access, user_type) => {
     var removeSelectedTypeAccess = userAccessSwitch.filter(function (value) {
       return value.userType !== user_type;
     });
@@ -65,6 +63,7 @@ const UserTypeAccess = (props) => {
     var newAccessPageSet = [
       ...removeSelectedTypeAccess,
       {
+        id: id,
         userType: user_type,
         access: new_access,
       },
@@ -81,10 +80,7 @@ const UserTypeAccess = (props) => {
 
     setUserAccessSwitch(newAccessPageSet);
     setTableHeaders(newAccessPageSet.map((h) => h.userType));
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 1000);
+    updatePageAccess();
   };
 
   const contentDiv = {
@@ -106,6 +102,7 @@ const UserTypeAccess = (props) => {
       }
     }
     companyAccessType(companyId: $companyId) {
+      id
       userType
       access {
         id
@@ -118,7 +115,6 @@ const UserTypeAccess = (props) => {
 `;
 
       let getPageAccess = async () => {
-        console.log("getPageAccess()");
         const params = {
           query: getAllPages,
           variables: {
@@ -128,12 +124,8 @@ const UserTypeAccess = (props) => {
 
         await API.graphql(params).then((pages) => {
           const { page, companyAccessType } = pages.data;
-
-          //if (defaultPages === null) {
           setDefaultPages(page);
-          //}
 
-          //if (userAccessSwitch === null) {
           var userAccess = companyAccessType.sort((a, b) =>
             a.userType.localeCompare(b.userType)
           );
@@ -149,17 +141,20 @@ const UserTypeAccess = (props) => {
 
           setUserAccessSwitch(userAccess);
           setTableHeaders(userAccess.map((h) => h.userType));
-          //}
         });
       };
 
       getPageAccess();
     }
-
-    // console.log(defaultPages);
-    console.log("defaultPages", defaultPages);
-    console.log("userAccessSwitch", userAccessSwitch);
   }, [defaultPages, userAccessSwitch]);
+
+  let updatePageAccess = async () => {
+    console.log("updatePageAccess()", userAccessSwitch);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 1000);
+  };
 
   return (
     <>
@@ -210,11 +205,10 @@ const UserTypeAccess = (props) => {
                                         key={access_index}
                                         className="px-6 py-4 whitespace-nowrap w-44 place-items-center text-center"
                                       >
-                                        
                                         <Switch
                                           default_access={page}
+                                          user_access_id={user_access.id}
                                           user_access={user_access.access}
-                                          row_index={access_index}
                                           user_type={user_access.userType}
                                           switchChanged={switchChanged}
                                           switchIsClicked={switchIsClicked}
@@ -237,7 +231,6 @@ const UserTypeAccess = (props) => {
                                         key={`${access.id}_${index}`}
                                         className="px-6 py-2 whitespace-nowrap w-44 place-items-center text-center"
                                       >
-                                        {/* <p>{switchIsTriggered !== null ? switchIsTriggered.toString() : 'NULLLLL'}</p> */}
                                         <LockAccess
                                           feature_id={data.id}
                                           default_features={page}

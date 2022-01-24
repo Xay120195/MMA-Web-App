@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 export const Switch = ({
   default_access,
+  user_access_id,
   user_access,
   row_index,
   user_type,
@@ -43,7 +44,7 @@ export const Switch = ({
   };
 
   useEffect(() => {
-    switchChanged(accessPages, userType, isChecked);
+    switchChanged(user_access_id, accessPages, userType);
   }, [accessPages, userType, isChecked]);
 
   return (
