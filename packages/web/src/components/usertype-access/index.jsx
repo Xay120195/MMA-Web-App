@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import "../../assets/styles/ContactAccess.css";
-import { pages, features } from "./data-source";
 import { Info } from "./info";
 import { Switch } from "./switch";
 import { LockAccess } from "./lock";
-import { PageList } from "./page-list";
+//import { PageList } from "./page-list";
 import { API } from "aws-amplify";
 
 const UserTypeAccess = (props) => {
