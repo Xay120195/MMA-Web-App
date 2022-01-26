@@ -29,7 +29,9 @@ export const Switch = ({
         ...accessPages,
         {
           id: default_access.id,
-          features: default_access.features.map((f) => f.id),
+          features: default_access.features.map((d) => {
+            return { id: d.id };
+          }),
         },
       ];
     }
@@ -40,12 +42,12 @@ export const Switch = ({
   };
 
   const handleClick = (is_checked, page_id) => {
-    switchIsClicked(is_checked, page_id, userType);
+    switchIsClicked(is_checked, page_id);
   };
 
   useEffect(() => {
     switchChanged(user_access_id, accessPages, userType);
-  }, [accessPages, userType, isChecked]);
+  }, [accessPages, userType, isChecked, user_access_id]);
 
   return (
     <div className="relative inline-block w-8 mr-2 align-middle select-none transition duration-200 ease-in">
