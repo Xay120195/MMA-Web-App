@@ -2,11 +2,13 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { BsFillUnlockFill, BsLockFill } from "react-icons/bs";
 export const LockAccess = ({
+  user_access_id,
   feature_id,
   default_features,
   feature_access,
   user_type,
   lockChanged,
+  lockIsClicked,
   switchIsTriggered,
 }) => {
   const activeSwitchStyle = {
@@ -43,7 +45,7 @@ export const LockAccess = ({
           return value.id !== feature_id;
         });
     } else {
-      newAccessFeatureSet = [
+      newAccessFeatureSet = accessFeature !== undefined && [
         ...accessFeature.features,
         {
           id: feature_id,
@@ -53,7 +55,7 @@ export const LockAccess = ({
 
     accessFeature.features =
       newAccessFeatureSet !== undefined && newAccessFeatureSet;
-
+    lockIsClicked(!isChecked, feature_id);
     setIsChecked(!isChecked);
     setIsLockClicked(!isLockClicked);
   };
@@ -79,11 +81,15 @@ export const LockAccess = ({
       setIsLockClicked(false);
     }
 
-    lockChanged(accessFeature, userType);
+    lockChanged(user_access_id, accessFeature, userType);
   }, [userType, isChecked, pageFeatureAccess, featureIsFound]);
 
   return isChecked ? (
-    <BsFillUnlockFill size={21} style={activeSwitchStyle} onClick={handleEvent} />
+    <BsFillUnlockFill
+      size={21}
+      style={activeSwitchStyle}
+      onClick={handleEvent}
+    />
   ) : (
     <BsLockFill size={21} style={inactiveSwitchStyle} onClick={handleEvent} />
   );
