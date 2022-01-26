@@ -8,11 +8,16 @@ export function MattersList({
   view,
   onShowDeleteModal,
   showDeleteMatter,
+  allowOpenMatter,
 }) {
   const setshowDeleteModal = (value) => {
     onShowDeleteModal(value);
   };
 
+  const redirectToMattersOverview = allowOpenMatter
+    ? `${AppRoutes.MATTERSOVERVIEW}/${matter.id}`
+    : `#`;
+    
   return (
     <>
       {view === "grid" ? (
@@ -39,7 +44,7 @@ export function MattersList({
                 </svg>
               </button>
             )}
-            <Link to={`${AppRoutes.MATTERSOVERVIEW}/${matter.id}`}>
+            <Link to={redirectToMattersOverview}>
               <h4
                 tabIndex="0"
                 className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-3"
@@ -106,7 +111,7 @@ export function MattersList({
                 </svg>
               </button>
             )}
-            <Link to={`${AppRoutes.MATTERSOVERVIEW}/${matter.id}`}>
+            <Link to={redirectToMattersOverview}>
               <div className="grid grid-cols-4 gap-4">
                 <div className="col-span-2">
                   <h4

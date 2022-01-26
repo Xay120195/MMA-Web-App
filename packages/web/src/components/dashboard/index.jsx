@@ -28,6 +28,7 @@ export default function Dashboard() {
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
+  const [allowOpenMatter, setAllowOpenMatter] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const {
@@ -62,18 +63,26 @@ export default function Dashboard() {
     }
 
     if (userInfo) {
-      featureAccessFilters("DASHBOARD");
+      featureAccessFilters();
     }
   }, [searchMatter, userInfo]);
 
-  const featureAccessFilters = async (pageName) => {
-    const dashboardAccess = await AccessControl(pageName);
+  const featureAccessFilters = async () => {
+    const dashboardAccess = await AccessControl("DASHBOARD");
 
     if (dashboardAccess.status !== "restrict") {
       setShowCreateMatter(dashboardAccess.data.features.includes("ADDCLIENTANDMATTER"));
       setShowDeleteMatter(dashboardAccess.data.features.includes("DELETECLIENTANDMATTER"));
     } else {
-      alert(dashboardAccess.message);
+      console.log(dashboardAccess.message);
+    }
+
+    const mattersOverviewAccess = await AccessControl("MATTERSOVERVIEW");
+
+    if (mattersOverviewAccess.status !== "restrict") {
+      setAllowOpenMatter(true);
+    } else {
+      console.log(mattersOverviewAccess.message);
     }
   };
 
@@ -301,6 +310,7 @@ export default function Dashboard() {
                 view={mattersView}
                 onShowDeleteModal={handleShowDeleteModal}
                 showDeleteMatter={showDeleteMatter}
+                allowOpenMatter={allowOpenMatter}
               />
             ))
           )}

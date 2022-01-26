@@ -1,23 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import BlankState from "../blank-state";
-import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter, HiMinus, HiMinusCircle, HiTrash} from 'react-icons/hi';
+import {
+  HiOutlineShare,
+  HiOutlinePlusCircle,
+  HiOutlineFilter,
+  HiMinus,
+  HiMinusCircle,
+  HiTrash,
+} from "react-icons/hi";
 import { BsFillInfoCircleFill } from "react-icons/bs";
-import {MdArrowForwardIos} from 'react-icons/md'
-import { matter, witness_affidavits } from './data-source'
+import { MdArrowForwardIos } from "react-icons/md";
+import { matter, witness_affidavits } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
-import ContentEditable from 'react-contenteditable'; 
+import ContentEditable from "react-contenteditable";
+import AccessControl from "../../shared/accessControl";
 
 export default function MattersOverview() {
-  const [datawitnessaffidavits, setWitnessAffidavits] = useState(witness_affidavits);
+  const [datawitnessaffidavits, setWitnessAffidavits] =
+    useState(witness_affidavits);
 
   const [searchTable, setSearchTable] = useState();
 
-  const tableHeaders = ["No.", "Witness Name", "RFIs", "Comments", "Affidavits"];
+  const tableHeaders = [
+    "No.",
+    "Witness Name",
+    "RFIs",
+    "Comments",
+    "Affidavits",
+  ];
   const saveAlertTDChanges = "Successfully updated!";
 
   const [showToast, setShowToast] = useState(false);
+  const [showAddRow, setShowAddRow] = useState(false);
+  const [showFilterByClient, setShowFilterByClient] = useState(false);
+  const [showDeleteRow, setShowDeleteRow] = useState(false);
+  const [showSharePage, setShowSharePage] = useState(false);
+  const [allowUpdateWitnessName, setAllowUpdateWitnessName] = useState(false);
+  const [allowUpdateComment, setAllowUpdateComment] = useState(false);
+
   const [alertMessage, setalertMessage] = useState();
 
   const hideToast = () => {
@@ -26,8 +48,8 @@ export default function MattersOverview() {
 
   const [checkAllState, setcheckAllState] = useState(false);
   const handleBlankStateClick = () => {
-    console.log('Blank State Button was clicked!');
-  }
+    console.log("Blank State Button was clicked!");
+  };
 
   const handleCheckAllChange = (ischecked) => {
     setcheckAllState(!checkAllState);
@@ -68,44 +90,46 @@ export default function MattersOverview() {
     }
   };
 
-  const HandleChangeToTD = evt => {
-      console.log(evt.target.innerHTML);
-      setalertMessage(saveAlertTDChanges);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+  const HandleChangeToTD = (evt) => {
+    console.log(evt.target.innerHTML);
+    setalertMessage(saveAlertTDChanges);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
   };
 
   const contentDiv = {
-    margin: "0 0 0 65px"
+    margin: "0 0 0 65px",
   };
 
   const mainGrid = {
     display: "grid",
-    gridtemplatecolumn: "1fr auto"
+    gridtemplatecolumn: "1fr auto",
   };
 
-
-  
   let tableRowIndex = datawitnessaffidavits.length;
   const handleAddRow = () => {
     tableRowIndex++;
     setWitnessAffidavits((previousState) => [
-      {id: tableRowIndex, name: "John D", comments: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", rfi: {id: 15, name: "Lorem Ipsum"}
+      {
+        id: tableRowIndex,
+        name: "John D",
+        comments: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        rfi: { id: 15, name: "Lorem Ipsum" },
       },
       ...previousState,
     ]);
     console.log(datawitnessaffidavits);
-  }
+  };
 
   const handleDeleteRow = () => {
     var updatedRows = [...datawitnessaffidavits];
     var _data = [];
-    checkedState.map(function(item, index) {
-        if(item){
-          _data = updatedRows.filter((e, i) => i !== index);
-        }
+    checkedState.map(function (item, index) {
+      if (item) {
+        _data = updatedRows.filter((e, i) => i !== index);
+      }
     });
     setWitnessAffidavits(_data);
   };
@@ -120,88 +144,148 @@ export default function MattersOverview() {
       filter(searchTable);
       console.log("L121" + searchTable);
     }
+    featureAccessFilters();
   }, [searchTable]);
+
+  const featureAccessFilters = async () => {
+    console.log("featureAccessFilters()");
+    const mattersOverviewAccess = await AccessControl("MATTERSOVERVIEW");
+
+    if (mattersOverviewAccess.status !== "restrict") {
+      console.log(mattersOverviewAccess);
+      setShowAddRow(mattersOverviewAccess.data.features.includes("ADDROW"));
+      setShowFilterByClient(
+        mattersOverviewAccess.data.features.includes("FILTERBYWITNESSNAME")
+      );
+      setShowDeleteRow(
+        mattersOverviewAccess.data.features.includes("DELETEROW")
+      );
+
+      setShowSharePage(
+        mattersOverviewAccess.data.features.includes("SHAREPAGE")
+      );
+
+      setAllowUpdateWitnessName(
+        mattersOverviewAccess.data.features.includes("UPDATEWITNESSNAME")
+      );
+
+      setAllowUpdateComment(
+        mattersOverviewAccess.data.features.includes("UPDATECOMMENT")
+      );
+
+      // "EXPORT",
+      // "COMPOSEEMAIL",
+      // "ACCESSLIBRARYOFUPLOADEDFILES"
+    } else {
+      console.log(mattersOverviewAccess.message);
+    }
+
+    // if (dashboardAccess.status !== "restrict") {
+    //   setShowCreateMatter(dashboardAccess.data.features.includes("ADDCLIENTANDMATTER"));
+    //   setShowDeleteMatter(dashboardAccess.data.features.includes("DELETECLIENTANDMATTER"));
+    // } else {
+    //   console.log(dashboardAccess.message);
+    // }
+  };
 
   const filter = (v) => {
     setWitnessAffidavits(
       witness_affidavits.filter(
         (x) =>
-          x.name.toLowerCase().includes(v.toLowerCase()) || 
-          x.rfi.name.toLowerCase().includes(v.toLowerCase()) || 
+          x.name.toLowerCase().includes(v.toLowerCase()) ||
+          x.rfi.name.toLowerCase().includes(v.toLowerCase()) ||
           x.comments.toLowerCase().includes(v.toLowerCase())
       )
     );
   };
-  
-    return (
-      <>
-      
-      {datawitnessaffidavits === undefined ? (
-        <BlankState title={'affidavits'} txtLink={'add row'} handleClick={handleBlankStateClick} />
-      ) : (
-        
-        <div className={"p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white" } style={contentDiv}>
 
+  return (
+    <>
+      {datawitnessaffidavits === undefined ? (
+        <BlankState
+          title={"affidavits"}
+          txtLink={"add row"}
+          handleClick={handleBlankStateClick}
+        />
+      ) : (
+        <div
+          className={
+            "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
+          }
+          style={contentDiv}
+        >
           <div className="relative flex-grow flex-1">
             <div style={mainGrid}>
-                <div>
-                  <h1 className="font-bold text-3xl">
-                    {matter.name}
-                  </h1>
-                  <span className={"text-sm mt-3 font-medium"}>MATTER AFFIDAVITS OVERVIEW</span>
-                </div>
-                
-                <div className="absolute right-0">
+              <div>
+                <h1 className="font-bold text-3xl">{matter.name}</h1>
+                <span className={"text-sm mt-3 font-medium"}>
+                  MATTER AFFIDAVITS OVERVIEW
+                </span>
+              </div>
 
-                  <Link to={AppRoutes.DASHBOARD}>
+              <div className="absolute right-0">
+                <Link to={AppRoutes.DASHBOARD}>
                   <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                    Back &nbsp;<MdArrowForwardIos/></button>
-                  </Link>
-                  <button className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
-                    Share &nbsp;<HiOutlineShare/>
+                    Back &nbsp;
+                    <MdArrowForwardIos />
                   </button>
-                </div>
-
-                
+                </Link>
+                {showSharePage && (
+                  <button className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
+                    Share &nbsp;
+                    <HiOutlineShare />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mt-7">
-                  <div>
-                    <input
-                      type="checkbox"
-                      name="check_all"
-                      id="check_all"
-                      className="cursor-pointer mr-2"
-                      checked={checkAllState}
-                      onChange={(e) => handleCheckAllChange(e.target.checked)}
-                    />
-                    <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" onClick={() => handleAddRow()} >
-                    Add Row &nbsp;<HiOutlinePlusCircle/>
-                    </button>
+              <div>
+                <input
+                  type="checkbox"
+                  name="check_all"
+                  id="check_all"
+                  className="cursor-pointer mr-2"
+                  checked={checkAllState}
+                  onChange={(e) => handleCheckAllChange(e.target.checked)}
+                />
+                {showAddRow && (
+                  <button
+                    className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                    onClick={() => handleAddRow()}
+                  >
+                    Add Row &nbsp;
+                    <HiOutlinePlusCircle />
+                  </button>
+                )}
 
-                    <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
-                      Filter by Client &nbsp;<HiOutlineFilter/>
-                    </button>
+                {showFilterByClient && (
+                  <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
+                    Filter by Client &nbsp;
+                    <HiOutlineFilter />
+                  </button>
+                )}
 
-                    <button className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2" onClick={() => handleDeleteRow(this)} >
-                    Delete &nbsp;<HiTrash/>
-                    </button>
+                {showDeleteRow && (
+                  <button
+                    className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+                    onClick={() => handleDeleteRow(this)}
+                  >
+                    Delete &nbsp;
+                    <HiTrash />
+                  </button>
+                )}
 
-                    <input
-                      type="search"
-                      placeholder="Search ..."
-                      onChange={handleSearchChange}
-                      className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12"
-                    />
-                  </div>
-                  
+                <input
+                  type="search"
+                  placeholder="Search ..."
+                  onChange={handleSearchChange}
+                  className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12"
+                />
               </div>
+            </div>
 
-              <div className="mt-3" >
-                  
-              </div>
-            
-            
+            <div className="mt-3"></div>
           </div>
 
           {totalChecked > 0 && (
@@ -215,83 +299,94 @@ export default function MattersOverview() {
                 </div>
                 <div>
                   <p className="font-light text-sm">
-                    <span className="font-bold">{totalChecked}</span> {totalChecked > 1 ? 'items' : 'item'} selected.
+                    <span className="font-bold">{totalChecked}</span>{" "}
+                    {totalChecked > 1 ? "items" : "item"} selected.
                   </p>
                 </div>
               </div>
             </div>
           )}
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      {tableHeaders.map((header, index) => (
-                        <th key={index} scope="col" className='px-6 py-3 font-medium text-gray-500 tracking-wider'>
-                          {header}
-                        </th>
-                      ))}
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  {tableHeaders.map((header, index) => (
+                    <th
+                      key={index}
+                      scope="col"
+                      className="px-6 py-3 font-medium text-gray-500 tracking-wider"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {datawitnessaffidavits
+                  .map((wa, index) => (
+                    <tr key={index} index={index}>
+                      <td className="px-6 py-4 whitespace-nowrap w-4 text-center">
+                        <input
+                          type="checkbox"
+                          name={`${wa.id}_${index}`}
+                          id={`${wa.id}_${index}`}
+                          className="cursor-pointer"
+                          checked={checkedState[index]}
+                          onChange={() => handleCheckboxChange(index)}
+                        />{" "}
+                        <span className="text-sm">{wa.id}</span>
+                      </td>
+                      <td className="px-6 py-4 w-10 align-top place-items-center">
+                        {allowUpdateWitnessName ? (
+                          <ContentEditable
+                            html={wa.name}
+                            data-column="witnessname"
+                            className="content-editable text-sm p-2"
+                            onBlur={HandleChangeToTD}
+                          />
+                        ) : (
+                          <p className="text-sm p-2">{wa.name}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 w-10 align-top place-items-center">
+                        <ContentEditable
+                          html={wa.rfi.name}
+                          data-column="rfiname"
+                          className="content-editable text-sm p-2"
+                          onBlur={HandleChangeToTD}
+                        />
+                      </td>
+                      <td className="px-6 py-4 w-1/2 align-top place-items-center">
+                        {allowUpdateComment ? (
+                          <ContentEditable
+                            html={wa.comments}
+                            data-column="comments"
+                            className="content-editable text-sm p-2"
+                            onBlur={HandleChangeToTD}
+                          />
+                        ) : (
+                          <p className="text-sm p-2">{wa.comments}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
+                        <Link to={`${AppRoutes.WITNESSAFFIDAVIT}/${wa.id}`}>
+                          <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                            View
+                          </button>
+                        </Link>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {
-                      datawitnessaffidavits.map((wa, index)=> (
-                        <tr key={index} index={index}>
-                          <td className="px-6 py-4 whitespace-nowrap w-4 text-center">
-                          <input
-                            type="checkbox"
-                            name={`${wa.id}_${index}`}
-                            id={`${wa.id}_${index}`}
-                            className="cursor-pointer"
-                            checked={checkedState[index]}
-                            onChange={() => handleCheckboxChange(index)}
-                          />{" "}
-                      <span className="text-sm">{wa.id}</span>
-                          </td>
-                          <td className="px-6 py-4 w-10 align-top place-items-center">
-                              <ContentEditable
-                                html={wa.name}
-                                data-column="witnessname"
-                                className="content-editable text-sm p-2"
-                                onBlur={HandleChangeToTD} 
-                              />
-                          </td>
-                          <td className="px-6 py-4 w-10 align-top place-items-center">
-                              <ContentEditable
-                                html={wa.rfi.name}
-                                data-column="rfiname"
-                                className="content-editable text-sm p-2"
-                                onBlur={HandleChangeToTD} 
-                              />
-                          </td>
-                          <td className="px-6 py-4 w-1/2 align-top place-items-center">
-                            <ContentEditable
-                                html={wa.comments}
-                                data-column="comments"
-                                className="content-editable text-sm p-2"
-                                onBlur={HandleChangeToTD} 
-                              />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
-                            <Link to={`${AppRoutes.WITNESSAFFIDAVIT}/${wa.id}`}>
-                              <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">View</button>
-                            </Link>
-                          </td>
-                        </tr>
-                      )).sort((a, b) => a.id > b.id ? 1 : -1)
-                    }
-                  </tbody>
-                </table>
-              </div>
-
+                  ))
+                  .sort((a, b) => (a.id > b.id ? 1 : -1))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
-      </>
-      
-    );
-  }
-  
-  
+    </>
+  );
+}
