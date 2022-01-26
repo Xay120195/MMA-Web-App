@@ -39,7 +39,8 @@ export default function MattersOverview() {
   const [showSharePage, setShowSharePage] = useState(false);
   const [allowUpdateWitnessName, setAllowUpdateWitnessName] = useState(false);
   const [allowUpdateComment, setAllowUpdateComment] = useState(false);
-
+  const [allowOpenWitnessAffidavit, setAllowOpenWitnessAffidavit] = useState(false);
+  
   const [alertMessage, setalertMessage] = useState();
 
   const hideToast = () => {
@@ -173,19 +174,18 @@ export default function MattersOverview() {
         mattersOverviewAccess.data.features.includes("UPDATECOMMENT")
       );
 
-      // "EXPORT",
-      // "COMPOSEEMAIL",
-      // "ACCESSLIBRARYOFUPLOADEDFILES"
     } else {
       console.log(mattersOverviewAccess.message);
     }
 
-    // if (dashboardAccess.status !== "restrict") {
-    //   setShowCreateMatter(dashboardAccess.data.features.includes("ADDCLIENTANDMATTER"));
-    //   setShowDeleteMatter(dashboardAccess.data.features.includes("DELETECLIENTANDMATTER"));
-    // } else {
-    //   console.log(dashboardAccess.message);
-    // }
+    const witnessAffidavitAccess = await AccessControl("WITNESSAFFIDAVIT");
+
+    if (witnessAffidavitAccess.status !== "restrict") {
+      setAllowOpenWitnessAffidavit(true);
+    } else {
+      console.log(witnessAffidavitAccess.message);
+    }
+
   };
 
   const filter = (v) => {
@@ -369,8 +369,8 @@ export default function MattersOverview() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
-                        <Link to={`${AppRoutes.WITNESSAFFIDAVIT}/${wa.id}`}>
-                          <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                        <Link to={allowOpenWitnessAffidavit ? `${AppRoutes.WITNESSAFFIDAVIT}/${wa.id}` : `#`}>
+                          <button className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" disabled={!allowOpenWitnessAffidavit}>
                             View
                           </button>
                         </Link>

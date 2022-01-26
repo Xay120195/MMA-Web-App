@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 import BlankState from "../blank-state";
-import {HiOutlineShare, HiOutlinePlusCircle, HiOutlineFilter, HiMinus, HiMinusCircle, HiTrash} from 'react-icons/hi';
+import {
+  HiOutlineShare,
+  HiOutlinePlusCircle,
+  HiOutlineFilter,
+  HiMinus,
+  HiMinusCircle,
+  HiTrash,
+} from "react-icons/hi";
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_affidavit, statements } from "./data-source";
@@ -11,7 +18,8 @@ import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal
 import SelectLinkModal from "../link-to-chronology/linktochronology-list-modal"; // shared functions/modal from link-to-chronology
 import PreviewModal from "../link-to-chronology/preview-linktochronology-modal"; // shared functions/modal from link-to-chronology
 import ToastNotification from "../toast-notification";
-import ContentEditable from 'react-contenteditable'; 
+import ContentEditable from "react-contenteditable";
+import AccessControl from "../../shared/accessControl";
 
 export default function WitnessAffidavit() {
   let history = useHistory();
@@ -34,10 +42,23 @@ export default function WitnessAffidavit() {
   const [searchTable, setSearchTable] = useState();
 
   const [showToast, setShowToast] = useState(false);
-  const [alertMessage, setalertMessage] = useState();
+  const [showAddRow, setShowAddRow] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [showDeleteRow, setShowDeleteRow] = useState(false);
+  const [allowUpdateStatement, setAllowUpdateStatement] = useState(false);
+  const [allowUpdateComment, setAllowUpdateComment] = useState(false);
 
+  const [allowUploadLinkToChronology, setAllowUploadLinkToChronology] =
+    useState(false);
+  const [allowSelectLinkToChronology, setAllowSelectLinkToChronology] =
+    useState(false);
+  const [allowPreviewLinkToChronology, setAllowPreviewLinkToChronology] =
+    useState(false);
+
+  const [allowOpenRFI, setAllowOpenRFI] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
   const [showPreviewModal, setshowPreviewModal] = useState(false);
-  
+
   const handleBlankStateClick = () => {
     console.log("Blank State Button was clicked!");
   };
@@ -118,43 +139,48 @@ export default function WitnessAffidavit() {
     }
   };
 
-  const HandleChangeToTD = evt => {
-      console.log(evt.target.innerHTML);
-      
-      setalertMessage(saveAlertTDChanges);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+  const HandleChangeToTD = (evt) => {
+    console.log(evt.target.innerHTML);
+
+    setalertMessage(saveAlertTDChanges);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
   };
 
   const contentDiv = {
-    margin: "0 0 0 65px"
+    margin: "0 0 0 65px",
   };
 
   const mainGrid = {
     display: "grid",
-    gridtemplatecolumn: "1fr auto"
+    gridtemplatecolumn: "1fr auto",
   };
 
   let tableRowIndex = datastatements.length;
   const handleAddRow = () => {
     tableRowIndex++;
     setstatements((previousState) => [
-      {id: tableRowIndex, statement: "Sample Data", chronology: {id: 15, link:"", name: "Lorem Ipsum"}, comments: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", rfi: {id: 15, name: "Lorem Ipsum"}
+      {
+        id: tableRowIndex,
+        statement: "Sample Data",
+        chronology: { id: 15, link: "", name: "Lorem Ipsum" },
+        comments: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        rfi: { id: 15, name: "Lorem Ipsum" },
       },
       ...previousState,
     ]);
     console.log(datastatements);
-  }
-  
+  };
+
   const handleDeleteRow = () => {
     var updatedRows = [...datastatements];
     var _data = [];
-    checkedState.map(function(item, index) {
-        if(item){
-          _data = updatedRows.filter((e, i) => i !== index);
-        }
+    checkedState.map(function (item, index) {
+      if (item) {
+        _data = updatedRows.filter((e, i) => i !== index);
+      }
     });
     setstatements(_data);
   };
@@ -169,7 +195,53 @@ export default function WitnessAffidavit() {
       filter(searchTable);
       console.log("L121" + searchTable);
     }
+    featureAccessFilters();
   }, [searchTable]);
+
+  const featureAccessFilters = async () => {
+    console.log("featureAccessFilters()");
+    const mattersOverviewAccess = await AccessControl("WITNESSAFFIDAVIT");
+
+    if (mattersOverviewAccess.status !== "restrict") {
+      console.log(mattersOverviewAccess);
+      setShowAddRow(mattersOverviewAccess.data.features.includes("ADDROW"));
+
+      setShowExport(mattersOverviewAccess.data.features.includes("EXPORT"));
+      setShowDeleteRow(
+        mattersOverviewAccess.data.features.includes("DELETEROW")
+      );
+
+      setAllowUpdateStatement(
+        mattersOverviewAccess.data.features.includes("UPDATESTATEMENT")
+      );
+
+      setAllowUpdateComment(
+        mattersOverviewAccess.data.features.includes("UPDATECOMMENT")
+      );
+
+      setAllowUploadLinkToChronology(
+        mattersOverviewAccess.data.features.includes("UPLOADLINKTOCHRONOLOGY")
+      );
+
+      setAllowSelectLinkToChronology(
+        mattersOverviewAccess.data.features.includes("SELECTLINKTOCHRONOLOGY")
+      );
+
+      setAllowPreviewLinkToChronology(
+        mattersOverviewAccess.data.features.includes("PREVIEWLINKTOCHRONOLOGY")
+      );
+    } else {
+      console.log(mattersOverviewAccess.message);
+    }
+
+    const RFIAccess = await AccessControl("MATTERSRFI");
+
+    if (RFIAccess.status !== "restrict") {
+      setAllowOpenRFI(true);
+    } else {
+      console.log(RFIAccess.message);
+    }
+  };
 
   const filter = (v) => {
     setstatements(
@@ -193,7 +265,8 @@ export default function WitnessAffidavit() {
         <div
           className={
             "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
-          } style={contentDiv}
+          }
+          style={contentDiv}
         >
           <div className="relative flex-grow flex-1">
             <div style={mainGrid}>
@@ -233,19 +306,32 @@ export default function WitnessAffidavit() {
                   checked={checkAllState}
                   onChange={(e) => handleCheckAllChange(e.target.checked)}
                 />
-                <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" onClick={() => handleAddRow()} >
-                  Add Row &nbsp;
-                  <HiOutlinePlusCircle />
-                </button>
 
-                <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
-                  Export &nbsp;
-                  <MdDownload />
-                </button>
+                {showAddRow && (
+                  <button
+                    className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                    onClick={() => handleAddRow()}
+                  >
+                    Add Row &nbsp;
+                    <HiOutlinePlusCircle />
+                  </button>
+                )}
 
-                <button className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2" onClick={() => handleDeleteRow(this)} >
-                    Delete &nbsp;<HiTrash/>
-                </button>
+                {showExport && (
+                  <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
+                    Export &nbsp;
+                    <MdDownload />
+                  </button>
+                )}
+                {showDeleteRow && (
+                  <button
+                    className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+                    onClick={() => handleDeleteRow(this)}
+                  >
+                    Delete &nbsp;
+                    <HiTrash />
+                  </button>
+                )}
 
                 <input
                   type="search"
@@ -268,7 +354,8 @@ export default function WitnessAffidavit() {
                 </div>
                 <div>
                   <p className="font-light text-sm">
-                  <span className="font-bold">{totalChecked}</span> {totalChecked > 1 ? 'items' : 'item'} selected.
+                    <span className="font-bold">{totalChecked}</span>{" "}
+                    {totalChecked > 1 ? "items" : "item"} selected.
                   </p>
                 </div>
               </div>
@@ -290,67 +377,97 @@ export default function WitnessAffidavit() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {datastatements.map((st, index) => (
-                  <tr key={index} index={index}>
-                    <td className="px-6 py-4 whitespace-nowrap w-4 text-center">
-                      <input
-                        type="checkbox"
-                        name={`${st.id}_${index}`}
-                        id={`${st.id}_${index}`}
-                        className="cursor-pointer"
-                        checked={checkedState[index]}
-                        onChange={() => handleCheckboxChange(index)}
-                      />{" "}
-                      <span className="text-sm">{st.id}</span>
-                    </td>
-                    <td className="px-6 py-4 w-1/3 align-top place-items-center">
-                      <ContentEditable
-                        html={st.statement}
-                        data-column="statement"
-                        className="content-editable text-sm p-2"
-                        onBlur={HandleChangeToTD} 
-                      />
-                    </td>
-                    <td className="px-6 py-4 w-1/3 align-top place-items-center">
-                      <ContentEditable
-                        html={st.comments}
-                        data-column="comments"
-                        className="content-editable text-sm p-2"
-                        onBlur={HandleChangeToTD} 
-                      />
-                    </td>
-                    <td className="px-6 py-4 w-4 align-top place-items-center text-center">
-                      <div className="mb-4 upload-details">
-                        <div className="upload-file" onClick={() => setshowPreviewModal(true)}>
-                          <a>Matter 1_Payment Schedule for Claim No. 58711308181433_100521 03_58AM.pdf</a>
-                        </div>
-                        <div className="line-separator">
-                          <span>or</span>
-                        </div>
-                      </div>
-                      <button
-                        className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                        onClick={() => setshowUploadLinkModal(true)}
-                      >
-                        UPLOAD
-                      </button>
-                      <button
-                        className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
-                        onClick={() => setshowSelectLinkModal(true)}
-                      >
-                        SELECT
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
-                      <button
-                        className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                        onClick={() => setshowCreateRFIModal(true)}
-                      >
-                        CREATE
-                      </button>
-                    </td>
-                  </tr>
-                )).sort((a, b) => a.id > b.id ? 1 : -1)}
+                {datastatements
+                  .map((st, index) => (
+                    <tr key={index} index={index}>
+                      <td className="px-6 py-4 whitespace-nowrap w-4 text-center">
+                        <input
+                          type="checkbox"
+                          name={`${st.id}_${index}`}
+                          id={`${st.id}_${index}`}
+                          className="cursor-pointer"
+                          checked={checkedState[index]}
+                          onChange={() => handleCheckboxChange(index)}
+                        />{" "}
+                        <span className="text-sm">{st.id}</span>
+                      </td>
+                      <td className="px-6 py-4 w-1/3 align-top place-items-center">
+                        {allowUpdateStatement ? (
+                          <ContentEditable
+                            html={st.statement}
+                            data-column="statement"
+                            className="content-editable text-sm p-2"
+                            onBlur={HandleChangeToTD}
+                          />
+                        ) : (
+                          <p className="text-sm p-2">{st.statement}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 w-1/3 align-top place-items-center">
+                        {allowUpdateComment ? (
+                          <ContentEditable
+                            html={st.comments}
+                            data-column="comments"
+                            className="content-editable text-sm p-2"
+                            onBlur={HandleChangeToTD}
+                          />
+                        ) : (
+                          <p className="text-sm p-2">{st.comments}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 w-4 align-top place-items-center text-center">
+                      {allowPreviewLinkToChronology &&
+                        <div className="mb-4 upload-details">
+                          
+                            <div
+                              className="upload-file"
+                              onClick={() => setshowPreviewModal(true)}
+                            >
+                              <a>
+                                Matter 1_Payment Schedule for Claim No.
+                                58711308181433_100521 03_58AM.pdf
+                              </a>
+                            </div>
+                          
+
+                          
+                          <div className="line-separator">
+                            <span>or</span>
+                          </div>
+
+                        </div>}
+
+                        
+                          <button
+                            className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                            onClick={() => setshowUploadLinkModal(true)}
+                            disabled = {!allowUploadLinkToChronology}
+                          >
+                            UPLOAD
+                          </button>
+                        
+                        
+                          <button
+                            className="bg-blue-200 hover:bg-blue-300 text-blue-500 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+                            onClick={() => setshowSelectLinkModal(true)}
+                            disabled={!allowSelectLinkToChronology}
+                          >
+                            SELECT
+                          </button>
+                        
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap w-5 align-top place-items-center text-center">
+                        <button
+                          className="bg-green-100 hover:bg-green-200 text-green-700 text-sm py-1.5 px-2.5 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                          onClick={() => setshowCreateRFIModal(true)}
+                          disabled={!allowOpenRFI}
+                        >
+                          CREATE
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                  .sort((a, b) => (a.id > b.id ? 1 : -1))}
               </tbody>
             </table>
           </div>
@@ -371,11 +488,7 @@ export default function WitnessAffidavit() {
         />
       )}
 
-      {showPreviewModal && (
-        <PreviewModal
-          handleModalClose={handleModalClose}
-        />
-      )}
+      {showPreviewModal && <PreviewModal handleModalClose={handleModalClose} />}
 
       {showSelectLinkModal && (
         <SelectLinkModal

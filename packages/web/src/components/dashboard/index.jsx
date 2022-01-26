@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
-  const [allowOpenMatter, setAllowOpenMatter] = useState(false);
+  const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const {
@@ -80,7 +80,7 @@ export default function Dashboard() {
     const mattersOverviewAccess = await AccessControl("MATTERSOVERVIEW");
 
     if (mattersOverviewAccess.status !== "restrict") {
-      setAllowOpenMatter(true);
+      setAllowOpenMattersOverview(true);
     } else {
       console.log(mattersOverviewAccess.message);
     }

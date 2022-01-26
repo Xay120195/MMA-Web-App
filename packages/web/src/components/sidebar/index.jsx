@@ -1,7 +1,7 @@
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faReact } from '@fortawesome/free-brands-svg-icons';
 // import { faChevronDoubleRight, faSignOutAlt } from '@fortawesome/pro-duotone-svg-icons';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CgLogOut } from "react-icons/cg";
 import { FaReact } from "react-icons/fa";
 import { HiChevronDoubleLeft } from "react-icons/hi";
@@ -9,9 +9,32 @@ import { HiChevronDoubleLeft } from "react-icons/hi";
 import { SidebarData } from "./SidebarData";
 import { Link, useLocation } from "react-router-dom";
 import "../../assets/styles/SideNavigation.css";
+import AccessControl from "../../shared/accessControl";
 
 const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
   const location = useLocation();
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showUserTypeAccess, setShowUserTypeAccess] = useState(false);
+  useEffect(() => {
+    featureAccessFilters();
+  });
+
+  const featureAccessFilters = async () => {
+    const dashboardAccess = await AccessControl("DASHBOARD");
+    const userTypeAccess = await AccessControl("USERTYPEACCESS");
+
+    if (dashboardAccess.status !== "restrict") {
+      setShowDashboard(true);
+    } else {
+      console.log(dashboardAccess.message);
+    }
+
+    if (userTypeAccess.status !== "restrict") {
+      setShowUserTypeAccess(true);
+    } else {
+      console.log(userTypeAccess.message);
+    }
+  }
   return (
     <>
       <div className="sidebar">
@@ -31,10 +54,7 @@ const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
           <ul className="nav-menus">
             {userInfo &&
               SidebarData.map((item, index) => {
-                return userInfo.access
-                  .map((page) => page.name)
-                  .includes(item.name) ||
-                  item.name === "DASHBOARD" ||
+                return (item.name === "DASHBOARD" && showDashboard) || (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
                   item.name === "ACCOUNTSETTINGS" ? (
                   <li
                     className={
