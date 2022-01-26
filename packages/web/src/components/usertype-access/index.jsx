@@ -240,8 +240,6 @@ const UserTypeAccess = (props) => {
                             <tr key={`${page.id}_${page_index}`}>
                               <td className="px-6 py-4 whitespace-nowrap font-medium">
                                 {page.label}
-                                <br />
-                                {page.id}
                               </td>
                               {userAccessSwitch !== null &&
                                 userAccessSwitch.map(
@@ -267,8 +265,6 @@ const UserTypeAccess = (props) => {
                               <tr key={`${data.id}_${index}`}>
                                 <td className="px-10 py-4 whitespace-nowrap text-sm text-gray-500 ">
                                   {data.label}
-                                  <br />
-                                  {data.id}
                                 </td>
                                 {userAccessSwitch !== null
                                   ? userAccessSwitch.map((access, index) => (
