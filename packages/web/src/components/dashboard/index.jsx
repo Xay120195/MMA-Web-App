@@ -11,6 +11,7 @@ import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
 import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
+import AccessControl from "../../shared/accessControl";
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [showToast, setShowToast] = useState(false);
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
+  const [showDeleteMatter, setShowDeleteMatter] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const {
@@ -60,16 +62,19 @@ export default function Dashboard() {
     }
 
     if (userInfo) {
-      featureAccessFilters(userInfo.access, "DASHBOARD");
+      featureAccessFilters("DASHBOARD");
     }
   }, [searchMatter, userInfo]);
 
-  const featureAccessFilters = (access, page) => {
-    const accessFeatures = access
-      .filter((p) => p.name === page)[0]
-      .features.map((f) => f.name);
+  const featureAccessFilters = async (pageName) => {
+    const dashboardAccess = await AccessControl(pageName);
 
-    setShowCreateMatter(accessFeatures.includes("ADDCLIENTANDMATTER"));
+    if (dashboardAccess.status !== "restrict") {
+      setShowCreateMatter(dashboardAccess.data.features.includes("ADDCLIENTANDMATTER"));
+      setShowDeleteMatter(dashboardAccess.data.features.includes("DELETECLIENTANDMATTER"));
+    } else {
+      alert(dashboardAccess.message);
+    }
   };
 
   const filter = (v) => {
@@ -295,6 +300,7 @@ export default function Dashboard() {
                 matter={matter}
                 view={mattersView}
                 onShowDeleteModal={handleShowDeleteModal}
+                showDeleteMatter={showDeleteMatter}
               />
             ))
           )}
