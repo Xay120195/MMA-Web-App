@@ -11,6 +11,7 @@ import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal
 import SelectLinkModal from "../link-to-chronology/linktochronology-list-modal"
 import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
+import AccessControl from "../../shared/accessControl";
 
 export default function MattersRFI() {
   let history = useHistory();
@@ -33,6 +34,9 @@ export default function MattersRFI() {
   const [searchTable, setSearchTable] = useState();
 
   const [showToast, setShowToast] = useState(false);
+  const [showAddRow, setShowAddRow] = useState(false);
+  const [allowUpdateQuestion, setAllowUpdateQuestion] = useState(false);
+  const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const handleBlankStateClick = () => {
@@ -164,7 +168,27 @@ export default function MattersRFI() {
       filter(searchTable);
       console.log("L121" + searchTable);
     }
+    featureAccessFilters();
   }, [searchTable]);
+
+  const featureAccessFilters = async () => {
+    console.log("featureAccessFilters()");
+    const mattersOverviewAccess = await AccessControl("MATTERSRFI");
+
+    if (mattersOverviewAccess.status !== "restrict") {
+      console.log(mattersOverviewAccess);
+      setShowAddRow(mattersOverviewAccess.data.features.includes("ADDROW"));
+
+      setAllowUpdateQuestion(
+        mattersOverviewAccess.data.features.includes("UPDATEQUESTION")
+      );
+
+      setAllowUpdateResponse(
+        mattersOverviewAccess.data.features.includes("UPDATERESPONSE")
+      );
+    }
+
+  };
 
   const filter = (v) => {
     setQuestion(
@@ -224,10 +248,12 @@ export default function MattersRFI() {
                   checked={checkAllState}
                   onChange={(e) => handleCheckAllChange(e.target.checked)}
                 />
+                {showAddRow &&
                 <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" onClick={() => handleAddRow()} >
                   Add Row &nbsp;
                   <HiOutlinePlusCircle />
                 </button>
+  }
 
                 <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
                   Export &nbsp;
@@ -295,20 +321,28 @@ export default function MattersRFI() {
                       <span className="text-sm">{st.id}</span>
                     </td>
                     <td className="px-6 py-4 w-1/3 align-top place-items-center">
+                    {allowUpdateQuestion ? (
                       <ContentEditable
                         html={st.statement}
                         data-column="statement"
                         className="content-editable text-sm p-2"
                         onBlur={HandleChangeToTD} 
                       />
+                      ) : (
+                        <p className="text-sm p-2">{st.statement}</p>
+                      )}
                     </td>
                     <td className="px-6 py-4 w-1/3 align-top place-items-center">
+                    {allowUpdateResponse ? (
                       <ContentEditable
                         html={st.comments}
                         data-column="comments"
                         className="content-editable text-sm p-2"
                         onBlur={HandleChangeToTD} 
                       />
+                      ) : (
+                        <p className="text-sm p-2">{st.comments}</p>
+                      )}
                     </td>
                     <td className="px-6 py-4 w-4 align-top place-items-center text-center">
                       <button

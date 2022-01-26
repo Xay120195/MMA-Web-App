@@ -10,6 +10,7 @@ import { SidebarData } from "../sidebar/SidebarData";
 import { CgLogOut } from "react-icons/cg";
 import { FaReact } from "react-icons/fa";
 import { HiChevronDoubleRight } from "react-icons/hi";
+import AccessControl from "../../shared/accessControl";
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);
@@ -17,6 +18,8 @@ function Navbar() {
   //const [location, setlocation] = useState(window.location.pathname);
   const [userInfo, setuserInfo] = useState(null);
   const location = useLocation();
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showUserTypeAccess, setShowUserTypeAccess] = useState(false);
 
   let history = useHistory();
   const clickLogout = async (e) => {
@@ -53,8 +56,30 @@ function Navbar() {
         };
         setuserInfo(ls);
       }
+
     }
-  });
+
+    if (userInfo) {
+      featureAccessFilters();
+    }
+  }, [userInfo]);
+
+  const featureAccessFilters = async () => {
+    const dashboardAccess = await AccessControl("DASHBOARD");
+    const userTypeAccess = await AccessControl("USERTYPEACCESS");
+
+    if (dashboardAccess.status !== "restrict") {
+      setShowDashboard(true);
+    } else {
+      console.log(dashboardAccess.message);
+    }
+
+    if (userTypeAccess.status !== "restrict") {
+      setShowUserTypeAccess(true);
+    } else {
+      console.log(userTypeAccess.message);
+    }
+  }
 
   return (
     <IconContext.Provider value={{ color: "#fff" }}>
@@ -75,10 +100,7 @@ function Navbar() {
           <ul className="nav-menus">
             {userInfo &&
               SidebarData.map((item, index) => {
-                return userInfo.access
-                  .map((page) => page.name)
-                  .includes(item.name) ||
-                  item.name === "DASHBOARD" ||
+                return (item.name === "DASHBOARD" && showDashboard) || (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
                   item.name === "ACCOUNTSETTINGS" ? (
                   <li
                     className={

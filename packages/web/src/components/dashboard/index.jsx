@@ -11,6 +11,7 @@ import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
 import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
+import AccessControl from "../../shared/accessControl";
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
@@ -26,6 +27,8 @@ export default function Dashboard() {
   const [showToast, setShowToast] = useState(false);
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
+  const [showDeleteMatter, setShowDeleteMatter] = useState(false);
+  const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const {
@@ -60,16 +63,27 @@ export default function Dashboard() {
     }
 
     if (userInfo) {
-      featureAccessFilters(userInfo.access, "DASHBOARD");
+      featureAccessFilters();
     }
   }, [searchMatter, userInfo]);
 
-  const featureAccessFilters = (access, page) => {
-    const accessFeatures = access
-      .filter((p) => p.name === page)[0]
-      .features.map((f) => f.name);
+  const featureAccessFilters = async () => {
+    const dashboardAccess = await AccessControl("DASHBOARD");
 
-    setShowCreateMatter(accessFeatures.includes("ADDCLIENTANDMATTER"));
+    if (dashboardAccess.status !== "restrict") {
+      setShowCreateMatter(dashboardAccess.data.features.includes("ADDCLIENTANDMATTER"));
+      setShowDeleteMatter(dashboardAccess.data.features.includes("DELETECLIENTANDMATTER"));
+    } else {
+      console.log(dashboardAccess.message);
+    }
+
+    const mattersOverviewAccess = await AccessControl("MATTERSOVERVIEW");
+
+    if (mattersOverviewAccess.status !== "restrict") {
+      setAllowOpenMattersOverview(true);
+    } else {
+      console.log(mattersOverviewAccess.message);
+    }
   };
 
   const filter = (v) => {
@@ -295,6 +309,8 @@ export default function Dashboard() {
                 matter={matter}
                 view={mattersView}
                 onShowDeleteModal={handleShowDeleteModal}
+                showDeleteMatter={showDeleteMatter}
+                allowOpenMatter={allowOpenMatter}
               />
             ))
           )}
