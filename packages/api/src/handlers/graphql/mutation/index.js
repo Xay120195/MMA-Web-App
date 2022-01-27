@@ -236,22 +236,22 @@ export function getUpdateExpressions(data) {
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
-      return createCompany(ctx.arguments);
+      return await createCompany(ctx.arguments);
     },
     userCreate: async (ctx) => {
-      return createUser(ctx.arguments);
+      return await createUser(ctx.arguments);
     },
     pageCreate: async (ctx) => {
-      return createPage(ctx.arguments);
+      return await createPage(ctx.arguments);
     },
     featureCreate: async (ctx) => {
-      return createFeature(ctx.arguments);
+      return await createFeature(ctx.arguments);
     },
     clientCreate: async (ctx) => {
-      return createClient(ctx.arguments);
+      return await createClient(ctx.arguments);
     },
     companyAccessTypeCreate: async (ctx) => {
-      return createCompanyAccessType(ctx.arguments);
+      return await createCompanyAccessType(ctx.arguments);
     },
     companyAccessTypeUpdate: async (ctx) => {
       const { id, access } = ctx.arguments;
@@ -260,7 +260,7 @@ const resolvers = {
         updatedAt: new Date().toISOString(),
       };
 
-      return updateCompanyAccessType(id, data);
+      return await updateCompanyAccessType(id, data);
     },
   },
 };
