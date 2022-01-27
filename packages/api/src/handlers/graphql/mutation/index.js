@@ -7,6 +7,7 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
 async function createCompany(data) {
+  let response = {};
   try {
     const rawParams = {
       id: v4(),
@@ -35,6 +36,7 @@ async function createCompany(data) {
 }
 
 async function createUser(data) {
+  let response = {};
   try {
     const rawParams = {
       id: data.id,
@@ -66,6 +68,7 @@ async function createUser(data) {
 }
 
 async function createPage(data) {
+  let response = {};
   try {
     const rawParams = {
       id: v4(),
@@ -96,6 +99,7 @@ async function createPage(data) {
 }
 
 async function createFeature(data) {
+  let response = {};
   try {
     const rawParams = {
       id: v4(),
@@ -125,6 +129,7 @@ async function createFeature(data) {
 }
 
 async function createCompanyAccessType(data) {
+  let response = {};
   try {
     const rawParams = {
       id: v4(),
@@ -155,6 +160,7 @@ async function createCompanyAccessType(data) {
 }
 
 async function updateCompanyAccessType(id, data) {
+  let response = {};
   try {
     const {
       ExpressionAttributeNames,
@@ -188,6 +194,7 @@ async function updateCompanyAccessType(id, data) {
 }
 
 async function createClient(data) {
+  let response = {};
   try {
     const rawParams = {
       id: v4(),
@@ -259,7 +266,6 @@ const resolvers = {
         access: access,
         updatedAt: new Date().toISOString(),
       };
-
       return await updateCompanyAccessType(id, data);
     },
   },
