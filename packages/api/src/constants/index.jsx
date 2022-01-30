@@ -1,0 +1,1 @@
+export const AWS_COGNITO_USERPOOL_ID = "ap-southeast-1:e4457518-f974-4dca-9060-36f32dbe37f4"

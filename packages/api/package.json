@@ -23,6 +23,7 @@
     "webpack": "^4.44.2"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.49.0",
     "@aws-sdk/client-dynamodb": "^3.42.0",
     "@aws-sdk/client-s3": "^3.44.0",
     "@aws-sdk/s3-request-presigner": "^3.44.0",
