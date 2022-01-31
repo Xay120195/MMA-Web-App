@@ -1,3 +1,43 @@
+import { API } from "aws-amplify";
+
+const fetchClient = `
+query fetchClient($companyId: String) {
+    client {
+        id
+        name
+        companyId
+    }
+}
+`;
+
+const Clients = async () => {
+    let result;
+
+    const clientId = localStorage.getItem("companyId");
+
+    const clientList = await API.graphql({
+        query: fetchClient,
+        variables: {
+            companyId: clientId
+        },
+    });
+
+    var id = clientList.data.id;
+    var clientName = clientList.data.name;
+
+    result = {
+        data: {
+            id: id,
+            name: clientName,
+        },
+    };
+    return result;
+};
+
+export const clients = [Clients];
+
+
+
 export const matters = [{
     id: 6956,
     name: 'Matter 1',
@@ -90,21 +130,4 @@ export const matters = [{
     timestamp: '2021-12-06 13:23:11'
 }];
 
-export const clients = [{
-    id: 121,
-    name: 'Zeng Zac Homes'
-},{
-    id: 155,
-    name: 'Client Name 1'
-},{
-    id: 210,
-    name: 'Client Name 210'
-},{
-    id: 23,
-    name: 'SMT Project'
-},{
-    id: 131,
-    name: 'Project Dreams'
-}]
-
-export const client = [];
+export const client1 = [localStorage.getItem("companyId")];

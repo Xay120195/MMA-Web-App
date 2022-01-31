@@ -12,6 +12,7 @@ import ToastNotification from "../toast-notification";
 import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 import AccessControl from "../../shared/accessControl";
+import CreatableSelect from 'react-select/creatable';
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
@@ -38,6 +39,13 @@ export default function Dashboard() {
   } = useForm();
 
   const clientNameOptions = clients
+    .map(({ id, name }) => ({
+      value: id,
+      label: name,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const matterNameOptions = matters
     .map(({ id, name }) => ({
       value: id,
       label: name,
@@ -106,6 +114,9 @@ export default function Dashboard() {
     setclientName(newValue);
   };
 
+  const user_type = localStorage.getItem("userType"),
+    company_id = localStorage.getItem("companyId");
+
   const handleMatterChanged = (newValue) => {
     console.group("Matter Changed");
     console.log(newValue);
@@ -121,16 +132,13 @@ export default function Dashboard() {
 
   const datenow = new Date();
 
-  const handleNewMatter = (data) => {
+  const handleNewMatter = () => {
     let client_name = clientName.label,
       client_id = clientName.value,
-      matter_name = data.matterName,
-      matter_id = 123,
-      matter_number = `${matter_name.charAt(0)}-${matter_id}/${client_id}`,
+      matter_name = matterName.label,
+      matter_id = matterName.value,
+      matter_number = `{${matter_name.charAt(0)}-${matter_id}/${client_id}}`,
       timestamp = dateFormat(datenow, "dd mmmm yyyy h:MM:ss TT");
-
-    console.log(clientName);
-    console.log(clientName.value);
 
     setmatterList((previousState) => [
       {
@@ -207,14 +215,14 @@ export default function Dashboard() {
                       <div className="pr-2">
                         <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
                           <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
-                            <IoIcons.IoIosFolder />
                           </span>
-                          <input
-                            type="text"
-                            placeholder="Matter"
+                          <CreatableSelect
+                            options={matterNameOptions}
+                            isClearable
+                            isSearchable
                             onChange={handleMatterChanged}
-                            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-                            {...register("matterName", { required: true })}
+                            placeholder="Matters"
+                            className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
                           {errors.matterName?.type === "required" && (
                             <small className="text-red-400">
@@ -226,7 +234,7 @@ export default function Dashboard() {
                       <div className="pr-2">
                         <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
                           {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
-                          <Select
+                          <CreatableSelect
                             options={clientNameOptions}
                             isClearable
                             isSearchable

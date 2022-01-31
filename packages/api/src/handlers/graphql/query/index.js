@@ -150,6 +150,29 @@ async function getClient(data) {
   return response;
 }
 
+async function getMatter(data) {
+  try {
+    const params = {
+      TableName: "MatterTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+    const { Item } = await client.send(command);
+    response = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -166,6 +189,9 @@ const resolvers = {
     },
     client: async (ctx) => {
       return getClient(ctx.arguments);
+    },
+    matter: async (ctx) => {
+      return getMatter(ctx.arguments);
     },
     companyAccessType: async (ctx) => {
       return getCompanyAccessType(ctx.arguments);

@@ -199,12 +199,41 @@ async function createClient(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
+      companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
 
     const params = marshall(rawParams);
     const command = new PutItemCommand({
       TableName: "ClientTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function createMatter(data) {
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "MatterTable",
       Item: params,
     });
 
@@ -256,6 +285,9 @@ const resolvers = {
     },
     clientCreate: async (ctx) => {
       return await createClient(ctx.arguments);
+    },
+    matterCreate: async (ctx) => {
+      return await createMatter(ctx.arguments);
     },
     companyAccessTypeCreate: async (ctx) => {
       return await createCompanyAccessType(ctx.arguments);
