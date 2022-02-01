@@ -1,10 +1,35 @@
-const { PutItemCommand } = require("@aws-sdk/client-dynamodb");
+const { PutItemCommand, GetItemCommand } = require("@aws-sdk/client-dynamodb");
 import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import ddbClient from "../lib/dynamodb-client";
 import identityClient from "../lib/cognito-identity-provider-client";
 import AWS_COGNITO_USERPOOL_ID from "../constants";
 import randomString from "../shared/randomString";
+
+export async function getUser(data) {
+  let response = {};
+  try {
+    const params = {
+      TableName: "UserTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+    const { Item } = await ddbClient.send(command);
+    response = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 export async function createUser(data) {
   let response = {};
   try {
@@ -61,7 +86,9 @@ export async function inviteUser(data) {
 async function createCognitoUser(input) {
   const command = new AdminCreateUserCommand(input);
   const response = await identityClient.send(command);
-  const id = response.User.Attributes.filter((attrib) => attrib.Name === "sub")[0].Value;
+  const id = response.User.Attributes.filter(
+    (attrib) => attrib.Name === "sub"
+  )[0].Value;
   response.id = id;
   return response;
 }

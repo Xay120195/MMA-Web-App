@@ -27,24 +27,75 @@ export default function Contacts() {
     margin: "0 0 0 65px",
   };
 
-  const handleSave = async (formdata) => {
-    const { email } = formdata;
-    const password = '';
+  const mInviteUser = `
+      mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
+        userInvite(
+          email: $email
+          firstName: $firstName
+          lastName: $lastName
+          userType: $userType
+          company: $company
+        ) {
+          id
+          firstName
+          lastName
+          email
+          userType
+        }
+      }
+  `;
 
-    setResultMessage(`Success!`);
-    console.log(email);
-    console.log(password);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-      reset({ email: "" });
-    }, 3000);
+  const handleSave = async (formdata) => {
+    const { email, firstName, lastName, userType } = formdata;
+
+    const companyId = localStorage.getItem("companyId"),
+      companyName = localStorage.getItem("company");
+
+    const user = {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      company: {
+        id: companyId,
+        name: companyName,
+      },
+      userType: userType,
+    };
+
+    console.log(user);
+    await inviteUser(user).then((u) => {
+      console.log(u);
+      setResultMessage(
+        `${firstName} was successfuly added as ${userType} of ${companyName}.`
+      );
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        reset({ email: "", firstName: "", lastName: "", userType: "OWNER" });
+      }, 5000);
+    });
   };
+
+  async function inviteUser(user) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mInviteUser,
+          variables: user,
+        });
+
+        resolve(request);
+      } catch (e) {
+        setError(e.errors[0].message);
+        reject(e.errors[0].message);
+      }
+    });
+  }
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit(handleSave)}>
-      <div className="input-grid p-5" style={contentDiv}>
-        <div className="relative flex-auto">
+      <div className="p-5 w-1/3" style={contentDiv}>
+        <div className="relative flex-auto ro">
           <p className="input-name">Email Address</p>
           <div className="relative my-2">
             <input
@@ -62,12 +113,70 @@ export default function Contacts() {
             </div>
           )}
         </div>
+
+        <div className="relative flex-auto">
+          <p className="input-name">First Name</p>
+          <div className="relative my-2">
+            <input
+              type="text"
+              className="input-field"
+              placeholder="First Name"
+              {...register("firstName", {
+                required: "First Name is required",
+              })}
+            />
+          </div>
+          {errors.firstName?.type === "required" && (
+            <div className="error-msg">
+              <p>First Name is required</p>
+            </div>
+          )}
+        </div>
+
+        <div className="relative flex-auto">
+          <p className="input-name">Last Name</p>
+          <div className="relative my-2">
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Last Name"
+              {...register("lastName", {
+                required: "Last Name is required",
+              })}
+            />
+          </div>
+          {errors.lastName?.type === "required" && (
+            <div className="error-msg">
+              <p>Last Name is required</p>
+            </div>
+          )}
+        </div>
+
+        <div className="relative flex-auto">
+          <p className="input-name">User Type</p>
+          <div className="relative my-2">
+            <input
+              type="text"
+              className="input-field"
+              placeholder="User Type"
+              {...register("userType", {
+                required: "User Type is required",
+              })}
+            />
+          </div>
+          {errors.userType?.type === "required" && (
+            <div className="error-msg">
+              <p>User Type is required</p>
+            </div>
+          )}
+        </div>
+        <div className="grid justify-start pt-5">
+          <button className="save-btn" type="submit">
+            <p>Save Changes</p>
+          </button>
+        </div>
       </div>
-      <div className="grid justify-end">
-        <button className="save-btn" type="submit">
-          <p>Save Changes</p>
-        </button>
-      </div>
+
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
