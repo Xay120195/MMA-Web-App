@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 // import { AiFillInfoCircle } from 'react-icons/ai';
 // import { MdSave } from 'react-icons/md';
 import "../../assets/styles/AccountSettings.css";
-import randomString from "../../shared/randomString";
 
 export default function Contacts() {
   const [showToast, setShowToast] = useState(false);
@@ -30,7 +29,7 @@ export default function Contacts() {
 
   const handleSave = async (formdata) => {
     const { email } = formdata;
-    const password = randomString();
+    const password = '';
 
     setResultMessage(`Success!`);
     console.log(email);
