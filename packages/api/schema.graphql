@@ -111,7 +111,6 @@ type Query {
 
 type Mutation {
   addColor(name: String!, hex: String!): Color
-  addTwoNumbers(first: Int, second: Int): Int
   companyCreate(name: String, representative: RepresentativeInput): Company
   companyAccessTypeCreate(
     companyId: String
@@ -120,6 +119,13 @@ type Mutation {
   ): CompanyAccessType
   userCreate(
     id: ID!
+    firstName: String
+    lastName: String
+    email: AWSEmail
+    userType: UserType
+    company: CompanyInput
+  ): User
+  userInvite(
     firstName: String
     lastName: String
     email: AWSEmail
