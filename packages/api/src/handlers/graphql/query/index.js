@@ -5,34 +5,12 @@ const {
   QueryCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
+const { getUser } = require("../../../services/UserService");
 
 async function getCompany(data) {
   try {
     const params = {
       TableName: "CompanyTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-
-  return response;
-}
-
-async function getUser(data) {
-  try {
-    const params = {
-      TableName: "UserTable",
       Key: marshall({
         id: data.id,
       }),
