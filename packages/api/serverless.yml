@@ -87,6 +87,11 @@ custom:
         field: userCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userInvite
+        request: false
+        response: false        
       - dataSource: LambdaQueryDS
         type: Query
         field: page
