@@ -131,7 +131,7 @@ export default function UploadLinkModal(props) {
                       <div id="uploadDivContent" key={index}>
                         <span className="upload-name">{selectedFile.data.name}</span>
                         <FiTrash className="deleteBtn" onClick={() => deleteBtn(index)} />
-                        <Pie percentage={random.percentage} colour={random.colour} />
+                        <Pie percentage={"16"} colour={"hsl(54, 75%, 56%)"} />
                       </div>
                     )}
                   </div>
