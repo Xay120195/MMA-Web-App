@@ -182,7 +182,9 @@ export default function FileBucket() {
         </div>
         <div className="p-5 py-1 left-0">
           <div>
-            <button className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+            <button className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+              onClick={() => setshowUploadLinkModal(true)}
+            >
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>
@@ -236,6 +238,7 @@ export default function FileBucket() {
             )}
           </>
         )}
+
       </div>
       {showUploadLinkModal && (
         <UploadLinkModal
