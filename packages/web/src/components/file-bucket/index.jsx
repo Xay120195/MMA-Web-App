@@ -4,7 +4,7 @@ import { API } from "aws-amplify";
 import { useForm } from "react-hook-form";
 import BlankState from "../blank-state";
 
-import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { MdArrowForwardIos } from "react-icons/md";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FiUpload } from "react-icons/fi";
@@ -38,6 +38,10 @@ export default function FileBucket() {
   const handleModalClose = () => {
     setshowUploadLinkModal(false);
   };
+
+  //Sample matter ID
+  //610f886a-9c3a-4a0e-a998-b26b19f2c95b
+  const { matter_id } = useParams();
 
   const {
     register,
@@ -82,31 +86,32 @@ export default function FileBucket() {
     const params = {
       query: qGetMatterFiles,
       variables: {
-        id: "610f886a-9c3a-4a0e-a998-b26b19f2c95b",
+        id: matter_id,
       },
     };
 
     await API.graphql(params).then((files) => {
+      console.log(files);
+
       var dummyData = [
         {
-          "fileName": "Urgent Follow-up Email.pdf",
-          "fileType": "pdf",
-          "fileSize": "10kb"
+          fileName: "Adios, Patria adorada, region del sol querida.pdf",
+          fileType: "pdf",
+          fileSize: "10122",
         },
         {
-          "fileName": "Urgent Follow-up Email.pdf",
-          "fileType": "pdf",
-          "fileSize": "10kb"
+          fileName: "Perla del mar de oriente, nuestro perdido Eden.pdf",
+          fileType: "pdf",
+          fileSize: "11011",
         },
         {
-          "fileName": "Urgent Follow-up Email.pdf",
-          "fileType": "pdf",
-          "fileSize": "10kb"
-        }];
-      //dummyData.push(files.data.matterFile);
-      setMatterFiles(dummyData);
+          fileName: "A darte voy alegre la triste mustia vida.pdf",
+          fileType: "pdf",
+          fileSize: "5110",
+        },
+      ];
 
-      console.log(files);
+      setMatterFiles(dummyData);
     });
   };
 
@@ -182,7 +187,8 @@ export default function FileBucket() {
         </div>
         <div className="p-5 py-1 left-0">
           <div>
-            <button className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+            <button
+              className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
               onClick={() => setshowUploadLinkModal(true)}
             >
               FILE UPLOAD &nbsp;
@@ -238,7 +244,6 @@ export default function FileBucket() {
             )}
           </>
         )}
-
       </div>
       {showUploadLinkModal && (
         <UploadLinkModal
