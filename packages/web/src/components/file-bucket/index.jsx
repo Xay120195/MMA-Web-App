@@ -20,6 +20,12 @@ import {
   HiMinusCircle,
   HiTrash,
 } from "react-icons/hi";
+import CreateRFIModal from "../matters-rfi/create-RFI-modal"; // shared functions/modal from matters-rfi
+import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"; // shared functions/modal from link-to-chronology
+import SelectLinkModal from "../link-to-chronology/linktochronology-list-modal"; // shared functions/modal from link-to-chronology
+import PreviewModal from "../link-to-chronology/preview-linktochronology-modal"; // shared functions/modal from link-to-chronology
+import ContentEditable from "react-contenteditable";
+import AccessControl from "../../shared/accessControl";
 
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
@@ -27,6 +33,10 @@ export default function FileBucket() {
   const hideToast = () => {
     setShowToast(false);
   };
+
+  const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
+ 
+
 
   const {
     register,
@@ -110,15 +120,20 @@ export default function FileBucket() {
     }
   ];
 
-  const tableHeaders = [
-    "No.",
-    "File Name",
-    "File Size",
-    "File Type",
-    "Action",
-  ];
+  const handleUploadLink = (uploadFiles) => {
+    console.log(uploadFiles, "handleFiles");
+    handleModalClose();
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
 
+  const handleModalClose = () => {
 
+    setshowUploadLinkModal(false);
+   
+  };
 
   return (
   <>
@@ -150,7 +165,9 @@ export default function FileBucket() {
     </div>
     <div className="p-5 py-1 left-0" >
       <div>
-        <button className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+        <button className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+          onClick={() => setshowUploadLinkModal(true)}
+        >
             FILE UPLOAD &nbsp;
                       <FiUpload />
         </button>
@@ -204,6 +221,12 @@ export default function FileBucket() {
     )}
   </div>
  
+  {showUploadLinkModal && (
+        <UploadLinkModal
+          handleSave={handleUploadLink}
+          handleModalClose={handleModalClose}
+        />
+      )}
 
   
     <form className="grid gap-4" onSubmit={handleSubmit(handleSave)}>
