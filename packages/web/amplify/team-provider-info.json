@@ -25,6 +25,12 @@
           "appId": "d3bhf42tem9b8e",
           "type": "cicd"
         }
+      },
+      "function": {
+        "S3Trigger1de25018": {
+          "deploymentBucketName": "amplify-mma-web-app-staging-180645-deployment",
+          "s3Key": "amplify-builds/S3Trigger1de25018-4935366b68432b44735a-build.zip"
+        }
       }
     }
   },

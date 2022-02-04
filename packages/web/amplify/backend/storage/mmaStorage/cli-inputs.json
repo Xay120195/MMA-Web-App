@@ -1,0 +1,14 @@
+{
+  "resourceName": "mmaStorage",
+  "policyUUID": "b4a05dd6",
+  "bucketName": "mmastorage",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "S3Trigger1de25018",
+  "groupAccess": {}
+}
