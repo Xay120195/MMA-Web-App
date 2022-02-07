@@ -12,12 +12,13 @@ import ToastNotification from "../toast-notification";
 import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 import AccessControl from "../../shared/accessControl";
+import CreatableSelect from 'react-select/creatable';
+import { API } from "aws-amplify";
 
 export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
-  const [matterList, setmatterList] = useState(matters);
   const [clientName, setclientName] = useState(null);
   const [matterName, setmatterName] = useState();
   const modalDeleteAlertMsg = "Successfully deleted!";
@@ -30,19 +31,16 @@ export default function Dashboard() {
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
   const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
   const [alertMessage, setalertMessage] = useState();
+  const [clientsOptions, setClientsOptions] = useState();
+  const [mattersOptions, setMattersOptions] = useState();
+
+  const [matterList, setmatterList] = useState(matters);
 
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm();
-
-  const clientNameOptions = clients
-    .map(({ id, name }) => ({
-      value: id,
-      label: name,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
 
   useEffect(() => {
     if (userInfo === null) {
@@ -65,6 +63,10 @@ export default function Dashboard() {
     if (userInfo) {
       featureAccessFilters();
     }
+
+    Clients();
+    Matters();
+    
   }, [searchMatter, userInfo]);
 
   const featureAccessFilters = async () => {
@@ -103,7 +105,11 @@ export default function Dashboard() {
     console.log(newValue);
     console.groupEnd();
 
-    setclientName(newValue);
+    if(newValue?.__isNew__){
+      addClients(newValue.label);
+    } else {
+      setclientName(newValue);
+    }
   };
 
   const handleMatterChanged = (newValue) => {
@@ -111,7 +117,11 @@ export default function Dashboard() {
     console.log(newValue);
     console.groupEnd();
 
-    setmatterName(newValue);
+    if(newValue?.__isNew__){
+      addMatters(newValue.label);
+    } else {
+      setmatterName(newValue);
+    }
   };
 
   const handleSearchMatterChange = (e) => {
@@ -121,16 +131,14 @@ export default function Dashboard() {
 
   const datenow = new Date();
 
-  const handleNewMatter = (data) => {
-    let client_name = clientName.label,
+  const handleNewMatter = (e) => {
+    console.log(e);
+    /*let client_name = clientName.label,
       client_id = clientName.value,
-      matter_name = data.matterName,
-      matter_id = 123,
-      matter_number = `${matter_name.charAt(0)}-${matter_id}/${client_id}`,
+      matter_name = matterName.label,
+      matter_id = matterName.value,
+      matter_number = `{${matter_name.charAt(0)}-${matter_id.slice(-4)}/${client_id.slice(-4)}}`,
       timestamp = dateFormat(datenow, "dd mmmm yyyy h:MM:ss TT");
-
-    console.log(clientName);
-    console.log(clientName.value);
 
     setmatterList((previousState) => [
       {
@@ -161,6 +169,7 @@ export default function Dashboard() {
       //setclientName([]);
       setmatterName("");
     }, 3000);
+    */
   };
 
   const contentDiv = {
@@ -188,6 +197,127 @@ export default function Dashboard() {
     }, 3000);
   };
 
+const listClient = `
+query listClient($companyId: ID) {
+    client(companyId:$companyId) {
+        id
+        name
+        companyId
+    }
+}
+`;
+
+const Clients = async () => {
+  let result;
+
+  const clientId = localStorage.getItem("companyId");
+  const clientList = await API.graphql({
+      query: listClient,
+      variables: {
+          companyId: clientId
+      },
+  });
+
+  result = clientList.data.client.map(({ id, name }) => ({
+    value: id,
+    label: name,
+  })).sort((a, b) => a.label.localeCompare(b.label));
+
+  setClientsOptions(result);
+};
+
+const listMatter = `
+query listMatter($companyId: ID) {
+    matter(companyId:$companyId) {
+        id
+        name
+        companyId
+    }
+}
+`;
+
+const Matters = async () => {
+  let result;
+
+  const clientId = localStorage.getItem("companyId");
+
+  const matterList = await API.graphql({
+      query: listMatter,
+      variables: {
+          companyId: clientId
+      },
+  });
+
+  console.log(matterList);
+  result = matterList.data.matter.map(({ id, name }) => ({
+    value: id,
+    label: name,
+  })).sort((a, b) => a.label.localeCompare(b.label));
+
+  setMattersOptions(result);
+  //setmatterList(result);
+};
+
+const addClient = `
+mutation addClient($companyId: ID, $name: String) {
+    clientCreate(companyId:$companyId, name:$name) {
+        id
+        name
+    }
+}
+`;
+
+const addClients = async (data) => {
+  let result;
+
+  const clientId = localStorage.getItem("companyId");
+
+  const addedClientList = await API.graphql({
+      query: addClient,
+      variables: {
+          companyId: clientId,
+          name: data
+      },
+  });
+
+  result = [addedClientList.data.clientCreate].map(({ id, name }) => ({
+    value: id,
+    label: name,
+  }));
+
+  setclientName(result);
+};
+
+const addMatter = `
+mutation addMatter($companyId: ID, $name: String) {
+    matterCreate(companyId:$companyId, name:$name) {
+        id
+        name
+    }
+}
+`;
+
+const addMatters = async (data) => {
+  let result;
+
+  const clientId = localStorage.getItem("companyId");
+
+  const addedMatterList = await API.graphql({
+      query: addMatter,
+      variables: {
+          companyId: clientId,
+          name: data
+      },
+  });
+  
+  result = [addedMatterList.data.matterCreate].map(({ id, name }) => ({
+    value: id,
+    label: name,
+  }));
+
+  setmatterName(result);
+};
+
   return userInfo ? (
     <>
       <div className="p-5 font-sans" style={contentDiv}>
@@ -206,28 +336,9 @@ export default function Dashboard() {
                     <div className="grid grid-flow-col grid-cols-3">
                       <div className="pr-2">
                         <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                          <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
-                            <IoIcons.IoIosFolder />
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Matter"
-                            onChange={handleMatterChanged}
-                            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-                            {...register("matterName", { required: true })}
-                          />
-                          {errors.matterName?.type === "required" && (
-                            <small className="text-red-400">
-                              Matter is required
-                            </small>
-                          )}
-                        </div>
-                      </div>
-                      <div className="pr-2">
-                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
                           {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
-                          <Select
-                            options={clientNameOptions}
+                          <CreatableSelect
+                            options={clientsOptions}
                             isClearable
                             isSearchable
                             onChange={handleClientChanged}
@@ -235,6 +346,25 @@ export default function Dashboard() {
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
                           {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
+                        </div>
+                      </div>
+                      <div className="pr-2">
+                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                          <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
+                          </span>
+                          <CreatableSelect
+                            options={mattersOptions}
+                            isClearable
+                            isSearchable
+                            onChange={handleMatterChanged}
+                            placeholder="Matters"
+                            className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                          />
+                          {errors.matterName?.type === "required" && (
+                            <small className="text-red-400">
+                              Matter is required
+                            </small>
+                          )}
                         </div>
                       </div>
                       <div className="pr-2">

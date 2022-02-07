@@ -145,6 +145,8 @@ async function updateCompanyAccessType(id, data) {
       ...data,
     };
 
+    console.log(data);
+
     const command = new UpdateItemCommand({
       TableName: "CompanyAccessTypeTable",
       Key: marshall({ id }),
@@ -171,12 +173,79 @@ async function createClient(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
+      companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
 
     const params = marshall(rawParams);
     const command = new PutItemCommand({
-      TableName: "ClientTable",
+      TableName: "ClientsTable",
+      Item: params,
+    });
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  
+  return response;
+}
+
+async function updateClientMatter(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "ClientsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    
+    console.log(data);
+    
+    const request = await client.send(command);
+    response = request ? params : {};
+
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  console.log(response);
+  return response;
+}
+
+async function createMatter(data) {
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "MatterTable",
       Item: params,
     });
 
@@ -233,6 +302,9 @@ const resolvers = {
     clientCreate: async (ctx) => {
       return await createClient(ctx.arguments);
     },
+    matterCreate: async (ctx) => {
+      return await createMatter(ctx.arguments);
+    },
     companyAccessTypeCreate: async (ctx) => {
       return await createCompanyAccessType(ctx.arguments);
     },
@@ -243,6 +315,14 @@ const resolvers = {
         updatedAt: new Date().toISOString(),
       };
       return await updateCompanyAccessType(id, data);
+    },
+    clientMatterUpdate: async (ctx) => {
+      const { id, matter } = ctx.arguments;
+      const data = {
+        matter: matter,
+        updatedAt: new Date().toISOString(),
+      };
+      return await updateClientMatter(id, data);
     },
   },
 };

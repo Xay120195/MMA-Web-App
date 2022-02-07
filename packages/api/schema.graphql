@@ -87,8 +87,18 @@ type File {
 }
 
 type Client {
-  id: ID!
+  id: ID
   name: String
+  companyId: ID
+  matter: Matter
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Matter {
+  id: ID
+  name: String
+  companyId: ID
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -106,7 +116,8 @@ type Query {
   page: [Page]
   feature(id: String): Feature
   matterFile(id: ID!): File
-  client(id: ID!): Client
+  client(companyId: ID): [Client]
+  matter(companyId: ID): [Matter]
 }
 
 type Mutation {
@@ -140,11 +151,26 @@ type Mutation {
   ): Page
   featureCreate(name: String, label: String, page: PageInput): Feature
   matterFileCreate(matterId: ID, s3ObjectKey: String): File
-  clientCreate(name: String): Client
+  clientCreate(
+    name: String
+    companyId: ID
+  ): Client
+  matterCreate(
+    name: String
+    companyId: ID
+  ): Matter
   companyAccessTypeUpdate(
     id: String
     access: [AccessInput]
   ): CompanyAccessType
+  clientMatterUpdate(
+    id: ID
+    matter: [MatterInput]
+  ): Client
+}
+
+input MatterInput {
+  id: ID
 }
 
 input AccessInput {
