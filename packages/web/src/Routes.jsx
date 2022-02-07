@@ -6,7 +6,7 @@ import UserTypeAccess from "./components/usertype-access";
 import AccountSettings from "./components/account-settings";
 import WitnessAffidavit from "./components/witness-affidavit";
 import MattersRFI from "./components/matters-rfi";
-import Profile from "./components/user-profile";
+import Contacts from "./components/contacts";
 import ChangePassword from "./components/change-password";
 import PostRegistration from "./components/authentication/post-registration";
 import PostAuthentication from "./components/authentication/post-authentication";
@@ -30,7 +30,7 @@ const Routes = () => {
           <Route exact path={AppRoutes.USERTYPEACCESS} component={UserTypeAccess} />
           <Route exact path={`${AppRoutes.WITNESSAFFIDAVIT}/:id`} component={WitnessAffidavit} />
           <Route exact path={`${AppRoutes.MATTERSRFI}/:id`} component={MattersRFI} />
-          <Route exact path={AppRoutes.PROFILE} component={Profile} />
+          <Route exact path={AppRoutes.CONTACTS} component={Contacts} />
           <Route exact path={AppRoutes.ACCOUNTSETTINGS} component={AccountSettings} />
           <Route exact path={AppRoutes.CHANGEPASSWORD} component={ChangePassword} />
         </>

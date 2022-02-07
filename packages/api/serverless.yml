@@ -17,6 +17,13 @@ provider:
             - "dynamodb:GetItem"
             - "dynamodb:Query"
             - "dynamodb:Scan"
+            - "dynamodb:BatchGetItem"
+            - "dynamodb:BatchWriteItem"
+            - "cognito-idp:AdminCreateUser"
+            - "cognito-idp:AdminAddUserToGroup"
+            - "cognito-idp:AdminRemoveUserFromGroup"
+            - "cognito-idp:AdminUpdateUserAttributes"
+            - "cognito-idp:AdminGetUser"
           Resource: "*"
 plugins:
   - serverless-dynamodb-local
@@ -87,6 +94,11 @@ custom:
         field: userCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userInvite
+        request: false
+        response: false        
       - dataSource: LambdaQueryDS
         type: Query
         field: page

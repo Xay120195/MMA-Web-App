@@ -6,6 +6,8 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
+const { inviteUser, createUser } = require('../../../services/UserService')
+
 async function createCompany(data) {
   let response = {};
   try {
@@ -35,37 +37,7 @@ async function createCompany(data) {
   return response;
 }
 
-async function createUser(data) {
-  let response = {};
-  try {
-    const rawParams = {
-      id: data.id,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      userType: data.userType,
-      company: data.company,
-      createdAt: new Date().toISOString(),
-    };
 
-    const params = marshall(rawParams);
-    const command = new PutItemCommand({
-      TableName: "UserTable",
-      Item: params,
-    });
-
-    const request = await client.send(command);
-    response = request ? unmarshall(params) : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-
-  return response;
-}
 
 async function createPage(data) {
   let response = {};
@@ -313,6 +285,10 @@ const resolvers = {
     },
     userCreate: async (ctx) => {
       return await createUser(ctx.arguments);
+    },
+    userInvite: async (ctx) => {
+      return await inviteUser(ctx.arguments);
+
     },
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);

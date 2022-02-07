@@ -4,7 +4,7 @@ export const AppRoutes = {
     WITNESSAFFIDAVIT: '/witness-affidavit',
     MATTERSRFI: '/matters-rfi',
     USERTYPEACCESS: '/usertype-access',
-    PROFILE: '/user-profile',
+    CONTACTS: '/contacts',
     ACCOUNTSETTINGS: '/account-settings',
     CHANGEPASSWORD: '/change-password',
     POSTREGISTRATION: '/post-registration',
