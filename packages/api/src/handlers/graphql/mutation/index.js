@@ -145,6 +145,8 @@ async function updateCompanyAccessType(id, data) {
       ...data,
     };
 
+    console.log(data);
+
     const command = new UpdateItemCommand({
       TableName: "CompanyAccessTypeTable",
       Key: marshall({ id }),
@@ -194,7 +196,6 @@ async function createClient(data) {
 }
 
 async function updateClientMatter(id, data) {
-  console.log("KAOOM");
   let response = {};
   try {
     const {
@@ -216,9 +217,11 @@ async function updateClientMatter(id, data) {
       ExpressionAttributeValues,
     });
     
+    console.log(data);
+    
     const request = await client.send(command);
     response = request ? params : {};
-    
+
   } catch (e) {
     response = {
       error: e.message,
@@ -226,7 +229,7 @@ async function updateClientMatter(id, data) {
       statusCode: 500,
     };
   }
-  
+  console.log(response);
   return response;
 }
 

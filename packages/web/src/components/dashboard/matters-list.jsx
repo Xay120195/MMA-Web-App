@@ -15,7 +15,7 @@ export function MattersList({
   };
 
   const redirectToMattersOverview = allowOpenMatter
-    ? `${AppRoutes.MATTERSOVERVIEW}/${matter.id}`
+    ? `${AppRoutes.FILEBUCKET}/${matter.id}`
     : `#`;
     
   return (

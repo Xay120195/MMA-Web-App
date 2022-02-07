@@ -90,7 +90,7 @@ type Client {
   id: ID
   name: String
   companyId: ID
-  matterId: Matter
+  matter: Matter
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -164,14 +164,13 @@ type Mutation {
     access: [AccessInput]
   ): CompanyAccessType
   clientMatterUpdate(
-    id: String
+    id: ID
     matter: [MatterInput]
   ): Client
 }
 
 input MatterInput {
   id: ID
-  name: String
 }
 
 input AccessInput {

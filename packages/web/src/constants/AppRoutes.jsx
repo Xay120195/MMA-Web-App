@@ -9,5 +9,6 @@ export const AppRoutes = {
     CHANGEPASSWORD: '/change-password',
     POSTREGISTRATION: '/post-registration',
     POSTAUTHENTICATION: '/post-authentication',
+    FILEBUCKET: '/file-bucket',
     SIGNOUT: '/signout'
 }

@@ -19,7 +19,6 @@ export default function Dashboard() {
   const [userInfo, setuserInfo] = useState(null);
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
-  const [matterList, setmatterList] = useState(matters);
   const [clientName, setclientName] = useState(null);
   const [matterName, setmatterName] = useState();
   const modalDeleteAlertMsg = "Successfully deleted!";
@@ -34,6 +33,8 @@ export default function Dashboard() {
   const [alertMessage, setalertMessage] = useState();
   const [clientsOptions, setClientsOptions] = useState();
   const [mattersOptions, setMattersOptions] = useState();
+
+  const [matterList, setmatterList] = useState(matters);
 
   const {
     register,
@@ -131,7 +132,7 @@ export default function Dashboard() {
   const datenow = new Date();
 
   const handleNewMatter = (e) => {
-    console.log(clientName.label);
+    console.log(e);
     /*let client_name = clientName.label,
       client_id = clientName.value,
       matter_name = matterName.label,
@@ -254,6 +255,7 @@ const Matters = async () => {
   })).sort((a, b) => a.label.localeCompare(b.label));
 
   setMattersOptions(result);
+  //setmatterList(result);
 };
 
 const addClient = `
@@ -283,8 +285,6 @@ const addClients = async (data) => {
     label: name,
   }));
 
-  console.log(result);
-
   setclientName(result);
 };
 
@@ -310,12 +310,10 @@ const addMatters = async (data) => {
       },
   });
   
-  result = addedMatterList.map(({ id, name }) => ({
+  result = [addedMatterList.data.matterCreate].map(({ id, name }) => ({
     value: id,
     label: name,
   }));
-
-  console.log(result);
 
   setmatterName(result);
 };
