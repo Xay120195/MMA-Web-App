@@ -2,3 +2,6 @@ node_modules
 yarn-error.log
 .DS_Store
 packages/web/.vscode/settings.json
+packages/web/.env
+packages/api/AWSCLIV2.pkg
+packages/web/.env

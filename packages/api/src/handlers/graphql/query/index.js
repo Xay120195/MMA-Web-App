@@ -101,7 +101,6 @@ async function getCompanyAccessType(data) {
       statusCode: 500,
     };
   }
-
   return response;
 }
 
@@ -130,23 +129,25 @@ async function getFeature(data) {
 async function getClient(data) {
   try {
     const params = {
-      TableName: "ClientTable",
-      Key: marshall({
-        id: data.id,
+      TableName: "ClientsTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": data.companyId,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const command = new QueryCommand(params);
+    const request = await client.send(command);
+    var response = request.Items.map((data) => unmarshall(data));
   } catch (e) {
+    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
   }
-
   return response;
 }
 
@@ -154,22 +155,24 @@ async function getMatter(data) {
   try {
     const params = {
       TableName: "MatterTable",
-      Key: marshall({
-        id: data.id,
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": data.companyId,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const command = new QueryCommand(params);
+    const request = await client.send(command);
+    var response = request.Items.map((data) => unmarshall(data));
   } catch (e) {
+    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
   }
-
   return response;
 }
 

@@ -36,7 +36,7 @@ const AccessControl = async (pagename) => {
       userType: user_type,
     },
   });
-
+  //console.log(page_access);
   const page = page_access.data.page.filter((f) => f.name === pagename);
 
   var userAccess = page_access.data.companyAccessType[0].access;
