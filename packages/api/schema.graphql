@@ -139,7 +139,7 @@ type Mutation {
     features: [FeatureInput]
   ): Page
   featureCreate(name: String, label: String, page: PageInput): Feature
-  matterFileCreate(matterId: ID, s3ObjectKey: String, size: Int): File
+  matterFileCreate(matterId: ID, s3ObjectKey: String, size: Int, type: String): File
   clientCreate(name: String): Client
   companyAccessTypeUpdate(
     id: String

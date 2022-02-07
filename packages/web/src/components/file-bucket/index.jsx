@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ToastNotification from "../toast-notification";
-import { API } from "aws-amplify";
+import { API, Storage } from "aws-amplify";
+
 import { useForm } from "react-hook-form";
 import BlankState from "../blank-state";
 
@@ -20,6 +21,7 @@ export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -29,6 +31,32 @@ export default function FileBucket() {
   const handleUploadLink = (uploadFiles) => {
     console.log(uploadFiles, "handleFiles");
     handleModalClose();
+
+
+    uploadFiles.map(async(f)=>{
+
+      var url = f.url,
+        name = f.data.name,
+        size = f.data.size,
+        type = f.data.type;
+
+        
+
+        const upfile = await Storage.put(name, f, { contentType: type });
+        console.log(upfile);
+        return f;
+
+    });
+
+    // const { name, url } = uploadFiles[0];
+    
+
+    // console.log(name);
+    // console.log(url);
+
+
+    
+
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -77,6 +105,8 @@ export default function FileBucket() {
   }`;
 
   useEffect(() => {
+
+    console.log(Storage);
     if (matterFiles === null) {
       getMatterFiles();
     }
