@@ -7,12 +7,12 @@ import AccountSettings from "./components/account-settings";
 import WitnessAffidavit from "./components/witness-affidavit";
 import MattersRFI from "./components/matters-rfi";
 import Contacts from "./components/contacts";
-import ChangePassword from "./components/change-password";
 import PostRegistration from "./components/authentication/post-registration";
 import PostAuthentication from "./components/authentication/post-authentication";
 import { AppRoutes } from "./constants/AppRoutes";
 import Navbar from "./components/navigation";
 import Signout from "./components/authentication/signout";
+import FileBucket from "./components/file-bucket";
 
 
 const Routes = () => {
@@ -32,7 +32,7 @@ const Routes = () => {
           <Route exact path={`${AppRoutes.MATTERSRFI}/:id`} component={MattersRFI} />
           <Route exact path={AppRoutes.CONTACTS} component={Contacts} />
           <Route exact path={AppRoutes.ACCOUNTSETTINGS} component={AccountSettings} />
-          <Route exact path={AppRoutes.CHANGEPASSWORD} component={ChangePassword} />
+          <Route exact path={`${AppRoutes.FILEBUCKET}/:matter_id`} component={FileBucket} />
         </>
       </Switch>
     </Router>

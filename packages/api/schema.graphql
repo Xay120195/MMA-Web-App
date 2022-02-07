@@ -159,6 +159,8 @@ type Mutation {
     name: String
     companyId: ID
   ): Matter
+  matterFileCreate(matterId: ID, s3ObjectKey: String, size: Int, type: String): File
+  clientCreate(name: String): Client
   companyAccessTypeUpdate(
     id: String
     access: [AccessInput]

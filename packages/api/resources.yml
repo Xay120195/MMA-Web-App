@@ -149,4 +149,4 @@ Resources:
   MatterFileS3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: matter-files-bucket
+      BucketName: mmastorageapp-staging
