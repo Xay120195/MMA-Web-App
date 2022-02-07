@@ -2,7 +2,7 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const {  GetObjectCommand } = require('@aws-sdk/client-s3');
 const client = require('../lib/s3-client')
 
-const MATTER_BUCKET_NAME = 'mmastorageapp-staging'
+const MATTER_BUCKET_NAME = 'mma-webapp-dev-bucket'
 
 exports.generatePresignedUrl = async (Key) => {
 
