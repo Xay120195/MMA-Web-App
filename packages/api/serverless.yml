@@ -139,9 +139,9 @@ custom:
         field: matterFile
         request: false
         response: false
-      - dataSource: DynamoDBMatterFileTableDS
-        type: Query
-        field: matterFile
+      # - dataSource: DynamoDBMatterFileTableDS
+      #   type: Query
+      #   field: matterFile
       - dataSource: DynamoDBMatterFileTableDS
         type: Mutation
         field: matterFileCreate
