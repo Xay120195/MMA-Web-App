@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ToastNotification from "../toast-notification";
 import { API, Storage } from "aws-amplify";
-
-import { useForm } from "react-hook-form";
 import BlankState from "../blank-state";
 
 import { useParams } from "react-router-dom";
@@ -13,49 +11,60 @@ import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 
 import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"; // shared functions/modal from link-to-chronology
-// import PreviewModal from "../link-to-chronology/preview-linktochronology-modal";
-// import ContentEditable from "react-contenteditable";
 import AccessControl from "../../shared/accessControl";
 
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
+  //610f886a-9c3a-4a0e-a998-b26b19f2c95b
+  const { matter_id } = useParams();
 
   const hideToast = () => {
     setShowToast(false);
   };
 
+  const openNewTab = (url) => {
+    window.open(url);
+  };
+
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
 
   const handleUploadLink = (uploadFiles) => {
-    console.log(uploadFiles, "handleFiles");
-    handleModalClose();
+    console.log("handleFiles", uploadFiles);
 
+    uploadFiles.map(async (uf) => {
+      var name = uf.data.name,
+        size = uf.data.size,
+        type = uf.data.type,
+        lastModified = uf.data.lastModified;
 
-    uploadFiles.map(async(f)=>{
+      //const apndStr = data.matterId.substring(0, data.matterId.indexOf('-'));
 
-      var url = f.url,
-        name = f.data.name,
-        size = f.data.size,
-        type = f.data.type;
+      await Storage.put(lastModified + name, uf, { contentType: type }).then(
+        async (fd) => {
+          const file = {
+            matterId: matter_id,
+            s3ObjectKey: fd.key,
+            size: parseInt(size),
+            type: type,
+            name: name,
+          };
 
-        
-
-        const upfile = await Storage.put(name, f, { contentType: type });
-        console.log(upfile);
-        return f;
-
+          console.log("params", file);
+          await createMatterFile(file).then((u) => {
+            console.log(u);
+            setResultMessage(`Success!`);
+            setShowToast(true);
+            setTimeout(() => {
+              getMatterFiles();
+              setShowToast(false);
+              handleModalClose();
+            }, 5000);
+          });
+        }
+      );
     });
-
-    // const { name, url } = uploadFiles[0];
-    
-
-    // console.log(name);
-    // console.log(url);
-
-
-    
 
     setShowToast(true);
     setTimeout(() => {
@@ -67,102 +76,48 @@ export default function FileBucket() {
     setshowUploadLinkModal(false);
   };
 
-  //Sample matter ID
-  //610f886a-9c3a-4a0e-a998-b26b19f2c95b
-  const { matter_id } = useParams();
-
-  const {
-    register,
-    formState: { errors },
-    reset,
-    handleSubmit,
-    setError,
-  } = useForm();
-
   const contentDiv = {
     margin: "0 0 0 65px",
   };
 
   const mCreateMatterFile = `
-      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int) {
-        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size) {
-          createdAt
-          downloadURL
+      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String) {
+        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name) {
           id
-          size
+          name
+          downloadURL
         }
       }
   `;
 
   const qGetMatterFiles = `
-  query getMatterFile($id: ID = "610f886a-9c3a-4a0e-a998-b26b19f2c95b") {
-    matterFile(id: $id) {
+  query getMatterFile($matterId: ID) {
+    matterFile(matterId: $matterId) {
       id
+      name
       downloadURL
-      createdAt
       size
+      type
     }
   }`;
 
   useEffect(() => {
-
-    console.log(Storage);
     if (matterFiles === null) {
       getMatterFiles();
     }
+    console.log(matterFiles);
   }, [matterFiles]);
 
   let getMatterFiles = async () => {
     const params = {
       query: qGetMatterFiles,
       variables: {
-        id: matter_id,
+        matterId: matter_id,
       },
     };
 
     await API.graphql(params).then((files) => {
-      console.log(files);
-
-      var dummyData = [
-        {
-          fileName: "Adios, Patria adorada, region del sol querida.pdf",
-          fileType: "pdf",
-          fileSize: "10122",
-        },
-        {
-          fileName: "Perla del mar de oriente, nuestro perdido Eden.pdf",
-          fileType: "pdf",
-          fileSize: "11011",
-        },
-        {
-          fileName: "A darte voy alegre la triste mustia vida.pdf",
-          fileType: "pdf",
-          fileSize: "5110",
-        },
-      ];
-
-      setMatterFiles(dummyData);
-    });
-  };
-
-  const handleSave = async (formdata) => {
-    const { matterId, s3ObjectKey, size } = formdata;
-
-    const file = {
-      matterId: matterId,
-      s3ObjectKey: s3ObjectKey,
-      size: parseInt(size),
-    };
-
-    console.log(file);
-    await createMatterFile(file).then((u) => {
-      console.log(u);
-      setResultMessage(`Success!`);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        reset({ size: "", matterId: "", s3ObjectKey: "" });
-      }, 5000);
+      setMatterFiles(files.data.matterFile);
     });
   };
 
@@ -176,7 +131,6 @@ export default function FileBucket() {
 
         resolve(request);
       } catch (e) {
-        setError(e.errors[0].message);
         reject(e.errors[0].message);
       }
     });
@@ -231,38 +185,41 @@ export default function FileBucket() {
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
-        {matterFiles === undefined ? (
+        {matterFiles === null || matterFiles.length === 0 ? (
           <>
             <div className="p-5 px-5 py-1 left-0">
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
                 <BlankState
                   title={"items"}
                   txtLink={"file upload button"}
-                  handleClick={"insertfunctionhere"}
+                  onClick={() => setshowUploadLinkModal(true)}
                 />
               </div>
             </div>
           </>
         ) : (
           <>
-            {matterFiles !== null && (
+            {matterFiles !== null && matterFiles.length !== 0 && (
               <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
                       <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
-                        Name{" "}
+                        Name
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {matterFiles.map((ddata, index) => (
-                      <tr key={index} index={index}>
+                    {matterFiles.map((data, index) => (
+                      <tr key={data.id} index={index}>
                         <td className="px-6 py-4 w-10 align-top place-items-center">
                           <div>
-                            <span>{ddata.fileName} </span>
+                            <span>{data.name} </span>
                             <span className="absolute right-20">
-                              <AiOutlineDownload className="text-blue-400" />
+                              <AiOutlineDownload
+                                className="text-blue-400"
+                                onClick={() => openNewTab(data.downloadURL)}
+                              />
                             </span>
                           </div>
                         </td>
@@ -281,56 +238,6 @@ export default function FileBucket() {
           handleModalClose={handleModalClose}
         />
       )}
-
-      <form className="grid gap-4 hidden" onSubmit={handleSubmit(handleSave)}>
-        <div className="p-5 w-1/3" style={contentDiv}>
-          <div className="relative flex-auto">
-            <p className="input-name">Matter ID</p>
-            <div className="relative my-2">
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Matter ID"
-                {...register("matterId")}
-              />
-            </div>
-          </div>
-
-          <div className="relative flex-auto">
-            <p className="input-name">S3 Object Key</p>
-            <div className="relative my-2">
-              <input
-                type="text"
-                className="input-field"
-                placeholder="S3 Object Key"
-                {...register("s3ObjectKey")}
-              />
-            </div>
-          </div>
-
-          <div className="relative flex-auto">
-            <p className="input-name">File Size</p>
-            <div className="relative my-2">
-              <input
-                type="text"
-                className="input-field"
-                placeholder="File Size"
-                {...register("size")}
-              />
-            </div>
-          </div>
-
-          <div className="grid justify-start pt-5">
-            <button className="save-btn" type="submit">
-              <p>Save Changes</p>
-            </button>
-          </div>
-        </div>
-
-        {showToast && resultMessage && (
-          <ToastNotification title={resultMessage} hideToast={hideToast} />
-        )}
-      </form>
     </>
   );
 }
