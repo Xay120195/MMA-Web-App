@@ -180,7 +180,6 @@ const resolvers = {
     },
 
     matterFile: async (ctx) => {
-      console.log("matterFile args:",ctx.arguments);
       return getMatterFile(ctx.arguments);
     },
   },

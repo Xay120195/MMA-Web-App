@@ -6,9 +6,8 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
-const { inviteUser, createUser } = require('../../../services/UserService')
-const { createMatterFile } = require('../../../services/MatterService')
-
+const { inviteUser, createUser } = require("../../../services/UserService");
+const { createMatterFile } = require("../../../services/MatterService");
 
 async function createCompany(data) {
   let response = {};
@@ -38,8 +37,6 @@ async function createCompany(data) {
 
   return response;
 }
-
-
 
 async function createPage(data) {
   let response = {};
@@ -193,7 +190,7 @@ async function createClient(data) {
       statusCode: 500,
     };
   }
-  
+
   return response;
 }
 
@@ -218,12 +215,11 @@ async function updateClientMatter(id, data) {
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
-    
+
     console.log(data);
-    
+
     const request = await client.send(command);
     response = request ? params : {};
-
   } catch (e) {
     response = {
       error: e.message,
@@ -293,7 +289,6 @@ const resolvers = {
     },
     userInvite: async (ctx) => {
       return await inviteUser(ctx.arguments);
-
     },
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);
@@ -308,7 +303,6 @@ const resolvers = {
       return await createMatter(ctx.arguments);
     },
     matterFileCreate: async (ctx) => {
-      console.log('matterFileCreate()');
       return await createMatterFile(ctx.arguments);
     },
     companyAccessTypeCreate: async (ctx) => {
