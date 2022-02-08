@@ -145,8 +145,20 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
-
+    
   MatterFileS3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
       BucketName: mmastorageapp-staging
+
+  ClientMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClientMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
