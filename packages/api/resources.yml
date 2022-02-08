@@ -149,4 +149,15 @@ Resources:
   MatterFileS3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: mmastorageapp-staging
+      BucketName: mma-webapp-${opt:stage, 'dev'}-bucket
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            MaxAge: '3600'
