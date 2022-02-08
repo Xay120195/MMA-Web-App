@@ -260,6 +260,36 @@ async function createMatter(data) {
   return response;
 }
 
+async function createClientMatter(data) {
+  console.log(data);
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      client: data.client,
+      matter: data.matter,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "ClientMatterTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 export function getUpdateExpressions(data) {
   const values = {};
   const names = {};
@@ -323,6 +353,15 @@ const resolvers = {
         updatedAt: new Date().toISOString(),
       };
       return await updateClientMatter(id, data);
+    },
+    clientMatterCreate: async (ctx) => {
+      const { id, client, matter } = ctx.arguments;
+      const data = {
+        client: client,
+        matter: matter,
+        updatedAt: new Date().toISOString(),
+      };
+      return await createClientMatter(id, data);
     },
   },
 };

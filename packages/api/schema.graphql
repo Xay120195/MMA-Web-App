@@ -89,18 +89,25 @@ type File {
 }
 
 type Client {
-  id: ID
+  id: ID!
   name: String
   companyId: ID
-  matter: Matter
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
 
 type Matter {
-  id: ID
+  id: ID!
   name: String
   companyId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ClientMatter {
+  id: ID
+  matter: Matter
+  client: Client
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -120,6 +127,7 @@ type Query {
   matterFile(matterId: ID): [File]
   client(companyId: ID): [Client]
   matter(companyId: ID): [Matter]
+  clientMatter(id: ID!): [ClientMatter]
 }
 
 type Mutation {
@@ -169,9 +177,17 @@ type Mutation {
     id: ID
     matter: [MatterInput]
   ): Client
+  clientMatterCreate(
+    matter: [MatterInput]
+    client: [ClientInput]
+  ): ClientMatter
 }
 
 input MatterInput {
+  id: ID
+}
+
+input ClientInput {
   id: ID
 }
 

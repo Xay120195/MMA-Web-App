@@ -180,6 +180,16 @@ custom:
         field: clientMatterUpdate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clientMatter
+        request: false
+        response: false
 
     dataSources:
       - type: AMAZON_DYNAMODB

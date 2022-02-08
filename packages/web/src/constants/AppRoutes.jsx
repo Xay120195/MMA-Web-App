@@ -10,4 +10,5 @@ export const AppRoutes = {
   POSTAUTHENTICATION: "/post-authentication",
   SIGNOUT: "/signout",
   FILEBUCKET: "/file-bucket",
+  BACKGROUND: "/background",
 };
