@@ -1,5 +1,6 @@
 const { PutItemCommand, GetItemCommand } = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+const { v4 } = require("uuid");
 import ddbClient from "../lib/dynamodb-client";
 
 const {  GetObjectCommand } = require('@aws-sdk/client-s3');
@@ -45,3 +46,36 @@ export async function getMatterFile(data) {
   
     return response;
   }
+
+  export async function createMatterFile(data) {
+      console.log("createMatterFile: ", data)
+    let response = {};
+    try {
+      const rawParams = {
+          id: v4(),
+        matterId: data.matterId,
+        s3ObjectKey: "public/" + data.s3ObjectKey,
+        size: data.size,
+        type: data.type,
+        createdAt: new Date().toISOString(),
+      };
+  
+      console.log(rawParams);
+      const params = marshall(rawParams);
+      const command = new PutItemCommand({
+        TableName: "MatterFileTable",
+        Item: params,
+      });
+  
+      const request = await ddbClient.send(command);
+      response = request ? unmarshall(params) : {};
+    } catch (e) {
+      response = {
+        error: e.message,
+        errorStack: e.stack,
+        statusCode: 500,
+      };
+    }
+    return response;
+  }
+  

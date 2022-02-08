@@ -7,6 +7,8 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
 const { inviteUser, createUser } = require('../../../services/UserService')
+const { createMatterFile } = require('../../../services/MatterService')
+
 
 async function createCompany(data) {
   let response = {};
@@ -304,6 +306,10 @@ const resolvers = {
     },
     matterCreate: async (ctx) => {
       return await createMatter(ctx.arguments);
+    },
+    matterFileCreate: async (ctx) => {
+      console.log('matterFileCreate()');
+      return await createMatterFile(ctx.arguments);
     },
     companyAccessTypeCreate: async (ctx) => {
       return await createCompanyAccessType(ctx.arguments);
