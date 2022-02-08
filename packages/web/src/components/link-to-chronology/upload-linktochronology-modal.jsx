@@ -87,8 +87,13 @@ export default function UploadLinkModal(props) {
     props.handleModalClose();
   };
 
+  const [start, setStart] = useState({
+    perc: 1
+  });
+
   const handleSave = () => {
     props.handleSave(selectedFiles);
+    generateRandomValues(start.perc)
   };
 
   const [isOpen, setIsOpen] = useState(true);
@@ -98,9 +103,7 @@ export default function UploadLinkModal(props) {
     colour: "hsl(0, 0%, 0%)"
   });
 
-  const [start, setStart] = useState({
-    perc: 1
-  });
+ 
 
   const ref = useRef(null);
 
@@ -122,10 +125,6 @@ export default function UploadLinkModal(props) {
         percentage: curr,
         colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`
       });
-      
-
-      
-
     }else{
       setStart({perc: curr});
       setRandom({
@@ -174,7 +173,7 @@ export default function UploadLinkModal(props) {
                   <span>Cancel</span>
                 </div>
                 {/* <div className="upload-btn" onClick={() => handleSave()}> */}
-                <div className="upload-btn" onClick={() => startrun(start.perc)} >
+                <div className="upload-btn" onClick={() => handleSave()} >
                   <span>Upload</span>
                 </div>
               </div>
