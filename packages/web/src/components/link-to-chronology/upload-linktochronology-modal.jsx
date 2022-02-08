@@ -80,6 +80,7 @@ export default function UploadLinkModal(props) {
     tempArray = tempArray.filter((item, i) => i !== index);
 
     setSelectedFiles(tempArray);
+    setStart({perc: 1});
   }
 
   const handleModalClose = () => {
@@ -97,12 +98,41 @@ export default function UploadLinkModal(props) {
     colour: "hsl(0, 0%, 0%)"
   });
 
-  const generateRandomValues = () => {
+  const [start, setStart] = useState({
+    perc: 1
+  });
+
+  const ref = useRef(null);
+
+  const startrun = (perc) => {
+    setTimeout(() => {
+      ref.current.click();
+      //generateRandomValues(perc);
+    }, 2000); 
+  }
+
+  const generateRandomValues = (perc) => {
     const rand = (n) => Math.random() * n;
-    setRandom({
-      percentage: rand(100),
-      colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`
-    });
+    const test = rand(100-perc);
+    const curr = test+perc;
+  
+    if(curr > 0){
+      setStart({perc: curr});
+      setRandom({
+        percentage: curr,
+        colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`
+      });
+      
+
+      
+
+    }else{
+      setStart({perc: curr});
+      setRandom({
+        percentage: 100,
+        colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`
+      });
+    }
   };
 
   return (
@@ -131,7 +161,7 @@ export default function UploadLinkModal(props) {
                       <div id="uploadDivContent" key={index}>
                         <span className="upload-name">{selectedFile.data.name}</span>
                         <FiTrash className="deleteBtn" onClick={() => deleteBtn(index)} />
-                        <Pie percentage={"16"} colour={"hsl(54, 75%, 56%)"} />
+                        <Pie percentage={random.percentage} colour={random.colour} />
                       </div>
                     )}
                   </div>
@@ -139,11 +169,12 @@ export default function UploadLinkModal(props) {
               }
               <div className="btn-grid">
                 {/* for testing only */}
-                <button onClick={generateRandomValues}>Randomise</button>
+                <button ref={ref} onClick={() => generateRandomValues(start.perc)}>Randomise</button>
                 <div className="cancel-btn" onClick={handleModalClose}>
                   <span>Cancel</span>
                 </div>
-                <div className="upload-btn" onClick={() => handleSave()}>
+                {/* <div className="upload-btn" onClick={() => handleSave()}> */}
+                <div className="upload-btn" onClick={() => startrun(start.perc)} >
                   <span>Upload</span>
                 </div>
               </div>
