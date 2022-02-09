@@ -6,7 +6,8 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
-const { inviteUser, createUser } = require('../../../services/UserService')
+const { inviteUser, createUser } = require("../../../services/UserService");
+const { createMatterFile } = require("../../../services/MatterService");
 
 async function createCompany(data) {
   let response = {};
@@ -36,8 +37,6 @@ async function createCompany(data) {
 
   return response;
 }
-
-
 
 async function createPage(data) {
   let response = {};
@@ -191,7 +190,7 @@ async function createClient(data) {
       statusCode: 500,
     };
   }
-  
+
   return response;
 }
 
@@ -216,12 +215,11 @@ async function updateClientMatter(id, data) {
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
-    
+
     console.log(data);
-    
+
     const request = await client.send(command);
     response = request ? params : {};
-
   } catch (e) {
     response = {
       error: e.message,
@@ -246,6 +244,36 @@ async function createMatter(data) {
     const params = marshall(rawParams);
     const command = new PutItemCommand({
       TableName: "MatterTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function createClientMatter(data) {
+  console.log(data);
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      client: data.client,
+      matter: data.matter,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "ClientMatterTable",
       Item: params,
     });
 
@@ -291,7 +319,6 @@ const resolvers = {
     },
     userInvite: async (ctx) => {
       return await inviteUser(ctx.arguments);
-
     },
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);
@@ -305,6 +332,9 @@ const resolvers = {
     matterCreate: async (ctx) => {
       return await createMatter(ctx.arguments);
     },
+    matterFileCreate: async (ctx) => {
+      return await createMatterFile(ctx.arguments);
+    },
     companyAccessTypeCreate: async (ctx) => {
       return await createCompanyAccessType(ctx.arguments);
     },
@@ -317,12 +347,20 @@ const resolvers = {
       return await updateCompanyAccessType(id, data);
     },
     clientMatterUpdate: async (ctx) => {
-      const { id, matter } = ctx.arguments;
+      const { id } = ctx.arguments;
       const data = {
-        matter: matter,
         updatedAt: new Date().toISOString(),
       };
       return await updateClientMatter(id, data);
+    },
+    clientMatterCreate: async (ctx) => {
+      const { id, client, matter } = ctx.arguments;
+      const data = {
+        client: client,
+        matter: matter,
+        updatedAt: new Date().toISOString(),
+      };
+      return await createClientMatter(id, data);
     },
   },
 };

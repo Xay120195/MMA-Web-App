@@ -139,12 +139,17 @@ custom:
         field: matterFile
         request: false
         response: false
-      - dataSource: DynamoDBMatterFileTableDS
-        type: Query
-        field: matterFile
-      - dataSource: DynamoDBMatterFileTableDS
+      - dataSource: LambdaMutationDS
         type: Mutation
         field: matterFileCreate
+        request: false
+        response: false
+      # - dataSource: DynamoDBMatterFileTableDS
+      #   type: Query
+      #   field: matterFile
+      # - dataSource: DynamoDBMatterFileTableDS
+      #   type: Mutation
+      #   field: matterFileCreate
       - dataSource: LambdaFileDS
         type: File
         field: downloadURL
@@ -173,6 +178,16 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: clientMatterUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clientMatter
         request: false
         response: false
 

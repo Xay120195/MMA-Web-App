@@ -29,6 +29,8 @@ export default function Dashboard() {
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
+  const [allowOpenFileBucket, setAllowOpenFileBucket] = useState(false);
+  const [allowOpenBackground, setAllowOpenBackground] = useState(false);
   const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [clientsOptions, setClientsOptions] = useState();
@@ -86,6 +88,25 @@ export default function Dashboard() {
     } else {
       console.log(mattersOverviewAccess.message);
     }
+
+    const fileBucketAccess = await AccessControl("FILEBUCKET");
+
+    if (fileBucketAccess.status !== "restrict") {
+      setAllowOpenFileBucket(true);
+    } else {
+      console.log(fileBucketAccess.message);
+    }
+
+    const backgroundAccess = await AccessControl("BACKGROUND");
+
+    if (backgroundAccess.status !== "restrict") {
+      setAllowOpenBackground(true);
+    } else {
+      console.log(backgroundAccess.message);
+    }
+
+    
+
   };
 
   const filter = (v) => {
@@ -131,14 +152,16 @@ export default function Dashboard() {
 
   const datenow = new Date();
 
-  const handleNewMatter = (e) => {
-    console.log(e);
-    /*let client_name = clientName.label,
+  const handleNewMatter = () => {
+    console.log(matterName.label);
+    let client_name = clientName.label,
       client_id = clientName.value,
       matter_name = matterName.label,
       matter_id = matterName.value,
       matter_number = `{${matter_name.charAt(0)}-${matter_id.slice(-4)}/${client_id.slice(-4)}}`,
       timestamp = dateFormat(datenow, "dd mmmm yyyy h:MM:ss TT");
+
+      addClientMatter(client_id, matter_id);
 
     setmatterList((previousState) => [
       {
@@ -169,7 +192,6 @@ export default function Dashboard() {
       //setclientName([]);
       setmatterName("");
     }, 3000);
-    */
   };
 
   const contentDiv = {
@@ -248,14 +270,12 @@ const Matters = async () => {
       },
   });
 
-  console.log(matterList);
   result = matterList.data.matter.map(({ id, name }) => ({
     value: id,
     label: name,
   })).sort((a, b) => a.label.localeCompare(b.label));
 
   setMattersOptions(result);
-  //setmatterList(result);
 };
 
 const addClient = `
@@ -314,8 +334,36 @@ const addMatters = async (data) => {
     value: id,
     label: name,
   }));
-
   setmatterName(result);
+};
+
+const matterClientUpdate = `
+  mutation matterClientUpdate($id: ID, $id1: ID) {
+  clientMatterUpdate(id: $id, matter: {id: $id1}) {
+    id,
+    matter {
+      id
+    }
+  }
+}
+`;
+
+const addClientMatter = async (clients, matters) => {
+  let result;
+
+  const addedClientMatter = await API.graphql({
+      query: matterClientUpdate,
+      variables: {
+          id: clients,
+          matter: [{id: matters}]
+      },
+  });
+
+  /*result = addedClientMatter.data.client.map(({ id, name }) => ({
+    value: id,
+    label: name
+  }));*/
+  console.log(addedClientMatter);
 };
 
   return userInfo ? (
@@ -441,6 +489,8 @@ const addMatters = async (data) => {
                 onShowDeleteModal={handleShowDeleteModal}
                 showDeleteMatter={showDeleteMatter}
                 allowOpenMatter={allowOpenMatter}
+                allowOpenFileBucket={allowOpenFileBucket}
+                allowOpenBackground={allowOpenBackground}
               />
             ))
           )}

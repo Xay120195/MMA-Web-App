@@ -40,15 +40,36 @@ const Text = ({ percentage }) => {
 
 const Pie = ({ percentage, colour }) => {
   const pct = cleanPercentage(percentage);
-  return (
-    <svg width={50} height={50}>
-      <g transform={`rotate(-90 ${"100 100"})`}>
-        <Circle colour="lightgrey" />
-        <Circle colour={colour} pct={pct} />
-      </g>
-      <Text percentage={pct} />
-    </svg>
-  );
+  const newPct= 50;
+
+  const [style, setStyle] = React.useState({});
+
+    setTimeout(() => {
+      const newStyle = 50;
+
+      setStyle(newStyle);
+    
+    }, 1000);
+
+      return (
+        <svg width={50} height={50}>
+          <g transform={`rotate(-90 ${"100 100"})`}>
+            <Circle colour="lightgrey" />
+            <Circle colour={colour} pct={pct} />
+         
+          </g>
+          <Text percentage={pct} />
+        </svg>
+      );
+   
+    
+ 
+ 
+   
+
+ 
+
+ 
 };
 
 export default Pie;

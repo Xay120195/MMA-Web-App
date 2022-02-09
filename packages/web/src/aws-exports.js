@@ -32,7 +32,7 @@ const awsmobile = {
     "aws_cognito_verification_mechanisms": [
         "EMAIL"
     ],
-    "aws_user_files_s3_bucket": "mmastorageapp-staging",
+    "aws_user_files_s3_bucket": "mma-webapp-dev-bucket",
     "aws_user_files_s3_bucket_region": "ap-southeast-1",
     //"aws_appsync_graphqlEndpoint": "https://wiy5ozkk4fda7ofpno2snytr6y.appsync-api.ap-southeast-1.amazonaws.com/graphql",
     "aws_appsync_graphqlEndpoint": process.env.NODE_ENV === "development" ? process.env.REACT_APP_LOCAL_GRAPHQL_ENDPOINT : process.env.REACT_APP_GRAPHQL_ENDPOINT,

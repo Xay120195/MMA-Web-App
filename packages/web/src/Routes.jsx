@@ -13,6 +13,7 @@ import { AppRoutes } from "./constants/AppRoutes";
 import Navbar from "./components/navigation";
 import Signout from "./components/authentication/signout";
 import FileBucket from "./components/file-bucket";
+import Background from "./components/background";
 
 
 const Routes = () => {
@@ -33,6 +34,7 @@ const Routes = () => {
           <Route exact path={AppRoutes.CONTACTS} component={Contacts} />
           <Route exact path={AppRoutes.ACCOUNTSETTINGS} component={AccountSettings} />
           <Route exact path={`${AppRoutes.FILEBUCKET}/:matter_id`} component={FileBucket} />
+          <Route exact path={`${AppRoutes.BACKGROUND}/:matter_id`} component={Background} />
         </>
       </Switch>
     </Router>
