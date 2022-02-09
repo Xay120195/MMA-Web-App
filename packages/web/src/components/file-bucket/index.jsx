@@ -31,8 +31,6 @@ export default function FileBucket() {
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
 
   const handleUploadLink = (uploadFiles) => {
-    console.log("handleFiles", uploadFiles);
-
     uploadFiles.map(async (uf) => {
       var name = uf.data.name,
         size = uf.data.size,
@@ -40,7 +38,18 @@ export default function FileBucket() {
         lastModified = uf.data.lastModified,
         key = lastModified + name;
 
-      await Storage.put(key, uf, { contentType: type }).then(async (fd) => {
+      await Storage.put(key, uf, {
+        contentType: type,
+        progressCallback(progress) {
+          const progressInPercentage = Math.round(
+            (progress.loaded / progress.total) * 100
+          );
+          console.log(`Progress: ${progressInPercentage}%`);
+        },
+        errorCallback: (err) => {
+          console.error("Unexpected error while uploading", err);
+        },
+      }).then(async (fd) => {
         const file = {
           matterId: matter_id,
           s3ObjectKey: fd.key,
@@ -49,9 +58,7 @@ export default function FileBucket() {
           name: name,
         };
 
-        console.log("params", file);
         await createMatterFile(file).then((u) => {
-          console.log(u);
           setResultMessage(`Success!`);
           setShowToast(true);
           setTimeout(() => {
@@ -102,7 +109,6 @@ export default function FileBucket() {
     if (matterFiles === null) {
       getMatterFiles();
     }
-    console.log(matterFiles);
   }, [matterFiles]);
 
   let getMatterFiles = async () => {
