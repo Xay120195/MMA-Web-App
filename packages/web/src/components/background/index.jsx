@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { API } from "aws-amplify";
+import React from "react";
+import { matters } from "../dashboard/data-source";
+import { useParams } from "react-router-dom";
+import BreadCrumb from "./breadcrumb";
+import TableInfo from "./table-info";
+import ActionButtons from "./action-buttons";
+import { witness_affidavits } from "./data-source";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -10,81 +15,33 @@ const mainGrid = {
   gridtemplatecolumn: "1fr auto",
 };
 
-const listBackground = `
-query background($companyId: ID) {
-  background(companyId: $companyId) {
-    id
-    description
-  }
-}
-`;
-
-const BackgroundList = async () => {
-  let result;
-
-  const clientId = localStorage.getItem("companyId");
-  const backgroundList = await API.graphql({
-      query: listBackground,
-      variables: {
-          companyId: clientId
-      },
-  });
-
-  console.log(backgroundList);
-};
-
-const addBackground = `
-mutation addBackground($companyId: ID) {
-  backgroundCreate(companyId: $companyId) {
-    id
-    description
-    date
-  }
-}
-`;
-
-const addBackgroundRow = async () => {
-  let result;
-
-  const clientId = localStorage.getItem("companyId");
-
-  const addedBackgroundRow = await API.graphql({
-      query: addBackground,
-      variables: {
-          companyId: clientId
-      },
-  });
-
-  console.log(addedBackgroundRow);
-};
-
-const handleNewAddRow = () => {
-    addBackgroundRow();
-};
-
-const handleBackgroundList = () => {
-  BackgroundList();
-};
-
 export default function Background() {
+  const params = useParams();
+  const { matter_id } = params;
+
+  const data = matters.find((item) => item.id === Number(matter_id));
+
   return (
-  <>
-    <div className={
-            "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
-          }
-          style={contentDiv}
-    >
-      <div className="relative flex-grow flex-1">
-        <div style={mainGrid} >
-          <div>
-            <span className={"text-sm mt-3 font-medium"}>
-              Background
-            </span>
-            <br/><br/><button onClick={() => handleNewAddRow()} >Add Background</button><br/><br/><button onClick={() => handleBackgroundList()} >List Background</button>
+    <>
+      <div
+        className={
+          "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
+        }
+        style={contentDiv}
+      >
+        <div className="relative flex-grow flex-1">
+          <div style={mainGrid}>
+            <div>
+              <span className={"text-lg mt-3 font-medium"}>
+                Claire Greene {data.name} Background
+              </span>
+              <BreadCrumb data={data} />
+              <ActionButtons />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </>
-  )
+      <TableInfo witness_affidavits={witness_affidavits} />
+    </>
+  );
 }
