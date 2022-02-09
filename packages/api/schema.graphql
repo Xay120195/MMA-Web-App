@@ -192,7 +192,6 @@ type Mutation {
   ): ClientMatter
   backgroundCreate(
     companyId: ID
-    description: String
   ): Background
 }
 

@@ -295,7 +295,6 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
-      description: data.description,
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };

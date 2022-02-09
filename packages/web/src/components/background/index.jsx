@@ -30,16 +30,40 @@ const BackgroundList = async () => {
       },
   });
 
-  /*result = backgroundList.data.client.map(({ id, name }) => ({
-    value: id,
-    label: name,
-  })).sort((a, b) => a.label.localeCompare(b.label));*/
-
   console.log(backgroundList);
 };
 
+const addBackground = `
+mutation addBackground($companyId: ID) {
+  backgroundCreate(companyId: $companyId) {
+    id
+    description
+    date
+  }
+}
+`;
+
+const addBackgroundRow = async () => {
+  let result;
+
+  const clientId = localStorage.getItem("companyId");
+
+  const addedBackgroundRow = await API.graphql({
+      query: addBackground,
+      variables: {
+          companyId: clientId
+      },
+  });
+
+  console.log(addedBackgroundRow);
+};
+
 const handleNewAddRow = () => {
-  
+    addBackgroundRow();
+};
+
+const handleBackgroundList = () => {
+  BackgroundList();
 };
 
 export default function Background() {
@@ -56,7 +80,7 @@ export default function Background() {
             <span className={"text-sm mt-3 font-medium"}>
               Background
             </span>
-            <button onClick={() => handleNewAddRow()} >Add Background</button>
+            <br/><br/><button onClick={() => handleNewAddRow()} >Add Background</button><br/><br/><button onClick={() => handleBackgroundList()} >List Background</button>
           </div>
         </div>
       </div>
