@@ -40,7 +40,21 @@ export default function FileBucket() {
         lastModified = uf.data.lastModified,
         key = lastModified + name;
 
-      await Storage.put(key, uf, { contentType: type }).then(async (fd) => {
+      await Storage.put(key, uf, {
+        contentType: type,
+        progressCallback(progress) {
+          console.log(progress);
+          console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+
+          const progressInPercentage = Math.round(
+            (progress.loaded / progress.total) * 100
+          );
+          console.log(`Progress: ${progressInPercentage}%`);
+        },
+        errorCallback: (err) => {
+          console.error("Unexpected error while uploading", err);
+        },
+      }).then(async (fd) => {
         const file = {
           matterId: matter_id,
           s3ObjectKey: fd.key,
@@ -102,7 +116,7 @@ export default function FileBucket() {
     if (matterFiles === null) {
       getMatterFiles();
     }
-    console.log(matterFiles);
+    console.log("matterFiles:",matterFiles);
   }, [matterFiles]);
 
   let getMatterFiles = async () => {
@@ -113,7 +127,9 @@ export default function FileBucket() {
       },
     };
 
+    console.log("getMatterFiles", params);
     await API.graphql(params).then((files) => {
+      console.log(files);
       setMatterFiles(files.data.matterFile);
     });
   };
