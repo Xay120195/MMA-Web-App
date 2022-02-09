@@ -13,6 +13,10 @@ export default function UploadLinkModal(props) {
 
   const [selectedFiles, _setSelectedFiles] = useState([])
 
+  const rejectFiles = [
+    ".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"
+  ]; //list of rejected files
+
   const handleDrop = (e) => {
     e.preventDefault()
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
@@ -21,10 +25,24 @@ export default function UploadLinkModal(props) {
     const tempArr = [];
 
     [...e.dataTransfer.files].forEach(file => {
-      tempArr.push({
-        data: file,
-        url: URL.createObjectURL(file)
-      });
+      var re = /(?:\.([^.]+))?$/;
+      var ext = re.exec(file.name)[0];
+
+      const result = rejectFiles.find(item => item.includes(ext))
+
+      if(result){
+        // console.log("reject");
+        // console.log(file.name);
+        alert("Cannot accept file type"); //alert here
+        return
+      }else{
+        // console.log("accept");
+        // console.log(ext);
+        tempArr.push({
+          data: file,
+          url: URL.createObjectURL(file)
+        });
+      }
     });
 
     setSelectedFiles([...selectedFiles, ...tempArr]);
@@ -59,6 +77,9 @@ export default function UploadLinkModal(props) {
   const onDragLeave = () => dropRef.current.classList.remove('dragover');
   const onDrop = () => dropRef.current.classList.remove('dragover');
 
+  
+
+
   const onSelectFile = e => {
     console.log(myCurrentRef.current)
     if (!e.target.files || e.target.files.length === 0) {
@@ -66,13 +87,30 @@ export default function UploadLinkModal(props) {
     }
     const tempArr = [];
 
-    [...e.target.files].forEach(file => {
-      tempArr.push({
-        data: file,
-        url: URL.createObjectURL(file)
+      [...e.target.files].forEach(file => {
+        var re = /(?:\.([^.]+))?$/;
+        var ext = re.exec(file.name)[0];
+
+        const result = rejectFiles.find(item => item.includes(ext))
+
+        if(result){
+          // console.log("reject");
+          // console.log(file.name);
+          alert("Cannot accept some file types"); //alert here
+          return
+        }else{
+          // console.log("accept");
+          // console.log(ext);
+          tempArr.push({
+            data: file,
+            url: URL.createObjectURL(file)
+          });
+        }
       });
-    });
-    setSelectedFiles([...myCurrentRef.current, ...tempArr])
+      
+    setSelectedFiles([...myCurrentRef.current, ...tempArr]);
+
+   
   }
 
   const deleteBtn = (index) => {
