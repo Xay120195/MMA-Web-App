@@ -1,4 +1,5 @@
-import React, { } from "react";
+import React, { useState, useEffect } from "react";
+import { API } from "aws-amplify";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -7,6 +8,38 @@ const contentDiv = {
 const mainGrid = {
   display: "grid",
   gridtemplatecolumn: "1fr auto",
+};
+
+const listBackground = `
+query background($companyId: ID) {
+  background(companyId: $companyId) {
+    id
+    description
+  }
+}
+`;
+
+const BackgroundList = async () => {
+  let result;
+
+  const clientId = localStorage.getItem("companyId");
+  const backgroundList = await API.graphql({
+      query: listBackground,
+      variables: {
+          companyId: clientId
+      },
+  });
+
+  /*result = backgroundList.data.client.map(({ id, name }) => ({
+    value: id,
+    label: name,
+  })).sort((a, b) => a.label.localeCompare(b.label));*/
+
+  console.log(backgroundList);
+};
+
+const handleNewAddRow = () => {
+  
 };
 
 export default function Background() {
@@ -23,6 +56,7 @@ export default function Background() {
             <span className={"text-sm mt-3 font-medium"}>
               Background
             </span>
+            <button onClick={() => handleNewAddRow()} >Add Background</button>
           </div>
         </div>
       </div>
