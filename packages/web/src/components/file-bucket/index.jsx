@@ -35,9 +35,11 @@ export default function FileBucket() {
       var name = uf.data.name,
         size = uf.data.size,
         type = uf.data.type,
-        lastModified = uf.data.lastModified,
-        key = lastModified + name;
+        key = `${matter_id}/${Number(new Date())}${name
+          .replaceAll(/\s/g, "")
+          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
 
+      console.log(key);
       await Storage.put(key, uf, {
         contentType: type,
         progressCallback(progress) {
@@ -221,7 +223,14 @@ export default function FileBucket() {
                             <span className="absolute right-20">
                               <AiOutlineDownload
                                 className="text-blue-400"
-                                onClick={() => openNewTab(data.downloadURL)}
+                                onClick={() =>
+                                  openNewTab(
+                                    data.downloadURL.substr(
+                                      0,
+                                      data.downloadURL.indexOf("?")
+                                    )
+                                  )
+                                }
                               />
                             </span>
                           </div>
