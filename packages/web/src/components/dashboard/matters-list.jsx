@@ -30,7 +30,7 @@ export function MattersList({
                   </button>
                   <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
                   {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${matter.id}`}>File Bucket</Link></li>) : null}
-                    <li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${matter.id}`}>Background</Link></li>
+                  {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${matter.id}`}>Background</Link></li> : null}
                     <li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Archive</a></li>
                   </ul>
               </div>
@@ -67,15 +67,6 @@ export function MattersList({
                 </div>
 
                 <div className="col-span-2 grid place-self-end">
-                  {allowOpenBackground ? (
-                    <Link
-                      tabIndex="0"
-                      className="focus:outline-none text-xs text-gray-400"
-                      to={`${AppRoutes.BACKGROUND}/${matter.id}`}
-                    >
-                      Background
-                    </Link>
-                  ) : null}
                   {matter.matter_number}<b className="text-lg">&#62;</b>
                 </div>
               </div>
