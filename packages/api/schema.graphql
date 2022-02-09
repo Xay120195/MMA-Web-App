@@ -112,6 +112,15 @@ type ClientMatter {
   updatedAt: AWSDateTime
 }
 
+type Background {
+  id: ID 
+  date: String 
+  clientId: ID
+  description: String 
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 schema {
   query: Query
   mutation: Mutation
@@ -128,6 +137,7 @@ type Query {
   client(companyId: ID): [Client]
   matter(companyId: ID): [Matter]
   clientMatter(id: ID!): [ClientMatter]
+  background(companyId: ID): [Background]
 }
 
 type Mutation {
@@ -181,6 +191,10 @@ type Mutation {
     matter: [MatterInput]
     client: [ClientInput]
   ): ClientMatter
+  backgroundCreate(
+    companyId: ID
+    description: String
+  ): Background
 }
 
 input MatterInput {

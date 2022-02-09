@@ -290,6 +290,37 @@ async function createClientMatter(data) {
   return response;
 }
 
+async function createBackground(data) {
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      description: data.description,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "BackgroundTable",
+      Item: params,
+    });
+
+    console.log(params);
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 export function getUpdateExpressions(data) {
   const values = {};
   const names = {};
@@ -362,6 +393,9 @@ const resolvers = {
         updatedAt: new Date().toISOString(),
       };
       return await createClientMatter(id, data);
+    },
+    backgroundCreate: async (ctx) => {
+      return await createBackground(ctx.arguments);
     },
   },
 };

@@ -80,15 +80,7 @@ export function MattersList({
                 </div>
 
                 <div className="col-span-2 grid place-self-end">
-                  {allowOpenBackground ? (
-                    <Link
-                      tabIndex="0"
-                      className="focus:outline-none text-xs text-gray-400"
-                      to={`${AppRoutes.BACKGROUND}/${matter.id}`}
-                    >
-                      Background
-                    </Link>
-                  ) : null}
+                  
                   {matter.matter_number}<b className="text-lg">&#62;</b>
                 </div>
               </div>
