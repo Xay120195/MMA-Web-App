@@ -37,33 +37,30 @@ export default function FileBucket() {
       var name = uf.data.name,
         size = uf.data.size,
         type = uf.data.type,
-        lastModified = uf.data.lastModified;
+        lastModified = uf.data.lastModified,
+        key = lastModified + name;
 
-      //const apndStr = data.matterId.substring(0, data.matterId.indexOf('-'));
+      await Storage.put(key, uf, { contentType: type }).then(async (fd) => {
+        const file = {
+          matterId: matter_id,
+          s3ObjectKey: fd.key,
+          size: parseInt(size),
+          type: type,
+          name: name,
+        };
 
-      await Storage.put(lastModified + name, uf, { contentType: type }).then(
-        async (fd) => {
-          const file = {
-            matterId: matter_id,
-            s3ObjectKey: fd.key,
-            size: parseInt(size),
-            type: type,
-            name: name,
-          };
-
-          console.log("params", file);
-          await createMatterFile(file).then((u) => {
-            console.log(u);
-            setResultMessage(`Success!`);
-            setShowToast(true);
-            setTimeout(() => {
-              getMatterFiles();
-              setShowToast(false);
-              handleModalClose();
-            }, 5000);
-          });
-        }
-      );
+        console.log("params", file);
+        await createMatterFile(file).then((u) => {
+          console.log(u);
+          setResultMessage(`Success!`);
+          setShowToast(true);
+          setTimeout(() => {
+            getMatterFiles();
+            setShowToast(false);
+            handleModalClose();
+          }, 5000);
+        });
+      });
     });
 
     setShowToast(true);
