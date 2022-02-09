@@ -112,6 +112,14 @@ type ClientMatter {
   updatedAt: AWSDateTime
 }
 
+type Background {
+  id: ID
+  date: AWSDateTime
+  description: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 schema {
   query: Query
   mutation: Mutation
