@@ -26,20 +26,18 @@ export function MattersList({
       {view === "grid" ? (
         <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
           <div>
-            {allowOpenFileBucket ? (
             <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
               <div className="dropdown">
                   <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
                   <FaIcons.FaEllipsisV />
                   </button>
                   <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
-                    <li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${matter.id}`}>File Bucket</Link></li>
+                  {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${matter.id}`}>File Bucket</Link></li>) : null}
                     <li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${matter.id}`}>Background</Link></li>
                     <li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Archive</a></li>
                   </ul>
               </div>
             </div>
-            ) : null}
 
             <div>
               <h4
