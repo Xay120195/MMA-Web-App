@@ -30,7 +30,8 @@ export function MattersList({
                   </button>
                   <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
                   {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${matter.id}`}>File Bucket</Link></li>) : null}
-                  {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${matter.id}`}>Background</Link></li> : null}
+                  {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${matter.id}`}>Background</Link></li>
+                   ) : null}
                     <li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Archive</a></li>
                   </ul>
               </div>
