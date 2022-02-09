@@ -115,6 +115,7 @@ type ClientMatter {
 type Background {
   id: ID
   date: AWSDateTime
+  companyId: ID
   description: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime

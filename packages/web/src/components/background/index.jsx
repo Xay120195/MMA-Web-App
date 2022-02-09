@@ -21,34 +21,6 @@ export default function Background() {
   const { matter_id } = params;
 
   const data = matters.find((item) => item.id === Number(matter_id));
-
-
-  useEffect(() => {
-    BackgroundList();
-  });
-  
-  const listBackground = `
-  query background($companyId: ID) {
-    background(companyId: $companyId) {
-      id
-      description
-    }
-  }
-  `;
-  
-  const BackgroundList = async () => {
-    let result;
-  
-    const clientId = localStorage.getItem("companyId");
-    const backgroundList = await API.graphql({
-        query: listBackground,
-        variables: {
-            companyId: clientId
-        },
-    });
-  
-    console.log(backgroundList);
-  };
   
   const addBackground = `
   mutation addBackground($companyId: ID) {

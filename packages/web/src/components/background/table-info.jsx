@@ -1,6 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { witness_affidavits } from "./data-source";
+import { API } from "aws-amplify";
 
-const TableInfo = ({ witness_affidavits }) => {
+export default function TableInfo() {
+
+  useEffect(() => {
+    BackgroundList();
+  });
+  
+  const listBackground = `
+  query background($companyId: ID) {
+    background(companyId: $companyId) {
+      id,
+      companyId,
+      description
+    }
+  }
+  `;
+  
+  const BackgroundList = async () => {
+    let result;
+  
+    const clientId = localStorage.getItem("companyId");
+    const backgroundList = await API.graphql({
+        query: listBackground,
+        variables: {
+            companyId: clientId
+        },
+    });
+
+    result = backgroundList.data.background.map(({ id, clientId, description }) => ({
+      id: id,
+      clientId: clientId,
+      description: description,
+    }));
+    console.log(result);
+  };
+
   return (
     <div
       className="flex flex-col"
@@ -128,6 +164,4 @@ const TableInfo = ({ witness_affidavits }) => {
       </div>
     </div>
   );
-};
-
-export default TableInfo;
+}
