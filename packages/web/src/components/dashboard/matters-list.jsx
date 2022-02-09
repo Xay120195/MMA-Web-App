@@ -9,19 +9,16 @@ export function MattersList({
   onShowDeleteModal,
   showDeleteMatter,
   allowOpenMatter,
+  allowOpenFileBucket,
 }) {
   const setshowDeleteModal = (value) => {
     onShowDeleteModal(value);
   };
 
-  const redirectToFileBucket = allowOpenMatter
-    ? `${AppRoutes.FILEBUCKET}/${matter.id}`
-    : `#`;
-
   const redirectToBackground = allowOpenMatter
     ? `${AppRoutes.BACKGROUND}/${matter.id}`
     : `#`;
-    
+
   return (
     <>
       {view === "grid" ? (
@@ -49,7 +46,10 @@ export function MattersList({
               </button>
             )}
             <div>
-              <Link to={redirectToFileBucket} >File Bucket</Link>
+              {allowOpenFileBucket ? (
+                <Link to={`${AppRoutes.FILEBUCKET}/${matter.id}`}>File Bucket</Link>
+              ) : null}
+
               <h4
                 tabIndex="0"
                 className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-3"
@@ -84,7 +84,8 @@ export function MattersList({
                   <Link
                     tabIndex="0"
                     className="focus:outline-none text-xs text-gray-400"
-                    to={redirectToBackground} >
+                    to={redirectToBackground}
+                  >
                     {matter.matter_number} <b className="text-lg">&#62;</b>
                   </Link>
                 </div>
