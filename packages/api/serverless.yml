@@ -200,6 +200,11 @@ custom:
         field: background
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: backgroundUpdate
+        request: false
+        response: false
 
     dataSources:
       - type: AMAZON_DYNAMODB

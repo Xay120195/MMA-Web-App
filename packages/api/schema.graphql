@@ -193,6 +193,10 @@ type Mutation {
   backgroundCreate(
     companyId: ID
   ): Background
+  backgroundUpdate(
+    id: ID
+    description: String
+  ): Background
 }
 
 input MatterInput {

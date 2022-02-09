@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { matters } from "../dashboard/data-source";
 import { useParams } from "react-router-dom";
 import BreadCrumb from "./breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import { witness_affidavits } from "./data-source";
+import { API } from "aws-amplify";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -20,6 +21,59 @@ export default function Background() {
   const { matter_id } = params;
 
   const data = matters.find((item) => item.id === Number(matter_id));
+
+
+  useEffect(() => {
+    BackgroundList();
+  });
+  
+  const listBackground = `
+  query background($companyId: ID) {
+    background(companyId: $companyId) {
+      id
+      description
+    }
+  }
+  `;
+  
+  const BackgroundList = async () => {
+    let result;
+  
+    const clientId = localStorage.getItem("companyId");
+    const backgroundList = await API.graphql({
+        query: listBackground,
+        variables: {
+            companyId: clientId
+        },
+    });
+  
+    console.log(backgroundList);
+  };
+  
+  const addBackground = `
+  mutation addBackground($companyId: ID) {
+    backgroundCreate(companyId: $companyId) {
+      id
+      description
+      date
+    }
+  }
+  `;
+  
+  const addBackgroundRow = async () => {
+    let result;
+  
+    const clientId = localStorage.getItem("companyId");
+  
+    const addedBackgroundRow = await API.graphql({
+        query: addBackground,
+        variables: {
+            companyId: clientId
+        },
+    });
+  
+    console.log(addedBackgroundRow);
+  };
 
   return (
     <>

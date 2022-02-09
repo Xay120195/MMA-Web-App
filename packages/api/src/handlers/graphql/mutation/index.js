@@ -320,6 +320,42 @@ async function createBackground(data) {
   return response;
 }
 
+async function updateBackground(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    console.log(data);
+
+    const command = new UpdateItemCommand({
+      TableName: "BackgroundTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await client.send(command);
+    response = request ? params : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  
+  return response;
+}
+
 export function getUpdateExpressions(data) {
   const values = {};
   const names = {};
@@ -394,6 +430,14 @@ const resolvers = {
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
+    },
+    backgroundUpdate: async (ctx) => {
+      const { id, description } = ctx.arguments;
+      const data = {
+        description: description,
+        updatedAt: new Date().toISOString(),
+      };
+      return await updateBackground(id, data);
     },
   },
 };
