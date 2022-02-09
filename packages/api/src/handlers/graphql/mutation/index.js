@@ -378,9 +378,8 @@ const resolvers = {
       return await updateCompanyAccessType(id, data);
     },
     clientMatterUpdate: async (ctx) => {
-      const { id, matter } = ctx.arguments;
+      const { id } = ctx.arguments;
       const data = {
-        matter: matter,
         updatedAt: new Date().toISOString(),
       };
       return await updateClientMatter(id, data);
