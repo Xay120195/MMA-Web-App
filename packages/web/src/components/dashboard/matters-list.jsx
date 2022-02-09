@@ -12,14 +12,11 @@ export function MattersList({
   showDeleteMatter,
   allowOpenMatter,
   allowOpenFileBucket,
+  allowOpenBackground,
 }) {
   const setshowDeleteModal = (value) => {
     onShowDeleteModal(value);
   };
-
-  const redirectToBackground = allowOpenMatter
-    ? `${AppRoutes.BACKGROUND}/${matter.id}`
-    : `#`;
 
   return (
     <>
@@ -38,7 +35,6 @@ export function MattersList({
                   </ul>
               </div>
             </div>
-
             <div>
               <h4
                 tabIndex="0"
@@ -71,13 +67,16 @@ export function MattersList({
                 </div>
 
                 <div className="col-span-2 grid place-self-end">
-                  <Link
-                    tabIndex="0"
-                    className="focus:outline-none text-xs text-gray-400"
-                    to={redirectToBackground}
-                  >
-                    {matter.matter_number} <b className="text-lg">&#62;</b>
-                  </Link>
+                  {allowOpenBackground ? (
+                    <Link
+                      tabIndex="0"
+                      className="focus:outline-none text-xs text-gray-400"
+                      to={`${AppRoutes.BACKGROUND}/${matter.id}`}
+                    >
+                      Background
+                    </Link>
+                  ) : null}
+                  {matter.matter_number}<b className="text-lg">&#62;</b>
                 </div>
               </div>
             </div>
@@ -107,7 +106,7 @@ export function MattersList({
                 </svg>
               </button>
             )}
-            <Link to={redirectToBackground}>
+            {/* <Link to={redirectToBackground}> */}
               <div className="grid grid-cols-4 gap-4">
                 <div className="col-span-2">
                   <h4
@@ -138,7 +137,7 @@ export function MattersList({
                   />
                 </div>
               </div>
-            </Link>
+            {/* </Link> */}
           </div>
         </div>
       )}

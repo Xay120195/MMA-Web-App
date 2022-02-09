@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
   const [allowOpenFileBucket, setAllowOpenFileBucket] = useState(false);
+  const [allowOpenBackground, setAllowOpenBackground] = useState(false);
   const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [clientsOptions, setClientsOptions] = useState();
@@ -95,6 +96,16 @@ export default function Dashboard() {
     } else {
       console.log(fileBucketAccess.message);
     }
+
+    const backgroundAccess = await AccessControl("BACKGROUND");
+
+    if (backgroundAccess.status !== "restrict") {
+      setAllowOpenBackground(true);
+    } else {
+      console.log(backgroundAccess.message);
+    }
+
+    
 
   };
 
@@ -479,6 +490,7 @@ const addClientMatter = async (clients, matters) => {
                 showDeleteMatter={showDeleteMatter}
                 allowOpenMatter={allowOpenMatter}
                 allowOpenFileBucket={allowOpenFileBucket}
+                allowOpenBackground={allowOpenBackground}
               />
             ))
           )}
