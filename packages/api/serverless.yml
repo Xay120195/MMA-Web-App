@@ -1,0 +1,227 @@
+service: severless-appsync-lab
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-southeast-1
+  lambdaHashingVersion: 20201221
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "s3:ListBucket"
+            - "dynamodb:PutItem"
+            - "dynamodb:UpdateItem"
+            - "dynamodb:DeleteItem"
+            - "dynamodb:GetItem"
+            - "dynamodb:Query"
+            - "dynamodb:Scan"
+            - "dynamodb:BatchGetItem"
+            - "dynamodb:BatchWriteItem"
+            - "cognito-idp:AdminCreateUser"
+            - "cognito-idp:AdminAddUserToGroup"
+            - "cognito-idp:AdminRemoveUserFromGroup"
+            - "cognito-idp:AdminUpdateUserAttributes"
+            - "cognito-idp:AdminGetUser"
+          Resource: "*"
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline
+  - serverless-appsync-simulator
+  - serverless-appsync-plugin
+  - serverless-webpack
+
+functions:
+  query-fn:
+    handler: src/handlers/graphql/query/index.handler
+  mutation-fn:
+    handler: src/handlers/graphql/mutation/index.handler
+  file-fn:
+    handler: src/handlers/graphql/file/index.handler
+
+custom:
+  dynamodb:
+    # If you only want to use DynamoDB Local in some stages, declare them here
+    stages:
+      - dev
+    start:
+      port: 8000
+      heapInitial: 200m
+      heapMax: 1g
+      migrate: true
+      seed: true
+      convertEmptyValues: true
+      # Uncomment only if you already have a DynamoDB running locally
+      noStart: true
+  appSync:
+    name: ServerlessAppSyncImmersion
+    schema: schema.graphql
+    authenticationType: AMAZON_COGNITO_USER_POOLS
+    userPoolConfig:
+      defaultAction: ALLOW
+      userPoolId: !Ref CognitoUserPool
+    mappingTemplatesLocation: src/mapping-templates
+
+    mappingTemplates:
+      - dataSource: DynamoDBColorTableDS
+        type: Query
+        field: colors
+        request: Query.colors.request.vtl
+        response: Query.colors.response.vtl
+      - dataSource: DynamoDBColorTableDS
+        type: Mutation
+        field: addColor
+        request: Mutation.addColor.request.vtl
+        response: Mutation.addColor.response.vtl
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: company
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: companyCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: user
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userInvite
+        request: false
+        response: false        
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: page
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: pageCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: feature
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: featureCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: companyAccessType
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: companyAccessTypeCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: companyAccessTypeUpdate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matterFile
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterFileCreate
+        request: false
+        response: false
+      # - dataSource: DynamoDBMatterFileTableDS
+      #   type: Query
+      #   field: matterFile
+      # - dataSource: DynamoDBMatterFileTableDS
+      #   type: Mutation
+      #   field: matterFileCreate
+      - dataSource: LambdaFileDS
+        type: File
+        field: downloadURL
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: client
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matter
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clientMatter
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: backgroundCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: background
+        request: false
+        response: false
+
+    dataSources:
+      - type: AMAZON_DYNAMODB
+        name: DynamoDBColorTableDS
+        config:
+          tableName: !Ref ColorTable
+      - type: AWS_LAMBDA
+        name: LambdaQueryDS
+        config:
+          functionName: query-fn
+      - type: AWS_LAMBDA
+        name: LambdaMutationDS
+        config:
+          functionName: mutation-fn
+      - type: AWS_LAMBDA
+        name: LambdaFileDS
+        config:
+          functionName: file-fn
+      - type: AMAZON_DYNAMODB
+        name: DynamoDBMatterFileTableDS
+        config:
+          tableName: !Ref MatterFileTable
+
+resources: # CloudFormation template syntax
+  - ${file(./resources.yml)}

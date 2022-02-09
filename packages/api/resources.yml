@@ -1,0 +1,196 @@
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ${self:service.name}-user-pool
+      AutoVerifiedAttributes:
+        - email
+  ColorTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ColorTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  CompanyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  UserTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UserTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  PageTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PageTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  FeatureTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FeatureTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  CompanyAccessTypeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyAccessTypeTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+  MatterFileTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MatterFileTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: matterId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byMatter
+          KeySchema:
+            - AttributeName: matterId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      # Set the capacity to auto-scale
+      BillingMode: PAY_PER_REQUEST
+
+  ClientsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClientsTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+  MatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+    
+  MatterFileS3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: mma-webapp-${opt:stage, 'dev'}-bucket
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+            MaxAge: '3600'
+            
+  ClientMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClientMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  BackgroundTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BackgroundTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
