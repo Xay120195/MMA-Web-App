@@ -31,8 +31,6 @@ export default function FileBucket() {
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
 
   const handleUploadLink = (uploadFiles) => {
-    console.log("handleFiles", uploadFiles);
-
     uploadFiles.map(async (uf) => {
       var name = uf.data.name,
         size = uf.data.size,
@@ -43,9 +41,6 @@ export default function FileBucket() {
       await Storage.put(key, uf, {
         contentType: type,
         progressCallback(progress) {
-          console.log(progress);
-          console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
-
           const progressInPercentage = Math.round(
             (progress.loaded / progress.total) * 100
           );
@@ -63,9 +58,7 @@ export default function FileBucket() {
           name: name,
         };
 
-        console.log("params", file);
         await createMatterFile(file).then((u) => {
-          console.log(u);
           setResultMessage(`Success!`);
           setShowToast(true);
           setTimeout(() => {
@@ -116,7 +109,6 @@ export default function FileBucket() {
     if (matterFiles === null) {
       getMatterFiles();
     }
-    console.log("matterFiles:",matterFiles);
   }, [matterFiles]);
 
   let getMatterFiles = async () => {
@@ -127,9 +119,7 @@ export default function FileBucket() {
       },
     };
 
-    console.log("getMatterFiles", params);
     await API.graphql(params).then((files) => {
-      console.log(files);
       setMatterFiles(files.data.matterFile);
     });
   };
