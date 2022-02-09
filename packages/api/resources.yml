@@ -145,6 +145,18 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
+
+  ClientMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClientMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
     
   MatterFileS3Bucket:
     Type: "AWS::S3::Bucket"
@@ -161,15 +173,3 @@ Resources:
             AllowedOrigins:
               - '*'
             MaxAge: '3600'
-            
-  ClientMatterTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ClientMatterTable
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
