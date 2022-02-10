@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+//import { API } from "aws-amplify";
 
 const TableInfo = ({ witness, setIdList }) => {
   const [getId, setGetId] = useState([{}]);
@@ -20,7 +21,43 @@ const TableInfo = ({ witness, setIdList }) => {
   useEffect(() => {
     setIdList(getId);
     setData(witness);
+    //BackgroundList();
   }, [getId, data, witness]);
+
+
+  /*const [backgroundItem, setBackgroundItem] = useState();
+
+  console.log(backgroundItem);
+  
+  const listBackground = `
+  query background($companyId: ID) {
+    background(companyId: $companyId) {
+      id,
+      companyId,
+      description
+    }
+  }
+  `;
+  
+  const BackgroundList = async () => {
+    let result;
+  
+    const clientId = localStorage.getItem("companyId");
+    const backgroundList = await API.graphql({
+        query: listBackground,
+        variables: {
+            companyId: clientId
+        },
+    });
+
+    result = backgroundList.data.background.map(({ id, companyId, description }) => ({
+      id: id,
+      companyId: companyId,
+      description: description,
+    }));
+    
+    setBackgroundItem(result);
+  }*/
 
   return (
     <div
