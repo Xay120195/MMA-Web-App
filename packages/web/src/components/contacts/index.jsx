@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { Link, useHistory } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { Auth, API } from "aws-amplify";
 import { useForm } from "react-hook-form";
-// import { AiFillInfoCircle } from 'react-icons/ai';
-// import { MdSave } from 'react-icons/md';
 import "../../assets/styles/AccountSettings.css";
 import { MdArrowForwardIos } from "react-icons/md";
 import { FiFilter, FiSend } from "react-icons/fi";
 import { AiOutlineDown } from "react-icons/ai";
 import { FaUserCircle } from "react-icons/fa";
 import { BiDotsVerticalRounded } from "react-icons/bi";
-
 import {
   HiOutlineShare,
   HiOutlinePlusCircle,
@@ -19,8 +17,16 @@ import {
   HiMinusCircle,
   HiTrash,
 } from "react-icons/hi";
+import AddContactModal from "./addcontact-modal.jsx";
+
+
 
 export default function Contacts() {
+  const [showAddContactModal, setshowAddContactModal] = useState(false);
+  const handleModalClose = () => {
+    setshowAddContactModal(false);
+  };
+
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const hideToast = () => {
@@ -36,10 +42,6 @@ export default function Contacts() {
     setError,
     clearErrors,
   } = useForm();
-
-  // const contentDiv = {
-  //   margin: "0 0 0 65px",
-  // };
 
   const mInviteUser = `
       mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
@@ -159,6 +161,61 @@ export default function Contacts() {
     company: {cid: "", cname: ""},
   });
 
+  const handleAddFormChange = (event) => {
+    event.preventDefault();
+
+    const fieldName = event.target.getAttribute("name");
+    const fieldValue = event.target.value;
+
+    const newFormData = { ...addFormData };
+    newFormData[fieldName] = fieldValue;
+
+    setAddFormData(newFormData);
+  };
+
+  const handleAddFormSubmit = (event) => {
+    event.preventDefault();
+
+    const minID = 100000;
+    const maxID = 999999;
+    const rand = minID + Math.random() * (maxID - minID);
+
+    const newContact = {
+      id: rand,
+      firstName: addFormData.firstName,
+      lastName: addFormData.lastName,
+      userType: addFormData.userType,
+      email: addFormData.email,
+      company: {cid: addFormData.cid, cname: addFormData.cname},
+    };
+
+    const newContacts = [...contacts, newContact];
+    setContacts(newContacts);
+  };
+
+  const options = [
+    {
+      label: "Select role",
+      value: "n/a",
+    },
+    {
+      label: "Owner",
+      value: "Owner",
+    },
+    {
+      label: "Admin",
+      value: "Admin",
+    },
+    {
+      label: "Employee",
+      value: "Employee",
+    }
+  ];
+
+  const handleAddContact = () => {
+    handleModalClose();
+  };
+
   return (
     <>
     <div className={
@@ -200,7 +257,7 @@ export default function Contacts() {
                 {/* {showAddRow && ( */}
                   <button
                     className="bg-green-400 hover:bg-green-500 text-white text-sm py-1 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                    // onClick={() => handleAddRow()}
+                    onClick={() => setshowAddContactModal(true)}
                   >
                     Add Contact &nbsp;
                     <HiOutlinePlusCircle />
@@ -284,6 +341,14 @@ export default function Contacts() {
         </div>
       </div>
     </div>
+
+    {showAddContactModal && (
+        <AddContactModal
+          handleSave={handleAddContact}
+          handleModalClose={handleModalClose}
+        />
+    )}
+    
     <form className="grid gap-4" onSubmit={handleSubmit(handleSave)}>
       <div className="p-5 w-1/3" style={contentDiv}>
         <div className="relative flex-auto ro">
