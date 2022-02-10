@@ -1,6 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-const ActionButtons = () => {
+const ActionButtons = ({ data, idList, setWitness, witness }) => {
+  const [list, setList] = useState(witness);
+
+  const handleDelete = (item) => {
+    var id = item.map(function (x) {
+      return parseInt(x, 10);
+    });
+
+    let lists = witness.filter((item) => !id.includes(item.id));
+    setList(lists);
+  };
+
+  useEffect(() => {
+    setWitness(list);
+  }, [list]);
   return (
     <div className="grid grid-rows grid-flow-col pt-5">
       <div className="col-span-12 ">
@@ -17,12 +31,19 @@ const ActionButtons = () => {
         >
           ADD ROW +
         </button>
+        <button
+          type="button"
+          onClick={() => handleDelete(idList)}
+          className="py-1 px-3 text-xs text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-800"
+        >
+          DELETE
+        </button>
       </div>
 
       <div className=" col-span-1">
-        <a className="inline-flex items-center  text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+        <span className="inline-flex items-center  text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
           <svg
-            className="mr-2 w-5 h-5"
+            className="mr-2 w-4 h-5 pt-2"
             fill="currentColor"
             viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
@@ -33,11 +54,11 @@ const ActionButtons = () => {
               clip-rule="evenodd"
             ></path>
           </svg>
-        </a>
-        <span classNameName="inline-flex items-center">1 of 1</span>
+        </span>
+        <span className="inline-flex items-center font-medium">1 of 1</span>
         <a className="inline-flex items-center text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
           <svg
-            className="ml-2 w-5 h-5"
+            className="ml-2 w-5 h-5 pt-2"
             fill="currentColor"
             viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"

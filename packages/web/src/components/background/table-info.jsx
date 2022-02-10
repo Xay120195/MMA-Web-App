@@ -1,41 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { witness_affidavits } from "./data-source";
-import { API } from "aws-amplify";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-export default function TableInfo() {
+const TableInfo = ({ witness, setIdList }) => {
+  const [getId, setGetId] = useState([{}]);
+  const [startDate, setStartDate] = useState(new Date());
+  const [data, setData] = useState(witness);
+
+  const handleCheckboxChange = (event) => {
+    if (event.target.checked) {
+      if (!data.includes({ id: event.target.value })) {
+        setGetId((item) => [...item, event.target.value]);
+      }
+    } else {
+      setGetId((item) => [...item.filter((x) => x !== event.target.value)]);
+    }
+  };
 
   useEffect(() => {
-    BackgroundList();
-  });
-  
-  const listBackground = `
-  query background($companyId: ID) {
-    background(companyId: $companyId) {
-      id,
-      companyId,
-      description
-    }
-  }
-  `;
-  
-  const BackgroundList = async () => {
-    let result;
-  
-    const clientId = localStorage.getItem("companyId");
-    const backgroundList = await API.graphql({
-        query: listBackground,
-        variables: {
-            companyId: clientId
-        },
-    });
-
-    result = backgroundList.data.background.map(({ id, clientId, description }) => ({
-      id: id,
-      clientId: clientId,
-      description: description,
-    }));
-    console.log(result);
-  };
+    setIdList(getId);
+    setData(witness);
+  }, [getId, data, witness]);
 
   return (
     <div
@@ -75,14 +60,16 @@ export default function TableInfo() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {witness_affidavits.map((item) => (
+                {data.map((item) => (
                   <tr>
                     <td className="px-6 py-4 whitespace-nowrap w-20">
-                      <div class="flex items-center ">
+                      <div className="flex items-center ">
                         <input
-                          id="checkbox-1"
+                          id={item.id}
                           aria-describedby="checkbox-1"
                           type="checkbox"
+                          value={item.id}
+                          onChange={handleCheckboxChange}
                           className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                         />
                         <label
@@ -93,33 +80,17 @@ export default function TableInfo() {
                         </label>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap w-60">
-                      <div class="relative">
-                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                          <svg
-                            class="w-5 h-5 text-gray-500 dark:text-gray-400"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                              clip-rule="evenodd"
-                            ></path>
-                          </svg>
-                        </div>
-                        <input
-                          datepicker=""
-                          datepicker-format="mm/dd/yyyy"
-                          type="text"
-                          class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 datepicker-input"
-                          placeholder={Date(item.date)}
+                    <td className="px-6 py-4 whitespace-nowrap w-64">
+                      <div>
+                        <DatePicker
+                          className="border py-1 px-1 rounded border-gray-300"
+                          selected={startDate}
+                          onChange={(date) => setStartDate(date)}
                         />
                       </div>
                     </td>
-                    <td className="whitespace-nowrap w-100">
-                      {item.comments.substring(0, 30)}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {item.comments.substring(0, 40)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-80">
                       <button
@@ -164,4 +135,6 @@ export default function TableInfo() {
       </div>
     </div>
   );
-}
+};
+
+export default TableInfo;
