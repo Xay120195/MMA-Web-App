@@ -193,24 +193,7 @@ export default function Contacts() {
     setContacts(newContacts);
   };
 
-  const options = [
-    {
-      label: "Select role",
-      value: "n/a",
-    },
-    {
-      label: "Owner",
-      value: "Owner",
-    },
-    {
-      label: "Admin",
-      value: "Admin",
-    },
-    {
-      label: "Employee",
-      value: "Employee",
-    }
-  ];
+
 
   const handleAddContact = () => {
     handleModalClose();
@@ -349,94 +332,7 @@ export default function Contacts() {
         />
     )}
     
-    <form className="grid gap-4" onSubmit={handleSubmit(handleSave)}>
-      <div className="p-5 w-1/3" style={contentDiv}>
-        <div className="relative flex-auto ro">
-          <p className="input-name">Email Address</p>
-          <div className="relative my-2">
-            <input
-              type="email"
-              className="input-field"
-              placeholder="Email Address"
-              {...register("email", {
-                required: "Email is required",
-              })}
-            />
-          </div>
-          {errors.email?.type === "required" && (
-            <div className="error-msg">
-              <p>Email Address is required</p>
-            </div>
-          )}
-        </div>
-
-        <div className="relative flex-auto">
-          <p className="input-name">First Name</p>
-          <div className="relative my-2">
-            <input
-              type="text"
-              className="input-field"
-              placeholder="First Name"
-              {...register("firstName", {
-                required: "First Name is required",
-              })}
-            />
-          </div>
-          {errors.firstName?.type === "required" && (
-            <div className="error-msg">
-              <p>First Name is required</p>
-            </div>
-          )}
-        </div>
-
-        <div className="relative flex-auto">
-          <p className="input-name">Last Name</p>
-          <div className="relative my-2">
-            <input
-              type="text"
-              className="input-field"
-              placeholder="Last Name"
-              {...register("lastName", {
-                required: "Last Name is required",
-              })}
-            />
-          </div>
-          {errors.lastName?.type === "required" && (
-            <div className="error-msg">
-              <p>Last Name is required</p>
-            </div>
-          )}
-        </div>
-
-        <div className="relative flex-auto">
-          <p className="input-name">User Type</p>
-          <div className="relative my-2">
-            <input
-              type="text"
-              className="input-field"
-              placeholder="User Type"
-              {...register("userType", {
-                required: "User Type is required",
-              })}
-            />
-          </div>
-          {errors.userType?.type === "required" && (
-            <div className="error-msg">
-              <p>User Type is required</p>
-            </div>
-          )}
-        </div>
-        <div className="grid justify-start pt-5">
-          <button className="save-btn" type="submit">
-            <p>Save Changes</p>
-          </button>
-        </div>
-      </div>
-
-      {showToast && resultMessage && (
-        <ToastNotification title={resultMessage} hideToast={hideToast} />
-      )}
-    </form>
+    
 
     </>
   );
