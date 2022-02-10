@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-//import { API } from "aws-amplify";
+import { API } from "aws-amplify";
 
 const TableInfo = ({ witness, setIdList }) => {
   const [getId, setGetId] = useState([{}]);
   const [startDate, setStartDate] = useState(new Date());
   const [data, setData] = useState(witness);
+  const [backgroundItem, setBackgroundItem] = useState();
 
   const handleCheckboxChange = (event) => {
     if (event.target.checked) {
@@ -17,15 +18,12 @@ const TableInfo = ({ witness, setIdList }) => {
       setGetId((item) => [...item.filter((x) => x !== event.target.value)]);
     }
   };
-  console.log(getId);
+  
   useEffect(() => {
     setIdList(getId);
     setData(witness);
-    //BackgroundList();
+    BackgroundList();
   }, [getId, data, witness]);
-
-
-  /*const [backgroundItem, setBackgroundItem] = useState();
 
   console.log(backgroundItem);
   
@@ -57,7 +55,7 @@ const TableInfo = ({ witness, setIdList }) => {
     }));
     
     setBackgroundItem(result);
-  }*/
+  }
 
   return (
     <div
@@ -121,13 +119,13 @@ const TableInfo = ({ witness, setIdList }) => {
                       <div>
                         <DatePicker
                           className="border py-1 px-1 rounded border-gray-300"
-                          selected={startDate}
+                          selected={item.startDate}
                           onChange={(date) => setStartDate(date)}
                         />
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {item.comments.substring(0, 40)}
+                      {item.description}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-80">
                       <button
