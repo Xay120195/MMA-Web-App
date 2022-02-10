@@ -5,12 +5,30 @@ const ActionButtons = ({ idList, setWitness, witness }) => {
   const [list, setList] = useState(witness);
 
   const handleDelete = (item) => {
-    var id = item.map(function (x) {
-      return parseInt(x, 10);
-    });
+    console.log(item);
+    if (item.length <= 1) {
+      window.alert("Please select one id");
+    } else {
+      var id = item.map(function (x) {
+        return parseInt(x, 10);
+      });
 
-    let lists = witness.filter((item) => !id.includes(item.id));
-    setList(lists);
+      let lists = witness.filter((item) => !id.includes(item.id));
+      setList(lists);
+    }
+  };
+
+  const handleAddRow = () => {
+    const item = {
+      id: witness.length + 1,
+      name: "",
+      date: "",
+      comments: "",
+      rfi: {},
+    };
+
+    const newlisted = list.concat(item);
+    setList(newlisted);
   };
 
   useEffect(() => {
@@ -27,6 +45,7 @@ const ActionButtons = ({ idList, setWitness, witness }) => {
         />
 
         <button
+          onClick={handleAddRow}
           type="button"
           className="py-1 px-3 text-xs text-green-700 hover:text-white border border-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg mx-4 dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800"
         >

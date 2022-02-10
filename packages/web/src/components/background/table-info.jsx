@@ -1,26 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const TableInfo = ({ witness, setIdList }) => {
-  const [getId, setGetId] = useState([{}]);
+const TableInfo = ({ witness, setIdList, setWitness }) => {
+  const [getId, setId] = useState([{}]);
   const [startDate, setStartDate] = useState(new Date());
-  const [data, setData] = useState(witness);
 
   const handleCheckboxChange = (event) => {
     if (event.target.checked) {
-      if (!data.includes({ id: event.target.value })) {
-        setGetId((item) => [...item, event.target.value]);
+      if (!witness.includes({ id: event.target.value })) {
+        setId((item) => [...item, event.target.value]);
       }
     } else {
-      setGetId((item) => [...item.filter((x) => x !== event.target.value)]);
+      setId((item) => [...item.filter((x) => x !== event.target.value)]);
     }
   };
+
   console.log(getId);
+
   useEffect(() => {
     setIdList(getId);
-    setData(witness);
-  }, [getId, data, witness]);
+    setWitness(witness);
+  }, [getId, witness]);
 
   return (
     <div
@@ -60,7 +61,7 @@ const TableInfo = ({ witness, setIdList }) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.map((item) => (
+                {witness.map((item) => (
                   <tr>
                     <td className="px-6 py-4 whitespace-nowrap w-20">
                       <div className="flex items-center ">

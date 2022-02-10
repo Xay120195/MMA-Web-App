@@ -24,8 +24,7 @@ export default function Background() {
 
   useEffect(() => {
     rundata();
-    setWitness(witness_affidavits);
-  }, [witness_affidavits]);
+  }, []);
 
   const rundata = () => {
     setAllData(allData.find((item) => item.id === Number(matter_id)));
@@ -47,7 +46,6 @@ export default function Background() {
               </span>
               <BreadCrumb data={allData} />
               <ActionButtons
-                setAllData={setAllData}
                 setWitness={setWitness}
                 witness={witness}
                 idList={idList}
@@ -56,7 +54,11 @@ export default function Background() {
           </div>
         </div>
       </div>
-      <TableInfo setIdList={setIdList} witness={witness} />
+      <TableInfo
+        setIdList={setIdList}
+        witness={witness}
+        setWitness={setWitness}
+      />
     </>
   );
 }
