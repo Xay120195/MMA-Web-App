@@ -39,8 +39,9 @@ export default function FileBucket() {
           .replaceAll(/\s/g, "")
           .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
 
-      console.log(key);
-      await Storage.put(key, uf, {
+      await Storage.put(key, uf.data, {
+        // level: 'public',
+        // acl: 'public-read',
         contentType: type,
         progressCallback(progress) {
           const progressInPercentage = Math.round(
@@ -190,8 +191,10 @@ export default function FileBucket() {
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
-        {matterFiles === null || matterFiles.length === 0 ? (
+        {matterFiles !== null && (
           <>
+        {matterFiles.length === 0 ? (
+          
             <div className="p-5 px-5 py-1 left-0">
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
                 <BlankState
@@ -201,7 +204,7 @@ export default function FileBucket() {
                 />
               </div>
             </div>
-          </>
+          
         ) : (
           <>
             {matterFiles !== null && matterFiles.length !== 0 && (
@@ -224,12 +227,8 @@ export default function FileBucket() {
                               <AiOutlineDownload
                                 className="text-blue-400"
                                 onClick={() =>
-                                  openNewTab(
-                                    data.downloadURL.substr(
-                                      0,
-                                      data.downloadURL.indexOf("?")
-                                    )
-                                  )
+                                  //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                  openNewTab(data.downloadURL)
                                 }
                               />
                             </span>
@@ -242,8 +241,12 @@ export default function FileBucket() {
               </div>
             )}
           </>
-        )}
+        )}     
+          </>                    
+          )} 
       </div>
+
+
       {showUploadLinkModal && (
         <UploadLinkModal
           handleSave={handleUploadLink}

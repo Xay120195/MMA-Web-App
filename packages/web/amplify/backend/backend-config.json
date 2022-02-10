@@ -42,5 +42,11 @@
       "build": true
     }
   },
-  "storage": {}
+  "storage": {
+    "mmastorage": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": []
+    }
+  }
 }
