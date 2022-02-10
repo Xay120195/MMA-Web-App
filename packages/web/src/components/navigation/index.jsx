@@ -61,6 +61,7 @@ function Navbar() {
 
     if (userInfo) {
       featureAccessFilters();
+      console.log("env",process.env.NODE_ENV);
     }
   }, [userInfo]);
 

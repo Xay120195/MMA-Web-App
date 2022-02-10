@@ -2,7 +2,7 @@
   "version": "1",
   "cognitoConfig": {
     "identityPoolName": "mmawebappaa31305d_identitypool_aa31305d",
-    "allowUnauthenticatedIdentities": false,
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "mmawebaa31305d",
     "userPoolName": "mmawebappaa31305d_userpool_aa31305d",
     "autoVerifiedAttributes": [
