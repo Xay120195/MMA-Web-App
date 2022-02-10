@@ -136,6 +136,7 @@ type Query {
   client(companyId: ID): [Client]
   matter(companyId: ID): [Matter]
   clientMatter(id: ID!): [ClientMatter]
+  background(companyId: ID): [Background]
 }
 
 type Mutation {
@@ -189,6 +190,9 @@ type Mutation {
     matter: [MatterInput]
     client: [ClientInput]
   ): ClientMatter
+  backgroundCreate(
+    companyId: ID
+  ): Background
 }
 
 input MatterInput {
