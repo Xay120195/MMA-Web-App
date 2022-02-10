@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const ActionButtons = ({ idList, setWitness, witness }) => {
+const ActionButtons = ({
+  idList,
+  setWitness,
+  witness,
+  checkAllState,
+  setcheckAllState,
+  checkedState,
+  setCheckedState,
+  settotalChecked,
+  totalChecked,
+  setId,
+}) => {
   const [list, setList] = useState(witness);
 
   const handleDelete = (item) => {
@@ -31,6 +42,19 @@ const ActionButtons = ({ idList, setWitness, witness }) => {
     setList(newlisted);
   };
 
+  const handleCheckAllChange = (ischecked) => {
+    setcheckAllState(!checkAllState);
+
+    if (ischecked) {
+      setCheckedState(new Array(witness.length).fill(true));
+      settotalChecked(witness.length);
+      setId(witness.map((s) => s.id));
+    } else {
+      setCheckedState(new Array(witness.length).fill(false));
+      settotalChecked(0);
+    }
+  };
+
   useEffect(() => {
     setWitness(list);
   }, [list]);
@@ -38,9 +62,12 @@ const ActionButtons = ({ idList, setWitness, witness }) => {
     <div className="grid grid-rows grid-flow-col pt-5">
       <div className="col-span-12 ">
         <input
-          id="checkbox-1"
+          name="check_all"
+          id="check_all"
           aria-describedby="checkbox-1"
           type="checkbox"
+          checked={checkAllState}
+          onChange={(e) => handleCheckAllChange(e.target.checked)}
           className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
         />
 

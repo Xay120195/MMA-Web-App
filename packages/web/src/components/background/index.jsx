@@ -19,13 +19,20 @@ export default function Background() {
   const [allData, setAllData] = useState(matters);
   const [witness, setWitness] = useState(witness_affidavits);
   const [idList, setIdList] = useState([]);
+  const [getId, setId] = useState([{}]);
   const params = useParams();
   const { matter_id } = params;
+  const [checkAllState, setcheckAllState] = useState(false);
+
+  const [checkedState, setCheckedState] = useState(
+    new Array(witness.length).fill(false)
+  );
+
+  const [totalChecked, settotalChecked] = useState(0);
 
   useEffect(() => {
     rundata();
   }, []);
-
   const rundata = () => {
     setAllData(allData.find((item) => item.id === Number(matter_id)));
   };
@@ -49,6 +56,14 @@ export default function Background() {
                 setWitness={setWitness}
                 witness={witness}
                 idList={idList}
+                checkAllState={checkAllState}
+                setcheckAllState={setcheckAllState}
+                checkedState={checkedState}
+                setCheckedState={setCheckedState}
+                totalChecked={totalChecked}
+                settotalChecked={settotalChecked}
+                setId={setId}
+                getId={getId}
               />
             </div>
           </div>
@@ -58,6 +73,14 @@ export default function Background() {
         setIdList={setIdList}
         witness={witness}
         setWitness={setWitness}
+        checkAllState={checkAllState}
+        setcheckAllState={setcheckAllState}
+        checkedState={checkedState}
+        setCheckedState={setCheckedState}
+        totalChecked={totalChecked}
+        settotalChecked={settotalChecked}
+        setId={setId}
+        getId={getId}
       />
     </>
   );

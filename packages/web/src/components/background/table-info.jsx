@@ -1,15 +1,45 @@
 import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { API } from "aws-amplify";
 
-const TableInfo = ({ witness, setIdList, setWitness }) => {
-  const [getId, setId] = useState([{}]);
+const TableInfo = ({
+  witness,
+  setIdList,
+  setWitness,
+  checkAllState,
+  setcheckAllState,
+  checkedState,
+  setCheckedState,
+  settotalChecked,
+  totalChecked,
+  getId,
+  setId,
+}) => {
   const [startDate, setStartDate] = useState(new Date());
-  const [data, setData] = useState(witness);
-  const [backgroundItem, setBackgroundItem] = useState();
 
-  const handleCheckboxChange = (event) => {
+  const handleBlankStateClick = () => {
+    console.log("Blank State Button was clicked!");
+  };
+
+  const handleCheckboxChange = (position, event) => {
+    const updatedCheckedState = checkedState.map((item, index) =>
+      index === position ? !item : item
+    );
+
+    setCheckedState(updatedCheckedState);
+
+    let tc = updatedCheckedState.filter((v) => v === true).length;
+    settotalChecked(tc);
+
+    if (tc !== witness.length) {
+      if (checkAllState) {
+        setcheckAllState(false);
+      }
+    } else {
+      if (!checkAllState) {
+        setcheckAllState(true);
+      }
+    }
     if (event.target.checked) {
       if (!witness.includes({ id: event.target.value })) {
         setId((item) => [...item, event.target.value]);
@@ -18,44 +48,12 @@ const TableInfo = ({ witness, setIdList, setWitness }) => {
       setId((item) => [...item.filter((x) => x !== event.target.value)]);
     }
   };
-  
+
+  console.log(getId);
   useEffect(() => {
+    setWitness(witness);
     setIdList(getId);
-    setData(witness);
-    BackgroundList();
-  }, [getId, data, witness]);
-  
-  const listBackground = `
-  query background($companyId: ID) {
-    background(companyId: $companyId) {
-      id,
-      companyId,
-      description
-    }
-  }
-  `;
-  
-  const BackgroundList = async () => {
-    let result;
-  
-    const clientId = localStorage.getItem("companyId");
-    const backgroundList = await API.graphql({
-        query: listBackground,
-        variables: {
-            companyId: clientId
-        },
-    });
-
-    result = backgroundList.data.background.map(({ id, companyId, description }) => ({
-      id: id,
-      companyId: companyId,
-      description: description,
-    }));
-    
-    setBackgroundItem(result);
-  }
-
-  console.log(backgroundItem);
+  }, [witness, getId]);
 
   return (
     <div
@@ -95,17 +93,20 @@ const TableInfo = ({ witness, setIdList, setWitness }) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {witness.map((item) => (
+                {witness.map((item, index) => (
                   <tr>
                     <td className="px-6 py-4 whitespace-nowrap w-20">
                       <div className="flex items-center ">
                         <input
-                          id={item.id}
-                          aria-describedby="checkbox-1"
                           type="checkbox"
-                          value={item.id}
-                          onChange={handleCheckboxChange}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                          value={`${item.id}_${index}`}
+                          name={`${item.id}_${index}`}
+                          id={`${item.id}_${index}`}
+                          className="cursor-pointer"
+                          checked={checkedState[index]}
+                          onChange={(event) =>
+                            handleCheckboxChange(index, event)
+                          }
                         />
                         <label
                           for="checkbox-1"
@@ -119,13 +120,13 @@ const TableInfo = ({ witness, setIdList, setWitness }) => {
                       <div>
                         <DatePicker
                           className="border py-1 px-1 rounded border-gray-300"
-                          selected={item.startDate}
+                          selected={startDate}
                           onChange={(date) => setStartDate(date)}
                         />
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {item.description}
+                      {item.comments.substring(0, 40)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-80">
                       <button
