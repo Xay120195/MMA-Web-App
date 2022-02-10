@@ -24,8 +24,6 @@ const TableInfo = ({ witness, setIdList, setWitness }) => {
     setData(witness);
     BackgroundList();
   }, [getId, data, witness]);
-
-  console.log(backgroundItem);
   
   const listBackground = `
   query background($companyId: ID) {
@@ -56,12 +54,8 @@ const TableInfo = ({ witness, setIdList, setWitness }) => {
     
     setBackgroundItem(result);
   }
-  console.log(getId);
 
-  useEffect(() => {
-    setIdList(getId);
-    setWitness(witness);
-  }, [getId, witness]);
+  console.log(backgroundItem);
 
   return (
     <div
