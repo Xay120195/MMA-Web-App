@@ -47,7 +47,6 @@ export default function Background() {
               </span>
               <BreadCrumb data={allData} />
               <ActionButtons
-                data={allData}
                 setAllData={setAllData}
                 setWitness={setWitness}
                 witness={witness}

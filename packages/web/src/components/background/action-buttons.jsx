@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
-const ActionButtons = ({ data, idList, setWitness, witness }) => {
+const ActionButtons = ({ idList, setWitness, witness }) => {
   const [list, setList] = useState(witness);
 
   const handleDelete = (item) => {
@@ -56,7 +57,7 @@ const ActionButtons = ({ data, idList, setWitness, witness }) => {
           </svg>
         </span>
         <span className="inline-flex items-center font-medium">1 of 1</span>
-        <a className="inline-flex items-center text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+        <Link className="inline-flex items-center text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
           <svg
             className="ml-2 w-5 h-5 pt-2"
             fill="currentColor"
@@ -69,7 +70,7 @@ const ActionButtons = ({ data, idList, setWitness, witness }) => {
               clip-rule="evenodd"
             ></path>
           </svg>
-        </a>
+        </Link>
       </div>
     </div>
   );

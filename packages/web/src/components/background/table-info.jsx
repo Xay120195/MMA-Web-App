@@ -16,7 +16,7 @@ const TableInfo = ({ witness, setIdList }) => {
       setGetId((item) => [...item.filter((x) => x !== event.target.value)]);
     }
   };
-
+  console.log(getId);
   useEffect(() => {
     setIdList(getId);
     setData(witness);
