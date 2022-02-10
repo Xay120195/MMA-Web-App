@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const style = {
   paddingLeft: "0rem",
@@ -14,9 +15,9 @@ const BreadCrumb = ({ data }) => {
         >
           <li>
             <div className="flex items-center">
-              <a href="#" className="mr-2 text-sm font-medium text-gray-900">
+              <Link className="mr-2 text-sm font-medium text-gray-900">
                 {data.name}
-              </a>
+              </Link>
               <svg
                 width="16"
                 height="20"
@@ -31,13 +32,9 @@ const BreadCrumb = ({ data }) => {
             </div>
           </li>
           <li className="text-sm">
-            <a
-              href="#"
-              aria-current="page"
-              className="font-medium text-gray-900"
-            >
+            <Link aria-current="page" className="font-medium text-gray-900">
               Background
-            </a>
+            </Link>
           </li>
         </ol>
       </nav>
