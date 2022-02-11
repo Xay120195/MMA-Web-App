@@ -21,6 +21,7 @@ const ActionButtons = ({
   const hideToast = () => {
     setShowToast(false);
   };
+
   const handleDelete = (item) => {
     console.log(item);
     if (item.length <= 1) {
@@ -33,8 +34,8 @@ const ActionButtons = ({
       let lists = witness.filter((item) => !id.includes(item.id));
       setList(lists);
       if (lists) {
+        setalertMessage(`Successfully deleted`);
         setShowToast(true);
-        setalertMessage("Successfully deleted");
         setTimeout(() => {
           setShowToast(false);
         }, 3000);
@@ -45,8 +46,8 @@ const ActionButtons = ({
   const handleAddRow = () => {
     const item = {
       id: witness.length + 1,
-      name: "",
-      date: "",
+      name: "John Doe",
+      date: "2012-04-23T18:25:43.511Z",
       comments: "",
       rfi: {},
     };
