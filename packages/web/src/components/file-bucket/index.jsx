@@ -31,16 +31,28 @@ export default function FileBucket() {
   const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
 
   const handleUploadLink = (uploadFiles) => {
-    console.log("handleFiles", uploadFiles);
-
     uploadFiles.map(async (uf) => {
       var name = uf.data.name,
         size = uf.data.size,
         type = uf.data.type,
-        lastModified = uf.data.lastModified,
-        key = lastModified + name;
+        key = `${matter_id}/${Number(new Date())}${name
+          .replaceAll(/\s/g, "")
+          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
 
-      await Storage.put(key, uf, { contentType: type }).then(async (fd) => {
+      await Storage.put(key, uf.data, {
+        // level: 'public',
+        // acl: 'public-read',
+        contentType: type,
+        progressCallback(progress) {
+          const progressInPercentage = Math.round(
+            (progress.loaded / progress.total) * 100
+          );
+          console.log(`Progress: ${progressInPercentage}%`);
+        },
+        errorCallback: (err) => {
+          console.error("Unexpected error while uploading", err);
+        },
+      }).then(async (fd) => {
         const file = {
           matterId: matter_id,
           s3ObjectKey: fd.key,
@@ -49,9 +61,7 @@ export default function FileBucket() {
           name: name,
         };
 
-        console.log("params", file);
         await createMatterFile(file).then((u) => {
-          console.log(u);
           setResultMessage(`Success!`);
           setShowToast(true);
           setTimeout(() => {
@@ -102,7 +112,6 @@ export default function FileBucket() {
     if (matterFiles === null) {
       getMatterFiles();
     }
-    console.log(matterFiles);
   }, [matterFiles]);
 
   let getMatterFiles = async () => {
@@ -182,8 +191,10 @@ export default function FileBucket() {
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
-        {matterFiles === null || matterFiles.length === 0 ? (
+        {matterFiles !== null && (
           <>
+        {matterFiles.length === 0 ? (
+          
             <div className="p-5 px-5 py-1 left-0">
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
                 <BlankState
@@ -193,7 +204,7 @@ export default function FileBucket() {
                 />
               </div>
             </div>
-          </>
+          
         ) : (
           <>
             {matterFiles !== null && matterFiles.length !== 0 && (
@@ -215,7 +226,10 @@ export default function FileBucket() {
                             <span className="absolute right-20">
                               <AiOutlineDownload
                                 className="text-blue-400"
-                                onClick={() => openNewTab(data.downloadURL)}
+                                onClick={() =>
+                                  //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                  openNewTab(data.downloadURL)
+                                }
                               />
                             </span>
                           </div>
@@ -227,8 +241,12 @@ export default function FileBucket() {
               </div>
             )}
           </>
-        )}
+        )}     
+          </>                    
+          )} 
       </div>
+
+
       {showUploadLinkModal && (
         <UploadLinkModal
           handleSave={handleUploadLink}

@@ -1,0 +1,16 @@
+{
+  "resourceName": "mmastorage",
+  "policyUUID": "168b605d",
+  "bucketName": "mmabucket",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "CREATE_AND_UPDATE",
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "groupAccess": {}
+}
