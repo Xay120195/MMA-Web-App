@@ -28,7 +28,7 @@ export function MattersList({
                   <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
                   <FaIcons.FaEllipsisV />
                   </button>
-                  <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
+                  <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded z-50">
                   {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${matter.id}`}>File Bucket</Link></li>) : null}
                   {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${matter.id}`}>Background</Link></li>
                    ) : null}

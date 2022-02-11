@@ -153,7 +153,6 @@ export default function Dashboard() {
   const datenow = new Date();
 
   const handleNewMatter = () => {
-    console.log(matterName.label);
     let client_name = clientName.label,
       client_id = clientName.value,
       matter_name = matterName.label,
@@ -339,23 +338,24 @@ const addMatters = async (data) => {
 
 const matterClientUpdate = `
   mutation matterClientUpdate($id: ID, $id1: ID) {
-  clientMatterUpdate(id: $id, matter: {id: $id1}) {
-    id,
-    matter {
+    clientMatterUpdate(id: $id, matter: {id: $id1}) {
       id
+      matter {
+        id
+      }
     }
-  }
 }
 `;
 
 const addClientMatter = async (clients, matters) => {
   let result;
+  console.log(matters);
 
   const addedClientMatter = await API.graphql({
       query: matterClientUpdate,
       variables: {
           id: clients,
-          matter: [{id: matters}]
+          matters: matters
       },
   });
 
