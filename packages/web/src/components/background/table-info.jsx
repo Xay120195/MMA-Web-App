@@ -17,7 +17,6 @@ const TableInfo = ({
   getId,
   setId,
 }) => {
-  const [startDate, setStartDate] = useState(new Date());
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
@@ -62,14 +61,25 @@ const TableInfo = ({
 
   const handleChange = (evt, id) => {
     text.current = evt.target.value;
-    const updatedData = witness.map((x) =>
+    const updatedComments = witness.map((x) =>
       x.id === id ? { ...x, comments: text.current } : x
     );
-    setWitness(updatedData);
+    setWitness(updatedComments);
   };
-
+  const handleChangeDate = (date, id) => {
+    const updatedDate = witness.map((x) =>
+      x.id === id ? { ...x, date: date } : x
+    );
+    setWitness(updatedDate);
+    if (updatedDate) {
+      setalertMessage(`Successfully updated`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
   const HandleChangeToTD = (evt) => {
-    console.log(evt.target.innerHTML);
     setalertMessage(`Successfully updated`);
     setShowToast(true);
     setTimeout(() => {
@@ -143,8 +153,8 @@ const TableInfo = ({
                         <div>
                           <DatePicker
                             className="border py-1 px-1 rounded border-gray-300"
-                            selected={startDate}
-                            onChange={(date) => setStartDate(date)}
+                            selected={new Date(item.date)}
+                            onChange={(date) => handleChangeDate(date, item.id)}
                           />
                         </div>
                       </td>
