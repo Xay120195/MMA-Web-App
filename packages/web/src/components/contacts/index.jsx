@@ -17,7 +17,7 @@ import {
   HiMinusCircle,
   HiTrash,
 } from "react-icons/hi";
-import AddContactModal from "./addcontact-modal.jsx";
+import AddContactModal from "./add-contact-modal";
 
 
 
