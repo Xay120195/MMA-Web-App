@@ -18,7 +18,8 @@
         "mmawebapp": {},
         "mmawebapp2526b89e": {},
         "mmawebapp40b04e33": {},
-        "mmawebappaa31305d": {}
+        "mmawebappaa31305d": {},
+        "true": {}
       },
       "hosting": {
         "amplifyhosting": {
@@ -52,6 +53,12 @@
           "appId": "d3bhf42tem9b8e",
           "type": "cicd"
         }
+      },
+      "function": {
+        "S3Trigger1de25018": {}
+      },
+      "auth": {
+        "mmawebappaa31305d": {}
       }
     }
   }

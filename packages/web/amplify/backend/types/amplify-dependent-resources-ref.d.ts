@@ -20,7 +20,7 @@ export type AmplifyDependentResourcesAttributes = {
         }
     },
     "storage": {
-        "mmaStorage": {
+        "mmastorage": {
             "BucketName": "string",
             "Region": "string"
         }

@@ -7,7 +7,9 @@ const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
-const MATTER_BUCKET_NAME = "mma-webapp-dev-bucket";
+//const MATTER_BUCKET_NAME = "mma-webapp-dev-bucket";
+const MATTER_BUCKET_NAME = "mmabucketapp-staging";
+
 
 export async function generatePresignedUrl(Key) {
   const command = new GetObjectCommand({
@@ -60,7 +62,6 @@ export async function getMatterFile(data) {
 }
 
 export async function createMatterFile(data) {
-  console.log("createMatterFile: ", data);
   let response = {};
   try {
     const rawParams = {
@@ -73,7 +74,6 @@ export async function createMatterFile(data) {
       createdAt: new Date().toISOString(),
     };
 
-    console.log(rawParams);
     const params = marshall(rawParams);
     const command = new PutItemCommand({
       TableName: "MatterFileTable",
