@@ -67,7 +67,7 @@ export function MattersList({
                   />
                 </div>
 
-                <div className="col-span-2 grid place-self-end">
+                <div className="col-span-2 grid place-self-end">p
                   {matter.matter_number}<b className="text-lg">&#62;</b>
                 </div>
               </div>
