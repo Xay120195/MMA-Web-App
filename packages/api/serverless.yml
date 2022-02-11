@@ -187,16 +187,6 @@ custom:
         response: false
       - dataSource: LambdaQueryDS
         type: Query
-        field: clientMatter
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: backgroundCreate
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
         field: background
         request: false
         response: false

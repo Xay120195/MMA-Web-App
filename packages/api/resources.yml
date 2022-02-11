@@ -161,18 +161,6 @@ Resources:
             AllowedOrigins:
               - '*'
             MaxAge: '3600'
-            
-  ClientMatterTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ClientMatterTable
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
 
   BackgroundTable:
     Type: AWS::DynamoDB::Table
