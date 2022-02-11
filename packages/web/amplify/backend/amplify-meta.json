@@ -54,12 +54,11 @@
         "IdentityPoolName": "mmawebappaa31305d_identitypool_aa31305d__staging",
         "UserPoolName": "mmawebappaa31305d_userpool_aa31305d"
       },
-      "lastPushTimeStamp": "2022-02-10T06:42:50.729Z",
+      "lastPushTimeStamp": "2022-02-10T09:15:54.429Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/auth/mmawebappaa31305d-cloudformation-template.json",
         "logicalId": "authmmawebappaa31305d"
-      },
-      "lastPushDirHash": "RjiPa0z9GhOBBGHtoduQxwEJIRE="
+      }
     }
   },
   "api": {},
@@ -74,26 +73,21 @@
       "service": "Lambda",
       "providerPlugin": "awscloudformation",
       "build": true,
-      "lastBuildTimeStamp": "2022-02-04T07:38:56.416Z",
-      "lastBuildType": "PROD",
-      "lastPackageTimeStamp": "2022-02-04T07:38:56.435Z",
-      "distZipFilename": "S3Trigger1de25018-4935366b68432b44735a-build.zip",
-      "s3Bucket": {
-        "deploymentBucketName": "amplify-mma-web-app-staging-180645-deployment",
-        "s3Key": "amplify-builds/S3Trigger1de25018-4935366b68432b44735a-build.zip"
-      },
-      "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/function/S3Trigger1de25018-cloudformation-template.json",
-        "logicalId": "functionS3Trigger1de25018"
-      },
-      "lastPushTimeStamp": "2022-02-10T06:42:50.709Z",
       "output": {
         "Region": "ap-southeast-1",
         "Arn": "arn:aws:lambda:ap-southeast-1:895454531446:function:S3Trigger1de25018-staging",
         "Name": "S3Trigger1de25018-staging",
         "LambdaExecutionRole": "S3Trigger1de25018LambdaRole1de25018-staging"
       },
-      "lastPushDirHash": "S2qfeCCH317GJSAtV/iEId1qlyw="
+      "lastPushTimeStamp": "2022-02-10T09:15:54.430Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/function/S3Trigger1de25018-cloudformation-template.json",
+        "logicalId": "functionS3Trigger1de25018"
+      },
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-mma-web-app-staging-180645-deployment",
+        "s3Key": "amplify-builds/S3Trigger1de25018-4935366b68432b44735a-build.zip"
+      }
     }
   },
   "storage": {
@@ -101,16 +95,15 @@
       "service": "S3",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
-      "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
-        "logicalId": "storagemmastorage"
-      },
-      "lastPushTimeStamp": "2022-02-10T06:42:50.729Z",
       "output": {
         "BucketName": "mmabucketapp-staging",
         "Region": "ap-southeast-1"
       },
-      "lastPushDirHash": "W11Xnz5iKJsBPwzKjNPNG6iVhKA="
+      "lastPushTimeStamp": "2022-02-10T09:15:54.431Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "logicalId": "storagemmastorage"
+      }
     }
   }
 }

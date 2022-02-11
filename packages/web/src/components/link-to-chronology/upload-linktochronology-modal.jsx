@@ -218,7 +218,7 @@ export default function UploadLinkModal(props) {
                         {selectedFile.data.name}
                       </span>
                       <FiTrash
-                        className="deleteBtn"
+                        className={`deleteBtn ${uploadStart ? "disabled-ico" : ""}`}
                         onClick={() => deleteBtn(index)}
                       />
                       <Pie

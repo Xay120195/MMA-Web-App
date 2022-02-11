@@ -43,6 +43,12 @@
     border: 1px solid var(--defaultBorderColor) !important;
 }
 
+.disabled-ico {
+    color: var(--defaultBorderColor) !important;
+    cursor:not-allowed !important;
+    pointer-events: none !important;
+}
+
 @media screen and (min-width: 700px) {
     .main-upload {
         width: 500px;
