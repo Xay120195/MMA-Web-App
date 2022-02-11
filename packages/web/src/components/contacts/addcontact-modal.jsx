@@ -3,6 +3,7 @@ import { GrClose } from "react-icons/gr";
 import { useForm } from "react-hook-form";
 import ToastNotification from "../toast-notification";
 import "./index.jsx"
+import { Auth, API } from "aws-amplify";
 
 import { GrUserSettings } from "react-icons/gr";
 import { AiOutlineUser, AiOutlineMail } from "react-icons/ai";
@@ -16,28 +17,11 @@ export default function AddContactModal(props) {
   };
 
   const handleSave = () => {
-    props.handleSave();
+    props.handleSave1();
+    
   };
 
-  const options = [
-    {
-      label: "Select role",
-      value: "n/a",
-    },
-    {
-      label: "Owner",
-      value: "Owner",
-    },
-    {
-      label: "Admin",
-      value: "Admin",
-    },
-    {
-      label: "Employee",
-      value: "Employee",
-    }
-  ];
-
+  
   const {
     register,
     formState: { errors },
@@ -47,6 +31,74 @@ export default function AddContactModal(props) {
     setError,
     clearErrors,
   } = useForm();
+
+  const mInviteUser = `
+      mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
+        userInvite(
+          email: $email
+          firstName: $firstName
+          lastName: $lastName
+          userType: $userType
+          company: $company
+        ) {
+          id
+          firstName
+          lastName
+          email
+          userType
+        }
+      }
+  `;
+
+  const handleSave1 = async (formdata) => {
+    const { email, firstName, lastName, userType } = formdata;
+
+    const companyId = localStorage.getItem("companyId"),
+      companyName = localStorage.getItem("company");
+
+    const user = {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      company: {
+        id: companyId,
+        name: companyName,
+      },
+      userType: userType,
+    };
+
+    console.log(user);
+    await inviteUser(user).then((u) => {
+      console.log(u);
+      setResultMessage(
+        `${firstName} was successfuly added as ${userType} of ${companyName}.`
+      );
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        reset({ email: "", firstName: "", lastName: "", userType: "OWNER" });
+      }, 5000);
+    });
+  };
+
+  async function inviteUser(user) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mInviteUser,
+          variables: user,
+        });
+
+        resolve(request);
+      } catch (e) {
+        setError(e.errors[0].message);
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+ 
+
 
   const contentDiv = {
     margin: "0 0 0 65px",
@@ -76,7 +128,7 @@ export default function AddContactModal(props) {
               </button>
             </div>
             {/* <div className="relative p-6 flex-auto"> */}
-            <form  onSubmit={handleSubmit(handleSave)}>
+            <form>
                 <div className="px-5 py-5" >
                 <div className="relative flex-auto">
                     
@@ -90,9 +142,10 @@ export default function AddContactModal(props) {
                             required: "User Type is required",
                         })}
                         >
-                            {options.map((option) => (
-                                <option value={option.value}>{option.label}</option>
-                            ))}
+                          
+                              <option value="Owner"> Owner </option>
+                              <option value="Admin"> Admin </option>
+                              <option value="Employee"> Employee </option>
                         </select>
                     </div>
                     {errors.userType?.type === "required" && (
@@ -144,22 +197,6 @@ export default function AddContactModal(props) {
                     </div>
 
                     <div className="relative flex-auto ro">
-                    <p className="input-name">Company Name</p>
-                    <div className="relative my-2">
-                    <BsBuilding className="absolute mt-3 ml-4"/>
-                        <input
-                        type="text"
-                        className="input-field pl-10"
-                        placeholder="Company Name"
-                        // {...register("company", {
-                        //     required: "Company is required",
-                        // })}
-                        />
-                    </div>
-                    </div>
-
-
-                    <div className="relative flex-auto ro">
                     <p className="input-name">Email Address</p>
                     <div className="relative my-2">
                     <AiOutlineMail className="absolute mt-3 ml-4"/>
@@ -187,7 +224,9 @@ export default function AddContactModal(props) {
               
             {/* </div> */}
             <div className="flex items-center justify-end p-6 rounded-b">
-                     <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" type="submit">
+                     <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
+                     onClick={() => handleSave()}
+                     type="submit">
                        <HiOutlinePlusCircle/> &nbsp; Add
                     </button>
             </div>

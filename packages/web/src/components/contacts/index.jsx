@@ -33,15 +33,6 @@ export default function Contacts() {
     setShowToast(false);
   };
 
-  const {
-    register,
-    formState: { errors },
-    reset,
-    handleSubmit,
-    getValues,
-    setError,
-    clearErrors,
-  } = useForm();
 
   const mInviteUser = `
       mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
@@ -60,6 +51,16 @@ export default function Contacts() {
         }
       }
   `;
+
+  const {
+    register,
+    formState: { errors },
+    reset,
+    handleSubmit,
+    getValues,
+    setError,
+    clearErrors,
+  } = useForm();
 
   const handleSave = async (formdata) => {
     const { email, firstName, lastName, userType } = formdata;
@@ -266,11 +267,7 @@ export default function Contacts() {
 
         <div className="p-5 left-0">
           <div className= "grid grid-cols-4 gap-4" >
-
-          {contacts.length === 0 ? (
-            <p className="text-red-500">No result found.</p>
-          ) : (
-            contacts.map((contact) => (
+            {contacts.map((contact) => (
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
                 <div className=" py-1 text-right">
                     <div
@@ -298,7 +295,7 @@ export default function Contacts() {
                     <FaUserCircle className="text-2xl"/>
                   </div>
                   <div className="details-txt px-3">
-                    <span className="flex items-start"><text className="text-base font-semibold text-black">{contact.firstName} {contact.lastName}</text> &nbsp; <p className="font-semibold"> {contact.company.cname}</p></span>
+                    <div className="flex items-start"><p className="font-semibold text-black">{contact.firstName} {contact.lastName}</p> &nbsp; <p className="font-semibold"> {contact.company.cname}</p></div>
                     <p>{contact.email}</p>
                   </div>
 
@@ -316,9 +313,9 @@ export default function Contacts() {
 
               </div>
           
-            ))
+            ))}
 
-          )}
+      
       
       
         </div>
