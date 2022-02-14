@@ -1,23 +1,21 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API, Storage } from "aws-amplify";
 import BlankState from "../blank-state";
-
+import { AppRoutes } from "../../constants/AppRoutes"
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos } from "react-icons/md";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FiUpload } from "react-icons/fi";
-
 import "../../assets/styles/BlankState.css";
-
-import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"; // shared functions/modal from link-to-chronology
+import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
-  //610f886a-9c3a-4a0e-a998-b26b19f2c95b
   const { matter_id } = useParams();
 
   const hideToast = () => {
@@ -28,7 +26,7 @@ export default function FileBucket() {
     window.open(url);
   };
 
-  const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const handleUploadLink = (uploadFiles) => {
     uploadFiles.map(async (uf) => {
@@ -62,25 +60,20 @@ export default function FileBucket() {
         };
 
         await createMatterFile(file).then((u) => {
-          setResultMessage(`Success!`);
+          setResultMessage(`File successfully uploaded!`);
           setShowToast(true);
+          handleModalClose();
           setTimeout(() => {
-            getMatterFiles();
             setShowToast(false);
-            handleModalClose();
-          }, 5000);
+            getMatterFiles();
+          }, 3000);
         });
       });
     });
-
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
   };
 
   const handleModalClose = () => {
-    setshowUploadLinkModal(false);
+    setShowUploadModal(false);
   };
 
   const contentDiv = {
@@ -160,12 +153,12 @@ export default function FileBucket() {
               <h1 className="font-bold text-3xl">&nbsp; File Bucket</h1>
             </div>
             <div className="absolute right-0">
-              {/* <Link to={AppRoutes.DASHBOARD}> */}
+              <Link to={AppRoutes.DASHBOARD}>
               <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                 Back &nbsp;
                 <MdArrowForwardIos />
               </button>
-              {/* </Link> */}
+              </Link>
             </div>
           </div>
         </div>
@@ -179,7 +172,7 @@ export default function FileBucket() {
           <div>
             <button
               className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-              onClick={() => setshowUploadLinkModal(true)}
+              onClick={() => setShowUploadModal(true)}
             >
               FILE UPLOAD &nbsp;
               <FiUpload />
@@ -193,65 +186,67 @@ export default function FileBucket() {
 
         {matterFiles !== null && (
           <>
-        {matterFiles.length === 0 ? (
-          
-            <div className="p-5 px-5 py-1 left-0">
-              <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
-                <BlankState
-                  title={"items"}
-                  txtLink={"file upload button"}
-                  onClick={() => setshowUploadLinkModal(true)}
-                />
+            {matterFiles.length === 0 ? (
+              <div className="p-5 px-5 py-1 left-0">
+                <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
+                  <BlankState
+                    title={"items"}
+                    txtLink={"file upload button"}
+                    onClick={() => setShowUploadModal(true)}
+                  />
+                </div>
               </div>
-            </div>
-          
-        ) : (
-          <>
-            {matterFiles !== null && matterFiles.length !== 0 && (
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
-                        Name
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {matterFiles.map((data, index) => (
-                      <tr key={data.id} index={index}>
-                        <td className="px-6 py-4 w-10 align-top place-items-center">
-                          <div>
-                            <span>{data.name} </span>
-                            <span className="absolute right-20">
-                              <AiOutlineDownload
-                                className="text-blue-400"
-                                onClick={() =>
-                                  //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
-                                  openNewTab(data.downloadURL)
-                                }
-                              />
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            ) : (
+              <>
+                {matterFiles !== null && matterFiles.length !== 0 && (
+                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead>
+                        <tr>
+                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                            Name
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {matterFiles.map((data, index) => (
+                          <tr key={data.id} index={index}>
+                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                              <div>
+                                <span>{data.name} </span>
+                                <span className="absolute right-20">
+                                  <AiOutlineDownload
+                                    className="text-blue-400"
+                                    onClick={() =>
+                                      //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                      openNewTab(data.downloadURL)
+                                    }
+                                  />
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
             )}
           </>
-        )}     
-          </>                    
-          )} 
+        )}
       </div>
 
-
-      {showUploadLinkModal && (
+      {showUploadModal && (
         <UploadLinkModal
+          title={""}
           handleSave={handleUploadLink}
           handleModalClose={handleModalClose}
         />
+      )}
+
+      {showToast && resultMessage && (
+        <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
     </>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
-import "../../assets/styles/UploadLink.css";
+import "../../assets/styles/FileUpload.css";
 import Pie from "../link-to-chronology/Pie";
 
 const useRefEventListener = (fn) => {
@@ -168,7 +168,7 @@ export default function UploadLinkModal(props) {
     <>
       <div className="main-upload">
         <div className="title-grid">
-          <p className="title-txt">Upload link to Chronology</p>
+          <p className="title-txt">{props.title}</p>
           <FiMinus
             className="collapse-btn"
             onClick={() => setIsOpen(!isOpen)}
@@ -218,7 +218,9 @@ export default function UploadLinkModal(props) {
                         {selectedFile.data.name}
                       </span>
                       <FiTrash
-                        className={`deleteBtn ${uploadStart ? "disabled-ico" : ""}`}
+                        className={`deleteBtn ${
+                          uploadStart ? "disabled-ico" : ""
+                        }`}
                         onClick={() => deleteBtn(index)}
                       />
                       <Pie

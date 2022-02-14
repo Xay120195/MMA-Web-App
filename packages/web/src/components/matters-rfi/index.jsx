@@ -7,7 +7,7 @@ import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_rfi, questions } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "./create-RFI-modal";
-import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"
+import UploadLinkModal from "../file-bucket/file-upload-modal" // shared functions/modal from file-bucket
 import SelectLinkModal from "../link-to-chronology/linktochronology-list-modal"
 import ToastNotification from "../toast-notification";
 import ContentEditable from 'react-contenteditable'; 
@@ -382,6 +382,7 @@ export default function MattersRFI() {
       }
 
       { showUploadLinkModal && <UploadLinkModal 
+        title={'Upload link to Chronology'}
         handleSave={handleUploadLink} 
         handleModalClose={handleModalClose} /> }
 
