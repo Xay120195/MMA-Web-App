@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import ContentEditable from "react-contenteditable";
 import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
+import Modal from "./modal";
 
 const TableInfo = ({
   witness,
@@ -15,11 +16,13 @@ const TableInfo = ({
   setCheckedState,
   settotalChecked,
   totalChecked,
+  search,
   getId,
   setId,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
+  const [showUpload, setShowUpload] = useState(false);
 
   const hideToast = () => {
     setShowToast(false);
@@ -98,7 +101,7 @@ const TableInfo = ({
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
               {witness.length <= 0 ? (
-                <EmptyRow />
+                <EmptyRow search={search} />
               ) : (
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -146,7 +149,7 @@ const TableInfo = ({
                               }
                             />
                             <label
-                              for="checkbox-1"
+                              htmlFor="checkbox-1"
                               className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300"
                             >
                               {item.id}
@@ -174,9 +177,24 @@ const TableInfo = ({
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 w-80">
                           <button
                             type="submit"
-                            className="mt-2 w-full bg-green-600 border border-transparent rounded-md py-2 px-4 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            onClick={() => setShowUpload(true)}
+                            className="mt-2 w-full bg-green-400 border border-transparent rounded-md py-2 px-4 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                           >
-                            Upload +
+                            Upload
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6 m"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
                           </button>
 
                           <div className="mt-1 flex item-center mt-3">
@@ -195,9 +213,9 @@ const TableInfo = ({
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="#000000"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               >
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -214,7 +232,7 @@ const TableInfo = ({
           </div>
         </div>
       </div>
-
+      {showUpload && <Modal setShowUpload={setShowUpload} />}
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}

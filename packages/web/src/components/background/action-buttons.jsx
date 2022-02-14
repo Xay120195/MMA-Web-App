@@ -6,12 +6,15 @@ const ActionButtons = ({
   idList,
   setWitness,
   witness,
+  setShowSearch,
   checkAllState,
   setcheckAllState,
   checkedState,
   setCheckedState,
   settotalChecked,
   totalChecked,
+  setSearch,
+  search,
   setId,
 }) => {
   const [newWitness, setList] = useState(witness);
@@ -69,13 +72,25 @@ const ActionButtons = ({
     }
   };
 
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+    var dm = event.target.value;
+    var str = dm.toString();
+    var result = newWitness.filter((x) => x.name.toLowerCase().includes(str));
+    if (result === []) {
+      setWitness(witness);
+      setShowSearch(true);
+    } else {
+      setWitness(result);
+    }
+  };
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5">
-        <div className="col-span-12 ">
+        <div className="col-span-6 ">
           <input
             name="check_all"
             id="check_all"
@@ -89,20 +104,53 @@ const ActionButtons = ({
           <button
             onClick={handleAddRow}
             type="button"
-            className="inline-flex items-center px-4 py-2 mx-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
           >
-            ADD ROW +
+            Add row
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mx-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+              />
+            </svg>
           </button>
           <button
             type="button"
             onClick={() => handleDelete(idList)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
           >
-            DELETE
+            Delete
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
           </button>
         </div>
-
-        <div className=" col-span-1">
+        <div className="col-span-3">
+          <input
+            value={search}
+            onChange={handleSearchChange}
+            type="search"
+            placeholder="Search ..."
+            className="px-3 py-3 mr-4 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full"
+          />
+        </div>
+        <div className=" col-span-1 pt-2">
           <span className="inline-flex items-center  text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
             <svg
               className="mr-2 w-4 h-5 pt-2"
@@ -111,14 +159,14 @@ const ActionButtons = ({
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z"
-                clip-rule="evenodd"
+                clipRule="evenodd"
               ></path>
             </svg>
           </span>
           <span className="inline-flex items-center font-medium">1 of 1</span>
-          <Link className="inline-flex items-center text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+          <span className="inline-flex items-center text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
             <svg
               className="ml-2 w-5 h-5 pt-2"
               fill="currentColor"
@@ -126,12 +174,12 @@ const ActionButtons = ({
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                clip-rule="evenodd"
+                clipRule="evenodd"
               ></path>
             </svg>
-          </Link>
+          </span>
         </div>
       </div>
       {showToast && (
