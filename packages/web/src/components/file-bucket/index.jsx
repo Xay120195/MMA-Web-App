@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API, Storage } from "aws-amplify";
 import BlankState from "../blank-state";
-
+import { AppRoutes } from "../../constants/AppRoutes"
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos } from "react-icons/md";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FiUpload } from "react-icons/fi";
-
 import "../../assets/styles/BlankState.css";
-
 import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 
@@ -27,7 +26,7 @@ export default function FileBucket() {
     window.open(url);
   };
 
-  const [showUploadLinkModal, setshowUploadLinkModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const handleUploadLink = (uploadFiles) => {
     uploadFiles.map(async (uf) => {
@@ -61,25 +60,20 @@ export default function FileBucket() {
         };
 
         await createMatterFile(file).then((u) => {
-          setResultMessage(`Success!`);
+          setResultMessage(`File successfully uploaded!`);
           setShowToast(true);
+          handleModalClose();
           setTimeout(() => {
-            getMatterFiles();
             setShowToast(false);
-            handleModalClose();
-          }, 5000);
+            getMatterFiles();
+          }, 3000);
         });
       });
     });
-
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
   };
 
   const handleModalClose = () => {
-    setshowUploadLinkModal(false);
+    setShowUploadModal(false);
   };
 
   const contentDiv = {
@@ -159,12 +153,12 @@ export default function FileBucket() {
               <h1 className="font-bold text-3xl">&nbsp; File Bucket</h1>
             </div>
             <div className="absolute right-0">
-              {/* <Link to={AppRoutes.DASHBOARD}> */}
+              <Link to={AppRoutes.DASHBOARD}>
               <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                 Back &nbsp;
                 <MdArrowForwardIos />
               </button>
-              {/* </Link> */}
+              </Link>
             </div>
           </div>
         </div>
@@ -178,7 +172,7 @@ export default function FileBucket() {
           <div>
             <button
               className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-              onClick={() => setshowUploadLinkModal(true)}
+              onClick={() => setShowUploadModal(true)}
             >
               FILE UPLOAD &nbsp;
               <FiUpload />
@@ -198,7 +192,7 @@ export default function FileBucket() {
                   <BlankState
                     title={"items"}
                     txtLink={"file upload button"}
-                    onClick={() => setshowUploadLinkModal(true)}
+                    onClick={() => setShowUploadModal(true)}
                   />
                 </div>
               </div>
@@ -243,12 +237,16 @@ export default function FileBucket() {
         )}
       </div>
 
-      {showUploadLinkModal && (
+      {showUploadModal && (
         <UploadLinkModal
           title={""}
           handleSave={handleUploadLink}
           handleModalClose={handleModalClose}
         />
+      )}
+
+      {showToast && resultMessage && (
+        <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
     </>
   );
