@@ -23,6 +23,7 @@ export default function Background() {
   const params = useParams();
   const { matter_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
@@ -48,7 +49,7 @@ export default function Background() {
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
-              <span className={"text-lg mt-3 font-medium"}>
+              <span className="text-lg mt-3 font-medium">
                 Claire Greene {allData.name} Background
               </span>
               <BreadCrumb data={allData} />
@@ -63,6 +64,8 @@ export default function Background() {
                 totalChecked={totalChecked}
                 settotalChecked={settotalChecked}
                 setId={setId}
+                search={search}
+                setSearch={setSearch}
                 getId={getId}
               />
             </div>
@@ -81,6 +84,7 @@ export default function Background() {
         settotalChecked={settotalChecked}
         setId={setId}
         getId={getId}
+        search={search}
       />
     </>
   );
