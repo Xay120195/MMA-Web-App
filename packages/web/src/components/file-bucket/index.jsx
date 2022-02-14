@@ -10,14 +10,13 @@ import { FiUpload } from "react-icons/fi";
 
 import "../../assets/styles/BlankState.css";
 
-import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"; // shared functions/modal from link-to-chronology
+import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
-  //610f886a-9c3a-4a0e-a998-b26b19f2c95b
   const { matter_id } = useParams();
 
   const hideToast = () => {
@@ -193,62 +192,60 @@ export default function FileBucket() {
 
         {matterFiles !== null && (
           <>
-        {matterFiles.length === 0 ? (
-          
-            <div className="p-5 px-5 py-1 left-0">
-              <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
-                <BlankState
-                  title={"items"}
-                  txtLink={"file upload button"}
-                  onClick={() => setshowUploadLinkModal(true)}
-                />
+            {matterFiles.length === 0 ? (
+              <div className="p-5 px-5 py-1 left-0">
+                <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
+                  <BlankState
+                    title={"items"}
+                    txtLink={"file upload button"}
+                    onClick={() => setshowUploadLinkModal(true)}
+                  />
+                </div>
               </div>
-            </div>
-          
-        ) : (
-          <>
-            {matterFiles !== null && matterFiles.length !== 0 && (
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
-                        Name
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {matterFiles.map((data, index) => (
-                      <tr key={data.id} index={index}>
-                        <td className="px-6 py-4 w-10 align-top place-items-center">
-                          <div>
-                            <span>{data.name} </span>
-                            <span className="absolute right-20">
-                              <AiOutlineDownload
-                                className="text-blue-400"
-                                onClick={() =>
-                                  //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
-                                  openNewTab(data.downloadURL)
-                                }
-                              />
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            ) : (
+              <>
+                {matterFiles !== null && matterFiles.length !== 0 && (
+                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead>
+                        <tr>
+                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                            Name
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {matterFiles.map((data, index) => (
+                          <tr key={data.id} index={index}>
+                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                              <div>
+                                <span>{data.name} </span>
+                                <span className="absolute right-20">
+                                  <AiOutlineDownload
+                                    className="text-blue-400"
+                                    onClick={() =>
+                                      //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                      openNewTab(data.downloadURL)
+                                    }
+                                  />
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
             )}
           </>
-        )}     
-          </>                    
-          )} 
+        )}
       </div>
-
 
       {showUploadLinkModal && (
         <UploadLinkModal
+          title={""}
           handleSave={handleUploadLink}
           handleModalClose={handleModalClose}
         />
