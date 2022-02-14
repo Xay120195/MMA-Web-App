@@ -27,88 +27,6 @@ export default function Contacts() {
     setshowAddContactModal(false);
   };
 
-  const [showToast, setShowToast] = useState(false);
-  const [resultMessage, setResultMessage] = useState("");
-  const hideToast = () => {
-    setShowToast(false);
-  };
-
-
-  const mInviteUser = `
-      mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
-        userInvite(
-          email: $email
-          firstName: $firstName
-          lastName: $lastName
-          userType: $userType
-          company: $company
-        ) {
-          id
-          firstName
-          lastName
-          email
-          userType
-        }
-      }
-  `;
-
-  const {
-    register,
-    formState: { errors },
-    reset,
-    handleSubmit,
-    getValues,
-    setError,
-    clearErrors,
-  } = useForm();
-
-  const handleSave = async (formdata) => {
-    const { email, firstName, lastName, userType } = formdata;
-
-    const companyId = localStorage.getItem("companyId"),
-      companyName = localStorage.getItem("company");
-
-    const user = {
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      company: {
-        id: companyId,
-        name: companyName,
-      },
-      userType: userType,
-    };
-
-    console.log(user);
-    await inviteUser(user).then((u) => {
-      console.log(u);
-      setResultMessage(
-        `${firstName} was successfuly added as ${userType} of ${companyName}.`
-      );
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        reset({ email: "", firstName: "", lastName: "", userType: "OWNER" });
-      }, 5000);
-    });
-  };
-
-  async function inviteUser(user) {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mInviteUser,
-          variables: user,
-        });
-
-        resolve(request);
-      } catch (e) {
-        setError(e.errors[0].message);
-        reject(e.errors[0].message);
-      }
-    });
-  }
-
   const contentDiv = {
     margin: "0 0 0 65px",
   };
@@ -154,48 +72,7 @@ export default function Contacts() {
   ]; //dummy data
 
   const [contacts, setContacts] = useState(data);
-  const [addFormData, setAddFormData] = useState({
-    firstName: "",
-    lastName: "",
-    userType: "",
-    email: "",
-    company: {cid: "", cname: ""},
-  });
-
-  const handleAddFormChange = (event) => {
-    event.preventDefault();
-
-    const fieldName = event.target.getAttribute("name");
-    const fieldValue = event.target.value;
-
-    const newFormData = { ...addFormData };
-    newFormData[fieldName] = fieldValue;
-
-    setAddFormData(newFormData);
-  };
-
-  const handleAddFormSubmit = (event) => {
-    event.preventDefault();
-
-    const minID = 100000;
-    const maxID = 999999;
-    const rand = minID + Math.random() * (maxID - minID);
-
-    const newContact = {
-      id: rand,
-      firstName: addFormData.firstName,
-      lastName: addFormData.lastName,
-      userType: addFormData.userType,
-      email: addFormData.email,
-      company: {cid: addFormData.cid, cname: addFormData.cname},
-    };
-
-    const newContacts = [...contacts, newContact];
-    setContacts(newContacts);
-  };
-
-
-
+ 
   const handleAddContact = () => {
     handleModalClose();
   };
@@ -267,8 +144,12 @@ export default function Contacts() {
 
         <div className="p-5 left-0">
           <div className= "grid grid-cols-4 gap-4" >
-            {contacts.map((contact) => (
-              <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
+
+          {contacts.length === 0 ? (
+            <p className="text-red-500">No result found.</p>
+          ) : (
+            contacts.map((contact) => (
+              <div key={contact.id} className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
                 <div className=" py-1 text-right">
                     <div
                     className="bg-white hover:bg-gray-100 text-black font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
@@ -313,9 +194,9 @@ export default function Contacts() {
 
               </div>
           
-            ))}
+            ))
 
-      
+          )}
       
       
         </div>

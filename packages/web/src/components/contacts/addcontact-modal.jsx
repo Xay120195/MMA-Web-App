@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GrClose } from "react-icons/gr";
 import { useForm } from "react-hook-form";
 import ToastNotification from "../toast-notification";
-import "./index.jsx"
 import { Auth, API } from "aws-amplify";
 
 import { GrUserSettings } from "react-icons/gr";
@@ -16,12 +15,19 @@ export default function AddContactModal(props) {
     props.handleModalClose();
   };
 
-  const handleSave = () => {
-    props.handleSave1();
+  // const handleSave = () => {
+  //   props.handleSave1();
     
-  };
+  // };
 
   
+  const [showToast, setShowToast] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+  const hideToast = () => {
+    setShowToast(false);
+  };
+
+ 
   const {
     register,
     formState: { errors },
@@ -32,30 +38,17 @@ export default function AddContactModal(props) {
     clearErrors,
   } = useForm();
 
-  const mInviteUser = `
-      mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
-        userInvite(
-          email: $email
-          firstName: $firstName
-          lastName: $lastName
-          userType: $userType
-          company: $company
-        ) {
-          id
-          firstName
-          lastName
-          email
-          userType
-        }
-      }
-  `;
+  const handleSave = async (formdata) => {
+    const { firstName, lastName, userType, email } = formdata;
 
-  const handleSave1 = async (formdata) => {
-    const { email, firstName, lastName, userType } = formdata;
+    // console.log("test");
 
     const companyId = localStorage.getItem("companyId"),
       companyName = localStorage.getItem("company");
 
+      console.log(formdata);
+
+      
     const user = {
       firstName: firstName,
       lastName: lastName,
@@ -79,7 +72,26 @@ export default function AddContactModal(props) {
         reset({ email: "", firstName: "", lastName: "", userType: "OWNER" });
       }, 5000);
     });
+
   };
+
+  const mInviteUser = `
+      mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
+        userInvite(
+          email: $email
+          firstName: $firstName
+          lastName: $lastName
+          userType: $userType
+          company: $company
+        ) {
+          id
+          firstName
+          lastName
+          email
+          userType
+        }
+      }
+  `;
 
   async function inviteUser(user) {
     return new Promise((resolve, reject) => {
@@ -97,19 +109,8 @@ export default function AddContactModal(props) {
     });
   }
 
- 
 
-
-  const contentDiv = {
-    margin: "0 0 0 65px",
-  };
-
-  const [showToast, setShowToast] = useState(false);
-  const [resultMessage, setResultMessage] = useState("");
-  const hideToast = () => {
-    setShowToast(false);
-  };
-
+  const options = ['OWNER','LEGALADMIN','BARRISTER','EXPERT','CLIENT','WITNESS'];
 
   return (
     <>
@@ -127,8 +128,8 @@ export default function AddContactModal(props) {
                 <GrClose />
               </button>
             </div>
-            {/* <div className="relative p-6 flex-auto"> */}
-            <form>
+      
+            <form onSubmit={handleSubmit(handleSave)}>
                 <div className="px-5 py-5" >
                 <div className="relative flex-auto">
                     
@@ -142,10 +143,11 @@ export default function AddContactModal(props) {
                             required: "User Type is required",
                         })}
                         >
-                          
-                              <option value="Owner"> Owner </option>
-                              <option value="Admin"> Admin </option>
-                              <option value="Employee"> Employee </option>
+                          {options.map(opt => (
+                            <option value={opt} key={opt}> {opt} </option>
+                          ))}
+                              
+                              
                         </select>
                     </div>
                     {errors.userType?.type === "required" && (
@@ -217,21 +219,22 @@ export default function AddContactModal(props) {
                     </div>
                 </div>
 
-                {showToast && resultMessage && (
-                    <ToastNotification title={resultMessage} hideToast={hideToast} />
-                )}
+                
                
               
             {/* </div> */}
             <div className="flex items-center justify-end p-6 rounded-b">
-                     <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
-                     onClick={() => handleSave()}
-                     type="submit">
+                    <button className="bg-green-400 hover:bg-green-500 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
+                      type="submit">
                        <HiOutlinePlusCircle/> &nbsp; Add
                     </button>
             </div>
+            {showToast && resultMessage && (
+                    <ToastNotification title={resultMessage} hideToast={hideToast} />
+                )}
             </form>
           </div>
+          
         </div>
       </div>
       <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
