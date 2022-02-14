@@ -5,6 +5,7 @@ import ContentEditable from "react-contenteditable";
 import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
 import Modal from "./modal";
+import Loading from "../loading/loading";
 
 const TableInfo = ({
   witness,
@@ -109,7 +110,7 @@ const TableInfo = ({
               ) : (
                 <>
                   {loading ? (
-                    <p className="py-2 px-2">Loading data...</p>
+                    <Loading content="Loading background data..." />
                   ) : (
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
