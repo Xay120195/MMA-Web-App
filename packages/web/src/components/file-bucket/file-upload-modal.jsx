@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
+import { API, Storage } from "aws-amplify";
 import "../../assets/styles/FileUpload.css";
 import Pie from "../link-to-chronology/Pie";
 
@@ -11,6 +12,8 @@ const useRefEventListener = (fn) => {
 
 export default function UploadLinkModal(props) {
   const [selectedFiles, _setSelectedFiles] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [countUploadedFiles, setCountUploadedFiles] = useState(1);
 
   const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
@@ -29,13 +32,9 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        // console.log("reject");
-        // console.log(file.name);
-        alert("Invalid file type"); //alert here
+        alert("Invalid file type");
         return false;
       } else {
-        // console.log("accept");
-        // console.log(ext);
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
@@ -71,6 +70,15 @@ export default function UploadLinkModal(props) {
     };
   }, []);
 
+  useEffect(() => {
+    if (
+      countUploadedFiles === selectedFiles.length &&
+      selectedFiles.length !== 0
+    ) {
+      props.handleSave(uploadedFiles);
+    }
+  }, [countUploadedFiles, selectedFiles, uploadedFiles]);
+
   const onDragEnter = () => dropRef.current.classList.add("dragover");
   const onDragLeave = () => dropRef.current.classList.remove("dragover");
   const onDrop = () => dropRef.current.classList.remove("dragover");
@@ -89,13 +97,9 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        // console.log("reject");
-        // console.log(file.name);
-        alert("Invalid file type."); //alert here
+        alert("Invalid file type.");
         return false;
       } else {
-        // console.log("accept");
-        // console.log(ext);
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
@@ -122,9 +126,42 @@ export default function UploadLinkModal(props) {
     perc: 1,
   });
 
-  const handleSave = () => {
+  const handleUpload = async () => {
     setUploadStart(true);
-    props.handleSave(selectedFiles);
+    selectedFiles.map(async (uf) => {
+      var name = uf.data.name,
+        size = uf.data.size,
+        type = uf.data.type,
+        key = `${props.bucketName}/${Number(new Date())}${name
+          .replaceAll(/\s/g, "")
+          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+
+      await Storage.put(key, uf.data, {
+        contentType: type,
+        progressCallback(progress) {
+          const progressInPercentage = Math.round(
+            (progress.loaded / progress.total) * 100
+          );
+          console.log(`Progress: ${progressInPercentage}%`);
+        },
+        errorCallback: (err) => {
+          console.error("Unexpected error while uploading", err);
+        },
+      }).then(async (fd) => {
+        var fileData = {
+          s3ObjectKey: fd.key,
+          size: parseInt(size),
+          type: type,
+          name: name,
+        };
+
+        setCountUploadedFiles(countUploadedFiles + 1);
+        setUploadedFiles([...uploadedFiles, fileData]);
+
+        
+      });
+    });
+
     generateRandomValues(start.perc);
   };
 
@@ -140,7 +177,7 @@ export default function UploadLinkModal(props) {
   const startrun = (perc) => {
     setTimeout(() => {
       ref.current.click();
-      //generateRandomValues(perc);
+      generateRandomValues(perc);
     }, 2000);
   };
 
@@ -241,7 +278,7 @@ export default function UploadLinkModal(props) {
               </div>
               <div
                 className={`upload-btn ${uploadStart ? "disabled-btn" : ""}`}
-                onClick={() => handleSave()}
+                onClick={() => handleUpload()}
               >
                 <span>Upload</span>
               </div>
