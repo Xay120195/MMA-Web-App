@@ -71,9 +71,12 @@ export default function AddContactModal(props) {
       setTimeout(() => {
         setShowToast(false);
         reset({ email: "", firstName: "", lastName: "", userType: "OWNER" });
-      }, 5000);
-      handleModalClose();
+        props.handleModalClose();
+      }, 2000);
+      
     });
+
+    
 
   };
 
