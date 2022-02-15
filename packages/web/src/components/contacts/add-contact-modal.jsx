@@ -66,11 +66,13 @@ export default function AddContactModal(props) {
       setResultMessage(
         `${firstName} was successfuly added as ${userType} of ${companyName}.`
       );
+      
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
         reset({ email: "", firstName: "", lastName: "", userType: "OWNER" });
       }, 5000);
+      handleModalClose();
     });
 
   };
