@@ -20,12 +20,18 @@ type Company {
   id: ID!
   name: String
   address: Address
+  users(limit: Int, nextToken: String): UserConnection
   phone: String
   email: AWSEmail
   representative: User
   logo: AWSURL
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+type UserConnection {
+  items: [User]
+  nextToken: String
 }
 
 type CompanyAccessType {
@@ -122,6 +128,7 @@ schema {
 type Query {
   colors: [Color]
   company(id: String): Company
+  companies: [Company]
   companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
   user(id: String): User
   page: [Page]
@@ -162,30 +169,19 @@ type Mutation {
     features: [FeatureInput]
   ): Page
   featureCreate(name: String, label: String, page: PageInput): Feature
-  clientCreate(
+  clientCreate(name: String, companyId: ID): Client
+  matterCreate(name: String, companyId: ID): Matter
+  matterFileCreate(
+    matterId: ID
+    s3ObjectKey: String
+    size: Int
+    type: String
     name: String
-    companyId: ID
-  ): Client
-  matterCreate(
-    name: String
-    companyId: ID
-  ): Matter
-  matterFileCreate(matterId: ID, s3ObjectKey: String, size: Int, type: String, name: String): File
-  companyAccessTypeUpdate(
-    id: String
-    access: [AccessInput]
-  ): CompanyAccessType
-  clientMatterUpdate(
-    id: ID
-    matter: [MatterInput]
-  ): Client
-  backgroundCreate(
-    companyId: ID
-  ): Background
-  backgroundUpdate(
-    id: ID
-    description: String
-  ): Background
+  ): File
+  companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
+  clientMatterUpdate(id: ID, matter: [MatterInput]): Client
+  backgroundCreate(companyId: ID): Background
+  backgroundUpdate(id: ID, description: String): Background
 }
 
 input MatterInput {
