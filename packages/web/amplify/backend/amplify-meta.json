@@ -54,7 +54,7 @@
         "IdentityPoolName": "mmawebappaa31305d_identitypool_aa31305d__staging",
         "UserPoolName": "mmawebappaa31305d_userpool_aa31305d"
       },
-      "lastPushTimeStamp": "2022-02-10T09:15:54.429Z",
+      "lastPushTimeStamp": "2022-02-15T03:23:28.876Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/auth/mmawebappaa31305d-cloudformation-template.json",
         "logicalId": "authmmawebappaa31305d"
@@ -79,7 +79,7 @@
         "Name": "S3Trigger1de25018-staging",
         "LambdaExecutionRole": "S3Trigger1de25018LambdaRole1de25018-staging"
       },
-      "lastPushTimeStamp": "2022-02-10T09:15:54.430Z",
+      "lastPushTimeStamp": "2022-02-15T03:23:28.877Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/function/S3Trigger1de25018-cloudformation-template.json",
         "logicalId": "functionS3Trigger1de25018"
@@ -99,7 +99,7 @@
         "BucketName": "mmabucketapp-staging",
         "Region": "ap-southeast-1"
       },
-      "lastPushTimeStamp": "2022-02-10T09:15:54.431Z",
+      "lastPushTimeStamp": "2022-02-15T03:23:28.878Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
         "logicalId": "storagemmastorage"
