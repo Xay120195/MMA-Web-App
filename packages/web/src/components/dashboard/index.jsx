@@ -348,21 +348,17 @@ const matterClientUpdate = `
 `;
 
 const addClientMatter = async (clients, matters) => {
-  let result;
+
   console.log(matters);
 
   const addedClientMatter = await API.graphql({
       query: matterClientUpdate,
       variables: {
           id: clients,
-          matters: matters
+          matter: matters
       },
   });
 
-  /*result = addedClientMatter.data.client.map(({ id, name }) => ({
-    value: id,
-    label: name
-  }));*/
   console.log(addedClientMatter);
 };
 

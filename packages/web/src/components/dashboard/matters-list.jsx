@@ -23,6 +23,7 @@ export function MattersList({
       {view === "grid" ? (
         <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
           <div>
+            {(allowOpenFileBucket || allowOpenBackground || showDeleteMatter) ? (
             <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
               <div className="dropdown">
                   <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
@@ -36,6 +37,7 @@ export function MattersList({
                   </ul>
               </div>
             </div>
+            ) : null}
             <div>
               <h4
                 tabIndex="0"
