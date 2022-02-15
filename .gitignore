@@ -4,5 +4,3 @@ yarn-error.log
 packages/web/.vscode/settings.json
 packages/web/.env
 packages/api/AWSCLIV2.pkg
-packages/web/.env
-packages/web/.env
