@@ -14,6 +14,7 @@ import Navbar from "./components/navigation";
 import Signout from "./components/authentication/signout";
 import FileBucket from "./components/file-bucket";
 import Background from "./components/background";
+import Labels from "./components/labels";
 
 
 const Routes = () => {
@@ -35,6 +36,7 @@ const Routes = () => {
           <Route exact path={AppRoutes.ACCOUNTSETTINGS} component={AccountSettings} />
           <Route exact path={`${AppRoutes.FILEBUCKET}/:matter_id`} component={FileBucket} />
           <Route exact path={`${AppRoutes.BACKGROUND}/:matter_id`} component={Background} />
+          <Route exact path={AppRoutes.LABELS} component={Labels} />
         </>
       </Switch>
     </Router>
