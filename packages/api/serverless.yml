@@ -42,6 +42,8 @@ functions:
     handler: src/handlers/graphql/mutation/index.handler
   file-fn:
     handler: src/handlers/graphql/file/index.handler
+  company-fn:
+    handler: src/handlers/graphql/company/index.handler
 
 custom:
   dynamodb:
@@ -80,6 +82,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: company
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: companies
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -198,6 +205,11 @@ custom:
         field: backgroundUpdate
         request: false
         response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: users
+        request: false
+        response: false
 
     dataSources:
       - type: AMAZON_DYNAMODB
@@ -212,6 +224,10 @@ custom:
         name: LambdaMutationDS
         config:
           functionName: mutation-fn
+      - type: AWS_LAMBDA
+        name: LambdaCompanyDS
+        config:
+          functionName: company-fn
       - type: AWS_LAMBDA
         name: LambdaFileDS
         config:

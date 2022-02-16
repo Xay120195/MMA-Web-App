@@ -5,6 +5,7 @@ import ddbClient from "../lib/dynamodb-client";
 import identityClient from "../lib/cognito-identity-provider-client";
 import AWS_COGNITO_USERPOOL_ID from "../constants";
 import randomString from "../shared/randomString";
+import { v4 } from "uuid";
 
 export async function getUser(data) {
   let response = {};
@@ -50,6 +51,25 @@ export async function createUser(data) {
     });
 
     const request = await ddbClient.send(command);
+
+    //put on CompanyUser
+
+    const companyUserParams = {
+      id: v4(),
+      userId: data.id,
+      companyId: data.company.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const putCompanyUserCommand = new PutItemCommand({
+      TableName: "CompanyUserTable",
+      Item: marshall(companyUserParams),
+    });
+
+    const putCompanyUserCommandrequest = await ddbClient.send(
+      putCompanyUserCommand
+    );
+
     response = request ? unmarshall(params) : {};
   } catch (e) {
     response = {

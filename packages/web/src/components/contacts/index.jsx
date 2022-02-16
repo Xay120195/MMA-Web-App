@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { Auth, API } from "aws-amplify";
-import { useForm } from "react-hook-form";
+import { API } from "aws-amplify";
 import "../../assets/styles/AccountSettings.css";
 import { MdArrowForwardIos } from "react-icons/md";
 import { FiFilter, FiSend } from "react-icons/fi";
@@ -33,32 +32,21 @@ export default function Contacts() {
   };
 
   const qGetContacts = `
-  query getMatterFile($matterId: ID) {
-    matterFile(matterId: $matterId) {
-      id
+  query companyUsers($companyId: String) {
+    company(id: $companyId) {
       name
-      downloadURL
-      size
-      type
-    }
-  }`;
-
-  const mInviteUser = `
-      mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
-        userInvite(
-          email: $email
-          firstName: $firstName
-          lastName: $lastName
-          userType: $userType
-          company: $company
-        ) {
+      users {
+        items {
           id
           firstName
           lastName
+          createdAt
           email
           userType
         }
       }
+    }
+  }
   `;
 
   useEffect(() => {
@@ -71,107 +59,15 @@ export default function Contacts() {
     const params = {
       query: qGetContacts,
       variables: {
-        matterId: "6956",
+        companyId: localStorage.getItem("companyId"),
       },
     };
 
-    await API.graphql(params).then((files) => {
-      console.log(files.data.matterFile);
-      const data = [
-        {
-          id: 0,
-          firstName: "Krizia",
-          lastName: "Frias",
-          userType: "Employee",
-          email: "km.frias@gmail.com",
-          company: { cid: "143", cname: "Lophils" },
-        },
-        {
-          id: 1,
-          firstName: "jane",
-          lastName: "Frias",
-          userType: "Employee",
-          email: "km.frias@gmail.com",
-          company: { cid: "143", cname: "Lophils" },
-        },
-        {
-          id: 2,
-          firstName: "kriz",
-          lastName: "Frias",
-          userType: "Employee",
-          email: "km.frias@gmail.com",
-          company: { cid: "143", cname: "Lophils" },
-        },
-        {
-          id: 3,
-          firstName: "krizi",
-          lastName: "Frias",
-          userType: "Employee",
-          email: "km.frias@gmail.com",
-          company: { cid: "143", cname: "Lophils" },
-        },
-      ]; //dummy data
-      //setContacts(files.data.matterFile);
-      setContacts(data);
+    await API.graphql(params).then((companyUsers) => {
+      console.log(companyUsers);
+      setContacts(companyUsers.data.company.users.items);
     });
   };
-
-  const {
-    register,
-    formState: { errors },
-    reset,
-    handleSubmit,
-    getValues,
-    setError,
-    clearErrors,
-  } = useForm();
-
-  const handleSave = async (formdata) => {
-    const { email, firstName, lastName, userType } = formdata;
-
-    const companyId = localStorage.getItem("companyId"),
-      companyName = localStorage.getItem("company");
-
-    const user = {
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      company: {
-        id: companyId,
-        name: companyName,
-      },
-      userType: userType,
-    };
-
-    console.log(user);
-    await inviteUser(user).then((u) => {
-      console.log(u);
-      setResultMessage(
-        `${firstName} was successfuly added as ${userType} of ${companyName}.`
-      );
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        reset({ email: "", firstName: "", lastName: "", userType: "OWNER" });
-      }, 5000);
-    });
-  };
-
-  async function inviteUser(user) {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mInviteUser,
-          variables: user,
-        });
-
-        resolve(request);
-      } catch (e) {
-        setError(e.errors[0].message);
-        reject(e.errors[0].message);
-      }
-    });
-  }
 
   const contentDiv = {
     margin: "0 0 0 65px",
@@ -182,11 +78,9 @@ export default function Contacts() {
     gridtemplatecolumn: "1fr auto",
   };
 
-  
-
-  // const [contacts, setContacts] = useState(data);
- 
-  const handleAddContact = () => {
+  const handleAddContact = (returnedUser) => {
+    console.log(returnedUser);
+    getContacts();
     handleModalClose();
   };
 
@@ -259,10 +153,13 @@ export default function Contacts() {
 
         <div className="p-5 left-0">
           <div className="grid grid-cols-4 gap-4">
-            {(contacts !== null &&
-              contacts.length !== 0) &&
+            {contacts !== null &&
+              contacts.length !== 0 &&
               contacts.map((contact) => (
-                <div key={contact.id} className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
+                <div
+                  key={contact.id}
+                  className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
+                >
                   <div className=" py-1 text-right">
                     <div
                       className="bg-white hover:bg-gray-100 text-black font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
@@ -296,10 +193,10 @@ export default function Contacts() {
                           {contact.firstName} {contact.lastName}
                         </p>{" "}
                         &nbsp;{" "}
-                        <p className="font-semibold">
+                        {/* <p className="font-semibold">
                           {" "}
                           {contact.company.cname}
-                        </p>
+                        </p> */}
                       </div>
                       <p>{contact.email}</p>
                     </div>
@@ -309,13 +206,13 @@ export default function Contacts() {
                     </div>
                   </div>
 
-                  <div className="py-5 text-center">
+                  {/* <div className="py-5 text-center">
                     <div>
                       <p className="font-semibold text-slate-700  ">
                         TAGGED MATTERS
                       </p>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               ))}
           </div>

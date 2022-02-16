@@ -52,6 +52,27 @@ async function listPages() {
   return response;
 }
 
+async function listCompanies() {
+  try {
+    const params = {
+      TableName: "CompanyTable",
+    };
+
+    const command = new ScanCommand(params);
+    const request = await client.send(command);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    response = request ? parseResponse : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 async function getCompanyAccessType(data) {
   try {
     const params = {
@@ -184,6 +205,9 @@ const resolvers = {
   Query: {
     company: async (ctx) => {
       return getCompany(ctx.arguments);
+    },
+    companies: async (ctx) => {
+      return listCompanies();
     },
     page: async () => {
       return listPages();
