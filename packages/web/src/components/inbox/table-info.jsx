@@ -106,7 +106,6 @@ const TableInfo = ({
     }
   };
 
-  useEffect(() => {}, [unReadData, setIdUnread]);
   return (
     <div style={{ padding: "1.5rem", marginLeft: "4rem" }}>
       <div className="mb-3">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import { inbox } from "./data-source";
 import ActionButtons from "./action-buttons";
 import TableInfo from "./table-info";
@@ -11,16 +11,33 @@ const mainGrid = {
   display: "grid",
   gridtemplatecolumn: "1fr auto",
 };
+const ACTIONS = {
+  DELETE_DATA: "delete_data",
+  SAVE_READ: "save_read",
+  MARK_UNREAD: "mark_unread",
+};
+function reducer(data, action) {
+  switch (action.type) {
+    case ACTIONS.DELETE_DATA:
+      return data.filter((item) => !action.payload.id.includes(item.id));
+    case ACTIONS.SAVE_READ:
+      return [...data, action.payload.data];
+    case ACTIONS.MARK_UNREAD:
+      return [...data, action.payload.data];
+    default:
+      return data;
+  }
+}
 
 const Inbox = () => {
-  const [data, setData] = useState(inbox);
+  const [data, dispatch] = useReducer(reducer, inbox);
   const [totalChecked, setTotalChecked] = useState(0);
   const [totalReadChecked, setTotalReadChecked] = useState(0);
   const [totalUnReadChecked, setTotalUnReadChecked] = useState(0);
-
+  const [getId, setId] = useState([]);
   const [getIdUnread, setIdUnread] = useState([]);
   const [getIdRead, setIdRead] = useState([]);
-
+  const [checkAllState, setcheckAllState] = useState(false);
   const [unReadData, setUnreadData] = useState([]);
   const [readData, setReadData] = useState([]);
 
@@ -34,7 +51,7 @@ const Inbox = () => {
   const [checkedStateUnRead, setCheckedStateUnreRead] = useState(
     new Array(unreaddata.length).fill(false)
   );
-  console.log(data);
+
   useEffect(() => {
     setTotalChecked(totalReadChecked + totalUnReadChecked);
     setUnreadData(unreaddata);
@@ -72,6 +89,8 @@ const Inbox = () => {
           </div>
           <ActionButtons
             data={data}
+            ACTIONS={ACTIONS}
+            dispatch={dispatch}
             totalChecked={totalChecked}
             setCheckedStateRead={setCheckedStateRead}
             setCheckedStateUnreRead={setCheckedStateUnreRead}
@@ -82,8 +101,10 @@ const Inbox = () => {
             totalChecked={totalChecked}
             getIdUnread={getIdUnread}
             getIdRead={getIdRead}
-            data={data}
-            setData={setData}
+            checkAllState={checkAllState}
+            setcheckAllState={setcheckAllState}
+            setId={setId}
+            getId={getId}
           />
         </div>
       </div>
@@ -109,7 +130,6 @@ const Inbox = () => {
         setIdRead={setIdRead}
         getIdRead={getIdRead}
         data={data}
-        setData={setData}
       />
     </>
   );
