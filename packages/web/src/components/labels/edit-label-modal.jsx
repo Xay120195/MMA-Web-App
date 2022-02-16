@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import ToastNotification from "../toast-notification";
 import { Auth, API } from "aws-amplify";
 import { AiOutlineCheckCircle, AiOutlineTags } from "react-icons/ai";
-
+import { dummyData } from "./index";
 
 export default function EditLabelModal(props) {
   const handleModalClose = () => {
@@ -16,6 +16,8 @@ export default function EditLabelModal(props) {
   const hideToast = () => {
     setShowToast(false);
   };
+
+ 
 
 
   return (

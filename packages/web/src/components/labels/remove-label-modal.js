@@ -6,7 +6,7 @@ import { Auth, API } from "aws-amplify";
 import { FaTimes } from "react-icons/fa";
 import { AiOutlineUser, AiOutlineTags } from "react-icons/ai";
 import { TiCancel } from "react-icons/ti";
-import { HiOutlinePlusCircle } from "react-icons/hi";
+import { dummyData, tempStorage } from "./index"
 
 
 export default function RemoveLabelModal(props) {
@@ -19,6 +19,14 @@ export default function RemoveLabelModal(props) {
   const hideToast = () => {
     setShowToast(false);
   };
+
+  const handleConfirm = () => {
+     const newData = [...dummyData];
+     const index = dummyData.findIndex((data) => data.id === tempStorage[0]);
+    //  alert(index);
+     dummyData.splice(index, 1);
+     props.handleModalClose();
+  }
 
 
   return (
@@ -39,6 +47,12 @@ export default function RemoveLabelModal(props) {
                 <div className="flex items-center justify-center rounded-b">
                     <p className="text-md">messages and then deleted. No messages will be deleted.</p>
                 </div>
+
+                <div className="flex items-center justify-center rounded-b py-5">
+                  <p className="font-semibold"> {dummyData[tempStorage].labelName} &nbsp; </p>
+                  <p>({dummyData[tempStorage].conversations.length}  Conversations)</p>
+                
+                </div>
             
                 <div className="flex items-center justify-end p-6 rounded-b">
                     <button className="mr-2 bg-blue-400 hover:bg-blue-400 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
@@ -47,7 +61,9 @@ export default function RemoveLabelModal(props) {
                     </button>
                     
                     <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
-                      type="button">
+                      type="button"
+                      onClick={() => handleConfirm()}
+                      >
                          Remove &nbsp; <FaTimes/>
                     </button>
                 </div>

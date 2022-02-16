@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import  { React, useState } from 'react';
 import { GrClose } from "react-icons/gr";
 import { useForm } from "react-hook-form";
 import ToastNotification from "../toast-notification";
@@ -7,6 +7,7 @@ import { GrUserSettings } from "react-icons/gr";
 import { AiOutlineUser, AiOutlineTags } from "react-icons/ai";
 import { BsBuilding } from "react-icons/bs";
 import { HiOutlinePlusCircle } from "react-icons/hi";
+import { dummyData } from "./index"
 
 
 export default function AddLabelModal(props) {
@@ -14,10 +15,41 @@ export default function AddLabelModal(props) {
     props.handleModalClose();
   };
 
+  const [ddata, setDummyData] = useState(dummyData);
+
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const hideToast = () => {
     setShowToast(false);
+  };
+
+  const [labelName, setAddFormData] = useState(" ");
+
+  const handleAddFormChange = event => {
+
+    setAddFormData(event.target.value);
+  };
+
+  const handleAddFormSubmit = event => {
+    event.preventDefault();
+
+    const minID = 1;
+    const maxID = 999999;
+    const rand = minID + Math.random() * (maxID - minID);
+
+    const newLabel= {
+      id: rand,
+      labelName: labelName,
+      conversations: [{ id: rand, subject: "test", from: "email@email.com" }]
+    };
+
+    const newLabels = [...ddata, newLabel];
+    // setDummyData(newLabels);
+    dummyData[dummyData.length + 1] = newLabel;
+   //alert(dummyData);
+    props.handleModalClose();
+   
+
   };
 
 
@@ -38,7 +70,7 @@ export default function AddLabelModal(props) {
               </button>
             </div>
       
-            <form>
+            <form onSubmit={handleAddFormSubmit}>
                 <div className="px-5 py-1" >
                 <div className="relative flex-auto">
                     <div className="flex items-start py-3"> 
@@ -49,7 +81,9 @@ export default function AddLabelModal(props) {
                                 <input
                                     type="text"
                                     className="input-field pl-10"
-                                    placeholder="Enter Label"
+                                    name="labelName"
+                                    required="required"
+                                    onChange={handleAddFormChange}
                                 />
                             </div>
                         </div>
@@ -58,15 +92,15 @@ export default function AddLabelModal(props) {
                 </div>
                 </div>
 
-            <div className="flex items-center justify-end p-6 rounded-b">
-                    <button className="bg-green-400 hover:bg-green-400 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
-                      type="submit">
-                         Create &nbsp; <HiOutlinePlusCircle/>
-                    </button>
-            </div>
-            {showToast && resultMessage && (
-                    <ToastNotification title={resultMessage} hideToast={hideToast} />
-                )}
+                <div className="flex items-center justify-end p-6 rounded-b">
+                        <button className="bg-green-400 hover:bg-green-400 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
+                        type="submit">
+                            Create &nbsp; <HiOutlinePlusCircle/>
+                        </button>
+                </div>
+                {showToast && resultMessage && (
+                        <ToastNotification title={resultMessage} hideToast={hideToast} />
+                    )}
             </form>
           </div>
           

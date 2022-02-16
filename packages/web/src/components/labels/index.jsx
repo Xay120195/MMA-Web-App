@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment  } from "react";
 import { Link, useHistory } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { Auth, API } from "aws-amplify";
@@ -20,6 +20,38 @@ import {
 import AddLabelModal from "./add-label-modal";
 import EditLabelModal from "./edit-label-modal";
 import RemoveLabelModal from "./remove-label-modal";
+export let dummyData = [
+  {
+    id: 0,
+    labelName: "Test1",
+    conversations: [
+      { id: 111, subject: "Test message", from: "kmfrias@up.edu.ph" }, 
+      { id: 222, subject: "Test message", from: "kmfrias@up.edu.ph" },
+    ]
+  },
+  {
+    id: 1,
+    labelName: "Test2",
+    conversations: [
+      { id: 333, subject: "Test message", from: "kmfrias@up.edu.ph" }, 
+      { id: 222, subject: "Test message", from: "kmfrias@up.edu.ph" }, 
+      { id: 111, subject: "Test message", from: "kmfrias@up.edu.ph" }
+    ]
+  },
+  {
+    id: 2,
+    labelName: "Test3",
+    conversations: [
+      { id: 231, subject: "Test message", from: "kmfrias@up.edu.ph" }, 
+      { id: 123, subject: "Test message", from: "kmfrias@up.edu.ph" }, 
+      { id: 112, subject: "Test message", from: "kmfrias@up.edu.ph" },
+      { id: 223, subject: "Test message", from: "kmfrias@up.edu.ph" },
+      { id: 321, subject: "Test message", from: "kmfrias@up.edu.ph" }
+    ]
+  }
+];
+
+export let tempStorage = [1111];
 
 export default function Labels() {
  
@@ -32,20 +64,7 @@ export default function Labels() {
         gridtemplatecolumn: "1fr auto",
     };
 
-    const dummyData = [
-      {
-        id: 0,
-        labelName: "Test1",
-      },
-      {
-        id: 1,
-        labelName: "Test2",
-      },
-      {
-        id: 2,
-        labelName: "Test3",
-      }
-    ];
+    
 
     const [showAddLabelModal, setshowAddLabelModal] = useState(false);
     const [showEditLabelModal, setshowEditLabelModal] = useState(false);
@@ -69,6 +88,22 @@ export default function Labels() {
       handleModalClose();
     };
 
+    const [ddata, setDummyData] = useState(dummyData);
+    const [selectedID, changeSelected] = useState(tempStorage);
+
+    const handleDelete = (id) => {
+      setshowRemoveLabelModal(true);
+      tempStorage[0] = id;
+      // alert(tempStorage[0]);
+    }
+
+    
+
+
+    
+
+    
+    
 
   return (
     <>
@@ -167,7 +202,7 @@ export default function Labels() {
                           <tr key={data.id}>
                             <td className="px-6 py-4 whitespace-nowrap w-60">
                               <p className="font-semibold">{data.labelName}</p>
-                              <p>Desc</p>
+                              <p>{data.conversations.length} Conversations</p>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap w-10">
                               <button
@@ -215,12 +250,13 @@ export default function Labels() {
                               <button
                                   type="button"
                                   className="bg-red-100 hover:bg-red-100 text-red-500 text-sm py-1 px-4 rounded-3xl inline-flex items-center border-0 shadow focus:ring mx-2"
-                                  onClick={() => setshowRemoveLabelModal(true)}
+                                  onClick={() => handleDelete(data.id)}
                               >
                                   REMOVE
                               </button>
                             </td>
                           </tr>
+                         
                       ))}
                   </tbody>
               </table>
