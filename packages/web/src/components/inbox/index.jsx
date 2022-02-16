@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { inbox } from "./data-source";
 import ActionButtons from "./action-buttons";
 import TableInfo from "./table-info";
@@ -14,6 +14,33 @@ const mainGrid = {
 
 const Inbox = () => {
   const [data, setData] = useState(inbox);
+  const [totalChecked, setTotalChecked] = useState(0);
+  const [totalReadChecked, setTotalReadChecked] = useState(0);
+  const [totalUnReadChecked, setTotalUnReadChecked] = useState(0);
+
+  const [getIdUnread, setIdUnread] = useState([]);
+  const [getIdRead, setIdRead] = useState([]);
+
+  const [unReadData, setUnreadData] = useState([]);
+  const [readData, setReadData] = useState([]);
+
+  const unreaddata = data.filter((datas) => datas.status === "unread");
+  const readdata = data.filter((datas) => datas.status === "read");
+
+  const [checkedStateRead, setCheckedStateRead] = useState(
+    new Array(readdata.length).fill(false)
+  );
+
+  const [checkedStateUnRead, setCheckedStateUnreRead] = useState(
+    new Array(unreaddata.length).fill(false)
+  );
+  console.log(data);
+  useEffect(() => {
+    setTotalChecked(totalReadChecked + totalUnReadChecked);
+    setUnreadData(unreaddata);
+    setReadData(readdata);
+  }, [checkedStateRead, checkedStateUnRead, data]);
+
   return (
     <>
       <div
@@ -43,10 +70,47 @@ const Inbox = () => {
               <span className="mx-1">EMAILS</span>
             </span>
           </div>
-          <ActionButtons />
+          <ActionButtons
+            data={data}
+            totalChecked={totalChecked}
+            setCheckedStateRead={setCheckedStateRead}
+            setCheckedStateUnreRead={setCheckedStateUnreRead}
+            readdata={readdata}
+            unreaddata={unreaddata}
+            setTotalReadChecked={setTotalReadChecked}
+            setTotalUnReadChecked={setTotalUnReadChecked}
+            totalChecked={totalChecked}
+            getIdUnread={getIdUnread}
+            getIdRead={getIdRead}
+            data={data}
+            setData={setData}
+          />
         </div>
       </div>
-      <TableInfo data={data} />
+      <TableInfo
+        data={data}
+        setTotalChecked={setTotalChecked}
+        totalReadChecked={totalReadChecked}
+        setTotalReadChecked={setTotalReadChecked}
+        totalUnReadChecked={totalUnReadChecked}
+        setTotalUnReadChecked={setTotalUnReadChecked}
+        checkedStateRead={checkedStateRead}
+        setCheckedStateRead={setCheckedStateRead}
+        checkedStateUnRead={checkedStateUnRead}
+        setCheckedStateUnreRead={setCheckedStateUnreRead}
+        unReadData={unReadData}
+        readData={readData}
+        readdata={readdata}
+        unreaddata={unreaddata}
+        setUnreadData={setUnreadData}
+        setReadData={setReadData}
+        getIdUnread={getIdUnread}
+        setIdUnread={setIdUnread}
+        setIdRead={setIdRead}
+        getIdRead={getIdRead}
+        data={data}
+        setData={setData}
+      />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import moment from "moment";
 
 const greenDot = {
@@ -56,18 +56,57 @@ const getmonth = (date) => {
   return month.substring(0, 5);
 };
 
-const TableInfo = ({ data }) => {
-  const [unReadData, setUnreadData] = useState([]);
-  const [readData, setReadData] = useState([]);
+const TableInfo = ({
+  setTotalReadChecked,
+  setTotalUnReadChecked,
+  unReadData,
+  readData,
+  checkedStateRead,
+  setCheckedStateRead,
+  checkedStateUnRead,
+  setCheckedStateUnreRead,
+  setIdUnread,
+  setIdRead,
+}) => {
+  const handleOnChangeRead = (position, event) => {
+    const updatedCheckedState = checkedStateRead.map((item, index) =>
+      index === position ? !item : item
+    );
 
-  const unreaddata = data.filter((datas) => datas.status === "unread");
-  const readdata = data.filter((datas) => datas.status === "read");
+    setCheckedStateRead(updatedCheckedState);
 
-  useEffect(() => {
-    setUnreadData(unreaddata);
-    setReadData(readdata);
-  }, [unreaddata, readdata]);
+    let tc = updatedCheckedState.filter((v) => v === true).length;
+    setTotalReadChecked(tc);
 
+    if (event.target.checked) {
+      if (!readData.includes({ id: event.target.value })) {
+        setIdRead((item) => [...item, event.target.value]);
+      }
+    } else {
+      setIdRead((item) => [...item.filter((x) => x !== event.target.value)]);
+    }
+  };
+
+  const handleOnChangeUnRead = (position, event) => {
+    const updatedCheckedState = checkedStateUnRead.map((item, index) =>
+      index === position ? !item : item
+    );
+
+    setCheckedStateUnreRead(updatedCheckedState);
+
+    let tc = updatedCheckedState.filter((v) => v === true).length;
+    setTotalUnReadChecked(tc);
+
+    if (event.target.checked) {
+      if (!unReadData.includes({ id: event.target.value })) {
+        setIdUnread((item) => [...item, event.target.value]);
+      }
+    } else {
+      setIdUnread((item) => [...item.filter((x) => x !== event.target.value)]);
+    }
+  };
+
+  useEffect(() => {}, [unReadData, setIdUnread]);
   return (
     <div style={{ padding: "1.5rem", marginLeft: "4rem" }}>
       <div className="mb-3">
@@ -76,15 +115,19 @@ const TableInfo = ({ data }) => {
       <div className="flex flex-col">
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            {unReadData.map((item) => (
+            {unReadData.map((item, index) => (
               <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg mb-3">
-                <div key={item.id} className="flex py-2 px-2">
+                <div className="flex py-2 px-2" key={item.id}>
                   <div className="flex-none w-12 h-14 ">
                     <div className="py-6 px-6 mt-2">
                       <input
-                        value={item.id}
                         type="checkbox"
+                        value={item.id}
+                        name={item.id}
+                        id={item.id}
                         className="cursor-pointer"
+                        checked={checkedStateUnRead[index]}
+                        onChange={(event) => handleOnChangeUnRead(index, event)}
                       />
                     </div>
                   </div>
@@ -117,6 +160,7 @@ const TableInfo = ({ data }) => {
                       {item.attachments && (
                         <>
                           {" "}
+                          |
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4"
@@ -160,15 +204,19 @@ const TableInfo = ({ data }) => {
       <div className="flex flex-col">
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            {readData.map((item) => (
+            {readData.map((item, index) => (
               <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg mb-3">
-                <div key={item.id} className="flex py-2 px-2">
+                <div className="flex py-2 px-2" key={item.id}>
                   <div className="flex-none w-12 h-14 ">
                     <div className="py-6 px-6 mt-2">
                       <input
-                        value={item.id}
                         type="checkbox"
+                        value={item.id}
+                        name={item.id}
+                        id={item.id}
                         className="cursor-pointer"
+                        checked={checkedStateRead[index]}
+                        onChange={(event) => handleOnChangeRead(index, event)}
                       />
                     </div>
                   </div>
@@ -201,6 +249,7 @@ const TableInfo = ({ data }) => {
                       {moment(item.date).format("MMMM Do YYYY, h:mm:ss a")}
                       {item.attachments && (
                         <>
+                          {" "}
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4"

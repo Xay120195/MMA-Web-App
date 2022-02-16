@@ -1,5 +1,6 @@
 export const inbox = [
   {
+    id: 1,
     firstname: "Joseph",
     lastname: "Aguilar",
     title: "FWD: New Project 3 {new-0101001010}",
@@ -16,6 +17,7 @@ export const inbox = [
     save: false,
   },
   {
+    id: 2,
     firstname: "Joseph",
     lastname: "Aguilar",
     title: "FWD: New Project 3 {new-0101001010}",
@@ -32,6 +34,7 @@ export const inbox = [
     save: false,
   },
   {
+    id: 3,
     firstname: "Joseph",
     lastname: "Aguilar",
     title: "FWD: New Project 3 {new-0101001010}",
@@ -59,6 +62,7 @@ export const inbox = [
     save: true,
   },
   {
+    id: 4,
     firstname: "Joseph",
     lastname: "Aguilar",
     title: "FWD: New Project 3 {new-0101001010}",
@@ -75,6 +79,7 @@ export const inbox = [
     save: true,
   },
   {
+    id: 5,
     firstname: "Joseph",
     lastname: "Aguilar",
     title: "FWD: New Project 3 {new-0101001010}",
@@ -91,6 +96,7 @@ export const inbox = [
     save: true,
   },
   {
+    id: 6,
     firstname: "Joseph",
     lastname: "Aguilar",
     title: "FWD: New Project 3 {new-0101001010}",
@@ -107,6 +113,7 @@ export const inbox = [
     save: false,
   },
   {
+    id: 7,
     firstname: "Joseph",
     lastname: "Aguilar",
     title: "FWD: New Project 3 {new-0101001010}",
@@ -120,5 +127,6 @@ export const inbox = [
       { name: "New Project 4" },
     ],
     message: "Hello i have finish background page",
+    save: false,
   },
 ];
