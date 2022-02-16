@@ -1,166 +1,18 @@
 const client = require("../../../lib/dynamodb-client");
 const {
-  GetItemCommand,
-  ScanCommand,
   QueryCommand,
+  BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser } = require("../../../services/UserService");
 const { getMatterFile } = require("../../../services/MatterService");
-
-// async function getCompany(data) {
-//   try {
-//     const params = {
-//       TableName: "CompanyTable",
-//       Key: marshall({
-//         id: data.id,
-//       }),
-//     };
-
-//     const command = new GetItemCommand(params);
-//     const { Item } = await client.send(command);
-//     response = Item ? unmarshall(Item) : {};
-//   } catch (e) {
-//     response = {
-//       error: e.message,
-//       errorStack: e.stack,
-//       statusCode: 500,
-//     };
-//   }
-
-//   return response;
-// }
-
-// async function listPages() {
-//   try {
-//     const params = {
-//       TableName: "PageTable",
-//     };
-
-//     const command = new ScanCommand(params);
-//     const request = await client.send(command);
-//     const parseResponse = request.Items.map((data) => unmarshall(data));
-//     response = request ? parseResponse : {};
-//   } catch (e) {
-//     response = {
-//       error: e.message,
-//       errorStack: e.stack,
-//       statusCode: 500,
-//     };
-//   }
-
-//   return response;
-// }
-
-// async function getCompanyAccessType(data) {
-//   try {
-//     const params = {
-//       TableName: "CompanyAccessTypeTable",
-//       IndexName: "byCompany",
-//       KeyConditionExpression: "companyId = :companyId",
-//       ExpressionAttributeValues: marshall({
-//         ":companyId": data.companyId,
-//       }),
-//     };
-
-//     const command = new QueryCommand(params);
-//     const request = await client.send(command);
-//     var parseResponse = request.Items.map((data) => unmarshall(data));
-
-//     if (data.userType) {
-//       parseResponse = request.Items.map((data) => unmarshall(data)).filter(
-//         (userType) => userType.userType === data.userType
-//       );
-//     }
-//     response = request ? parseResponse : {};
-//   } catch (e) {
-//     response = {
-//       error: e.message,
-//       errorStack: e.stack,
-//       statusCode: 500,
-//     };
-//   }
-//   return response;
-// }
-
-// async function getFeature(data) {
-//   try {
-//     const params = {
-//       TableName: "FeatureTable",
-//       Key: marshall({
-//         id: data.id,
-//       }),
-//     };
-
-//     const command = new GetItemCommand(params);
-//     const { Item } = await client.send(command);
-//     response = Item ? unmarshall(Item) : {};
-//   } catch (e) {
-//     response = {
-//       error: e.message,
-//       errorStack: e.stack,
-//       statusCode: 500,
-//     };
-//   }
-//   return response;
-// }
-
-// async function getClient(data) {
-//   try {
-//     const params = {
-//       TableName: "ClientsTable",
-//       IndexName: "byCompany",
-//       KeyConditionExpression: "companyId = :companyId",
-//       ExpressionAttributeValues: marshall({
-//         ":companyId": data.companyId,
-//       }),
-//     };
-
-//     const command = new QueryCommand(params);
-//     const request = await client.send(command);
-//     var response = request.Items.map((data) => unmarshall(data));
-//   } catch (e) {
-//     console.log(e);
-//     response = {
-//       error: e.message,
-//       errorStack: e.stack,
-//       statusCode: 500,
-//     };
-//   }
-//   return response;
-// }
-
-// async function getMatter(data) {
-//   try {
-//     const params = {
-//       TableName: "MatterTable",
-//       IndexName: "byCompany",
-//       KeyConditionExpression: "companyId = :companyId",
-//       ExpressionAttributeValues: marshall({
-//         ":companyId": data.companyId,
-//       }),
-//     };
-
-//     const command = new QueryCommand(params);
-//     const request = await client.send(command);
-//     var response = request.Items.map((data) => unmarshall(data));
-//   } catch (e) {
-//     console.log(e);
-//     response = {
-//       error: e.message,
-//       errorStack: e.stack,
-//       statusCode: 500,
-//     };
-//   }
-//   return response;
-// }
 
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
   const { limit = 10, nextToken } = ctx.args;
 
   try {
-    const params = {
+    const companyUsersParams = {
       TableName: "CompanyUserTable",
       IndexName: "byCompany",
       KeyConditionExpression: "companyId = :companyId",
@@ -173,14 +25,38 @@ async function listCompanyUsers(ctx) {
       Limit: limit,
     };
 
-    const command = new QueryCommand(params);
-    const result = await client.send(command);
+    const companyUsersCommand = new QueryCommand(companyUsersParams);
+    const companyUsersResult = await client.send(companyUsersCommand);
+
+    const userIds = companyUsersResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.userId })
+    );
+
+    const usersParams = {
+      RequestItems: {
+        UserTable: {
+          Keys: userIds,
+        },
+      },
+    };
+
+    const usersCommand = new BatchGetItemCommand(usersParams);
+    const usersResult = await client.send(usersCommand);
+
+    const objUsers = usersResult.Responses.UserTable.map((i) => unmarshall(i));
+    const objCompanyUsers = companyUsersResult.Items.map((i) => unmarshall(i));
+
+    const response = objCompanyUsers.map((item) => {
+      const filterUser = objUsers.find((u) => u.id === item.userId);
+      return { ...item, ...filterUser };
+    });
+
     return {
-      items: result.Items.map((i) => unmarshall(i)),
-      nextToken: result.LastEvaluatedKey
-        ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
-            "base64"
-          )
+      items: response,
+      nextToken: companyUsersResult.LastEvaluatedKey
+        ? Buffer.from(
+            JSON.stringify(companyUsersResult.LastEvaluatedKey)
+          ).toString("base64")
         : null,
     };
   } catch (e) {
