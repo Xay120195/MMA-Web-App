@@ -8,8 +8,8 @@ const EmptyRow = ({ searchRow, text, text2, text3 }) => {
         <img src={NoData} alt="empty" className="w-36 m-10" />
       </div>
 
-      <div className="flex-none w-full h-full">
-        <p style={{ marginTop: "4rem", fontWeight: "bold", fontSize: "3rem" }}>
+      <div className="flex-none w-96 h-full">
+        <p style={{ marginTop: "4rem", fontWeight: "bold", fontSize: "2rem" }}>
           {!searchRow ? text : `Cannot found in your ${text3}`}
         </p>
         <p>{!searchRow ? text2 : "Search not found for this query"}</p>
