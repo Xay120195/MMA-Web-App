@@ -210,33 +210,40 @@ async function createClient(data) {
   return response;
 }
 
-async function updateClientMatter(id, data) {
+async function createClientMatter(data) {
   let response = {};
   try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const params = {
-      id,
-      ...data,
+    const rawParams = {
+      id: v4(),
+      matter: data.matter,
+      client: data.client,
+      createdAt: new Date().toISOString(),
     };
 
-    const command = new UpdateItemCommand({
-      TableName: "ClientsTable",
-      Key: marshall({ id }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "ClientMatterTable",
+      Item: params,
     });
-
-    console.log(data);
-
     const request = await client.send(command);
+
+    const companyClientMatterParams = {
+      id: v4(),
+      clientMatterId: rawParams.id,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
+    };
+  
+    const companyClientMatterCommand = new PutItemCommand({
+      TableName: "CompanyClientMatterTable",
+      Item: marshall(companyClientMatterParams),
+    });
     
-    response = request ? params : {};
+    const companyClientMatterRequest = await client.send(companyClientMatterCommand);
+  
+    console.log(companyClientMatterRequest);
+    response = companyClientMatterRequest ? rawParams : {};
+
   } catch (e) {
     response = {
       error: e.message,
@@ -244,7 +251,7 @@ async function updateClientMatter(id, data) {
       statusCode: 500,
     };
   }
-  console.log(response);
+
   return response;
 }
 
@@ -415,13 +422,8 @@ const resolvers = {
       };
       return await updateCompanyAccessType(id, data);
     },
-    clientMatterUpdate: async (ctx) => {
-      const { id, matter } = ctx.arguments;
-      const data = {
-        matter: matter,
-        updatedAt: new Date().toISOString(),
-      };
-      return await updateClientMatter(id, data);
+    clientMatterCreate: async (ctx) => {
+      return await createClientMatter(ctx.arguments);
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
