@@ -22,11 +22,13 @@ export default function RemoveLabelModal(props) {
 
   const handleConfirm = () => {
      const newData = [...dummyData];
-     const index = dummyData.findIndex((data) => data.id === tempStorage[0]);
-    //  alert(index);
+    //  alert(tempStorage[0]);
+     const index = newData.findIndex((data) => data.id === tempStorage[0]);
      dummyData.splice(index, 1);
      props.handleModalClose();
   }
+
+  const index = dummyData.findIndex((data) => data.id === tempStorage[0]);
 
 
   return (
@@ -49,8 +51,8 @@ export default function RemoveLabelModal(props) {
                 </div>
 
                 <div className="flex items-center justify-center rounded-b py-5">
-                  <p className="font-semibold"> {dummyData[tempStorage].labelName} &nbsp; </p>
-                  <p>({dummyData[tempStorage].conversations.length}  Conversations)</p>
+                  <p className="font-semibold"> {dummyData[index].labelName} &nbsp; </p>
+                  <p>({dummyData[index].conversations.length}  Conversations)</p>
                 
                 </div>
             

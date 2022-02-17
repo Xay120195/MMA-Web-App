@@ -2,12 +2,9 @@ import  { React, useState } from 'react';
 import { GrClose } from "react-icons/gr";
 import { useForm } from "react-hook-form";
 import ToastNotification from "../toast-notification";
-import { Auth, API } from "aws-amplify";
-import { GrUserSettings } from "react-icons/gr";
-import { AiOutlineUser, AiOutlineTags } from "react-icons/ai";
-import { BsBuilding } from "react-icons/bs";
+import { AiOutlineTags } from "react-icons/ai";
 import { HiOutlinePlusCircle } from "react-icons/hi";
-import { dummyData } from "./index"
+import { dummyData } from "./index";
 
 
 export default function AddLabelModal(props) {
@@ -26,30 +23,22 @@ export default function AddLabelModal(props) {
   const [labelName, setAddFormData] = useState(" ");
 
   const handleAddFormChange = event => {
-
     setAddFormData(event.target.value);
   };
 
   const handleAddFormSubmit = event => {
     event.preventDefault();
 
-    const minID = 1;
-    const maxID = 999999;
-    const rand = minID + Math.random() * (maxID - minID);
-
     const newLabel= {
-      id: rand,
+      id: dummyData.length + 1,
       labelName: labelName,
-      conversations: [{ id: rand, subject: "test", from: "email@email.com" }]
+      conversations: [{ id: dummyData.length + 1, subject: "test", from: "email@email.com" }]
     };
 
     const newLabels = [...ddata, newLabel];
-    // setDummyData(newLabels);
-    dummyData[dummyData.length + 1] = newLabel;
-   //alert(dummyData);
+    dummyData[dummyData.length] = newLabel;
+    //alert(dummyData);
     props.handleModalClose();
-   
-
   };
 
 

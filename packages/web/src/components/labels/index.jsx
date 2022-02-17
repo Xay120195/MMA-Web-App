@@ -81,6 +81,7 @@ export default function Labels() {
     };
 
     const handleEditLabel = () => {
+      
       handleModalClose();
     };
 
@@ -94,16 +95,14 @@ export default function Labels() {
     const handleDelete = (id) => {
       setshowRemoveLabelModal(true);
       tempStorage[0] = id;
-      // alert(tempStorage[0]);
+      //alert(tempStorage[0]);
     }
 
-    
-
-
-    
-
-    
-    
+    const handleEdit = (id) => {
+      setshowEditLabelModal(true);
+      tempStorage[1] = id;
+      //alert(tempStorage[1]);
+    }
 
   return (
     <>
@@ -243,7 +242,7 @@ export default function Labels() {
                               <button
                                   type="button"
                                   className="bg-green-100 hover:bg-green-100 text-green-500 text-sm py-1 px-4 rounded-3xl inline-flex items-center border-0 shadow focus:ring mx-2"
-                                  onClick={() => setshowEditLabelModal(true)}
+                                  onClick={() => handleEdit(data.id)}
                               >
                                   EDIT
                               </button>
