@@ -36,26 +36,6 @@ const getDay = (date) => {
   let day = d.getDate();
   return day;
 };
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const getmonth = (date) => {
-  const d = new Date(date);
-  let month = months[d.getMonth()];
-  return month.substring(0, 5);
-};
 
 const TableInfo = ({
   setTotalReadChecked,
@@ -168,15 +148,15 @@ const TableInfo = ({
                         <p className="text-lg ">{getDay(item.date)}</p>
 
                         <p style={{ fontSize: "12px" }}>
-                          {getmonth(item.date).substring(0, 3)}
+                          {moment(item.date).format("MMM")}
                         </p>
                       </div>
                     </div>
                     <div className="flex-none w-20 py-6 px-6">
                       <div className="avatar-grid">
                         <div className="avatar">
-                          {item.firstname.charAt(0)}
-                          {item.lastname.charAt(0)}
+                          {String(item.firstname).charAt(0)}
+                          {String(item.lastname).charAt(0)}
                         </div>
                       </div>
                     </div>
@@ -351,15 +331,15 @@ const TableInfo = ({
                         <p className="text-lg ">{getDay(item.date)}</p>
 
                         <p style={{ fontSize: "12px" }}>
-                          {getmonth(item.date).substring(0, 3)}
+                          {moment(item.date).format("MMM")}
                         </p>
                       </div>
                     </div>
                     <div className="flex-none w-20 py-6 px-6">
                       <div className="avatar-grid">
                         <div className="avatar">
-                          {item.firstname.charAt(0)}
-                          {item.lastname.charAt(0)}
+                          {String(item.firstname).charAt(0)}
+                          {String(item.firstname).charAt(0)}
                         </div>
                       </div>
                     </div>

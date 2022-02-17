@@ -54,8 +54,8 @@ const Inbox = () => {
   const [search, setSearch] = useState("");
   const [searchRow, setSearchRow] = useState(false);
 
-  const unreaddata = data.filter((datas) => datas.status === "unread");
-  const readdata = data.filter((datas) => datas.status === "read");
+  const unreaddata = data.filter((datas) => datas.status === true);
+  const readdata = data.filter((datas) => datas.status === false);
 
   const [checkedStateRead, setCheckedStateRead] = useState(
     new Array(readdata.length).fill(false)
@@ -64,17 +64,13 @@ const Inbox = () => {
   const [checkedStateUnRead, setCheckedStateUnreRead] = useState(
     new Array(unreaddata.length).fill(false)
   );
+  console.log(getId);
 
   useEffect(() => {
-    if (data.length === totalChecked) {
-      setcheckAllState(true);
-    } else {
-      setcheckAllState(false);
-    }
-    setTotalChecked(totalReadChecked + totalUnReadChecked);
+    setTotalChecked(data.length);
     setUnreadData(unreaddata);
     setReadData(readdata);
-  }, [checkedStateRead, checkedStateUnRead, data, totalChecked]);
+  }, [checkedStateRead, checkedStateUnRead, data]);
 
   const handleSearch = (event) => {
     setSearch(event.target.value);
@@ -153,6 +149,7 @@ const Inbox = () => {
             setcheckAllState={setcheckAllState}
             setId={setId}
             getId={getId}
+            setTotalChecked={setTotalChecked}
           />
         </div>
       </div>

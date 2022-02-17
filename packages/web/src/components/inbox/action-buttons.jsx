@@ -31,8 +31,7 @@ const ActionButtons = ({
     if (ischecked) {
       setCheckedStateRead(new Array(readdata.length).fill(true));
       setCheckedStateUnreRead(new Array(unreaddata.length).fill(true));
-      setTotalUnReadChecked(unreaddata.length);
-      setTotalReadChecked(readdata.length);
+
       setId(data.map((s) => s.id));
     } else {
       setCheckedStateRead(new Array(readdata.length).fill(false));
@@ -49,7 +48,11 @@ const ActionButtons = ({
       return parseInt(x, 10);
     });
 
-    const seletedId = checkAllState === true ? getId : id;
+    var totalid = getId.map(function (x) {
+      return parseInt(x, 10);
+    });
+
+    const seletedId = checkAllState === true ? totalid : id;
 
     seletedId.forEach((findId) => {
       const foundObj = data.find(({ id }) => id == findId);
@@ -64,6 +67,12 @@ const ActionButtons = ({
     });
 
     dispatch({ type: ACTIONS.SAVE_READ, payload: { data: data } });
+
+    setCheckedStateRead(new Array(readdata.length).fill(false));
+    setCheckedStateUnreRead(new Array(readdata.length).fill(false));
+    setTotalUnReadChecked(0);
+    setTotalReadChecked(0);
+    setcheckAllState(false);
   };
 
   const handleMarkUnread = (listId1, listId2) => {
@@ -74,11 +83,15 @@ const ActionButtons = ({
       return parseInt(x, 10);
     });
 
-    const seletedId = checkAllState === true ? getId : id;
+    var totalid = getId.map(function (x) {
+      return parseInt(x, 10);
+    });
+
+    const seletedId = checkAllState === true ? totalid : id;
 
     seletedId.forEach((findId) => {
       const foundObj = data.find(({ id }) => id == findId);
-      if (foundObj) foundObj.status = "unread";
+      if (foundObj) foundObj.status = true;
       if (foundObj) {
         setalertMessage(`Successfully mark as unread message`);
         setShowToast(true);
@@ -89,6 +102,12 @@ const ActionButtons = ({
     });
 
     dispatch({ type: ACTIONS.MARK_UNREAD, payload: { data: data } });
+
+    setCheckedStateRead(new Array(readdata.length).fill(false));
+    setCheckedStateUnreRead(new Array(readdata.length).fill(false));
+    setTotalUnReadChecked(0);
+    setTotalReadChecked(0);
+    setcheckAllState(false);
   };
   const handleDelete = (listId1, listId2) => {
     const total = [];
@@ -107,6 +126,7 @@ const ActionButtons = ({
     setCheckedStateUnreRead(new Array(readdata.length).fill(false));
     setTotalUnReadChecked(0);
     setTotalReadChecked(0);
+    setcheckAllState(false);
 
     if (id) {
       setalertMessage(`Successfully deleted`);
