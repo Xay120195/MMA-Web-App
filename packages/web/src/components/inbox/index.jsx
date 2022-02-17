@@ -67,7 +67,7 @@ const Inbox = () => {
   console.log(getId);
 
   useEffect(() => {
-    setTotalChecked(data.length);
+    setTotalChecked(totalReadChecked + totalUnReadChecked);
     setUnreadData(unreaddata);
     setReadData(readdata);
   }, [checkedStateRead, checkedStateUnRead, data]);

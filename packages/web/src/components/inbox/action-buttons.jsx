@@ -18,6 +18,7 @@ const ActionButtons = ({
   setcheckAllState,
   setId,
   getId,
+  setTotalChecked,
 }) => {
   const hideToast = () => {
     setShowToast(false);
@@ -31,7 +32,8 @@ const ActionButtons = ({
     if (ischecked) {
       setCheckedStateRead(new Array(readdata.length).fill(true));
       setCheckedStateUnreRead(new Array(unreaddata.length).fill(true));
-
+      setTotalReadChecked(readdata.length);
+      setTotalUnReadChecked(unreaddata.length);
       setId(data.map((s) => s.id));
     } else {
       setCheckedStateRead(new Array(readdata.length).fill(false));
@@ -150,7 +152,7 @@ const ActionButtons = ({
             type="checkbox"
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
-          {totalChecked <= 0 ? (
+          {totalChecked === 0 ? (
             <button
               type="button"
               className="bg-slate-100 hover:bg-slate-200 text-black text-sm py-2 px-2 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-3"
