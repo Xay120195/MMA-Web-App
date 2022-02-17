@@ -176,7 +176,7 @@ async function listCompanyClients(ctx) {
     const clientsCommand = new BatchGetItemCommand(clientParams);
     const clientsResult = await client.send(clientsCommand);
 
-    const objClients = clientsResult.Responses.ClientTable.map((i) => unmarshall(i));
+    const objClients = clientsResult.Responses.ClientsTable.map((i) => unmarshall(i));
     const objCompanyClients = companyClientResult.Items.map((i) => unmarshall(i));
 
     const response = objCompanyClients.map((item) => {

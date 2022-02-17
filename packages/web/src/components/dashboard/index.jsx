@@ -12,7 +12,7 @@ import ToastNotification from "../toast-notification";
 import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 import AccessControl from "../../shared/accessControl";
-import CreatableSelect from 'react-select/creatable';
+import CreatableSelect from "react-select/creatable";
 import { API } from "aws-amplify";
 
 export default function Dashboard() {
@@ -68,7 +68,6 @@ export default function Dashboard() {
 
     Clients();
     Matters();
-    
   }, [searchMatter, userInfo]);
 
   const featureAccessFilters = async () => {
@@ -104,9 +103,6 @@ export default function Dashboard() {
     } else {
       console.log(backgroundAccess.message);
     }
-
-    
-
   };
 
   const filter = (v) => {
@@ -126,7 +122,7 @@ export default function Dashboard() {
     console.log(newValue);
     console.groupEnd();
 
-    if(newValue?.__isNew__){
+    if (newValue?.__isNew__) {
       addClients(newValue.label);
     } else {
       setclientName(newValue);
@@ -138,7 +134,7 @@ export default function Dashboard() {
     console.log(newValue);
     console.groupEnd();
 
-    if(newValue?.__isNew__){
+    if (newValue?.__isNew__) {
       addMatters(newValue.label);
     } else {
       setmatterName(newValue);
@@ -157,10 +153,12 @@ export default function Dashboard() {
       client_id = clientName.value,
       matter_name = matterName.label,
       matter_id = matterName.value,
-      matter_number = `{${matter_name.charAt(0)}-${matter_id.slice(-4)}/${client_id.slice(-4)}}`,
+      matter_number = `{${matter_name.charAt(0)}-${matter_id.slice(
+        -4
+      )}/${client_id.slice(-4)}}`,
       timestamp = dateFormat(datenow, "dd mmmm yyyy h:MM:ss TT");
 
-      addClientMatter(client_id, matter_id);
+    addClientMatter(client_id, matter_id);
 
     setmatterList((previousState) => [
       {
@@ -218,67 +216,83 @@ export default function Dashboard() {
     }, 3000);
   };
 
-const listClient = `
-query listClient($companyId: ID) {
-    client(companyId:$companyId) {
+  const listClient = `
+query listClient($companyId: String) {
+  company(id: $companyId) {
+    clients {
+      items {
         id
         name
-        companyId
+      }
     }
+  }
 }
 `;
 
-const Clients = async () => {
-  let result;
+  const Clients = async () => {
+    let result;
 
-  const clientId = localStorage.getItem("companyId");
-  const clientList = await API.graphql({
+    const companyId = localStorage.getItem("companyId");
+    const clientList = await API.graphql({
       query: listClient,
       variables: {
-          companyId: clientId
+        companyId: companyId,
       },
-  });
+    });
 
-  result = clientList.data.client.map(({ id, name }) => ({
-    value: id,
-    label: name,
-  })).sort((a, b) => a.label.localeCompare(b.label));
+    if (clientList.data.company.clients.items !== null) {
+      result = clientList.data.company.clients.items
+        .map(({ id, name }) => ({
+          value: id,
+          label: name,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
 
-  setClientsOptions(result);
-};
+    setClientsOptions(result);
+  };
 
-const listMatter = `
-query listMatter($companyId: ID) {
-    matter(companyId:$companyId) {
+  const listMatter = `
+query listMatter($companyId: String) {
+  company(id: $companyId) {
+    matters {
+      items {
         id
         name
-        companyId
+      }
     }
+  }
 }
 `;
 
-const Matters = async () => {
-  let result;
+  const Matters = async () => {
+    let result;
 
-  const clientId = localStorage.getItem("companyId");
+    const companyId = localStorage.getItem("companyId");
 
-  const matterList = await API.graphql({
+    const matterList = await API.graphql({
       query: listMatter,
       variables: {
-          companyId: clientId
+        companyId: companyId,
       },
-  });
+    });
 
-  result = matterList.data.matter.map(({ id, name }) => ({
-    value: id,
-    label: name,
-  })).sort((a, b) => a.label.localeCompare(b.label));
+    console.log("Matters", matterList);
 
-  setMattersOptions(result);
-};
+    if (matterList.data.company.matters.items !== null) {
+      result = matterList.data.company.matters.items
+        .map(({ id, name }) => ({
+          value: id,
+          label: name,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
 
-const addClient = `
-mutation addClient($companyId: ID, $name: String) {
+    setMattersOptions(result);
+  };
+
+  const addClient = `
+mutation addClient($companyId: String, $name: String) {
     clientCreate(companyId:$companyId, name:$name) {
         id
         name
@@ -286,29 +300,30 @@ mutation addClient($companyId: ID, $name: String) {
 }
 `;
 
-const addClients = async (data) => {
-  let result;
+  const addClients = async (data) => {
+    let result;
 
-  const clientId = localStorage.getItem("companyId");
+    const clientId = localStorage.getItem("companyId");
 
-  const addedClientList = await API.graphql({
+    const addedClientList = await API.graphql({
       query: addClient,
       variables: {
-          companyId: clientId,
-          name: data
+        companyId: clientId,
+        name: data,
       },
-  });
+    });
 
-  result = [addedClientList.data.clientCreate].map(({ id, name }) => ({
-    value: id,
-    label: name,
-  }));
+    result = [addedClientList.data.clientCreate].map(({ id, name }) => ({
+      value: id,
+      label: name,
+    }));
 
-  setclientName(result);
-};
+    console.log(result);
+    setclientName(result);
+  };
 
-const addMatter = `
-mutation addMatter($companyId: ID, $name: String) {
+  const addMatter = `
+mutation addMatter($companyId: String, $name: String) {
     matterCreate(companyId:$companyId, name:$name) {
         id
         name
@@ -316,27 +331,27 @@ mutation addMatter($companyId: ID, $name: String) {
 }
 `;
 
-const addMatters = async (data) => {
-  let result;
+  const addMatters = async (data) => {
+    let result;
 
-  const clientId = localStorage.getItem("companyId");
+    const clientId = localStorage.getItem("companyId");
 
-  const addedMatterList = await API.graphql({
+    const addedMatterList = await API.graphql({
       query: addMatter,
       variables: {
-          companyId: clientId,
-          name: data
+        companyId: clientId,
+        name: data,
       },
-  });
-  
-  result = [addedMatterList.data.matterCreate].map(({ id, name }) => ({
-    value: id,
-    label: name,
-  }));
-  setmatterName(result);
-};
+    });
 
-const matterClientUpdate = `
+    result = [addedMatterList.data.matterCreate].map(({ id, name }) => ({
+      value: id,
+      label: name,
+    }));
+    setmatterName(result);
+  };
+
+  const matterClientUpdate = `
   mutation matterClientUpdate($id: ID, $id1: ID) {
     clientMatterUpdate(id: $id, matter: {id: $id1}) {
       id
@@ -347,20 +362,19 @@ const matterClientUpdate = `
 }
 `;
 
-const addClientMatter = async (clients, matters) => {
+  const addClientMatter = async (clients, matters) => {
+    console.log(matters);
 
-  console.log(matters);
-
-  const addedClientMatter = await API.graphql({
+    const addedClientMatter = await API.graphql({
       query: matterClientUpdate,
       variables: {
-          id: clients,
-          matter: matters
+        id: clients,
+        matter: matters,
       },
-  });
+    });
 
-  console.log(addedClientMatter);
-};
+    console.log(addedClientMatter);
+  };
 
   return userInfo ? (
     <>
@@ -394,8 +408,7 @@ const addClientMatter = async (clients, matters) => {
                       </div>
                       <div className="pr-2">
                         <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                          <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3">
-                          </span>
+                          <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3"></span>
                           <CreatableSelect
                             options={mattersOptions}
                             isClearable
