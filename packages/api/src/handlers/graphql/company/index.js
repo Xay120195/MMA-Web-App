@@ -9,7 +9,7 @@ const { getMatterFile } = require("../../../services/MatterService");
 
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.args;
+  const { limit = 100, nextToken } = ctx.args;
 
   console.log(ctx.args);
   try {
@@ -23,7 +23,7 @@ async function listCompanyUsers(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
-      Limit: limit ? limit : 100,
+      Limit: limit,
     };
 
     console.log(companyUsersParams);
