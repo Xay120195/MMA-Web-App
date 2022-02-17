@@ -16,7 +16,6 @@ const TableInfo = ({
   checkedState,
   setCheckedState,
   settotalChecked,
-  totalChecked,
   search,
   getId,
   setId,

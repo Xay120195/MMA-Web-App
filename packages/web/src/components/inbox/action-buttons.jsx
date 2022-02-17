@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import ToastNotification from "../toast-notification";
 
 const ActionButtons = ({
   unreaddata,
@@ -18,6 +19,12 @@ const ActionButtons = ({
   setId,
   getId,
 }) => {
+  const hideToast = () => {
+    setShowToast(false);
+  };
+  const [showToast, setShowToast] = useState(false);
+  const [alertMessage, setalertMessage] = useState();
+
   const handleCheckAllChange = (ischecked) => {
     setcheckAllState(!checkAllState);
 
@@ -47,6 +54,13 @@ const ActionButtons = ({
     seletedId.forEach((findId) => {
       const foundObj = data.find(({ id }) => id == findId);
       if (foundObj) foundObj.save = true;
+      if (foundObj) {
+        setalertMessage(`Successfully saved message`);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+      }
     });
 
     dispatch({ type: ACTIONS.SAVE_READ, payload: { data: data } });
@@ -65,6 +79,13 @@ const ActionButtons = ({
     seletedId.forEach((findId) => {
       const foundObj = data.find(({ id }) => id == findId);
       if (foundObj) foundObj.status = "unread";
+      if (foundObj) {
+        setalertMessage(`Successfully mark as unread message`);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+      }
     });
 
     dispatch({ type: ACTIONS.MARK_UNREAD, payload: { data: data } });
@@ -86,6 +107,14 @@ const ActionButtons = ({
     setCheckedStateUnreRead(new Array(readdata.length).fill(false));
     setTotalUnReadChecked(0);
     setTotalReadChecked(0);
+
+    if (id) {
+      setalertMessage(`Successfully deleted`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
   };
 
   return (
@@ -225,6 +254,9 @@ const ActionButtons = ({
           </span>
         </div>
       </div>
+      {showToast && (
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
     </>
   );
 };
