@@ -11,6 +11,7 @@ async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.args;
 
+  console.log(ctx.args);
   try {
     const companyUsersParams = {
       TableName: "CompanyUserTable",
@@ -24,6 +25,8 @@ async function listCompanyUsers(ctx) {
         : undefined,
       Limit: limit ? limit : 100,
     };
+
+    console.log(companyUsersParams);
 
     const companyUsersCommand = new QueryCommand(companyUsersParams);
     const companyUsersResult = await client.send(companyUsersCommand);
