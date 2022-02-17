@@ -19,7 +19,7 @@ const ACTIONS = {
   SEARCH_MESSAGE: "search_message",
 };
 
-function reducer(data, action) {
+const reducer = (data, action) => {
   switch (action.type) {
     case ACTIONS.DELETE_DATA:
       return data.filter((item) => !action.payload.id.includes(item.id));
@@ -38,7 +38,7 @@ function reducer(data, action) {
     default:
       return data;
   }
-}
+};
 
 const Inbox = () => {
   const [data, dispatch] = useReducer(reducer, inbox);
@@ -66,10 +66,15 @@ const Inbox = () => {
   );
 
   useEffect(() => {
+    if (data.length === totalChecked) {
+      setcheckAllState(true);
+    } else {
+      setcheckAllState(false);
+    }
     setTotalChecked(totalReadChecked + totalUnReadChecked);
     setUnreadData(unreaddata);
     setReadData(readdata);
-  }, [checkedStateRead, checkedStateUnRead, data]);
+  }, [checkedStateRead, checkedStateUnRead, data, totalChecked]);
 
   const handleSearch = (event) => {
     setSearch(event.target.value);

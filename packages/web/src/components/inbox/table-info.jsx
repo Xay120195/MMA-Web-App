@@ -235,20 +235,37 @@ const TableInfo = ({
                         onClick={() => showHiddenMessage(item.id)}
                         className=" cursor-pointer"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-6 w-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
+                        {item.id === active && click ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 15l7-7 7 7"
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -262,6 +279,29 @@ const TableInfo = ({
                           {moment(item.date).format("MMMM Do YYYY, h:mm:ss a")}
                         </p>
                         <p className="py-5 px-5">{item.message}</p>
+                        {item.fwd && (
+                          <p className="py-5 px-5">
+                            ---------Forwarded message---------
+                            <p>
+                              <span className="font-bold">From: </span>
+                              {item.email}
+                            </p>
+                            <p>
+                              <span className="font-bold">Date: </span>
+                              {moment(item.date).format(
+                                "MMMM Do YYYY, h:mm:ss a"
+                              )}
+                            </p>
+                            <p>
+                              <span className="font-bold">Subject: </span>
+                              {item.title}
+                            </p>
+                            <p>
+                              <span className="font-bold">To: </span>
+                              {item.toEmail}
+                            </p>
+                          </p>
+                        )}
                       </>
                     )}
                   </div>
@@ -378,20 +418,37 @@ const TableInfo = ({
                         onClick={() => showHiddenMessage(item.id)}
                         className="cursor-pointer"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-6 w-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
+                        {item.id === active && click ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 15l7-7 7 7"
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -406,6 +463,29 @@ const TableInfo = ({
                           {moment(item.date).format("MMMM Do YYYY, h:mm:ss a")}
                         </p>
                         <p className="py-5 px-5">{item.message}</p>
+                        {item.fwd && (
+                          <p className="py-5 px-5">
+                            ---------Forwarded message---------
+                            <p>
+                              <span className="font-bold">From: </span>
+                              {item.email}
+                            </p>
+                            <p>
+                              <span className="font-bold">Date: </span>
+                              {moment(item.date).format(
+                                "MMMM Do YYYY, h:mm:ss a"
+                              )}
+                            </p>
+                            <p>
+                              <span className="font-bold">Subject: </span>
+                              {item.title}
+                            </p>
+                            <p>
+                              <span className="font-bold">To: </span>
+                              {item.toEmail}
+                            </p>
+                          </p>
+                        )}
                       </>
                     )}
                   </div>

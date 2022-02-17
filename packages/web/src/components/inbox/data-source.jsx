@@ -8,6 +8,8 @@ export const inbox = [
     status: "unread",
     fwd: true,
     email: "joseph.aguilar@lophils.com",
+    toEmail: "sample@gmail.com",
+
     tags: [
       { name: "New Project 4" },
       { name: "New Project 3" },
@@ -27,6 +29,7 @@ export const inbox = [
     status: "unread",
     fwd: true,
     email: "joseph.aguilar@lophils.com",
+    toEmail: "sample@gmail.com",
     tags: [
       { name: "New Project 4" },
       { name: "New Project 3" },
@@ -46,6 +49,7 @@ export const inbox = [
     status: "unread",
     fwd: false,
     email: "joseph.aguilar@lophils.com",
+    toEmail: "sample@gmail.com",
     tags: [
       { name: "New Project 4" },
       { name: "New Project 3" },
@@ -76,6 +80,7 @@ export const inbox = [
     status: "read",
     fwd: true,
     email: "joseph.aguilar@lophils.com",
+    toEmail: "sample@gmail.com",
     tags: [
       { name: "New Project 4" },
       { name: "New Project 3" },
@@ -95,6 +100,7 @@ export const inbox = [
     status: "read",
     fwd: false,
     email: "joseph.aguilar@lophils.com",
+    toEmail: "sample@gmail.com",
     tags: [
       { name: "New Project 4" },
       { name: "New Project 3" },
@@ -114,6 +120,7 @@ export const inbox = [
     status: "read",
     fwd: false,
     email: "joseph.aguilar@lophils.com",
+    toEmail: "sample@gmail.com",
     tags: [
       { name: "New Project 4" },
       { name: "New Project 3" },
