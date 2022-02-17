@@ -175,6 +175,11 @@ custom:
         field: client
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clients
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: matterCreate
@@ -183,6 +188,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: matter
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matters
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -208,6 +218,16 @@ custom:
       - dataSource: LambdaCompanyDS
         type: Company
         field: users
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: matters
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: clients
         request: false
         response: false
 

@@ -20,7 +20,9 @@ type Company {
   id: ID!
   name: String
   address: Address
-  users(limit: Int, nextToken: String): UserConnection
+  users(limit: Int, nextToken: String): CompanyUserConnection
+  clients(limit: Int, nextToken: String): CompanyClientConnection
+  matters(limit: Int, nextToken: String): CompanyMatterConnection
   phone: String
   email: AWSEmail
   representative: User
@@ -29,8 +31,18 @@ type Company {
   updatedAt: AWSDateTime
 }
 
-type UserConnection {
+type CompanyUserConnection {
   items: [User]
+  nextToken: String
+}
+
+type CompanyClientConnection {
+  items: [Client]
+  nextToken: String
+}
+
+type CompanyMatterConnection {
+  items: [Matter]
   nextToken: String
 }
 
@@ -97,8 +109,6 @@ type File {
 type Client {
   id: ID!
   name: String
-  matter: [Matter]
-  companyId: ID
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -106,7 +116,6 @@ type Client {
 type Matter {
   id: ID!
   name: String
-  companyId: ID
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -127,15 +136,17 @@ schema {
 
 type Query {
   colors: [Color]
-  company(id: String): Company
   companies: [Company]
+  company(id: String): Company
   companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
   user(id: String): User
   page: [Page]
   feature(id: String): Feature
+  clients: [Client]
+  client(id: ID): Client
+  matters: [Matter]
+  matter(id: ID): Matter
   matterFile(matterId: ID): [File]
-  client(companyId: ID): [Client]
-  matter(companyId: ID): [Matter]
   background(companyId: ID): [Background]
 }
 
@@ -169,8 +180,8 @@ type Mutation {
     features: [FeatureInput]
   ): Page
   featureCreate(name: String, label: String, page: PageInput): Feature
-  clientCreate(name: String, companyId: ID): Client
-  matterCreate(name: String, companyId: ID): Matter
+  clientCreate(name: String, companyId: String): Client
+  matterCreate(name: String, companyId: String): Matter
   matterFileCreate(
     matterId: ID
     s3ObjectKey: String

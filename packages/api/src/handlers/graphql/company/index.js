@@ -10,8 +10,6 @@ const { getMatterFile } = require("../../../services/MatterService");
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
   const { limit = 100, nextToken } = ctx.args;
-
-  console.log(ctx.args);
   try {
     const companyUsersParams = {
       TableName: "CompanyUserTable",
@@ -73,10 +71,148 @@ async function listCompanyUsers(ctx) {
   return response;
 }
 
+async function listCompanyMatters(ctx) {
+  const { id } = ctx.source;
+  const { limit = 100, nextToken } = ctx.args;
+
+  console.log(ctx.args);
+  try {
+    const companyMatterParams = {
+      TableName: "CompanyMatterTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": id,
+      }),
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+      Limit: limit,
+    };
+
+    console.log(companyMatterParams);
+
+    const companyMatterCommand = new QueryCommand(companyMatterParams);
+    const companyMatterResult = await client.send(companyMatterCommand);
+
+    const matterIds = companyMatterResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.matterId })
+    );
+
+    const matterParams = {
+      RequestItems: {
+        MatterTable: {
+          Keys: matterIds,
+        },
+      },
+    };
+
+    const mattersCommand = new BatchGetItemCommand(matterParams);
+    const mattersResult = await client.send(mattersCommand);
+
+    const objMatters = mattersResult.Responses.MatterTable.map((i) => unmarshall(i));
+    const objCompanyMatters = companyMatterResult.Items.map((i) => unmarshall(i));
+
+    const response = objCompanyMatters.map((item) => {
+      const filterMatter = objMatters.find((u) => u.id === item.matterId);
+      return { ...item, ...filterMatter };
+    });
+
+    return {
+      items: response,
+      nextToken: companyMatterResult.LastEvaluatedKey
+        ? Buffer.from(
+            JSON.stringify(companyMatterResult.LastEvaluatedKey)
+          ).toString("base64")
+        : null,
+    };
+  } catch (e) {
+    console.log(e);
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
+async function listCompanyClients(ctx) {
+  const { id } = ctx.source;
+  const { limit = 100, nextToken } = ctx.args;
+
+  console.log(ctx.args);
+  try {
+    const companyClientParams = {
+      TableName: "CompanyClientTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": id,
+      }),
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+      Limit: limit,
+    };
+
+    console.log(companyClientParams);
+
+    const companyClientCommand = new QueryCommand(companyClientParams);
+    const companyClientResult = await client.send(companyClientCommand);
+
+    const clientIds = companyClientResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.clientId })
+    );
+
+    const clientParams = {
+      RequestItems: {
+        ClientsTable: {
+          Keys: clientIds,
+        },
+      },
+    };
+
+    const clientsCommand = new BatchGetItemCommand(clientParams);
+    const clientsResult = await client.send(clientsCommand);
+
+    const objClients = clientsResult.Responses.ClientTable.map((i) => unmarshall(i));
+    const objCompanyClients = companyClientResult.Items.map((i) => unmarshall(i));
+
+    const response = objCompanyClients.map((item) => {
+      const filterClient = objClients.find((u) => u.id === item.clientId);
+      return { ...item, ...filterClient };
+    });
+
+    return {
+      items: response,
+      nextToken: companyClientResult.LastEvaluatedKey
+        ? Buffer.from(
+            JSON.stringify(companyClientResult.LastEvaluatedKey)
+          ).toString("base64")
+        : null,
+    };
+  } catch (e) {
+    console.log(e);
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
 const resolvers = {
   Company: {
     users: async (ctx) => {
       return listCompanyUsers(ctx);
+    },
+    matters: async (ctx) => {
+      return listCompanyMatters(ctx);
+    },
+    clients: async (ctx) => {
+      return listCompanyClients(ctx);
     },
   },
 };

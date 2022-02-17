@@ -172,7 +172,6 @@ async function createClient(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
-      companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
 
@@ -182,7 +181,24 @@ async function createClient(data) {
       Item: params,
     });
     const request = await client.send(command);
-    response = request ? unmarshall(params) : {};
+
+    const companyClientParams = {
+      id: v4(),
+      clientId: rawParams.id,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
+    };
+  
+    const companyClientCommand = new PutItemCommand({
+      TableName: "CompanyClientTable",
+      Item: marshall(companyClientParams),
+    });
+    
+    const companyClientRequest = await client.send(companyClientCommand);
+  
+    console.log(companyClientRequest);
+    response = companyClientRequest ? rawParams : {};
+
   } catch (e) {
     response = {
       error: e.message,
@@ -219,6 +235,7 @@ async function updateClientMatter(id, data) {
     console.log(data);
 
     const request = await client.send(command);
+    
     response = request ? params : {};
   } catch (e) {
     response = {
@@ -237,7 +254,6 @@ async function createMatter(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
-      companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
 
@@ -248,7 +264,23 @@ async function createMatter(data) {
     });
 
     const request = await client.send(command);
-    response = request ? unmarshall(params) : {};
+
+    const companyMatterParams = {
+      id: v4(),
+      matterId: rawParams.id,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const companyMatterCommand = new PutItemCommand({
+      TableName: "CompanyMatterTable",
+      Item: marshall(companyMatterParams),
+    });
+    
+    const companyMatterRequest = await client.send(companyMatterCommand);
+
+    console.log(companyMatterRequest);
+    response = companyMatterRequest ? rawParams : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -257,6 +289,7 @@ async function createMatter(data) {
     };
   }
 
+  console.log(response);
   return response;
 }
 
@@ -322,7 +355,7 @@ async function updateBackground(id, data) {
       statusCode: 500,
     };
   }
-  
+
   return response;
 }
 
