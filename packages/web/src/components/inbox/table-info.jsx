@@ -202,8 +202,8 @@ const TableInfo = ({
                       <div className="flex-none w-20 py-6 px-6">
                         <div className="avatar-grid">
                           <div className="avatar">
-                            {String(item.firstname).charAt(0)}
-                            {String(item.lastname).charAt(0)}
+                            {item.firstname.charAt(0)}
+                            {item.lastname.charAt(0)}
                           </div>
                         </div>
                       </div>
@@ -395,8 +395,8 @@ const TableInfo = ({
                       <div className="flex-none w-20 py-6 px-6">
                         <div className="avatar-grid">
                           <div className="avatar">
-                            {String(item.firstname).charAt(0)}
-                            {String(item.firstname).charAt(0)}
+                            {item.firstname.charAt(0)}
+                            {item.lastname.charAt(0)}
                           </div>
                         </div>
                       </div>
