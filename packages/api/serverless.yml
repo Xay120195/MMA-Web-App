@@ -154,12 +154,6 @@ custom:
         field: matterFileCreate
         request: false
         response: false
-      # - dataSource: DynamoDBMatterFileTableDS
-      #   type: Query
-      #   field: matterFile
-      # - dataSource: DynamoDBMatterFileTableDS
-      #   type: Mutation
-      #   field: matterFileCreate
       - dataSource: LambdaFileDS
         type: File
         field: downloadURL
@@ -170,9 +164,24 @@ custom:
         field: clientCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterCreate
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: client
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clientMatter
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clients
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -185,14 +194,9 @@ custom:
         field: matter
         request: false
         response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: clientMatterUpdate
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: clientMatterCreate
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matters
         request: false
         response: false
       - dataSource: LambdaQueryDS
@@ -210,7 +214,21 @@ custom:
         field: users
         request: false
         response: false
-
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: matters
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: clients
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: clientMatters
+        request: false
+        response: false
     dataSources:
       - type: AMAZON_DYNAMODB
         name: DynamoDBColorTableDS

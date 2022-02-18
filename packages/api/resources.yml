@@ -141,7 +141,45 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  MatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  ClientMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClientMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  CompanyMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
         - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: matterId
           AttributeType: S
       KeySchema:
         - AttributeName: id
@@ -153,16 +191,24 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
+        - IndexName: byMatter
+          KeySchema:
+            - AttributeName: matterId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
-  MatterTable:
+  CompanyClientTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: MatterTable
+      TableName: CompanyClientTable
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
         - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: clientId
           AttributeType: S
       KeySchema:
         - AttributeName: id
@@ -171,6 +217,41 @@ Resources:
         - IndexName: byCompany
           KeySchema:
             - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byClient
+          KeySchema:
+            - AttributeName: clientId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+  CompanyClientMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyClientMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: clientMatterId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byClientMatter
+          KeySchema:
+            - AttributeName: clientMatterId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
