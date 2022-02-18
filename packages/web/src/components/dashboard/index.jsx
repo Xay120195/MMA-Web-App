@@ -118,7 +118,7 @@ export default function Dashboard() {
       clientMattersList
         .filter(
           (x) =>
-            x.name.toLowerCase().includes(v.toLowerCase()) ||
+            x.matter.name.toLowerCase().includes(v.toLowerCase()) ||
             x.client.name.toLowerCase().includes(v.toLowerCase())
         )
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -145,7 +145,7 @@ export default function Dashboard() {
     setsearchMatter(e.target.value);
   };
 
-  const handleNewMatter = () => {
+  const handleNewMatter = async () => {
     let client = {
         id: clientName.value,
         name: clientName.label,
@@ -155,7 +155,7 @@ export default function Dashboard() {
         name: matterName.label,
       };
 
-    addClientMatter(client, matter);
+    await addClientMatter(client, matter);
   };
 
   const contentDiv = {
