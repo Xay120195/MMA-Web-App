@@ -18,6 +18,9 @@ export default function UploadLinkModal(props) {
   const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
   const [uploadStart, setUploadStart] = useState(false);
+
+  var showAlert = 0; 
+
   const handleDrop = (e) => {
     e.preventDefault();
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
@@ -32,8 +35,13 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        alert("Invalid file type");
-        return false;
+        if(showAlert == 1){
+          return false;
+        }else{
+          alert("Invalid file type");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
       } else {
         tempArr.push({
           data: file,
@@ -97,8 +105,13 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        alert("Invalid file type.");
-        return false;
+        if(showAlert == 1){
+          return false;
+        }else{
+          alert("Invalid file type");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
       } else {
         tempArr.push({
           data: file,
