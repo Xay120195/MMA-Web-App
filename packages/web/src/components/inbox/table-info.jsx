@@ -306,7 +306,7 @@ const TableInfo = ({
           <div className="mx-3">
             <div className="py-2 align-middle inline-block ">
               {readData.map((item, index) => (
-                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg mb-3 ">
+                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg mb-3 divide-y">
                   <div className="flex py-2 px-2" key={item.id}>
                     <div className="flex-none w-12 h-14 ">
                       <div className="py-6 px-6 mt-2">
