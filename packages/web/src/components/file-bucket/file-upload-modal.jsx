@@ -15,7 +15,7 @@ export default function UploadLinkModal(props) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [countUploadedFiles, setCountUploadedFiles] = useState(1);
 
-  const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz", ".txt", ".png", ".jpg", ".jpeg", ".JPG"]; //list of rejected files
+  const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
   const [uploadStart, setUploadStart] = useState(false);
 
