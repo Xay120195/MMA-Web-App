@@ -53,6 +53,7 @@ const Inbox = () => {
   const [readData, setReadData] = useState([]);
   const [search, setSearch] = useState("");
   const [searchRow, setSearchRow] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(false);
 
   const unreaddata = data.filter((datas) => datas.status === true);
   const readdata = data.filter((datas) => datas.status === false);
@@ -150,11 +151,13 @@ const Inbox = () => {
             setId={setId}
             getId={getId}
             setTotalChecked={setTotalChecked}
+            setAlertMessage={setAlertMessage}
           />
         </div>
       </div>
       <TableInfo
         data={data}
+        totalChecked={totalChecked}
         setTotalChecked={setTotalChecked}
         totalReadChecked={totalReadChecked}
         setTotalReadChecked={setTotalReadChecked}
@@ -177,6 +180,8 @@ const Inbox = () => {
         data={data}
         searchRow={searchRow}
         setSearchRow={setSearchRow}
+        alertMessage={alertMessage}
+        setAlertMessage={setAlertMessage}
       />
     </>
   );

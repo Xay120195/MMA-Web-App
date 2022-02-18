@@ -22,6 +22,14 @@ const countArray = (array) => {
   return result;
 };
 
+const alertmessage = {
+  border: "2px solid #1FC2E4",
+  marginLeft: "0.6rem",
+  width: "81.5rem",
+  marginBottom: "1rem",
+  color: "#1FC2E4",
+};
+
 const redDot = {
   height: "20px",
   width: "20px",
@@ -50,6 +58,9 @@ const TableInfo = ({
   data,
   setIdRead,
   searchRow,
+  totalChecked,
+  alertMessage,
+  setAlertMessage,
 }) => {
   const [active, setActive] = useState("");
   const [click, setClick] = useState(false);
@@ -79,8 +90,10 @@ const TableInfo = ({
       if (!readData.includes({ id: event.target.value })) {
         setIdRead((item) => [...item, event.target.value]);
       }
+      setAlertMessage(true);
     } else {
       setIdRead((item) => [...item.filter((x) => x !== event.target.value)]);
+      setAlertMessage(false);
     }
   };
 
@@ -95,16 +108,45 @@ const TableInfo = ({
     setTotalUnReadChecked(tc);
 
     if (event.target.checked) {
+      setAlertMessage(true);
       if (!unReadData.includes({ id: event.target.value })) {
         setIdUnread((item) => [...item, event.target.value]);
       }
     } else {
       setIdUnread((item) => [...item.filter((x) => x !== event.target.value)]);
+      setAlertMessage(false);
     }
   };
 
   return (
     <div style={{ padding: "1.5rem", marginLeft: "4rem" }}>
+      {alertMessage && (
+        <div
+          className="shadow-lg overflow-hidden border-b border-gray-200 sm:rounded-lg mb-3 "
+          style={alertmessage}
+        >
+          <div className="bg-white py-2 px-2 inline-flex">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p className="mx-1 font-bold">
+              {totalChecked} email on this page is selected. Select all{" "}
+              {data.length} emails
+            </p>
+          </div>
+        </div>
+      )}
       <div className="mb-3">
         <span className="py-4 px-4 font-bold">Unread</span>
       </div>
