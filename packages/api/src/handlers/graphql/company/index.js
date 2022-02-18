@@ -16,10 +16,10 @@ async function listCompanyUsers(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ExclusiveStartKey: nextToken
-        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
-      Limit: limit,
+      // ExclusiveStartKey: nextToken
+      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+      //   : undefined,
+      // Limit: limit,
     };
 
     const companyUsersCommand = new QueryCommand(companyUsersParams);
@@ -78,10 +78,10 @@ async function listCompanyMatters(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ExclusiveStartKey: nextToken
-        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
-      Limit: limit,
+      // ExclusiveStartKey: nextToken
+      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+      //   : undefined,
+      // Limit: limit,
     };
 
     const companyMatterCommand = new QueryCommand(companyMatterParams);
@@ -141,10 +141,10 @@ async function listCompanyClients(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ExclusiveStartKey: nextToken
-        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
-      Limit: limit,
+      // ExclusiveStartKey: nextToken
+      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+      //   : undefined,
+      // Limit: limit,
     };
 
     const companyClientCommand = new QueryCommand(companyClientParams);
@@ -204,10 +204,10 @@ async function listCompanyClientMatters(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ExclusiveStartKey: nextToken
-        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
-      Limit: limit,
+      // ExclusiveStartKey: nextToken
+      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+      //   : undefined,
+      // Limit: limit,
     };
 
     const companyClientMatterCommand = new QueryCommand(companyClientMatterParams);
