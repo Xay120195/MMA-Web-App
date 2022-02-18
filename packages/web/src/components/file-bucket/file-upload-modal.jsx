@@ -13,7 +13,7 @@ const useRefEventListener = (fn) => {
 export default function UploadLinkModal(props) {
   const [selectedFiles, _setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [countUploadedFiles, setCountUploadedFiles] = useState(0);
+  const [countUploadedFiles, setCountUploadedFiles] = useState({counter:0});
 
   const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
@@ -80,7 +80,7 @@ export default function UploadLinkModal(props) {
 
   useEffect(() => {
     if (
-      countUploadedFiles === selectedFiles.length &&
+      countUploadedFiles.counter === selectedFiles.length &&
       selectedFiles.length !== 0
     ) {
       props.handleSave(uploadedFiles);
@@ -168,10 +168,11 @@ export default function UploadLinkModal(props) {
           name: name,
         };
 
-        setCountUploadedFiles(countUploadedFiles + 1);
-        setUploadedFiles([...uploadedFiles, fileData]);
+        setCountUploadedFiles((prevState) => ({
+          counter: prevState.counter + 1
+        }))
 
-        
+        setUploadedFiles([...uploadedFiles, fileData]);        
       });
     });
 
@@ -246,7 +247,7 @@ export default function UploadLinkModal(props) {
                 />
                 <input
                   type="file"
-                  // multiple="multiple"
+                  multiple="multiple"
                   id="file"
                   onChange={onSelectFile}
                   hidden
