@@ -14,7 +14,7 @@ import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_affidavit, statements } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "../matters-rfi/create-RFI-modal"; // shared functions/modal from matters-rfi
-import UploadLinkModal from "../link-to-chronology/upload-linktochronology-modal"; // shared functions/modal from link-to-chronology
+import UploadLinkModal from "../file-bucket/file-upload-modal"; // shared functions/modal from file-bucket
 import SelectLinkModal from "../link-to-chronology/linktochronology-list-modal"; // shared functions/modal from link-to-chronology
 import PreviewModal from "../link-to-chronology/preview-linktochronology-modal"; // shared functions/modal from link-to-chronology
 import ToastNotification from "../toast-notification";
@@ -483,6 +483,7 @@ export default function WitnessAffidavit() {
 
       {showUploadLinkModal && (
         <UploadLinkModal
+          title={'Upload link to Chronology'}
           handleSave={handleUploadLink}
           handleModalClose={handleModalClose}
         />

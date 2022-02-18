@@ -52,6 +52,69 @@ async function listPages() {
   return response;
 }
 
+async function listClients() {
+  try {
+    const params = {
+      TableName: "ClientsTable",
+    };
+
+    const command = new ScanCommand(params);
+    const request = await client.send(command);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    response = request ? parseResponse : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function listCompanies() {
+  try {
+    const params = {
+      TableName: "CompanyTable",
+    };
+
+    const command = new ScanCommand(params);
+    const request = await client.send(command);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    response = request ? parseResponse : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function listMatters() {
+  try {
+    const params = {
+      TableName: "MatterTable",
+    };
+
+    const command = new ScanCommand(params);
+    const request = await client.send(command);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    response = request ? parseResponse : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 async function getCompanyAccessType(data) {
   try {
     const params = {
@@ -109,18 +172,15 @@ async function getClient(data) {
   try {
     const params = {
       TableName: "ClientsTable",
-      IndexName: "byCompany",
-      KeyConditionExpression: "companyId = :companyId",
-      ExpressionAttributeValues: marshall({
-        ":companyId": data.companyId,
+      Key: marshall({
+        id: data.id,
       }),
     };
 
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
-    var response = request.Items.map((data) => unmarshall(data));
+    const command = new GetItemCommand(params);
+    const { Item } = await client.send(command);
+    response = Item ? unmarshall(Item) : {};
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
@@ -134,42 +194,15 @@ async function getMatter(data) {
   try {
     const params = {
       TableName: "MatterTable",
-      IndexName: "byCompany",
-      KeyConditionExpression: "companyId = :companyId",
-      ExpressionAttributeValues: marshall({
-        ":companyId": data.companyId,
-      }),
-    };
-
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
-    var response = request.Items.map((data) => unmarshall(data));
-  } catch (e) {
-    console.log(e);
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-  return response;
-}
-
-async function getClientMatter(data) {
-  try {
-    const params = {
-      TableName: "ClientMatterTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
-    var response = request.Items.map((data) => unmarshall(data));
-
+    const command = new GetItemCommand(params);
+    const { Item } = await client.send(command);
+    response = Item ? unmarshall(Item) : {};
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
@@ -209,6 +242,9 @@ const resolvers = {
     company: async (ctx) => {
       return getCompany(ctx.arguments);
     },
+    companies: async (ctx) => {
+      return listCompanies();
+    },
     page: async () => {
       return listPages();
     },
@@ -221,14 +257,17 @@ const resolvers = {
     client: async (ctx) => {
       return getClient(ctx.arguments);
     },
+    clients: async (ctx) => {
+      return listClients(ctx.arguments);
+    },
     matter: async (ctx) => {
       return getMatter(ctx.arguments);
     },
+    matters: async (ctx) => {
+      return listMatters(ctx.arguments);
+    },
     companyAccessType: async (ctx) => {
       return getCompanyAccessType(ctx.arguments);
-    },
-    clientMatter: async (ctx) => {
-      return getClientMatter(ctx.arguments);
     },
     matterFile: async (ctx) => {
       return getMatterFile(ctx.arguments);
