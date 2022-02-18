@@ -133,6 +133,7 @@ const ActionButtons = ({
     setTotalUnReadChecked(0);
     setTotalReadChecked(0);
     setcheckAllState(false);
+    setSelectMessage(false);
 
     if (id) {
       setalertMessage(`Successfully deleted`);
