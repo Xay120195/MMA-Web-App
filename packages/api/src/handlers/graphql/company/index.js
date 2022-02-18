@@ -7,7 +7,7 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
-  const { limit = 100, nextToken } = ctx.args;
+  // const { limit = 100, nextToken } = ctx.args;
   try {
     const companyUsersParams = {
       TableName: "CompanyUserTable",
@@ -50,11 +50,11 @@ async function listCompanyUsers(ctx) {
 
     return {
       items: response,
-      nextToken: companyUsersResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(companyUsersResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
+      // nextToken: companyUsersResult.LastEvaluatedKey
+      //   ? Buffer.from(
+      //       JSON.stringify(companyUsersResult.LastEvaluatedKey)
+      //     ).toString("base64")
+      //   : null,
     };
   } catch (e) {
     console.log(e);
@@ -69,7 +69,7 @@ async function listCompanyUsers(ctx) {
 
 async function listCompanyMatters(ctx) {
   const { id } = ctx.source;
-  const { limit = 100, nextToken } = ctx.args;
+  // const { limit = 100, nextToken } = ctx.args;
   try {
     const companyMatterParams = {
       TableName: "CompanyMatterTable",
@@ -112,11 +112,11 @@ async function listCompanyMatters(ctx) {
 
     return {
       items: response,
-      nextToken: companyMatterResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(companyMatterResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
+      // nextToken: companyMatterResult.LastEvaluatedKey
+      //   ? Buffer.from(
+      //       JSON.stringify(companyMatterResult.LastEvaluatedKey)
+      //     ).toString("base64")
+      //   : null,
     };
   } catch (e) {
     console.log(e);
@@ -131,7 +131,7 @@ async function listCompanyMatters(ctx) {
 
 async function listCompanyClients(ctx) {
   const { id } = ctx.source;
-  const { limit = 100, nextToken } = ctx.args;
+  // const { limit = 100, nextToken } = ctx.args;
 
   try {
     const companyClientParams = {
@@ -176,11 +176,11 @@ async function listCompanyClients(ctx) {
 
     return {
       items: response,
-      nextToken: companyClientResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(companyClientResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
+      // nextToken: companyClientResult.LastEvaluatedKey
+      //   ? Buffer.from(
+      //       JSON.stringify(companyClientResult.LastEvaluatedKey)
+      //     ).toString("base64")
+      //   : null,
     };
   } catch (e) {
     console.log(e);
@@ -195,7 +195,7 @@ async function listCompanyClients(ctx) {
 
 async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
-  const { limit = 100, nextToken } = ctx.args;
+  // const { limit = 100, nextToken } = ctx.args;
   try {
     const companyClientMatterParams = {
       TableName: "CompanyClientMatterTable",
@@ -238,11 +238,11 @@ async function listCompanyClientMatters(ctx) {
 
     return {
       items: response,
-      nextToken: companyClientMatterResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(companyClientMatterResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
+      // nextToken: companyClientMatterResult.LastEvaluatedKey
+      //   ? Buffer.from(
+      //       JSON.stringify(companyClientMatterResult.LastEvaluatedKey)
+      //     ).toString("base64")
+      //   : null,
     };
   } catch (e) {
     console.log(e);
