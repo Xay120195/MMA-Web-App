@@ -342,7 +342,7 @@ mutation addClient($companyId: String, $name: String) {
       label: name,
     }));
 
-    setclientName(result);
+    setclientName(result[0]);
   };
 
   const addMatter = `
@@ -371,7 +371,7 @@ mutation addMatter($companyId: String, $name: String) {
       value: id,
       label: name,
     }));
-    setmatterName(result);
+    setmatterName(result[0]);
   };
 
   const createClientMatter = `
