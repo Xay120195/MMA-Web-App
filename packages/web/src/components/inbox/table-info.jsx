@@ -59,8 +59,8 @@ const TableInfo = ({
   setIdRead,
   searchRow,
   totalChecked,
-  alertMessage,
-  setAlertMessage,
+  selectedMessage,
+  setSelectMessage,
 }) => {
   const [active, setActive] = useState("");
   const [click, setClick] = useState(false);
@@ -90,10 +90,10 @@ const TableInfo = ({
       if (!readData.includes({ id: event.target.value })) {
         setIdRead((item) => [...item, event.target.value]);
       }
-      setAlertMessage(true);
+      setSelectMessage(true);
     } else {
       setIdRead((item) => [...item.filter((x) => x !== event.target.value)]);
-      setAlertMessage(false);
+      setSelectMessage(false);
     }
   };
 
@@ -108,19 +108,19 @@ const TableInfo = ({
     setTotalUnReadChecked(tc);
 
     if (event.target.checked) {
-      setAlertMessage(true);
+      setSelectMessage(true);
       if (!unReadData.includes({ id: event.target.value })) {
         setIdUnread((item) => [...item, event.target.value]);
       }
     } else {
       setIdUnread((item) => [...item.filter((x) => x !== event.target.value)]);
-      setAlertMessage(false);
+      setSelectMessage(false);
     }
   };
 
   return (
     <div style={{ padding: "1.5rem", marginLeft: "4rem" }}>
-      {alertMessage && (
+      {selectedMessage && (
         <div
           className="shadow-lg overflow-hidden border-b border-gray-200 sm:rounded-lg mb-3 "
           style={alertmessage}

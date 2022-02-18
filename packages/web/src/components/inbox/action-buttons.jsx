@@ -18,7 +18,7 @@ const ActionButtons = ({
   setcheckAllState,
   setId,
   getId,
-  setAlertMessage,
+  setSelectMessage,
 }) => {
   const hideToast = () => {
     setShowToast(false);
@@ -35,13 +35,13 @@ const ActionButtons = ({
       setTotalReadChecked(readdata.length);
       setTotalUnReadChecked(unreaddata.length);
       setId(data.map((s) => s.id));
-      setAlertMessage(true);
+      setSelectMessage(true);
     } else {
       setCheckedStateRead(new Array(readdata.length).fill(false));
       setCheckedStateUnreRead(new Array(readdata.length).fill(false));
       setTotalUnReadChecked(0);
       setTotalReadChecked(0);
-      setAlertMessage(false);
+      setSelectMessage(false);
     }
   };
   const handleSaveRead = (listId1, listId2) => {
@@ -77,6 +77,7 @@ const ActionButtons = ({
     setTotalUnReadChecked(0);
     setTotalReadChecked(0);
     setcheckAllState(false);
+    setSelectMessage(false);
   };
 
   const handleMarkUnread = (listId1, listId2) => {
@@ -112,6 +113,7 @@ const ActionButtons = ({
     setTotalUnReadChecked(0);
     setTotalReadChecked(0);
     setcheckAllState(false);
+    setSelectMessage(false);
   };
   const handleDelete = (listId1, listId2) => {
     const total = [];

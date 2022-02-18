@@ -53,7 +53,7 @@ const Inbox = () => {
   const [readData, setReadData] = useState([]);
   const [search, setSearch] = useState("");
   const [searchRow, setSearchRow] = useState(false);
-  const [alertMessage, setAlertMessage] = useState(false);
+  const [selectedMessage, setSelectMessage] = useState(false);
 
   const unreaddata = data.filter((datas) => datas.status === true);
   const readdata = data.filter((datas) => datas.status === false);
@@ -151,7 +151,7 @@ const Inbox = () => {
             setId={setId}
             getId={getId}
             setTotalChecked={setTotalChecked}
-            setAlertMessage={setAlertMessage}
+            setSelectMessage={setSelectMessage}
           />
         </div>
       </div>
@@ -180,8 +180,8 @@ const Inbox = () => {
         data={data}
         searchRow={searchRow}
         setSearchRow={setSearchRow}
-        alertMessage={alertMessage}
-        setAlertMessage={setAlertMessage}
+        selectedMessage={selectedMessage}
+        setSelectMessage={setSelectMessage}
       />
     </>
   );
