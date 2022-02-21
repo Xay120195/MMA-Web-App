@@ -42,6 +42,8 @@ functions:
     handler: src/handlers/graphql/mutation/index.handler
   file-fn:
     handler: src/handlers/graphql/file/index.handler
+  company-fn:
+    handler: src/handlers/graphql/company/index.handler
 
 custom:
   dynamodb:
@@ -80,6 +82,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: company
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: companies
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -147,12 +154,6 @@ custom:
         field: matterFileCreate
         request: false
         response: false
-      # - dataSource: DynamoDBMatterFileTableDS
-      #   type: Query
-      #   field: matterFile
-      # - dataSource: DynamoDBMatterFileTableDS
-      #   type: Mutation
-      #   field: matterFileCreate
       - dataSource: LambdaFileDS
         type: File
         field: downloadURL
@@ -163,9 +164,24 @@ custom:
         field: clientCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterCreate
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: client
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clientMatter
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clients
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -178,14 +194,9 @@ custom:
         field: matter
         request: false
         response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: clientMatterUpdate
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: clientMatterCreate
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matters
         request: false
         response: false
       - dataSource: LambdaQueryDS
@@ -198,7 +209,26 @@ custom:
         field: backgroundUpdate
         request: false
         response: false
-
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: users
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: matters
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: clients
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: clientMatters
+        request: false
+        response: false
     dataSources:
       - type: AMAZON_DYNAMODB
         name: DynamoDBColorTableDS
@@ -212,6 +242,10 @@ custom:
         name: LambdaMutationDS
         config:
           functionName: mutation-fn
+      - type: AWS_LAMBDA
+        name: LambdaCompanyDS
+        config:
+          functionName: company-fn
       - type: AWS_LAMBDA
         name: LambdaFileDS
         config:
