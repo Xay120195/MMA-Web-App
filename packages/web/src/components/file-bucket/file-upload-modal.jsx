@@ -143,6 +143,7 @@ export default function UploadLinkModal(props) {
             (progress.loaded / progress.total) * 100
           );
           console.log(`Progress: ${progressInPercentage}%`);
+          generateRandomValues(progressInPercentage);
         },
         errorCallback: (err) => {
           console.error("Unexpected error while uploading", err);
@@ -162,7 +163,7 @@ export default function UploadLinkModal(props) {
       });
     });
 
-    generateRandomValues(start.perc);
+    
   };
 
   const [isOpen, setIsOpen] = useState(true);
@@ -183,22 +184,11 @@ export default function UploadLinkModal(props) {
 
   const generateRandomValues = (perc) => {
     const rand = (n) => Math.random() * n;
-    const test = rand(100 - perc);
-    const curr = test + perc;
-
-    if (curr > 0) {
-      setStart({ perc: curr });
+    setStart({ perc: perc });
       setRandom({
-        percentage: curr,
+        percentage: perc,
         colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
-      });
-    } else {
-      setStart({ perc: curr });
-      setRandom({
-        percentage: 100,
-        colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
-      });
-    }
+    });
   };
 
   return (
