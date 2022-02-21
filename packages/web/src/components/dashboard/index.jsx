@@ -35,7 +35,8 @@ export default function Dashboard() {
   const [alertMessage, setalertMessage] = useState();
   const [clientsOptions, setClientsOptions] = useState();
   const [mattersOptions, setMattersOptions] = useState();
-
+  const [selectedClient, setSelectedClient] = useState();
+  const [selectedMatter, setSelectedMatter] = useState();
   const [clientMattersList, setClientMattersList] = useState([]);
 
   const {
@@ -396,9 +397,11 @@ mutation addMatter($companyId: String, $name: String) {
     setalertMessage(createMatterAlertMsg);
     handleModalClose();
     setShowToast(true);
+    setSelectedClient([]);
+    setSelectedMatter([]);
+    ClientMatterList();
     setTimeout(() => {
       setShowToast(false);
-      ClientMatterList();
       setmatterName("");
     }, 3000);
   };
@@ -427,6 +430,7 @@ mutation addMatter($companyId: String, $name: String) {
                             isClearable
                             isSearchable
                             onChange={handleClientChanged}
+                            value={selectedClient}
                             placeholder="Client"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
@@ -441,6 +445,7 @@ mutation addMatter($companyId: String, $name: String) {
                             isClearable
                             isSearchable
                             onChange={handleMatterChanged}
+                            value={selectedMatter}
                             placeholder="Matters"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />

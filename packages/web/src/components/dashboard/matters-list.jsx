@@ -53,17 +53,11 @@ export function ClientMatters({
               >
                 {clientMatter.client.name}
               </p>
-              <p
-                tabIndex="0"
-                className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
-              >
-                {dateFormat(clientMatter.createdAt, "dd mmmm yyyy h:MM:ss TT")}
-              </p>
 
               <br />
               <div className="grid grid-cols-4 gap-4">
                 
-                <div className="col-span-2">
+                <div className="col-span-1">
                   <img
                     className="relative z-30 inline object-cover w-8 h-8 border-2 border-white rounded-full"
                     src={clientMatter.substantially_responsible.profile_picture}
@@ -72,8 +66,13 @@ export function ClientMatters({
                   />
                 </div>
                
-                <div className="col-span-2 grid place-self-end">
-                  {clientMatter.matter_number}<b className="text-lg">&#62;</b>
+                <div className="col-span-3 grid place-self-end">
+                <p
+                  tabIndex="0"
+                  className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
+                >
+                  {dateFormat(clientMatter.createdAt, "dd mmmm yyyy, h:MM:ss TT")}
+                </p>
                 </div>
               </div>
             </div>
@@ -116,13 +115,13 @@ export function ClientMatters({
                     tabIndex="0"
                     className="focus:outline-none text-xs text-gray-400"
                   >
-                    {clientMatter.client.name} | {clientMatter.matter_number}
+                    {clientMatter.client.name}
                   </p>
                   <p
                     tabIndex="0"
                     className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                   >
-                    {dateFormat(clientMatter.createdAt, "dd mmmm yyyy h:MM:ss TT")}
+                    {dateFormat(clientMatter.createdAt, "dd mmmm yyyy, h:MM:ss TT")}
                   </p>
                 </div>
                 <div className="col-span-2 grid place-self-end mb-2">
