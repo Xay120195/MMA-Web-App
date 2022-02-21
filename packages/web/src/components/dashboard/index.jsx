@@ -45,30 +45,30 @@ export default function Dashboard() {
   } = useForm();
 
   useEffect(() => {
+    if (userInfo === null) {
+      let ls = {
+        userId: localStorage.getItem("userId"),
+        email: localStorage.getItem("email"),
+        firstName: localStorage.getItem("firstName"),
+        lastName: localStorage.getItem("lastName"),
+        company: localStorage.getItem("company"),
+        userType: localStorage.getItem("userType"),
+        access: JSON.parse(localStorage.getItem("access")),
+      };
+      setuserInfo(ls);
+    }
+
     if (searchMatter !== undefined) {
       filter(searchMatter);
     }
 
-    if(!isLoaded) {
-      if (userInfo === null) {
-        let ls = {
-          userId: localStorage.getItem("userId"),
-          email: localStorage.getItem("email"),
-          firstName: localStorage.getItem("firstName"),
-          lastName: localStorage.getItem("lastName"),
-          company: localStorage.getItem("company"),
-          userType: localStorage.getItem("userType"),
-          access: JSON.parse(localStorage.getItem("access")),
-        };
-        setuserInfo(ls);
-      }
+    if (userInfo) {
+      featureAccessFilters();
+    }
 
+    if(!isLoaded) {
       if (clientMattersList !== undefined) {
         ClientMatterList();
-      }
-
-      if (userInfo) {
-        featureAccessFilters();
       }
 
       Clients();
