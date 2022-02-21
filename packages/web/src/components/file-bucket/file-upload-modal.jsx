@@ -21,6 +21,10 @@ export default function UploadLinkModal(props) {
 
   var showAlert = 0; 
 
+  const [flags, setFlags] = useState([]);
+  // const flagTemp = [];
+  const [flagTemp, setArr] = useState([]);
+
   const handleDrop = (e) => {
     e.preventDefault();
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
@@ -141,7 +145,7 @@ export default function UploadLinkModal(props) {
 
   const handleUpload = async () => {
     setUploadStart(true);
-    selectedFiles.map(async (uf) => {
+    selectedFiles.map(async (uf, index) => {
       var name = uf.data.name,
         size = uf.data.size,
         type = uf.data.type,
@@ -156,7 +160,7 @@ export default function UploadLinkModal(props) {
             (progress.loaded / progress.total) * 100
           );
           console.log(`Progress: ${progressInPercentage}%`);
-          generateRandomValues(progressInPercentage);
+          generateRandomValues(progressInPercentage, index);
         },
         errorCallback: (err) => {
           console.error("Unexpected error while uploading", err);
@@ -185,6 +189,7 @@ export default function UploadLinkModal(props) {
   const [random, setRandom] = useState({
     percentage: 0,
     colour: "hsl(0, 0%, 0%)",
+    index: 0
   });
 
   const ref = useRef(null);
@@ -196,14 +201,23 @@ export default function UploadLinkModal(props) {
     }, 2000);
   };
 
-  const generateRandomValues = (perc) => {
+  const saveUploadProgress = (perc) => {
+    setArr((flagTemp) => [...flagTemp, perc]);
+  };
+
+  // var index= 0;
+  const generateRandomValues = (perc, idx) => {
+    // setArr((flagTemp) => [...flagTemp, perc]);
+    
     const rand = (n) => Math.random() * n;
-    setStart({ perc: perc });
-      setRandom({
+    // setStart();
+    setRandom({
         percentage: perc,
         colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
+        index: idx
     });
   };
+
 
   return (
     <>
@@ -264,11 +278,23 @@ export default function UploadLinkModal(props) {
                         }`}
                         onClick={() => deleteBtn(index)}
                       />
-                      <Pie
-                        percentage={random.percentage}
-                        colour={random.colour}
-                      />
+                      {random.percentage === 100 && random.index === index ? (
+                          
+                          <Pie
+                          percentage={100}
+                          colour={random.colour}
+                          />
+                      ) : (
+                        <Pie
+                          percentage={random.percentage}
+                          colour={random.colour}
+                          />
+                        
+                        //counter(); //error
+                      )}
+                      
                     </div>
+                   
                   ))}
                 </div>
               </div>
