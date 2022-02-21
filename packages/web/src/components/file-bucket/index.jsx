@@ -29,7 +29,7 @@ export default function FileBucket() {
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const handleUploadLink = (uf) => {
-    var uploadedFiles = uf.map((f) => ({ ...f, matterId: matter_id }));
+    var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
 
     uploadedFiles.map(async (file) => {
       await createMatterFile(file).then(() => {
