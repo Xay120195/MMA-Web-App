@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { API, Storage } from "aws-amplify";
+import { API } from "aws-amplify";
 import BlankState from "../blank-state";
-import { AppRoutes } from "../../constants/AppRoutes"
+import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos } from "react-icons/md";
 import { AiOutlineDownload } from "react-icons/ai";
@@ -28,46 +28,18 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  const handleUploadLink = (uploadFiles) => {
-    uploadFiles.map(async (uf) => {
-      var name = uf.data.name,
-        size = uf.data.size,
-        type = uf.data.type,
-        key = `${matter_id}/${Number(new Date())}${name
-          .replaceAll(/\s/g, "")
-          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+  const handleUploadLink = (uf) => {
+    var uploadedFiles = uf.map((f) => ({ ...f, matterId: matter_id }));
 
-      await Storage.put(key, uf.data, {
-        // level: 'public',
-        // acl: 'public-read',
-        contentType: type,
-        progressCallback(progress) {
-          const progressInPercentage = Math.round(
-            (progress.loaded / progress.total) * 100
-          );
-          console.log(`Progress: ${progressInPercentage}%`);
-        },
-        errorCallback: (err) => {
-          console.error("Unexpected error while uploading", err);
-        },
-      }).then(async (fd) => {
-        const file = {
-          matterId: matter_id,
-          s3ObjectKey: fd.key,
-          size: parseInt(size),
-          type: type,
-          name: name,
-        };
-
-        await createMatterFile(file).then((u) => {
-          setResultMessage(`File successfully uploaded!`);
-          setShowToast(true);
-          handleModalClose();
-          setTimeout(() => {
-            setShowToast(false);
-            getMatterFiles();
-          }, 3000);
-        });
+    uploadedFiles.map(async (file) => {
+      await createMatterFile(file).then(() => {
+        setResultMessage(`File successfully uploaded!`);
+        setShowToast(true);
+        handleModalClose();
+        setTimeout(() => {
+          setShowToast(false);
+          getMatterFiles();
+        }, 3000);
       });
     });
   };
@@ -154,10 +126,10 @@ export default function FileBucket() {
             </div>
             <div className="absolute right-0">
               <Link to={AppRoutes.DASHBOARD}>
-              <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                Back &nbsp;
-                <MdArrowForwardIos />
-              </button>
+                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                  Back &nbsp;
+                  <MdArrowForwardIos />
+                </button>
               </Link>
             </div>
           </div>
@@ -241,6 +213,7 @@ export default function FileBucket() {
         <UploadLinkModal
           title={""}
           handleSave={handleUploadLink}
+          bucketName={matter_id}
           handleModalClose={handleModalClose}
         />
       )}
