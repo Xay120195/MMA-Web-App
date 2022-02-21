@@ -1,14 +1,14 @@
 {
   "providers": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-mma-web-app-staging-180645-authRole",
-      "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-staging-180645-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-staging-180645-authRole",
+      "AuthRoleName": "amplify-mma-web-app-production-180422-authRole",
+      "UnauthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-production-180422-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::895454531446:role/amplify-mma-web-app-production-180422-authRole",
       "Region": "ap-southeast-1",
-      "DeploymentBucketName": "amplify-mma-web-app-staging-180645-deployment",
-      "UnauthRoleName": "amplify-mma-web-app-staging-180645-unauthRole",
-      "StackName": "amplify-mma-web-app-staging-180645",
-      "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-mma-web-app-staging-180645/43e874c0-357b-11ec-8226-0a5cfba129ec",
+      "DeploymentBucketName": "amplify-mma-web-app-production-180422-deployment",
+      "UnauthRoleName": "amplify-mma-web-app-production-180422-unauthRole",
+      "StackName": "amplify-mma-web-app-production-180422",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:895454531446:stack/amplify-mma-web-app-production-180422/f07cdd80-357a-11ec-bd8e-0afd446500e0",
       "AmplifyAppId": "d3bhf42tem9b8e"
     }
   },
@@ -44,21 +44,22 @@
           "EMAIL"
         ]
       },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-production-180422-deployment/amplify-cfn-templates/auth/mmawebappaa31305d-cloudformation-template.json",
+        "logicalId": "authmmawebappaa31305d"
+      },
+      "lastPushTimeStamp": "2022-02-21T06:31:38.963Z",
       "output": {
-        "CreatedSNSRole": "arn:aws:iam::895454531446:role/snsaa31305dapp-staging",
-        "UserPoolId": "ap-southeast-1_eG5B1KoPb",
-        "AppClientIDWeb": "1snvd8fhkisj0ab2lib41sbse9",
-        "AppClientID": "4o1sa36n8du5pntlakchfujpn6",
-        "IdentityPoolId": "ap-southeast-1:e4457518-f974-4dca-9060-36f32dbe37f4",
-        "UserPoolArn": "arn:aws:cognito-idp:ap-southeast-1:895454531446:userpool/ap-southeast-1_eG5B1KoPb",
-        "IdentityPoolName": "mmawebappaa31305d_identitypool_aa31305d__staging",
+        "CreatedSNSRole": "arn:aws:iam::895454531446:role/snsaa31305dapp-production",
+        "UserPoolId": "ap-southeast-1_AlWrYAKqE",
+        "AppClientIDWeb": "7d35cgmo5phf0guq21rujsv1ts",
+        "AppClientID": "4ljjcijngvik8v8je055tsnno1",
+        "IdentityPoolId": "ap-southeast-1:21cae494-486b-450b-bbe3-aab110a4942a",
+        "UserPoolArn": "arn:aws:cognito-idp:ap-southeast-1:895454531446:userpool/ap-southeast-1_AlWrYAKqE",
+        "IdentityPoolName": "mmawebappaa31305d_identitypool_aa31305d__production",
         "UserPoolName": "mmawebappaa31305d_userpool_aa31305d"
       },
-      "lastPushTimeStamp": "2022-02-15T03:23:28.876Z",
-      "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/auth/mmawebappaa31305d-cloudformation-template.json",
-        "logicalId": "authmmawebappaa31305d"
-      }
+      "lastPushDirHash": "RjiPa0z9GhOBBGHtoduQxwEJIRE="
     }
   },
   "api": {},
@@ -73,21 +74,26 @@
       "service": "Lambda",
       "providerPlugin": "awscloudformation",
       "build": true,
-      "output": {
-        "Region": "ap-southeast-1",
-        "Arn": "arn:aws:lambda:ap-southeast-1:895454531446:function:S3Trigger1de25018-staging",
-        "Name": "S3Trigger1de25018-staging",
-        "LambdaExecutionRole": "S3Trigger1de25018LambdaRole1de25018-staging"
+      "lastBuildTimeStamp": "2022-02-21T06:27:26.565Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2022-02-21T06:27:26.595Z",
+      "distZipFilename": "S3Trigger1de25018-4935366b68432b44735a-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-mma-web-app-production-180422-deployment",
+        "s3Key": "amplify-builds/S3Trigger1de25018-4935366b68432b44735a-build.zip"
       },
-      "lastPushTimeStamp": "2022-02-15T03:23:28.877Z",
       "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/function/S3Trigger1de25018-cloudformation-template.json",
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-production-180422-deployment/amplify-cfn-templates/function/S3Trigger1de25018-cloudformation-template.json",
         "logicalId": "functionS3Trigger1de25018"
       },
-      "s3Bucket": {
-        "deploymentBucketName": "amplify-mma-web-app-staging-180645-deployment",
-        "s3Key": "amplify-builds/S3Trigger1de25018-4935366b68432b44735a-build.zip"
-      }
+      "lastPushTimeStamp": "2022-02-21T06:31:38.963Z",
+      "output": {
+        "Region": "ap-southeast-1",
+        "Arn": "arn:aws:lambda:ap-southeast-1:895454531446:function:S3Trigger1de25018-production",
+        "Name": "S3Trigger1de25018-production",
+        "LambdaExecutionRole": "S3Trigger1de25018LambdaRole1de25018-production"
+      },
+      "lastPushDirHash": "S2qfeCCH317GJSAtV/iEId1qlyw="
     }
   },
   "storage": {
@@ -95,15 +101,16 @@
       "service": "S3",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-production-180422-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "logicalId": "storagemmastorage"
+      },
+      "lastPushTimeStamp": "2022-02-21T06:31:38.963Z",
       "output": {
-        "BucketName": "mmabucketapp-staging",
+        "BucketName": "mmabucketapp-production",
         "Region": "ap-southeast-1"
       },
-      "lastPushTimeStamp": "2022-02-15T03:23:28.878Z",
-      "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-mma-web-app-staging-180645-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
-        "logicalId": "storagemmastorage"
-      }
+      "lastPushDirHash": "W11Xnz5iKJsBPwzKjNPNG6iVhKA="
     }
   }
 }

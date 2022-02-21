@@ -55,7 +55,10 @@
         }
       },
       "function": {
-        "S3Trigger1de25018": {}
+        "S3Trigger1de25018": {
+          "deploymentBucketName": "amplify-mma-web-app-production-180422-deployment",
+          "s3Key": "amplify-builds/S3Trigger1de25018-4935366b68432b44735a-build.zip"
+        }
       },
       "auth": {
         "mmawebappaa31305d": {}
