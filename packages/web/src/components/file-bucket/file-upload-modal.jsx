@@ -12,14 +12,13 @@ const useRefEventListener = (fn) => {
 
 export default function UploadLinkModal(props) {
   const [selectedFiles, _setSelectedFiles] = useState([]);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [countUploadedFiles, setCountUploadedFiles] = useState({counter:0});
+  const [uploadedFiles, setUploadedFiles] = useState({ files: [] });
 
   const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
   const [uploadStart, setUploadStart] = useState(false);
 
-  var showAlert = 0; 
+  var showAlert = 0;
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -35,9 +34,9 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        if(showAlert == 1){
+        if (showAlert == 1) {
           return false;
-        }else{
+        } else {
           alert("Invalid file type");
           showAlert = 1; //set flag to don't show
           return false;
@@ -80,19 +79,18 @@ export default function UploadLinkModal(props) {
 
   useEffect(() => {
     if (
-      countUploadedFiles.counter === selectedFiles.length &&
+      uploadedFiles.files.length === selectedFiles.length &&
       selectedFiles.length !== 0
     ) {
       props.handleSave(uploadedFiles);
     }
-  }, [countUploadedFiles, selectedFiles, uploadedFiles]);
+  }, [selectedFiles, uploadedFiles]);
 
   const onDragEnter = () => dropRef.current.classList.add("dragover");
   const onDragLeave = () => dropRef.current.classList.remove("dragover");
   const onDrop = () => dropRef.current.classList.remove("dragover");
 
   const onSelectFile = (e) => {
-    console.log(myCurrentRef.current);
     if (!e.target.files || e.target.files.length === 0) {
       return;
     }
@@ -105,9 +103,9 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        if(showAlert == 1){
+        if (showAlert == 1) {
           return false;
-        }else{
+        } else {
           alert("Invalid file type");
           showAlert = 1; //set flag to don't show
           return false;
@@ -156,6 +154,7 @@ export default function UploadLinkModal(props) {
             (progress.loaded / progress.total) * 100
           );
           console.log(`Progress: ${progressInPercentage}%`);
+          generateRandomValues(progressInPercentage);
         },
         errorCallback: (err) => {
           console.error("Unexpected error while uploading", err);
@@ -168,15 +167,11 @@ export default function UploadLinkModal(props) {
           name: name,
         };
 
-        setCountUploadedFiles((prevState) => ({
-          counter: prevState.counter + 1
-        }))
-
-        setUploadedFiles([...uploadedFiles, fileData]);        
+        setUploadedFiles((prevState) => ({
+          files: [...prevState.files, fileData],
+        }));
       });
     });
-
-    generateRandomValues(start.perc);
   };
 
   const [isOpen, setIsOpen] = useState(true);
@@ -197,22 +192,11 @@ export default function UploadLinkModal(props) {
 
   const generateRandomValues = (perc) => {
     const rand = (n) => Math.random() * n;
-    const test = rand(100 - perc);
-    const curr = test + perc;
-
-    if (curr > 0) {
-      setStart({ perc: curr });
-      setRandom({
-        percentage: curr,
-        colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
-      });
-    } else {
-      setStart({ perc: curr });
-      setRandom({
-        percentage: 100,
-        colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
-      });
-    }
+    setStart({ perc: perc });
+    setRandom({
+      percentage: perc,
+      colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
+    });
   };
 
   return (
