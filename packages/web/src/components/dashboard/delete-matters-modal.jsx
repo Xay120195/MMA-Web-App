@@ -18,7 +18,7 @@ export default function DeleteMatterModal(props) {
         <div className="relative w-full my-6 mx-auto max-w-xl">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
             <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
-              <h3 className="text-2xl font-semibold">Are you sure do you want delete this matter?</h3>
+              <h3 className="text-2xl font-semibold">Are you sure do you want to archive this matter?</h3>
               <button
                 className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
                 onClick={handleModalClose}
