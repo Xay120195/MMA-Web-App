@@ -12,14 +12,13 @@ const useRefEventListener = (fn) => {
 
 export default function UploadLinkModal(props) {
   const [selectedFiles, _setSelectedFiles] = useState([]);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [countUploadedFiles, setCountUploadedFiles] = useState({counter:0});
+  const [uploadedFiles, setUploadedFiles] = useState({ files: [] });
 
   const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
   const [uploadStart, setUploadStart] = useState(false);
 
-  var showAlert = 0; 
+  var showAlert = 0;
 
   const [flags, setFlags] = useState([]);
   // const flagTemp = [];
@@ -39,9 +38,9 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        if(showAlert == 1){
+        if (showAlert == 1) {
           return false;
-        }else{
+        } else {
           alert("Invalid file type");
           showAlert = 1; //set flag to don't show
           return false;
@@ -84,19 +83,18 @@ export default function UploadLinkModal(props) {
 
   useEffect(() => {
     if (
-      countUploadedFiles.counter === selectedFiles.length &&
+      uploadedFiles.files.length === selectedFiles.length &&
       selectedFiles.length !== 0
     ) {
       props.handleSave(uploadedFiles);
     }
-  }, [countUploadedFiles, selectedFiles, uploadedFiles]);
+  }, [selectedFiles, uploadedFiles]);
 
   const onDragEnter = () => dropRef.current.classList.add("dragover");
   const onDragLeave = () => dropRef.current.classList.remove("dragover");
   const onDrop = () => dropRef.current.classList.remove("dragover");
 
   const onSelectFile = (e) => {
-    console.log(myCurrentRef.current);
     if (!e.target.files || e.target.files.length === 0) {
       return;
     }
@@ -109,9 +107,9 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
 
       if (result) {
-        if(showAlert == 1){
+        if (showAlert == 1) {
           return false;
-        }else{
+        } else {
           alert("Invalid file type");
           showAlert = 1; //set flag to don't show
           return false;
@@ -173,15 +171,11 @@ export default function UploadLinkModal(props) {
           name: name,
         };
 
-        setCountUploadedFiles((prevState) => ({
-          counter: prevState.counter + 1
-        }))
-
-        setUploadedFiles([...uploadedFiles, fileData]);        
+        setUploadedFiles((prevState) => ({
+          files: [...prevState.files, fileData],
+        }));
       });
     });
-
-    
   };
 
   const [isOpen, setIsOpen] = useState(true);
