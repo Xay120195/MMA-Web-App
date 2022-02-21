@@ -1,4 +1,9 @@
-const { PutItemCommand, GetItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb");
+const {
+  PutItemCommand,
+  GetItemCommand,
+  UpdateItemCommand,
+  QueryCommand,
+} = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 const { v4 } = require("uuid");
 import ddbClient from "../lib/dynamodb-client";
@@ -9,7 +14,6 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 //const MATTER_BUCKET_NAME = "mma-webapp-dev-bucket";
 const MATTER_BUCKET_NAME = "mmabucketapp-staging";
-
 
 export async function generatePresignedUrl(Key) {
   const command = new GetObjectCommand({
@@ -24,32 +28,20 @@ export async function generatePresignedUrl(Key) {
 }
 
 export async function getMatterFile(data) {
-  console.log("getMatterFile()");
   let response = {};
   try {
-    // const params = {
-    //   TableName: "MatterFileTable",
-    //   Key: marshall({
-    //     id: data.id,
-    //   }),
-    // };
-
-    // const command = new GetItemCommand(params);
-    // const { Item } = await ddbClient.send(command);
-    // response = Item ? unmarshall(Item) : {};
-
     const params = {
-        TableName: "MatterFileTable",
-        IndexName: "byMatter",
-        KeyConditionExpression: "matterId = :matterId",
-        ExpressionAttributeValues: marshall({
-          ":matterId": data.matterId,
-        }),
-      };
-  
-      const command = new QueryCommand(params);
-      const request = await ddbClient.send(command);
-      response = request.Items.map((data) => unmarshall(data));
+      TableName: "MatterFileTable",
+      IndexName: "byMatter",
+      KeyConditionExpression: "matterId = :matterId",
+      ExpressionAttributeValues: marshall({
+        ":matterId": data.matterId,
+      }),
+    };
+
+    const command = new QueryCommand(params);
+    const request = await ddbClient.send(command);
+    response = request.Items.map((data) => unmarshall(data));
   } catch (e) {
     response = {
       error: e.message,
@@ -90,4 +82,56 @@ export async function createMatterFile(data) {
     };
   }
   return response;
+}
+
+export async function updateMatterFile(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "MatterFileTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await ddbClient.send(command);
+    response = request ? params : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
+export function getUpdateExpressions(data) {
+  const values = {};
+  const names = {};
+  let updateExp = "set ";
+  const dataFlatkeys = Object.keys(data);
+  for (let i = 0; i < dataFlatkeys.length; i++) {
+    names[`#${dataFlatkeys[i]}`] = dataFlatkeys[i];
+    values[`:${dataFlatkeys[i]}Val`] = data[dataFlatkeys[i]];
+
+    let separator = i == dataFlatkeys.length - 1 ? "" : ", ";
+    updateExp += `#${dataFlatkeys[i]} = :${dataFlatkeys[i]}Val${separator}`;
+  }
+  return {
+    UpdateExpression: updateExp,
+    ExpressionAttributeNames: names,
+    ExpressionAttributeValues: marshall(values),
+  };
 }
