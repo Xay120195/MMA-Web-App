@@ -35,6 +35,8 @@ plugins:
   - serverless-appsync-plugin
   - serverless-webpack
 
+useDotenv: true
+
 functions:
   query-fn:
     handler: src/handlers/graphql/query/index.handler

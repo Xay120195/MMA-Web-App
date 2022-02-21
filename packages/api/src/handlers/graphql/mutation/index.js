@@ -188,17 +188,16 @@ async function createClient(data) {
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
-  
+
     const companyClientCommand = new PutItemCommand({
       TableName: "CompanyClientTable",
       Item: marshall(companyClientParams),
     });
-    
+
     const companyClientRequest = await client.send(companyClientCommand);
-  
+
     console.log(companyClientRequest);
     response = companyClientRequest ? rawParams : {};
-
   } catch (e) {
     response = {
       error: e.message,
@@ -227,24 +226,28 @@ async function createClientMatter(data) {
     });
     const request = await client.send(command);
 
+    console.log("ClientMatterTable", request);
+
     const companyClientMatterParams = {
       id: v4(),
       clientMatterId: rawParams.id,
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
-  
+
     const companyClientMatterCommand = new PutItemCommand({
       TableName: "CompanyClientMatterTable",
       Item: marshall(companyClientMatterParams),
     });
-    
-    const companyClientMatterRequest = await client.send(companyClientMatterCommand);
-  
+
+    const companyClientMatterRequest = await client.send(
+      companyClientMatterCommand
+    );
+
     console.log(companyClientMatterRequest);
     response = companyClientMatterRequest ? rawParams : {};
-
   } catch (e) {
+    console.log("errr", e);
     response = {
       error: e.message,
       errorStack: e.stack,
@@ -283,7 +286,7 @@ async function createMatter(data) {
       TableName: "CompanyMatterTable",
       Item: marshall(companyMatterParams),
     });
-    
+
     const companyMatterRequest = await client.send(companyMatterCommand);
 
     console.log(companyMatterRequest);
