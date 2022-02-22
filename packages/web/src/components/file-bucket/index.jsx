@@ -205,7 +205,9 @@ export default function FileBucket() {
                               </div>
                             </td>
 
-                            <td className="px-6 py-4 w-10 align-top place-items-center"><input value="Test Description"/></td>
+                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                              <input defaultValue="Test Description"/>
+                            </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
 
