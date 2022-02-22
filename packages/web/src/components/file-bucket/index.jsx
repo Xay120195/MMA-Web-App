@@ -11,6 +11,7 @@ import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
+import ContentEditable from 'react-contenteditable'; 
 
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
@@ -29,7 +30,7 @@ export default function FileBucket() {
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const handleUploadLink = (uf) => {
-    var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
+    var uploadedFiles = uf.map((f) => ({ ...f, matterId: matter_id }));
 
     uploadedFiles.map(async (file) => {
       await createMatterFile(file).then(() => {
@@ -178,6 +179,12 @@ export default function FileBucket() {
                           <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
                             Name
                           </th>
+                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                            Description
+                          </th>
+                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                            Labels
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -196,6 +203,13 @@ export default function FileBucket() {
                                   />
                                 </span>
                               </div>
+                            </td>
+
+                            <td className="px-6 py-4 w-10 align-top place-items-center"><input value="Test Description"/></td>
+
+                            <td className="px-6 py-4 w-10 align-top place-items-center">
+
+
                             </td>
                           </tr>
                         ))}
