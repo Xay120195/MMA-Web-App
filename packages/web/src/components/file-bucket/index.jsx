@@ -232,8 +232,11 @@ mutation createLabel($companyId: String, $name: String) {
     text.current = evt.target.value;
   };
 
-  const HandleChangeToTD = (id, name) => {
-    const data = { details: text.current, name: name };
+  const HandleChangeToTD = (id, name, details) => {
+    const data = {
+      details: !text.current ? details : text.current,
+      name: name,
+    };
 
     updateMatterFile(id, data);
     setResultMessage(`Successfully updated ${name}`);
@@ -248,8 +251,11 @@ mutation createLabel($companyId: String, $name: String) {
     text.current = evt.target.value;
   };
 
-  const HandleChangeToTDName = (id, details) => {
-    const data = { name: text.current, details: details };
+  const HandleChangeToTDName = (id, details, name) => {
+    const data = {
+      name: !text.current ? name : text.current,
+      details: details,
+    };
 
     updateMatterFile(id, data);
     setResultMessage(`Successfully updated bucket name ${text.current}`);
@@ -347,7 +353,11 @@ mutation createLabel($companyId: String, $name: String) {
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
                                   onBlur={() =>
-                                    HandleChangeToTDName(data.id, data.details)
+                                    HandleChangeToTDName(
+                                      data.id,
+                                      data.details,
+                                      data.name
+                                    )
                                   }
                                 />
                                 <span>
@@ -371,7 +381,11 @@ mutation createLabel($companyId: String, $name: String) {
                                 }
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
-                                  HandleChangeToTD(data.id, data.name)
+                                  HandleChangeToTD(
+                                    data.id,
+                                    data.name,
+                                    data.details
+                                  )
                                 }
                               />
                             </td>
