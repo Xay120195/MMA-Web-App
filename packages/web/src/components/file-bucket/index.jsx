@@ -340,7 +340,7 @@ mutation createLabel($companyId: String, $name: String) {
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <div>
                                 <ContentEditable
-                                  html={data.name}
+                                  html={`<p>${data.name}</p>`}
                                   onChange={(evt) => handleChangeName(evt)}
                                   onBlur={() =>
                                     HandleChangeToTDName(data.id, data.details)
@@ -360,7 +360,7 @@ mutation createLabel($companyId: String, $name: String) {
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <ContentEditable
-                                html={data.details}
+                                html={`<p>${data.details}</p>`}
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
                                   HandleChangeToTD(data.id, data.name)
