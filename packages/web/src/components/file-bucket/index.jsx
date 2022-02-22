@@ -13,10 +13,12 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from 'react-contenteditable'; 
 
+
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
+  const [labels, setLabels] = useState(null);
   const { matter_id } = useParams();
 
   const hideToast = () => {
@@ -84,9 +86,80 @@ export default function FileBucket() {
     }
   }`;
 
+  const listLabels = `
+query listLabels($companyId: String) {
+  company(id: $companyId) {
+    labels {
+      items {
+        id
+        name
+      }
+    }
+  }
+}
+`;
+
+
+const mCreateLabel = `
+mutation createLabel($companyId: String, $name: String) {
+    labelCreate(companyId:$companyId, name:$name) {
+        id
+        name
+    }
+}
+`;
+
+  const getLabels = async () => {
+    let result = [];
+
+    const companyId = localStorage.getItem("companyId");
+
+    const labelsOpt = await API.graphql({
+      query: listLabels,
+      variables: {
+        companyId: companyId,
+      },
+    });
+
+    if (labelsOpt.data.company.labels.items !== null) {
+      result = labelsOpt.data.company.labels.items;
+    }
+
+    console.log(result);
+    setLabels(result);
+  };
+
+
+  const addLabel = async (data) => {
+    let result;
+
+    const companyId = localStorage.getItem("companyId");
+
+    const createLabel = await API.graphql({
+      query: mCreateLabel,
+      variables: {
+        companyId: companyId,
+        name: data,
+      },
+    });
+
+    result = createLabel.data.labelCreate;
+    console.log(result);
+    // result = [createLabel.data.clientCreate].map(({ id, name }) => ({
+    //   value: id,
+    //   label: name,
+    // }));
+
+    // setclientName(result[0]);
+  };
+
   useEffect(() => {
     if (matterFiles === null) {
       getMatterFiles();
+    }
+
+    if(labels === null){
+      getLabels();
     }
   }, [matterFiles]);
 
