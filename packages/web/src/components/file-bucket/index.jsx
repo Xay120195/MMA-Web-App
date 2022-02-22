@@ -241,6 +241,7 @@ mutation createLabel($companyId: String, $name: String) {
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
+
     getMatterFiles();
   };
 
@@ -252,11 +253,12 @@ mutation createLabel($companyId: String, $name: String) {
     const data = { name: text.current, details: details };
 
     updateMatterFile(id, data);
-    setResultMessage(`Successfully updated`);
+    setResultMessage(`Successfully updated bucket name ${text.current}`);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
+
     getMatterFiles();
   };
   return (
