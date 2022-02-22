@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { API } from "aws-amplify";
+import { API, toast } from "aws-amplify";
 import BlankState from "../blank-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
@@ -20,7 +20,7 @@ export default function FileBucket() {
   const [matterFiles, setMatterFiles] = useState(null);
   const [labels, setLabels] = useState(null);
   const { matter_id } = useParams();
-  const [getUpdatedDesc, setUpdatedDesc] = useState("");
+  const [getReload, setReload] = useState(false);
 
   const hideToast = () => {
     setShowToast(false);
@@ -236,13 +236,12 @@ mutation createLabel($companyId: String, $name: String) {
     const data = { details: text.current, name: name };
 
     updateMatterFile(id, data);
-    setResultMessage(`Successfully updated`);
+    setResultMessage(`Successfully updated ${name}`);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
-    }, 3000);
-
-    getMatterFiles();
+      getMatterFiles();
+    }, 1000);
   };
 
   const handleChangeName = (evt) => {
@@ -257,9 +256,8 @@ mutation createLabel($companyId: String, $name: String) {
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
-    }, 3000);
-
-    getMatterFiles();
+      getMatterFiles();
+    }, 1000);
   };
   return (
     <>
