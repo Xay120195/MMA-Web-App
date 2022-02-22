@@ -221,7 +221,7 @@ type Mutation {
     name: String
     details: String
   ): File
-  matterFileUpdate(id: String, name: String, details: String): CompanyAccessType
+  matterFileUpdate(id: ID, name: String, details: String): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(companyId: String, client: ClientInput, matter:MatterInput): ClientMatter
   backgroundCreate(companyId: ID): Background
