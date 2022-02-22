@@ -12,6 +12,7 @@ import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from 'react-contenteditable'; 
+import CreatableSelect from "react-select/creatable";
 
 
 export default function FileBucket() {
@@ -127,6 +128,14 @@ mutation createLabel($companyId: String, $name: String) {
 
     console.log(result);
     setLabels(result);
+  };
+
+  const handleMatterChanged = (newValue) => {
+    if (newValue?.__isNew__) {
+      addLabel(newValue.label);
+    } else {
+      setLabels(newValue);
+    }
   };
 
 
@@ -315,7 +324,14 @@ mutation createLabel($companyId: String, $name: String) {
                             </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-
+                              <CreatableSelect
+                                options={labels}
+                                isClearable
+                                isSearchable
+                                onChange={handleMatterChanged}
+                                placeholder="Labels"
+                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                              />
 
                             </td>
                           </tr>
