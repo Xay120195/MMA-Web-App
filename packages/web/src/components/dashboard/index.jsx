@@ -3,9 +3,7 @@ import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";
 import imgDocs from "../../assets/images/docs.svg";
 import { Welcome } from "./welcome";
-import { matters, clients } from "./data-source";
 import { ClientMatters } from "./matters-list";
-import Select from "react-select";
 import { useForm } from "react-hook-form";
 import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
@@ -38,6 +36,7 @@ export default function Dashboard() {
   const [selectedClient, setSelectedClient] = useState();
   const [selectedMatter, setSelectedMatter] = useState();
   const [clientMattersList, setClientMattersList] = useState([]);
+  const [isLoaded, setLoaded] = useState(false)
 
   const {
     register,
@@ -67,12 +66,16 @@ export default function Dashboard() {
       featureAccessFilters();
     }
 
-    if (clientMattersList !== undefined) {
-      ClientMatterList();
-    }
+    if(!isLoaded) {
+      if (clientMattersList !== undefined) {
+        ClientMatterList();
+      }
 
-    Clients();
-    Matters();
+      Clients();
+      Matters();
+
+      setLoaded(true);
+    }
   }, [searchMatter, userInfo]);
 
   const featureAccessFilters = async () => {
@@ -122,7 +125,7 @@ export default function Dashboard() {
             x.matter.name.toLowerCase().includes(v.toLowerCase()) ||
             x.client.name.toLowerCase().includes(v.toLowerCase())
         )
-        .sort((a, b) => a.name.localeCompare(b.name))
+        .sort((a, b) => a.matter.name.localeCompare(b.matter.name))
     );
   };
 
@@ -282,7 +285,6 @@ query listMatter($companyId: String) {
     let result = [];
 
     const companyId = localStorage.getItem("companyId");
-    //const companyId = "6dcfd396-5b32-4f1e-93a2-0f733598a6d2";
     const clientMattersOpt = await API.graphql({
       query: listClientMatters,
       variables: {

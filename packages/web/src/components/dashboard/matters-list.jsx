@@ -35,7 +35,7 @@ export function ClientMatters({
                   {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}`}>File Bucket</Link></li>) : null}
                   {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>
                    ) : null}
-                  {showDeleteMatter && (<li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Archive</a></li>)}
+                  {showDeleteMatter && (<li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Delete</a></li>)}
                   </ul>
               </div>
             </div>
