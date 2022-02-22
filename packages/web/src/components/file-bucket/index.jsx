@@ -84,6 +84,7 @@ export default function FileBucket() {
       downloadURL
       size
       type
+      details
     }
   }`;
 
@@ -240,6 +241,7 @@ mutation createLabel($companyId: String, $name: String) {
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
+    getMatterFiles();
   };
 
   return (
@@ -337,7 +339,7 @@ mutation createLabel($companyId: String, $name: String) {
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <ContentEditable
-                                html={!data.details ? "" : data.details}
+                                html={data.details}
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
                                   HandleChangeToTD(data.id, data.name)
