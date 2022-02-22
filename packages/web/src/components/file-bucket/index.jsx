@@ -22,6 +22,8 @@ export default function FileBucket() {
   const { matter_id } = useParams();
   const [getUpdatedDesc, setUpdatedDesc] = useState("");
 
+  const [selectedLabel, setSelectedLabel] = useState();
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -134,13 +136,7 @@ mutation createLabel($companyId: String, $name: String) {
     setLabels(result);
   };
 
-  const handleMatterChanged = (newValue) => {
-    if (newValue[0]?.__isNew__) {
-      addLabel(newValue[0].label);
-    } else {
-      //setLabel(newValue);
-    }
-  };
+  
 
   const addLabel = async (data) => {
     let result;
@@ -160,7 +156,6 @@ mutation createLabel($companyId: String, $name: String) {
       label: name,
     }));
 
-    //setLabel(result[0]);
   };
 
   useEffect(() => {
@@ -230,6 +225,12 @@ mutation createLabel($companyId: String, $name: String) {
 
   const handleChangeDesc = (evt) => {
     text.current = evt.target.value;
+  };
+  
+
+  const handleMatterChanged = (evt) => {
+    const val = evt.target.value; //non-existent, error
+    alert(val); 
   };
 
   const HandleChangeToTD = (id, name) => {
@@ -304,7 +305,7 @@ mutation createLabel($companyId: String, $name: String) {
             ) : (
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
-                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
+                  <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
@@ -353,9 +354,9 @@ mutation createLabel($companyId: String, $name: String) {
                                 isMulti
                                 isClearable
                                 isSearchable
-                                onChange={handleMatterChanged}
+                                onChange={(evt) => handleMatterChanged(evt)}
                                 placeholder="Labels"
-                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full z-100"
                               />
                             </td>
                           </tr>
