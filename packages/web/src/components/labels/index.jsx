@@ -20,6 +20,7 @@ import {
 import AddLabelModal from "./add-label-modal";
 import EditLabelModal from "./edit-label-modal";
 import RemoveLabelModal from "./remove-label-modal";
+
 export let dummyData = [
   {
     id: 0,
@@ -54,7 +55,11 @@ export let dummyData = [
 export let tempStorage = [1111];
 
 export default function Labels() {
- 
+
+  useEffect(() => {
+    LabelLists();
+  }, []);
+
     const contentDiv = {
         margin: "0 0 0 65px",
     };
@@ -89,12 +94,12 @@ export default function Labels() {
       handleModalClose();
     };
 
-    const [ddata, setDummyData] = useState(dummyData);
-    const [selectedID, changeSelected] = useState(tempStorage);
+    const [labels, setLabels] = useState([]);
+    //const [selectedID, changeSelected] = useState(tempStorage);
 
     const handleDelete = (id) => {
       setshowRemoveLabelModal(true);
-      tempStorage[0] = id;
+     tempStorage[0] = id;
       //alert(tempStorage[0]);
     }
 
@@ -103,6 +108,40 @@ export default function Labels() {
       tempStorage[1] = id;
       //alert(tempStorage[1]);
     }
+
+
+    const listLabels = `
+query listLabels($companyId: String) {
+  company(id: $companyId) {
+    labels {
+      items {
+        id
+        name
+      }
+    }
+  }
+}
+`;
+
+  const LabelLists = async () => {
+    let result = [];
+
+    const companyId = localStorage.getItem("companyId");
+
+    const labelsOpt = await API.graphql({
+      query: listLabels,
+      variables: {
+        companyId: companyId,
+      },
+    });
+
+    if (labelsOpt.data.company.labels.items !== null) {
+      result = labelsOpt.data.company.labels.items;
+    }
+
+    console.log(result);
+    setLabels(result);
+  };
 
   return (
     <>
@@ -197,11 +236,11 @@ export default function Labels() {
                         </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                      {dummyData.map((data) => ( 
+                      {labels.map((data) => ( 
                           <tr key={data.id}>
                             <td className="px-6 py-4 whitespace-nowrap w-60">
-                              <p className="font-semibold">{data.labelName}</p>
-                              <p>{data.conversations.length} Conversations</p>
+                              <p className="font-semibold">{data.name}</p>
+                              {/* <p>{data.conversations.length} Conversations</p> */}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap w-10">
                               <button
