@@ -338,7 +338,7 @@ mutation createLabel($companyId: String, $name: String) {
                         {matterFiles.map((data, index) => (
                           <tr key={data.id} index={index}>
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-                              <div>
+                              <div className="inline-flex">
                                 <ContentEditable
                                   html={`<p>${data.name}</p>`}
                                   onChange={(evt) => handleChangeName(evt)}
@@ -346,9 +346,9 @@ mutation createLabel($companyId: String, $name: String) {
                                     HandleChangeToTDName(data.id, data.details)
                                   }
                                 />
-                                <span className="absolute right-20">
+                                <span>
                                   <AiOutlineDownload
-                                    className="text-blue-400"
+                                    className="text-blue-400 mx-1"
                                     onClick={() =>
                                       //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
                                       openNewTab(data.downloadURL)
