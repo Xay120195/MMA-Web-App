@@ -63,6 +63,16 @@ export default function FileBucket() {
       }
   `;
 
+  const mUpdateMatterFile = `
+      mutation updateMatterFile ($id: ID, $name: String, $details: String) {
+        matterFileUpdate(id: $id, name: $name, details: $details) {
+          id
+          name
+          details
+        }
+      }
+  `;
+
   const qGetMatterFiles = `
   query getMatterFile($matterId: ID) {
     matterFile(matterId: $matterId) {
@@ -107,6 +117,28 @@ export default function FileBucket() {
       }
     });
   }
+
+  async function updateMatterFile(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        
+        const request = API.graphql({
+          query: mUpdateMatterFile,
+          variables: {
+            id: id,
+            name: data.name,
+            details: data.details,
+          },
+        });
+
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+
   const mainGrid = {
     display: "grid",
     gridtemplatecolumn: "1fr auto",
