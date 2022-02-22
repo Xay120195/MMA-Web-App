@@ -122,19 +122,19 @@ const TableInfo = ({
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Date
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Description of Background
                           </th>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Document
                           </th>
@@ -178,7 +178,7 @@ const TableInfo = ({
                             <td className="py-2 px-3 w-full">
                               <ContentEditable
                                 html={item.comments}
-                                className="w-full mx-4 px-3"
+                                className="w-full"
                                 onChange={(evt) => handleChange(evt, item.id)}
                                 onBlur={HandleChangeToTD}
                               />
