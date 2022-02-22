@@ -340,7 +340,11 @@ mutation createLabel($companyId: String, $name: String) {
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <div className="inline-flex">
                                 <ContentEditable
-                                  html={`<p>${data.name}</p>`}
+                                  html={
+                                    !data.name
+                                      ? "<p>no file name</p>"
+                                      : `<p>${data.name}</p>`
+                                  }
                                   onChange={(evt) => handleChangeName(evt)}
                                   onBlur={() =>
                                     HandleChangeToTDName(data.id, data.details)
@@ -360,7 +364,11 @@ mutation createLabel($companyId: String, $name: String) {
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <ContentEditable
-                                html={`<p>${data.details}</p>`}
+                                html={
+                                  !data.details
+                                    ? "<p>no file details yet</p>"
+                                    : `<p>${data.details}</p>`
+                                }
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
                                   HandleChangeToTD(data.id, data.name)
