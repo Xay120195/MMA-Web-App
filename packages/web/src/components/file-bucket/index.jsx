@@ -244,6 +244,21 @@ mutation createLabel($companyId: String, $name: String) {
     getMatterFiles();
   };
 
+  const handleChangeName = (evt) => {
+    text.current = evt.target.value;
+  };
+
+  const HandleChangeToTDName = (id, details) => {
+    const data = { name: text.current, details: details };
+
+    updateMatterFile(id, data);
+    setResultMessage(`Successfully updated`);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+    getMatterFiles();
+  };
   return (
     <>
       <div
@@ -324,7 +339,13 @@ mutation createLabel($companyId: String, $name: String) {
                           <tr key={data.id} index={index}>
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <div>
-                                <span>{data.name} </span>
+                                <ContentEditable
+                                  html={data.name}
+                                  onChange={(evt) => handleChangeName(evt)}
+                                  onBlur={() =>
+                                    HandleChangeToTDName(data.id, data.details)
+                                  }
+                                />
                                 <span className="absolute right-20">
                                   <AiOutlineDownload
                                     className="text-blue-400"
