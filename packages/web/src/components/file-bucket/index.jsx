@@ -87,6 +87,10 @@ export default function FileBucket() {
       size
       type
       details
+      labels {
+        id
+        name
+      }
     }
   }`;
 
@@ -123,7 +127,6 @@ mutation createLabel($companyId: String, $name: String) {
         companyId: companyId,
       },
     });
-
     if (labelsOpt.data.company.labels.items !== null) {
       result = labelsOpt.data.company.labels.items
         .map(({ id, name }) => ({
@@ -135,8 +138,6 @@ mutation createLabel($companyId: String, $name: String) {
 
     setLabels(result);
   };
-
-  
 
   const addLabel = async (data) => {
     let result;
@@ -155,7 +156,6 @@ mutation createLabel($companyId: String, $name: String) {
       value: id,
       label: name,
     }));
-
   };
 
   useEffect(() => {
@@ -177,6 +177,7 @@ mutation createLabel($companyId: String, $name: String) {
     };
 
     await API.graphql(params).then((files) => {
+      console.log('Files', files.data.matterFile);
       setMatterFiles(files.data.matterFile);
     });
   };
@@ -227,11 +228,10 @@ mutation createLabel($companyId: String, $name: String) {
   const handleChangeDesc = (evt) => {
     textDetails.current = evt.target.value;
   };
-  
 
   const handleMatterChanged = (evt) => {
-    const val = evt.target.value; //non-existent, error
-    alert(val); 
+    //const val = evt.target.value; //non-existent, error
+    //alert(val);
   };
 
   const HandleChangeToTD = (id, name, details) => {
