@@ -169,6 +169,17 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+  LabelsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LabelsTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
   CompanyMatterTable:
     Type: AWS::DynamoDB::Table
@@ -252,6 +263,36 @@ Resources:
         - IndexName: byClientMatter
           KeySchema:
             - AttributeName: clientMatterId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+
+  CompanyLabelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyLabelTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: labelId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byLabel
+          KeySchema:
+            - AttributeName: labelId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
