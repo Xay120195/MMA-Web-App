@@ -11,4 +11,6 @@ export const AppRoutes = {
   SIGNOUT: "/signout",
   FILEBUCKET: "/file-bucket",
   BACKGROUND: "/background",
+  INBOX: "/inbox",
+  LABELS: "/labels",
 };

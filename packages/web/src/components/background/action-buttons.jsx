@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 
 const ActionButtons = ({
@@ -9,10 +8,8 @@ const ActionButtons = ({
   setShowSearch,
   checkAllState,
   setcheckAllState,
-  checkedState,
   setCheckedState,
   settotalChecked,
-  totalChecked,
   setSearch,
   search,
   setId,

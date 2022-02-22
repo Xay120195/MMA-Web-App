@@ -206,6 +206,26 @@ custom:
         response: false
       - dataSource: LambdaQueryDS
         type: Query
+        field: label
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: labels
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: labelCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: labelUpdate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
         field: background
         request: false
         response: false
@@ -234,6 +254,12 @@ custom:
         field: clientMatters
         request: false
         response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: labels
+        request: false
+        response: false
+      
     dataSources:
       - type: AMAZON_DYNAMODB
         name: DynamoDBColorTableDS

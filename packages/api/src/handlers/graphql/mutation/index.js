@@ -116,7 +116,6 @@ async function createCompanyAccessType(data) {
       Item: params,
     });
 
-    console.log(unmarshall(params));
     const request = await client.send(command);
     response = request ? unmarshall(params) : {};
   } catch (e) {
@@ -143,8 +142,6 @@ async function updateCompanyAccessType(id, data) {
       id,
       ...data,
     };
-
-    console.log(data);
 
     const command = new UpdateItemCommand({
       TableName: "CompanyAccessTypeTable",
@@ -188,17 +185,94 @@ async function createClient(data) {
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
-  
+
     const companyClientCommand = new PutItemCommand({
       TableName: "CompanyClientTable",
       Item: marshall(companyClientParams),
     });
-    
-    const companyClientRequest = await client.send(companyClientCommand);
-  
-    console.log(companyClientRequest);
-    response = companyClientRequest ? rawParams : {};
 
+    const companyClientRequest = await client.send(companyClientCommand);
+
+    response = companyClientRequest ? rawParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function createLabel(data) {
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "LabelsTable",
+      Item: params,
+    });
+    const request = await client.send(command);
+
+    const companyLabelParams = {
+      id: v4(),
+      labelId: rawParams.id,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const companyLabelCommand = new PutItemCommand({
+      TableName: "CompanyLabelTable",
+      Item: marshall(companyLabelParams),
+    });
+
+    const companyLabelRequest = await client.send(companyLabelCommand);
+
+    response = companyLabelRequest ? rawParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+
+
+
+async function updateLabel(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "LabelsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await client.send(command);
+    response = request ? params : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -233,17 +307,17 @@ async function createClientMatter(data) {
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
-  
+
     const companyClientMatterCommand = new PutItemCommand({
       TableName: "CompanyClientMatterTable",
       Item: marshall(companyClientMatterParams),
     });
-    
-    const companyClientMatterRequest = await client.send(companyClientMatterCommand);
-  
-    console.log(companyClientMatterRequest);
-    response = companyClientMatterRequest ? rawParams : {};
 
+    const companyClientMatterRequest = await client.send(
+      companyClientMatterCommand
+    );
+
+    response = companyClientMatterRequest ? rawParams : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -283,10 +357,9 @@ async function createMatter(data) {
       TableName: "CompanyMatterTable",
       Item: marshall(companyMatterParams),
     });
-    
+
     const companyMatterRequest = await client.send(companyMatterCommand);
 
-    console.log(companyMatterRequest);
     response = companyMatterRequest ? rawParams : {};
   } catch (e) {
     response = {
@@ -296,7 +369,6 @@ async function createMatter(data) {
     };
   }
 
-  console.log(response);
   return response;
 }
 
@@ -314,8 +386,6 @@ async function createBackground(data) {
       TableName: "BackgroundTable",
       Item: params,
     });
-
-    console.log(params);
 
     const request = await client.send(command);
     response = request ? unmarshall(params) : {};
@@ -343,8 +413,6 @@ async function updateBackground(id, data) {
       id,
       ...data,
     };
-
-    console.log(data);
 
     const command = new UpdateItemCommand({
       TableName: "BackgroundTable",
@@ -419,6 +487,17 @@ const resolvers = {
         updatedAt: new Date().toISOString(),
       };
       return await updateMatterFile(id, data);
+    },
+    labelCreate: async (ctx) => {
+      return await createLabel(ctx.arguments);
+    },
+    labelUpdate: async (ctx) => {
+      const { id, name } = ctx.arguments;
+      const data = {
+        name: name,
+        updatedAt: new Date().toISOString(),
+      };
+      return await updateLabel(id, data);
     },
     companyAccessTypeCreate: async (ctx) => {
       return await createCompanyAccessType(ctx.arguments);
