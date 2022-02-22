@@ -11,9 +11,8 @@ import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
-import ContentEditable from 'react-contenteditable'; 
+import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
-
 
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
@@ -100,8 +99,7 @@ query listLabels($companyId: String) {
 }
 `;
 
-
-const mCreateLabel = `
+  const mCreateLabel = `
 mutation createLabel($companyId: String, $name: String) {
     labelCreate(companyId:$companyId, name:$name) {
         id
@@ -123,21 +121,24 @@ mutation createLabel($companyId: String, $name: String) {
     });
 
     if (labelsOpt.data.company.labels.items !== null) {
-      result = labelsOpt.data.company.labels.items;
+      result = labelsOpt.data.company.labels.items
+        .map(({ id, name }) => ({
+          value: id,
+          label: name,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
     }
 
-    console.log(result);
     setLabels(result);
   };
 
   const handleMatterChanged = (newValue) => {
-    if (newValue?.__isNew__) {
-      addLabel(newValue.label);
+    if (newValue[0]?.__isNew__) {
+      addLabel(newValue[0].label);
     } else {
-      setLabels(newValue);
+      //setLabel(newValue);
     }
   };
-
 
   const addLabel = async (data) => {
     let result;
@@ -152,14 +153,12 @@ mutation createLabel($companyId: String, $name: String) {
       },
     });
 
-    result = createLabel.data.labelCreate;
-    console.log(result);
-    // result = [createLabel.data.clientCreate].map(({ id, name }) => ({
-    //   value: id,
-    //   label: name,
-    // }));
+    result = [createLabel.data.clientCreate].map(({ id, name }) => ({
+      value: id,
+      label: name,
+    }));
 
-    // setclientName(result[0]);
+    //setLabel(result[0]);
   };
 
   useEffect(() => {
@@ -167,7 +166,7 @@ mutation createLabel($companyId: String, $name: String) {
       getMatterFiles();
     }
 
-    if(labels === null){
+    if (labels === null) {
       getLabels();
     }
   }, [matterFiles]);
@@ -203,7 +202,6 @@ mutation createLabel($companyId: String, $name: String) {
   async function updateMatterFile(id, data) {
     return new Promise((resolve, reject) => {
       try {
-        
         const request = API.graphql({
           query: mUpdateMatterFile,
           variables: {
@@ -219,7 +217,6 @@ mutation createLabel($companyId: String, $name: String) {
       }
     });
   }
-
 
   const mainGrid = {
     display: "grid",
@@ -320,19 +317,19 @@ mutation createLabel($companyId: String, $name: String) {
                             </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-                              <input defaultValue="Test Description"/>
+                              <input defaultValue="Test Description" />
                             </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <CreatableSelect
                                 options={labels}
+                                isMulti
                                 isClearable
                                 isSearchable
                                 onChange={handleMatterChanged}
                                 placeholder="Labels"
                                 className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                               />
-
                             </td>
                           </tr>
                         ))}
