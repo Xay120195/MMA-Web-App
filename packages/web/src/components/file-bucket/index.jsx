@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
@@ -20,6 +20,7 @@ export default function FileBucket() {
   const [matterFiles, setMatterFiles] = useState(null);
   const [labels, setLabels] = useState(null);
   const { matter_id } = useParams();
+  const [getUpdatedDesc, setUpdatedDesc] = useState("");
 
   const hideToast = () => {
     setShowToast(false);
@@ -200,6 +201,7 @@ mutation createLabel($companyId: String, $name: String) {
   }
 
   async function updateMatterFile(id, data) {
+    console.log(data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -221,6 +223,23 @@ mutation createLabel($companyId: String, $name: String) {
   const mainGrid = {
     display: "grid",
     gridtemplatecolumn: "1fr auto",
+  };
+
+  const text = useRef("");
+
+  const handleChangeDesc = (evt) => {
+    text.current = evt.target.value;
+  };
+
+  const HandleChangeToTD = (id, name) => {
+    const data = { details: text.current, name: name };
+
+    updateMatterFile(id, data);
+    setResultMessage(`Successfully updated`);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
   };
 
   return (
@@ -317,7 +336,13 @@ mutation createLabel($companyId: String, $name: String) {
                             </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-                              <input defaultValue="Test Description" />
+                              <ContentEditable
+                                html={!data.details ? "" : data.details}
+                                onChange={(evt) => handleChangeDesc(evt)}
+                                onBlur={() =>
+                                  HandleChangeToTD(data.id, data.name)
+                                }
+                              />
                             </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
