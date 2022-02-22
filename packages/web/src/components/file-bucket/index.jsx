@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { API } from "aws-amplify";
+import { API, toast } from "aws-amplify";
 import BlankState from "../blank-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
@@ -20,7 +20,7 @@ export default function FileBucket() {
   const [matterFiles, setMatterFiles] = useState(null);
   const [labels, setLabels] = useState(null);
   const { matter_id } = useParams();
-  const [getUpdatedDesc, setUpdatedDesc] = useState("");
+  const [getReload, setReload] = useState(false);
 
   const [selectedLabel, setSelectedLabel] = useState();
 
@@ -221,10 +221,11 @@ mutation createLabel($companyId: String, $name: String) {
     gridtemplatecolumn: "1fr auto",
   };
 
-  const text = useRef("");
+  const textName = useRef("");
+  const textDetails = useRef("");
 
   const handleChangeDesc = (evt) => {
-    text.current = evt.target.value;
+    textDetails.current = evt.target.value;
   };
   
 
@@ -233,18 +234,39 @@ mutation createLabel($companyId: String, $name: String) {
     alert(val); 
   };
 
-  const HandleChangeToTD = (id, name) => {
-    const data = { details: text.current, name: name };
+  const HandleChangeToTD = (id, name, details) => {
+    const data = {
+      details: !textDetails.current ? details : textDetails.current,
+      name: name,
+    };
 
     updateMatterFile(id, data);
     setResultMessage(`Successfully updated`);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
-    }, 3000);
-    getMatterFiles();
+      getMatterFiles();
+    }, 1000);
   };
 
+  const handleChangeName = (evt) => {
+    textName.current = evt.target.value;
+  };
+
+  const HandleChangeToTDName = (id, details, name) => {
+    const data = {
+      name: !textName.current ? name : textName.current,
+      details: details,
+    };
+
+    updateMatterFile(id, data);
+    setResultMessage(`Successfully updated `);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles();
+    }, 1000);
+  };
   return (
     <>
       <div
@@ -324,11 +346,25 @@ mutation createLabel($companyId: String, $name: String) {
                         {matterFiles.map((data, index) => (
                           <tr key={data.id} index={index}>
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-                              <div>
-                                <span>{data.name} </span>
-                                <span className="absolute right-20">
+                              <div className="inline-flex">
+                                <ContentEditable
+                                  html={
+                                    !data.name
+                                      ? "<p>no file name</p>"
+                                      : `<p>${data.name}</p>`
+                                  }
+                                  onChange={(evt) => handleChangeName(evt)}
+                                  onBlur={() =>
+                                    HandleChangeToTDName(
+                                      data.id,
+                                      data.details,
+                                      data.name
+                                    )
+                                  }
+                                />
+                                <span>
                                   <AiOutlineDownload
-                                    className="text-blue-400"
+                                    className="text-blue-400 mx-1"
                                     onClick={() =>
                                       //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
                                       openNewTab(data.downloadURL)
@@ -340,10 +376,18 @@ mutation createLabel($companyId: String, $name: String) {
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <ContentEditable
-                                html={data.details}
+                                html={
+                                  !data.details
+                                    ? "<p>no file details yet</p>"
+                                    : `<p>${data.details}</p>`
+                                }
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
-                                  HandleChangeToTD(data.id, data.name)
+                                  HandleChangeToTD(
+                                    data.id,
+                                    data.name,
+                                    data.details
+                                  )
                                 }
                               />
                             </td>
