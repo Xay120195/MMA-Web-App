@@ -226,20 +226,21 @@ mutation createLabel($companyId: String, $name: String) {
     gridtemplatecolumn: "1fr auto",
   };
 
-  const text = useRef("");
+  const textName = useRef("");
+  const textDetails = useRef("");
 
   const handleChangeDesc = (evt) => {
-    text.current = evt.target.value;
+    textDetails.current = evt.target.value;
   };
 
   const HandleChangeToTD = (id, name, details) => {
     const data = {
-      details: !text.current ? details : text.current,
+      details: !textDetails.current ? details : textDetails.current,
       name: name,
     };
 
     updateMatterFile(id, data);
-    setResultMessage(`Successfully updated ${name}`);
+    setResultMessage(`Successfully updated`);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -248,17 +249,17 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const handleChangeName = (evt) => {
-    text.current = evt.target.value;
+    textName.current = evt.target.value;
   };
 
   const HandleChangeToTDName = (id, details, name) => {
     const data = {
-      name: !text.current ? name : text.current,
+      name: !textName.current ? name : textName.current,
       details: details,
     };
 
     updateMatterFile(id, data);
-    setResultMessage(`Successfully updated bucket name ${text.current}`);
+    setResultMessage(`Successfully updated `);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
