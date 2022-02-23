@@ -432,7 +432,6 @@ mutation createLabel($companyId: String, $name: String) {
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <CreatableSelect
-                                defaultValue={extractArray(data.labels)}
                                 options={labels}
                                 isMulti
                                 isClearable
