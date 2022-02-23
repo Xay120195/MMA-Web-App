@@ -3,7 +3,7 @@ import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
 import { API, Storage } from "aws-amplify";
 import "../../assets/styles/FileUpload.css";
 import Pie from "../link-to-chronology/Pie";
-import config from "./aws-exports";
+import config from "../../aws-exports";
 
 const useRefEventListener = (fn) => {
   const fnRef = useRef(fn);
