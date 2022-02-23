@@ -74,6 +74,7 @@ export default function FileBucket() {
           id
           name
           details
+          labels
         }
       }
   `;
@@ -229,19 +230,25 @@ mutation createLabel($companyId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-  const handleMatterChanged = (evt) => {
-    //const val = evt.target.value; //non-existent, error
-    //alert(val);
+  const handleMatterChanged = (options, id, name, details) => {
+    console.log(options);
+    const datas = {
+      name: name,
+      details: details,
+      labels: options,
+    };
+    updateMatterFile(id, datas);
   };
 
   const HandleChangeToTD = (id, name, details) => {
     const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
-
+    let emptyArray = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
       name: name,
+      labels: emptyArray,
     };
 
     updateMatterFile(id, data);
@@ -253,17 +260,17 @@ mutation createLabel($companyId: String, $name: String) {
     }, 1000);
   };
 
-  const handleChangeName = (evt) => {
-    textName.current = evt.target.value;
-  };
+  const handleChangeName = (labels) => {};
 
   const HandleChangeToTDName = (id, details, name) => {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
+    let emptyArray = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
       details: details,
+      labels: emptyArray,
     };
 
     updateMatterFile(id, data);
@@ -405,7 +412,14 @@ mutation createLabel($companyId: String, $name: String) {
                                 isMulti
                                 isClearable
                                 isSearchable
-                                onChange={(evt) => handleMatterChanged(evt)}
+                                onChange={(options) =>
+                                  handleMatterChanged(
+                                    options,
+                                    data.id,
+                                    data.name,
+                                    data.details
+                                  )
+                                }
                                 placeholder="Labels"
                                 className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full z-100"
                               />
