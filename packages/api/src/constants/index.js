@@ -1,3 +1,3 @@
-const AWS_COGNITO_USERPOOL_ID = "ap-southeast-1_eG5B1KoPb";
+const AWS_COGNITO_USERPOOL_ID = process.env.REACT_APP_COGNITO_USER_POOL_ID;
 
 export default AWS_COGNITO_USERPOOL_ID;
