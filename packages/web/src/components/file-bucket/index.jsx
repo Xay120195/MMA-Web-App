@@ -74,7 +74,9 @@ export default function FileBucket() {
           id
           name
           details
-          labels
+          labels {
+            id name
+          }
         }
       }
   `;
@@ -208,6 +210,7 @@ mutation createLabel($companyId: String, $name: String) {
             id: id,
             name: data.name,
             details: data.details,
+            labels: data.labels,
           },
         });
 
@@ -231,13 +234,19 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const handleMatterChanged = (options, id, name, details) => {
-    console.log(options);
-    const datas = {
+    const newOptions = options.map(({ value: id, label: name, ...rest }) => ({
+      id,
+      name,
+      ...rest,
+    }));
+
+    // console.log(newArray);
+    const data = {
       name: name,
       details: details,
-      labels: options,
+      labels: newOptions,
     };
-    updateMatterFile(id, datas);
+    updateMatterFile(id, data);
   };
 
   const HandleChangeToTD = (id, name, details) => {
