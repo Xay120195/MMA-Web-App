@@ -243,7 +243,7 @@ type Mutation {
   backgroundUpdate(id: ID, description: String): Background
   labelCreate(name: String, companyId: String): Label
   labelUpdate(id: ID, name: String): Label
-  backgroundCreate(companyId: String, matter:MatterInput): Background
+  backgroundCreate(companyId: String, matter: MatterInput): Background
 }
 
 input MatterInput {
