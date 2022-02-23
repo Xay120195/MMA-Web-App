@@ -75,7 +75,7 @@ export default function FileBucket() {
           name
           details
           labels {
-            id
+            id 
             name
           }
         }
@@ -251,14 +251,15 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const HandleChangeToTD = (id, name, details) => {
-    const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
+    const filterDetails = !details
+      ? "no details"
+      : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
-    let emptyArray = [];
+
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
       name: name,
-      labels: emptyArray,
     };
 
     updateMatterFile(id, data);
@@ -276,11 +277,10 @@ mutation createLabel($companyId: String, $name: String) {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-    let emptyArray = [];
+
     const data = {
       name: !textName.current ? filterName : finaloutput,
       details: details,
-      labels: emptyArray,
     };
 
     updateMatterFile(id, data);
