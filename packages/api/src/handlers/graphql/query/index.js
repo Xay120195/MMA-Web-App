@@ -27,7 +27,8 @@ async function getCompany(data) {
       statusCode: 500,
     };
   }
-
+  console.log(response);
+  
   return response;
 }
 
@@ -321,9 +322,6 @@ const resolvers = {
     },
     matterFile: async (ctx) => {
       return getMatterFile(ctx.arguments);
-    },
-    background: async (ctx) => {
-      return getBackground(ctx.arguments);
     },
   },
 };

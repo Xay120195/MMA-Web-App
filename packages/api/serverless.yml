@@ -35,6 +35,8 @@ plugins:
   - serverless-appsync-plugin
   - serverless-webpack
 
+useDotenv: true
+
 functions:
   query-fn:
     handler: src/handlers/graphql/query/index.handler
@@ -231,7 +233,7 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: backgroundUpdate
+        field: backgroundCreate
         request: false
         response: false
       - dataSource: LambdaCompanyDS
