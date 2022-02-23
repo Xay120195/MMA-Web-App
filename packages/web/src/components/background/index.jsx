@@ -85,6 +85,7 @@ export default function Background() {
         setId={setId}
         getId={getId}
         search={search}
+        matterId={matter_id}
       />
     </>
   );
