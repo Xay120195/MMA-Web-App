@@ -12,12 +12,9 @@ const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
-//const MATTER_BUCKET_NAME = "mma-webapp-dev-bucket";
-const MATTER_BUCKET_NAME = "mmabucketapp-staging";
-
 export async function generatePresignedUrl(Key) {
   const command = new GetObjectCommand({
-    Bucket: MATTER_BUCKET_NAME,
+    Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
     Key,
   });
 
