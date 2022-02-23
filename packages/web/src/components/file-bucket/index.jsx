@@ -240,7 +240,6 @@ mutation createLabel($companyId: String, $name: String) {
       name,
       ...rest,
     }));
-    alert(details);
 
     // console.log(newOptions);
     const data = {
@@ -299,25 +298,13 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const extractArray = (ar) => {
-    var val = "";
-    var lab = "";
-    var arr = ar;
-    console.log(arr);
-    if (Array.isArray(arr) && arr.length) {
-      ar.map((data) => {
-          val = data.name;
-          lab = data.name;
-          arr = [...arr, {"value": val, "label": lab}];
-          // return arr;
-        }
-      );
-      arr.splice(0, 1);
-      return arr;
-    }else{
-      return null;
-    }
-    //value should be in format [{ value: "example", label: "example" }]
-  }
+    const newOptions = ar.map(({ id: value, name: label, ...rest }) => ({
+      value,
+      label,
+      ...rest,
+    }));
+    return newOptions;
+  };
   return (
     <>
       <div
