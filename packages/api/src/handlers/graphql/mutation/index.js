@@ -380,17 +380,19 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
-      matter: data.matter,
+      clientMatter: data.clientMatter.id,
       createdAt: new Date().toISOString(),
     };
 
+    console.log(data);
     const params = marshall(rawParams);
     const command = new PutItemCommand({
       TableName: "BackgroundTable",
       Item: params,
     });
+    
     const request = await client.send(command);
-
+    
     const companyBackgroundMatterParams = {
       id: v4(),
       backgroundMatterId: rawParams.id,

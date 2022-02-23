@@ -27,8 +27,6 @@ async function getCompany(data) {
       statusCode: 500,
     };
   }
-  console.log(response);
-  
   return response;
 }
 
@@ -255,29 +253,46 @@ async function getLabel(data) {
   return response;
 }
 
-
-async function getBackground(data) {
+async function getBackround(data) {
   try {
     const params = {
       TableName: "BackgroundTable",
-      IndexName: "byCompany",
-      KeyConditionExpression: "companyId = :companyId",
-      ExpressionAttributeValues: marshall({
-        ":companyId": data.companyId,
+      Key: marshall({
+        id: data.id,
       }),
     };
 
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
-    var response = request.Items.map((data) => unmarshall(data));
+    const command = new GetItemCommand(params);
+    const { Item } = await client.send(command);
+    response = Item ? unmarshall(Item) : {};
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
   }
+  console.log(response);
+  return response;
+}
+
+async function listBackground() {
+  try {
+    const params = {
+      TableName: "BackgroundTable",
+    };
+    const command = new ScanCommand(params);
+    const request = await client.send(command);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    response = request ? parseResponse : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  console.log(response);
   return response;
 }
 
@@ -322,6 +337,12 @@ const resolvers = {
     },
     matterFile: async (ctx) => {
       return getMatterFile(ctx.arguments);
+    },
+    background: async (ctx) => {
+      return getBackround(ctx.arguments);
+    },
+    backgrounds: async (ctx) => {
+      return listBackground(ctx.arguments);
     },
   },
 };

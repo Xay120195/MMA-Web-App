@@ -157,7 +157,7 @@ type ClientMatter {
 type Background {
   id: ID
   date: String
-  matter: Matter
+  clientMatter: ClientMatter
   description: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -243,7 +243,11 @@ type Mutation {
   backgroundUpdate(id: ID, description: String): Background
   labelCreate(name: String, companyId: String): Label
   labelUpdate(id: ID, name: String): Label
-  backgroundCreate(companyId: String, matter:MatterInput): Background
+  backgroundCreate(companyId: String, clientMatter: ClientMatterInput): Background
+}
+
+input ClientMatterInput {
+  id: ID
 }
 
 input MatterInput {
