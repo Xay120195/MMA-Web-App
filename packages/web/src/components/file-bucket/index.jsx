@@ -291,28 +291,6 @@ mutation createLabel($companyId: String, $name: String) {
       getMatterFiles();
     }, 1000);
   };
-
-  const extractArray = (ar) => {
-    var val = "";
-    var lab = "";
-    var arr = ar;
-    console.log(arr);
-    if (Array.isArray(arr) && arr.length) {
-      ar.map((data) => {
-          val = data.name;
-          lab = data.name;
-          arr = [...arr, {"value": val, "label": lab}];
-          // return arr;
-        }
-      );
-      arr.splice(0, 1);
-      return arr;
-    }else{
-      return null;
-    }
-    //value should be in format [{ value: "example", label: "example" }]
-  }
-
   return (
     <>
       <div
@@ -439,10 +417,7 @@ mutation createLabel($companyId: String, $name: String) {
                             </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-                              {/* <input defaultValue={data.labels.map((d) => d.name)}/> */}
-                              {/* <button type="button" onClick={()=>extractArray(data.labels)}>test</button> */}
                               <CreatableSelect
-                                defaultValue={extractArray(data.labels)}
                                 options={labels}
                                 isMulti
                                 isClearable
