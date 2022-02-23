@@ -131,7 +131,9 @@ mutation createLabel($companyId: String, $name: String) {
         companyId: companyId,
       },
     });
+
     if (labelsOpt.data.company.labels.items !== null) {
+      console.log("Labels", labelsOpt.data.company.labels.items);
       result = labelsOpt.data.company.labels.items
         .map(({ id, name }) => ({
           value: id,
@@ -156,10 +158,8 @@ mutation createLabel($companyId: String, $name: String) {
       },
     });
 
-    result = [createLabel.data.clientCreate].map(({ id, name }) => ({
-      value: id,
-      label: name,
-    }));
+    result = createLabel.data.labelCreate;
+    return result;
   };
 
   useEffect(() => {
@@ -202,7 +202,7 @@ mutation createLabel($companyId: String, $name: String) {
   }
 
   async function updateMatterFile(id, data) {
-    console.log(data);
+    console.log("updateMatterFile", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -234,20 +234,27 @@ mutation createLabel($companyId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-  const handleMatterChanged = (options, id, name, details) => {
-    const newOptions = options.map(({ value: id, label: name, ...rest }) => ({
+  const handleMatterChanged = async (options, id, name, details) => {
+    let newOptions = [];
+
+    options.map(async (o) => {
+      if (o.__isNew__) {
+        newOptions = await addLabel(o.label);
+      }
+    });
+
+    newOptions = options.map(({ value: id, label: name }) => ({
       id,
       name,
-      ...rest,
     }));
 
-    // console.log(newOptions);
     const data = {
       name: name,
       details: details,
       labels: newOptions,
     };
-    updateMatterFile(id, data);
+
+    await updateMatterFile(id, data);
   };
 
   const HandleChangeToTD = (id, name, details) => {
@@ -256,11 +263,11 @@ mutation createLabel($companyId: String, $name: String) {
       : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
-    let labels = [];
+    let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
       name: name,
-      labels: labels,
+      labels: lbls,
     };
 
     updateMatterFile(id, data);
@@ -281,11 +288,11 @@ mutation createLabel($companyId: String, $name: String) {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-    let labels = [];
+    let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
       details: !details ? "no data details" : details,
-      labels: labels,
+      labels: lbls,
     };
 
     updateMatterFile(id, data);
@@ -298,12 +305,15 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const extractArray = (ar) => {
-    const newOptions = ar.map(({ id: value, name: label, ...rest }) => ({
-      value,
-      label,
-      ...rest,
-    }));
-    return newOptions;
+    if (Array.isArray(ar) && ar.length) {
+      const newOptions = ar.map(({ id: value, name: label }) => ({
+        value,
+        label,
+      }));
+      return newOptions;
+    } else {
+      return null;
+    }
   };
   return (
     <>
