@@ -321,7 +321,21 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  CompanyBackgroundMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyBackgroundMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
         - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: clientMatterId
           AttributeType: S
       KeySchema:
         - AttributeName: id
@@ -330,6 +344,12 @@ Resources:
         - IndexName: byCompany
           KeySchema:
             - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byClientMatter
+          KeySchema:
+            - AttributeName: clientMatterId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
