@@ -318,7 +318,7 @@ async function createBackground(data) {
 
     const companyBackgroundMatterParams = {
       id: v4(),
-      clientMatterId: rawParams.id,
+      backgroundMatterId: rawParams.id,
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
