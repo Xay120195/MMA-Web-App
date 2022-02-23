@@ -12,12 +12,13 @@ const useRefEventListener = (fn) => {
 };
 
 export default function UploadLinkModal(props) {
+  
   Storage.configure({
     region: config.aws_user_files_s3_bucket_region,
     bucket: config.aws_user_files_s3_bucket,
     identityPoolId: config.aws_user_pools_id,
   });
-
+  
   const [selectedFiles, _setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState({ files: [] });
 
