@@ -5,6 +5,7 @@ import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import { witness_affidavits } from "./data-source";
+import { API } from "aws-amplify";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -16,8 +17,8 @@ const mainGrid = {
 };
 
 export default function Background() {
-  const [allData, setAllData] = useState(matters);
-  const [witness, setWitness] = useState(witness_affidavits);
+  const [clientMatterList, setClientMattersList] = useState([]);
+  const [witness, setWitness] = useState([]);
   const [idList, setIdList] = useState([]);
   const [getId, setId] = useState([{}]);
   const params = useParams();
@@ -35,7 +36,7 @@ export default function Background() {
   }, []);
 
   const rundata = () => {
-    setAllData(allData.find((item) => item.id === Number(matter_id)));
+    //setAllData(allData.find((item) => item.id === Number(matter_id)));
   };
 
   return (
@@ -50,9 +51,9 @@ export default function Background() {
           <div style={mainGrid}>
             <div>
               <span className="text-lg mt-3 font-medium">
-                Claire Greene {allData.name} Background
+                Client/Matter Name Background
               </span>
-              <BreadCrumb data={allData} />
+              <BreadCrumb data={clientMatterList} />
               <ActionButtons
                 setWitness={setWitness}
                 witness={witness}

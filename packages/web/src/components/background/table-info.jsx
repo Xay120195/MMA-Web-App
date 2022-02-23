@@ -59,8 +59,6 @@ const TableInfo = ({
     }
   };
 
-  console.log(matterId);
-
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
@@ -183,7 +181,7 @@ const TableInfo = ({
                             <td className="py-2 px-3 w-full">
                               <ContentEditable
                                 html={item.comments}
-                                className="w-full"
+                                className="w-full py-2 px-3"
                                 onChange={(evt) => handleChange(evt, item.id)}
                                 onBlur={HandleChangeToTD}
                               />

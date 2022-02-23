@@ -256,54 +256,55 @@ async function listCompanyClientMatters(ctx) {
 }
 
 
-async function listBackgroundMatters(ctx) {
+async function listClientMatterBackground(ctx) {
   const { id } = ctx.source;
   // const { limit = 100, nextToken } = ctx.args;
   try {
-    const companyBackgroundMatterParams = {
-      TableName: "CompanyBackgroundMatterTable",
-      IndexName: "byCompany",
-      KeyConditionExpression: "companyId = :companyId",
+    const clientMatterBackgroundParams = {
+      TableName: "ClientMatterBackgroundTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
       ExpressionAttributeValues: marshall({
-        ":companyId": id,
+        ":clientMatterId": id,
       }),
       // ExclusiveStartKey: nextToken
       //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
       //   : undefined,
       // Limit: limit,
     };
-    
-    const companyBackroundMatterCommand = new QueryCommand(companyBackgroundMatterParams);
-    const companyBackgroundMatterResult = await client.send(companyBackroundMatterCommand);
 
-    const backgroundMatterIds = companyBackgroundMatterResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.backgroundMatterId })
+    const clientMatterBackgroundCommand = new QueryCommand(clientMatterBackgroundParams);
+    const clientMatterBackgroundResult = await client.send(clientMatterBackgroundCommand);
+
+    console.log("ClientMatterBackgroundCommand", clientMatterBackgroundCommand);
+    const backgroundIds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.labelId })
     );
 
-    const backgroundMatterParams = {
+    const backgroundParams = {
       RequestItems: {
-        BackgroundTable: {
-          Keys: backgroundMatterIds,
+        BackgroundsTable: {
+          Keys: backgroundIds,
         },
       },
     };
 
-    const backgroundMattersCommand = new BatchGetItemCommand(backgroundMatterParams);
-    const backgroundMattersResult = await client.send(backgroundMattersCommand);
+    const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
+    const backgroundsResult = await client.send(backgroundsCommand);
 
-    const objBackgroundMatters = backgroundMattersResult.Responses.BackgroundTable.map((i) => unmarshall(i));
-    const objCompanyBackgroundMatters = companyBackgroundMatterResult.Items.map((i) => unmarshall(i));
+    const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map((i) => unmarshall(i));
+    const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i));
 
-    const response = objCompanyBackgroundMatters.map((item) => {
-      const filterBackgroundMatter = objBackgroundMatters.find((u) => u.id === item.backgroundMatterId);
-      return { ...item, ...filterBackgroundMatter };
+    const response = objClientMatterBackgrounds.map((item) => {
+      const filterBackground = objBackgrounds.find((u) => u.id === item.backgroundId);
+      return { ...item, ...filterBackground };
     });
 
     return {
       items: response,
-      // nextToken: companyClientMatterResult.LastEvaluatedKey
+      // nextToken: clientMatterBackgroundResult.LastEvaluatedKey
       //   ? Buffer.from(
-      //       JSON.stringify(companyClientMatterResult.LastEvaluatedKey)
+      //       JSON.stringify(clientMatterBackgroundResult.LastEvaluatedKey)
       //     ).toString("base64")
       //   : null,
     };
@@ -317,8 +318,6 @@ async function listBackgroundMatters(ctx) {
   }
   return response;
 }
-
-
 
 
 async function listCompanyLabels(ctx) {
@@ -401,8 +400,8 @@ const resolvers = {
     labels: async (ctx) => {
       return listCompanyLabels(ctx);
     },
-    backgroundMatters:async (ctx) => {
-      return listBackgroundMatters(ctx);
+    backgrounds:async (ctx) => {
+      return listClientMatterBackground(ctx);
     },
   },
 };
