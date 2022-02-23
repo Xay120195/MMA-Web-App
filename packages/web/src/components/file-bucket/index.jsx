@@ -132,6 +132,7 @@ mutation createLabel($companyId: String, $name: String) {
       },
     });
     if (labelsOpt.data.company.labels.items !== null) {
+     // console.log(labelsOpt.data.company.labels.items);
       result = labelsOpt.data.company.labels.items
         .map(({ id, name }) => ({
           value: id,
@@ -235,10 +236,9 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const handleMatterChanged = (options, id, name, details) => {
-    const newOptions = options.map(({ value: id, label: name, ...rest }) => ({
+    const newOptions = options.map(({ value: id, label: name}) => ({
       id,
-      name,
-      ...rest,
+      name
     }));
 
     // console.log(newOptions);
@@ -298,13 +298,17 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const extractArray = (ar) => {
-    const newOptions = ar.map(({ id: value, name: label, ...rest }) => ({
-      value,
-      label,
-      ...rest,
-    }));
-    return newOptions;
+    if (Array.isArray(ar) && ar.length) {
+      const newOptions = ar.map(({ id: value, name: label}) => ({
+        value,
+        label
+      }));
+      return newOptions;
+    }else{
+      return null;
+    }
   };
+
   return (
     <>
       <div
