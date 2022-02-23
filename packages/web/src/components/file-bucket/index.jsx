@@ -240,6 +240,7 @@ mutation createLabel($companyId: String, $name: String) {
       name,
       ...rest,
     }));
+    alert(details);
 
     // console.log(newArray);
     const data = {
@@ -441,8 +442,6 @@ mutation createLabel($companyId: String, $name: String) {
                             </td>
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-                              {/* <input defaultValue={data.labels.map((d) => d.name)}/> */}
-                              {/* <button type="button" onClick={()=>extractArray(data.labels)}>test</button> */}
                               <CreatableSelect
                                 defaultValue={extractArray(data.labels)}
                                 options={labels}
