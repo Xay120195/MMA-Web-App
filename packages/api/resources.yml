@@ -2,9 +2,113 @@ Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: ${self:service.name}-user-pool
+      UserPoolName: ${self:service}-user-pool
       AutoVerifiedAttributes:
         - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+
+  UserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: !Sub ${self:service}-client
+      GenerateSecret: false
+      UserPoolId: !Ref CognitoUserPool
+
+  # Creates a federeated Identity pool
+  IdentityPool:
+    Type: "AWS::Cognito::IdentityPool"
+    Properties:
+      IdentityPoolName: !Sub ${self:service}Identity
+      AllowUnauthenticatedIdentities: true
+      CognitoIdentityProviders:
+        - ClientId: !Ref UserPoolClient
+          ProviderName: !GetAtt CognitoUserPool.ProviderName
+
+  # Create a role for unauthorized acces to AWS resources. Very limited access. Only allows users in the previously created Identity Pool
+  CognitoUnAuthorizedRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Federated: "cognito-identity.amazonaws.com"
+            Action:
+              - "sts:AssumeRoleWithWebIdentity"
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud": !Ref IdentityPool
+              "ForAnyValue:StringLike":
+                "cognito-identity.amazonaws.com:amr": unauthenticated
+      Policies:
+        - PolicyName: "CognitoUnauthorizedPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "mobileanalytics:PutEvents"
+                  - "cognito-sync:*"
+                Resource: "*"
+
+  # Create a role for authorized acces to AWS resources. Control what your user can access. This example only allows Lambda invokation
+  # Only allows users in the previously created Identity Pool
+  CognitoAuthorizedRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Federated: "cognito-identity.amazonaws.com"
+            Action:
+              - "sts:AssumeRoleWithWebIdentity"
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud": !Ref IdentityPool
+              "ForAnyValue:StringLike":
+                "cognito-identity.amazonaws.com:amr": authenticated
+      Policies:
+        - PolicyName: "CognitoAuthorizedPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "mobileanalytics:PutEvents"
+                  - "cognito-sync:*"
+                  - "cognito-identity:*"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:DeleteObject"
+                  - "s3:PutObjectAcl"
+                Resource:
+                  - arn:aws:s3:::sb-next-${opt:stage, 'dev'}-image-bucket/public/*
+
+  # Assigns the roles to the Identity Pool
+  IdentityPoolRoleMapping:
+    Type: "AWS::Cognito::IdentityPoolRoleAttachment"
+    Properties:
+      IdentityPoolId: !Ref IdentityPool
+      Roles:
+        authenticated: !GetAtt CognitoAuthorizedRole.Arn
+        unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
+
   ColorTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -169,6 +273,17 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+  LabelsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: LabelsTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
   CompanyMatterTable:
     Type: AWS::DynamoDB::Table
@@ -257,6 +372,36 @@ Resources:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
+
+  CompanyLabelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyLabelTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: labelId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byLabel
+          KeySchema:
+            - AttributeName: labelId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
   MatterFileS3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
@@ -280,7 +425,21 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  CompanyBackgroundMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyBackgroundMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
         - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: clientMatterId
           AttributeType: S
       KeySchema:
         - AttributeName: id
@@ -289,6 +448,12 @@ Resources:
         - IndexName: byCompany
           KeySchema:
             - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byClientMatter
+          KeySchema:
+            - AttributeName: clientMatterId
               KeyType: HASH
           Projection:
             ProjectionType: ALL

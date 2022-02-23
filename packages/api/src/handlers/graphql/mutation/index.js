@@ -7,7 +7,7 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
 const { inviteUser, createUser } = require("../../../services/UserService");
-const { createMatterFile } = require("../../../services/MatterService");
+const { createMatterFile, updateMatterFile } = require("../../../services/MatterService");
 
 async function createCompany(data) {
   let response = {};
@@ -116,7 +116,6 @@ async function createCompanyAccessType(data) {
       Item: params,
     });
 
-    console.log(unmarshall(params));
     const request = await client.send(command);
     response = request ? unmarshall(params) : {};
   } catch (e) {
@@ -143,8 +142,6 @@ async function updateCompanyAccessType(id, data) {
       id,
       ...data,
     };
-
-    console.log(data);
 
     const command = new UpdateItemCommand({
       TableName: "CompanyAccessTypeTable",
@@ -188,17 +185,94 @@ async function createClient(data) {
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
-  
+
     const companyClientCommand = new PutItemCommand({
       TableName: "CompanyClientTable",
       Item: marshall(companyClientParams),
     });
-    
-    const companyClientRequest = await client.send(companyClientCommand);
-  
-    console.log(companyClientRequest);
-    response = companyClientRequest ? rawParams : {};
 
+    const companyClientRequest = await client.send(companyClientCommand);
+
+    response = companyClientRequest ? rawParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function createLabel(data) {
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      createdAt: new Date().toISOString(),
+    };
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "LabelsTable",
+      Item: params,
+    });
+    const request = await client.send(command);
+
+    const companyLabelParams = {
+      id: v4(),
+      labelId: rawParams.id,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const companyLabelCommand = new PutItemCommand({
+      TableName: "CompanyLabelTable",
+      Item: marshall(companyLabelParams),
+    });
+
+    const companyLabelRequest = await client.send(companyLabelCommand);
+
+    response = companyLabelRequest ? rawParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+
+
+
+async function updateLabel(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "LabelsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await client.send(command);
+    response = request ? params : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -227,24 +301,27 @@ async function createClientMatter(data) {
     });
     const request = await client.send(command);
 
+    console.log("ClientMatterTable", request);
+
     const companyClientMatterParams = {
       id: v4(),
       clientMatterId: rawParams.id,
       companyId: data.companyId,
       createdAt: new Date().toISOString(),
     };
-  
+
     const companyClientMatterCommand = new PutItemCommand({
       TableName: "CompanyClientMatterTable",
       Item: marshall(companyClientMatterParams),
     });
-    
-    const companyClientMatterRequest = await client.send(companyClientMatterCommand);
-  
-    console.log(companyClientMatterRequest);
-    response = companyClientMatterRequest ? rawParams : {};
 
+    const companyClientMatterRequest = await client.send(
+      companyClientMatterCommand
+    );
+
+    response = companyClientMatterRequest ? rawParams : {};
   } catch (e) {
+    console.log("errr", e);
     response = {
       error: e.message,
       errorStack: e.stack,
@@ -283,10 +360,9 @@ async function createMatter(data) {
       TableName: "CompanyMatterTable",
       Item: marshall(companyMatterParams),
     });
-    
+
     const companyMatterRequest = await client.send(companyMatterCommand);
 
-    console.log(companyMatterRequest);
     response = companyMatterRequest ? rawParams : {};
   } catch (e) {
     response = {
@@ -296,7 +372,6 @@ async function createMatter(data) {
     };
   }
 
-  console.log(response);
   return response;
 }
 
@@ -305,7 +380,7 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
-      companyId: data.companyId,
+      matter: data.matter,
       createdAt: new Date().toISOString(),
     };
 
@@ -314,47 +389,25 @@ async function createBackground(data) {
       TableName: "BackgroundTable",
       Item: params,
     });
-
-    console.log(params);
-
     const request = await client.send(command);
-    response = request ? unmarshall(params) : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
+
+    const companyBackgroundMatterParams = {
+      id: v4(),
+      backgroundMatterId: rawParams.id,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
     };
-  }
-
-  return response;
-}
-
-async function updateBackground(id, data) {
-  let response = {};
-  try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const params = {
-      id,
-      ...data,
-    };
-
-    console.log(data);
-
-    const command = new UpdateItemCommand({
-      TableName: "BackgroundTable",
-      Key: marshall({ id }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
+  
+    const companyBackgroundMatterCommand = new PutItemCommand({
+      TableName: "CompanyBackgroundMatterTable",
+      Item: marshall(companyBackgroundMatterParams),
     });
-    const request = await client.send(command);
-    response = request ? params : {};
+    
+    const companyBackgroundMatterRequest = await client.send(companyBackgroundMatterCommand);
+  
+    console.log(companyBackgroundMatterRequest);
+    response = companyBackgroundMatterRequest ? rawParams : {};
+
   } catch (e) {
     response = {
       error: e.message,
@@ -411,6 +464,27 @@ const resolvers = {
     matterFileCreate: async (ctx) => {
       return await createMatterFile(ctx.arguments);
     },
+    matterFileUpdate: async (ctx) => {
+      const { id, name, details, labels } = ctx.arguments;
+      const data = {
+        name: name,
+        details: details,
+        labels: labels,
+        updatedAt: new Date().toISOString(),
+      };
+      return await updateMatterFile(id, data);
+    },
+    labelCreate: async (ctx) => {
+      return await createLabel(ctx.arguments);
+    },
+    labelUpdate: async (ctx) => {
+      const { id, name } = ctx.arguments;
+      const data = {
+        name: name,
+        updatedAt: new Date().toISOString(),
+      };
+      return await updateLabel(id, data);
+    },
     companyAccessTypeCreate: async (ctx) => {
       return await createCompanyAccessType(ctx.arguments);
     },
@@ -427,14 +501,6 @@ const resolvers = {
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
-    },
-    backgroundUpdate: async (ctx) => {
-      const { id, description } = ctx.arguments;
-      const data = {
-        description: description,
-        updatedAt: new Date().toISOString(),
-      };
-      return await updateBackground(id, data);
     },
   },
 };

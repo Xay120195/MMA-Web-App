@@ -12,4 +12,5 @@ export const AppRoutes = {
   FILEBUCKET: "/file-bucket",
   BACKGROUND: "/background",
   INBOX: "/inbox",
+  LABELS: "/labels",
 };

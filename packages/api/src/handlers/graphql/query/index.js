@@ -27,7 +27,8 @@ async function getCompany(data) {
       statusCode: 500,
     };
   }
-
+  console.log(response);
+  
   return response;
 }
 
@@ -112,6 +113,26 @@ async function listMatters() {
     };
   }
 
+  return response;
+}
+
+async function listLabels() {
+  try {
+    const params = {
+      TableName: "LabelsTable",
+    };
+
+    const command = new ScanCommand(params);
+    const request = await client.send(command);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    response = request ? parseResponse : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
   return response;
 }
 
@@ -212,6 +233,29 @@ async function getMatter(data) {
   return response;
 }
 
+async function getLabel(data) {
+  try {
+    const params = {
+      TableName: "LabelsTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+    const { Item } = await client.send(command);
+    response = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
+
 async function getBackground(data) {
   try {
     const params = {
@@ -266,14 +310,18 @@ const resolvers = {
     matters: async (ctx) => {
       return listMatters(ctx.arguments);
     },
+    label: async (ctx) => {
+      return getLabel(ctx.arguments);
+    },
+
+    labels: async (ctx) => {
+      return listLabels(ctx.arguments);
+    },
     companyAccessType: async (ctx) => {
       return getCompanyAccessType(ctx.arguments);
     },
     matterFile: async (ctx) => {
       return getMatterFile(ctx.arguments);
-    },
-    background: async (ctx) => {
-      return getBackground(ctx.arguments);
     },
   },
 };
