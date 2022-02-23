@@ -252,7 +252,7 @@ mutation createLabel($companyId: String, $name: String) {
 
   const HandleChangeToTD = (id, name, details) => {
     const filterDetails = !details
-      ? "no details yet"
+      ? "no details"
       : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
