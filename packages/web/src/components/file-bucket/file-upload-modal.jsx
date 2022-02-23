@@ -3,6 +3,7 @@ import { FiX, FiDownloadCloud, FiTrash, FiMinus } from "react-icons/fi";
 import { API, Storage } from "aws-amplify";
 import "../../assets/styles/FileUpload.css";
 import Pie from "../link-to-chronology/Pie";
+import config from "../../aws-exports";
 
 const useRefEventListener = (fn) => {
   const fnRef = useRef(fn);
@@ -11,6 +12,13 @@ const useRefEventListener = (fn) => {
 };
 
 export default function UploadLinkModal(props) {
+  
+  Storage.configure({
+    region: config.aws_user_files_s3_bucket_region,
+    bucket: config.aws_user_files_s3_bucket,
+    identityPoolId: config.aws_user_pools_id,
+  });
+  
   const [selectedFiles, _setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState({ files: [] });
 
@@ -183,7 +191,7 @@ export default function UploadLinkModal(props) {
   const [random, setRandom] = useState({
     percentage: 0,
     colour: "hsl(0, 0%, 0%)",
-    index: 0
+    index: 0,
   });
 
   const ref = useRef(null);
@@ -202,16 +210,15 @@ export default function UploadLinkModal(props) {
   // var index= 0;
   const generateRandomValues = (perc, idx) => {
     // setArr((flagTemp) => [...flagTemp, perc]);
-    
+
     const rand = (n) => Math.random() * n;
     // setStart();
     setRandom({
-        percentage: perc,
-        colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
-        index: idx
+      percentage: perc,
+      colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
+      index: idx,
     });
   };
-
 
   return (
     <>
@@ -273,22 +280,16 @@ export default function UploadLinkModal(props) {
                         onClick={() => deleteBtn(index)}
                       />
                       {random.percentage === 100 && random.index === index ? (
-                          
-                          <Pie
-                          percentage={100}
-                          colour={random.colour}
-                          />
+                        <Pie percentage={100} colour={random.colour} />
                       ) : (
                         <Pie
                           percentage={random.percentage}
                           colour={random.colour}
-                          />
-                        
+                        />
+
                         //counter(); //error
                       )}
-                      
                     </div>
-                   
                   ))}
                 </div>
               </div>
