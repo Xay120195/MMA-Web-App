@@ -74,6 +74,10 @@ export default function FileBucket() {
           id
           name
           details
+          labels {
+            id 
+            name
+          }
         }
       }
   `;
@@ -177,7 +181,7 @@ mutation createLabel($companyId: String, $name: String) {
     };
 
     await API.graphql(params).then((files) => {
-      console.log('Files', files.data.matterFile);
+      console.log("Files", files.data.matterFile);
       setMatterFiles(files.data.matterFile);
     });
   };
@@ -207,6 +211,7 @@ mutation createLabel($companyId: String, $name: String) {
             id: id,
             name: data.name,
             details: data.details,
+            labels: data.labels,
           },
         });
 
@@ -229,15 +234,33 @@ mutation createLabel($companyId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-  const handleMatterChanged = (evt) => {
-    //const val = evt.target.value; //non-existent, error
-    //alert(val);
+  const handleMatterChanged = (options, id, name, details) => {
+    const newOptions = options.map(({ value: id, label: name, ...rest }) => ({
+      id,
+      name,
+      ...rest,
+    }));
+
+    // console.log(newArray);
+    const data = {
+      name: name,
+      details: details,
+      labels: newOptions,
+    };
+    updateMatterFile(id, data);
   };
 
   const HandleChangeToTD = (id, name, details) => {
+    const filterDetails = !details
+      ? "no details"
+      : details.replace(/(<([^>]+)>)/gi, "");
+    const ouputDetails = textDetails.current;
+    const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
+    let emptyArray = [];
     const data = {
-      details: !textDetails.current ? details : textDetails.current,
+      details: !textDetails.current ? filterDetails : finaloutput,
       name: name,
+      labels: emptyArray,
     };
 
     updateMatterFile(id, data);
@@ -249,14 +272,17 @@ mutation createLabel($companyId: String, $name: String) {
     }, 1000);
   };
 
-  const handleChangeName = (evt) => {
-    textName.current = evt.target.value;
-  };
+  const handleChangeName = (labels) => {};
 
   const HandleChangeToTDName = (id, details, name) => {
+    const filterName = name.replace(/(<([^>]+)>)/gi, "");
+    const ouputName = textName.current;
+    const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
+    let emptyArray = [];
     const data = {
-      name: !textName.current ? name : textName.current,
+      name: !textName.current ? filterName : finaloutput,
       details: details,
+      labels: emptyArray,
     };
 
     updateMatterFile(id, data);
@@ -423,7 +449,14 @@ mutation createLabel($companyId: String, $name: String) {
                                 isMulti
                                 isClearable
                                 isSearchable
-                                onChange={(evt) => handleMatterChanged(evt)}
+                                onChange={(options) =>
+                                  handleMatterChanged(
+                                    options,
+                                    data.id,
+                                    data.name,
+                                    data.details
+                                  )
+                                }
                                 placeholder="Labels"
                                 className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full z-100"
                               />
