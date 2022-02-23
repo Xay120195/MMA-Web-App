@@ -98,7 +98,7 @@ Resources:
                   - "s3:DeleteObject"
                   - "s3:PutObjectAcl"
                 Resource:
-                  - arn:aws:s3:::sb-next-${opt:stage, 'dev'}-image-bucket/public/*
+                  - arn:aws:s3:::mma-webapp-${opt:stage, 'dev'}-bucket/public/*
 
   # Assigns the roles to the Identity Pool
   IdentityPoolRoleMapping:
@@ -371,7 +371,6 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
-
 
   CompanyLabelTable:
     Type: AWS::DynamoDB::Table

@@ -24,7 +24,7 @@ const awsmobile = {
     ],
   },
   aws_cognito_verification_mechanisms: ["EMAIL"],
-  aws_user_files_s3_bucket: "mmabucketapp-staging",
+  aws_user_files_s3_bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
   aws_user_files_s3_bucket_region: "ap-southeast-1",
   aws_appsync_graphqlEndpoint: process.env.REACT_APP_GRAPHQL_ENDPOINT,
   aws_appsync_region: "ap-southeast-1",
