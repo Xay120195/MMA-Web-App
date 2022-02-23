@@ -69,13 +69,13 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String) {
-        matterFileUpdate(id: $id, name: $name, details: $details) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels) {
           id
           name
           details
           labels {
-            id 
+            id
             name
           }
         }
@@ -131,7 +131,9 @@ mutation createLabel($companyId: String, $name: String) {
         companyId: companyId,
       },
     });
+
     if (labelsOpt.data.company.labels.items !== null) {
+      console.log("Labels", labelsOpt.data.company.labels.items);
       result = labelsOpt.data.company.labels.items
         .map(({ id, name }) => ({
           value: id,
@@ -156,10 +158,8 @@ mutation createLabel($companyId: String, $name: String) {
       },
     });
 
-    result = [createLabel.data.clientCreate].map(({ id, name }) => ({
-      value: id,
-      label: name,
-    }));
+    result = createLabel.data.labelCreate;
+    return result;
   };
 
   useEffect(() => {
@@ -202,7 +202,7 @@ mutation createLabel($companyId: String, $name: String) {
   }
 
   async function updateMatterFile(id, data) {
-    console.log(data);
+    console.log("updateMatterFile", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -234,35 +234,44 @@ mutation createLabel($companyId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-  const handleMatterChanged = (options, id, name, details) => {
-    const newOptions = options.map(({ value: id, label: name, ...rest }) => ({
+  const handleMatterChanged = async (options, id, name, details) => {
+    let newOptions = [];
+
+    options.map(async (o) => {
+      if (o.__isNew__) {
+        newOptions = await addLabel(o.label);
+      }
+    });
+
+    newOptions = options.map(({ value: id, label: name }) => ({
       id,
       name,
-      ...rest,
     }));
 
-    // console.log(newArray);
     const data = {
       name: name,
       details: details,
       labels: newOptions,
     };
-    updateMatterFile(id, data);
+
+    await updateMatterFile(id, data);
   };
 
   const HandleChangeToTD = (id, name, details) => {
     const filterDetails = !details
-      ? "no details"
+      ? "no file name"
       : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
-
+    let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
       name: name,
+      labels: lbls,
     };
 
     updateMatterFile(id, data);
+
     setResultMessage(`Successfully updated`);
     setShowToast(true);
     setTimeout(() => {
@@ -271,16 +280,19 @@ mutation createLabel($companyId: String, $name: String) {
     }, 1000);
   };
 
-  const handleChangeName = (labels) => {};
+  const handleChangeName = (evt) => {
+    textName.current = evt.target.value;
+  };
 
   const HandleChangeToTDName = (id, details, name) => {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-
+    let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: details,
+      details: !details ? "no data details" : details,
+      labels: lbls,
     };
 
     updateMatterFile(id, data);
@@ -290,6 +302,18 @@ mutation createLabel($companyId: String, $name: String) {
       setShowToast(false);
       getMatterFiles();
     }, 1000);
+  };
+
+  const extractArray = (ar) => {
+    if (Array.isArray(ar) && ar.length) {
+      const newOptions = ar.map(({ id: value, name: label }) => ({
+        value,
+        label,
+      }));
+      return newOptions;
+    } else {
+      return null;
+    }
   };
   return (
     <>
@@ -374,7 +398,7 @@ mutation createLabel($companyId: String, $name: String) {
                                 <ContentEditable
                                   html={
                                     !data.name
-                                      ? "<p>no file name</p>"
+                                      ? "<p>no file details yet</p>"
                                       : `<p>${data.name}</p>`
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
@@ -418,6 +442,11 @@ mutation createLabel($companyId: String, $name: String) {
 
                             <td className="px-6 py-4 w-10 align-top place-items-center">
                               <CreatableSelect
+                                defaultValue={extractArray(
+                                  data.labels
+                                    ? data.labels
+                                    : { value: 0, label: "" }
+                                )}
                                 options={labels}
                                 isMulti
                                 isClearable
