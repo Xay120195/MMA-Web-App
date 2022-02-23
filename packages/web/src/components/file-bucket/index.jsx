@@ -74,10 +74,6 @@ export default function FileBucket() {
           id
           name
           details
-          labels {
-            id 
-            name
-          }
         }
       }
   `;
@@ -202,7 +198,7 @@ mutation createLabel($companyId: String, $name: String) {
   }
 
   async function updateMatterFile(id, data) {
-    console.log(data);
+    console.log({ id: id, data: data });
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -253,14 +249,15 @@ mutation createLabel($companyId: String, $name: String) {
 
   const HandleChangeToTD = (id, name, details) => {
     const filterDetails = !details
-      ? "no details"
+      ? "no file name"
       : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
-
+    let labels = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
       name: name,
+      labels: labels,
     };
 
     updateMatterFile(id, data);
@@ -280,10 +277,11 @@ mutation createLabel($companyId: String, $name: String) {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-
+    let labels = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: details,
+      details: !details ? "no data details" : details,
+      labels: labels,
     };
 
     updateMatterFile(id, data);
@@ -377,7 +375,7 @@ mutation createLabel($companyId: String, $name: String) {
                                 <ContentEditable
                                   html={
                                     !data.name
-                                      ? "<p>no file name</p>"
+                                      ? "<p>no file details yet</p>"
                                       : `<p>${data.name}</p>`
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
