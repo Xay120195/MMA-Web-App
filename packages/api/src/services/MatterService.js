@@ -14,7 +14,7 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 export async function generatePresignedUrl(Key) {
   const command = new GetObjectCommand({
-    Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
+    Bucket: "mma-webapp-dev-bucket",//process.env.REACT_APP_S3_UPLOAD_BUCKET,
     Key,
   });
 
