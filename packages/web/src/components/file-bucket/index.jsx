@@ -177,7 +177,7 @@ mutation createLabel($companyId: String, $name: String) {
     };
 
     await API.graphql(params).then((files) => {
-      console.log('Files', files.data.matterFile);
+      console.log("Files", files.data.matterFile);
       setMatterFiles(files.data.matterFile);
     });
   };
@@ -235,8 +235,12 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const HandleChangeToTD = (id, name, details) => {
+    const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
+    const ouputDetails = textDetails.current;
+    const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
+
     const data = {
-      details: !textDetails.current ? details : textDetails.current,
+      details: !textDetails.current ? filterDetails : finaloutput,
       name: name,
     };
 
@@ -254,8 +258,11 @@ mutation createLabel($companyId: String, $name: String) {
   };
 
   const HandleChangeToTDName = (id, details, name) => {
+    const filterName = name.replace(/(<([^>]+)>)/gi, "");
+    const ouputName = textName.current;
+    const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
     const data = {
-      name: !textName.current ? name : textName.current,
+      name: !textName.current ? filterName : finaloutput,
       details: details,
     };
 
