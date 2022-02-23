@@ -75,7 +75,8 @@ export default function FileBucket() {
           name
           details
           labels {
-            id name
+            id
+            name
           }
         }
       }
