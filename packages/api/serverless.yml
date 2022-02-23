@@ -188,6 +188,11 @@ custom:
         response: false
       - dataSource: LambdaQueryDS
         type: Query
+        field: clientMatters
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
         field: clients
         request: false
         response: false
@@ -229,6 +234,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: background
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: backgrounds
         request: false
         response: false
       - dataSource: LambdaMutationDS

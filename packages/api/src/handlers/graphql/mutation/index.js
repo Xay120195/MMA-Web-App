@@ -380,36 +380,66 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
-      clientMatter: data.clientMatter.id,
+      description: data.description,
       createdAt: new Date().toISOString(),
     };
-
-    console.log(data);
+    
     const params = marshall(rawParams);
     const command = new PutItemCommand({
-      TableName: "BackgroundTable",
+      TableName: "BackgroundsTable",
       Item: params,
     });
-    
     const request = await client.send(command);
-    
-    const companyBackgroundMatterParams = {
+
+    const clientMatterBackgroundParams = {
       id: v4(),
-      backgroundMatterId: rawParams.id,
-      companyId: data.companyId,
+      backgroundId: rawParams.id,
+      clientMatterId: data.clientMatterId,
       createdAt: new Date().toISOString(),
     };
-  
-    const companyBackgroundMatterCommand = new PutItemCommand({
-      TableName: "CompanyBackgroundMatterTable",
-      Item: marshall(companyBackgroundMatterParams),
-    });
-    
-    const companyBackgroundMatterRequest = await client.send(companyBackgroundMatterCommand);
-  
-    console.log(companyBackgroundMatterRequest);
-    response = companyBackgroundMatterRequest ? rawParams : {};
 
+    const clientMatterBackgroundCommand = new PutItemCommand({
+      TableName: "CompanyClientMatterTable",
+      Item: marshall(clientMatterBackgroundParams),
+    });
+
+    const clientMatterBackgroundRequest = await client.send(clientMatterBackgroundCommand);
+
+    response = clientMatterBackgroundRequest ? rawParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function updateBackground(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "BackgroundsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await client.send(command);
+    response = request ? params : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -503,6 +533,15 @@ const resolvers = {
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
+    },
+    backgroundUpdate: async (ctx) => {
+      const { id, description, date } = ctx.arguments;
+      const data = {
+        description: description,
+        date: date,
+        updatedAt: new Date().toISOString(),
+      };
+      return await updateBackground(id, data);
     },
   },
 };
