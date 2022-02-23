@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { API } from "aws-amplify";
+import { API, toast } from "aws-amplify";
 import BlankState from "../blank-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
@@ -11,12 +11,18 @@ import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
+import ContentEditable from "react-contenteditable";
+import CreatableSelect from "react-select/creatable";
 
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
+  const [labels, setLabels] = useState(null);
   const { matter_id } = useParams();
+  const [getReload, setReload] = useState(false);
+
+  const [selectedLabel, setSelectedLabel] = useState();
 
   const hideToast = () => {
     setShowToast(false);
@@ -62,6 +68,20 @@ export default function FileBucket() {
       }
   `;
 
+  const mUpdateMatterFile = `
+      mutation updateMatterFile ($id: ID, $name: String, $details: String) {
+        matterFileUpdate(id: $id, name: $name, details: $details) {
+          id
+          name
+          details
+          labels {
+            id
+            name
+          }
+        }
+      }
+  `;
+
   const qGetMatterFiles = `
   query getMatterFile($matterId: ID) {
     matterFile(matterId: $matterId) {
@@ -70,12 +90,85 @@ export default function FileBucket() {
       downloadURL
       size
       type
+      details
+      labels {
+        id
+        name
+      }
     }
   }`;
+
+  const listLabels = `
+query listLabels($companyId: String) {
+  company(id: $companyId) {
+    labels {
+      items {
+        id
+        name
+      }
+    }
+  }
+}
+`;
+
+  const mCreateLabel = `
+mutation createLabel($companyId: String, $name: String) {
+    labelCreate(companyId:$companyId, name:$name) {
+        id
+        name
+    }
+}
+`;
+
+  const getLabels = async () => {
+    let result = [];
+
+    const companyId = localStorage.getItem("companyId");
+
+    const labelsOpt = await API.graphql({
+      query: listLabels,
+      variables: {
+        companyId: companyId,
+      },
+    });
+    if (labelsOpt.data.company.labels.items !== null) {
+      result = labelsOpt.data.company.labels.items
+        .map(({ id, name }) => ({
+          value: id,
+          label: name,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    setLabels(result);
+  };
+
+  const addLabel = async (data) => {
+    let result;
+
+    const companyId = localStorage.getItem("companyId");
+
+    const createLabel = await API.graphql({
+      query: mCreateLabel,
+      variables: {
+        companyId: companyId,
+        name: data,
+      },
+    });
+
+    result = [createLabel.data.clientCreate].map(({ id, name }) => ({
+      value: id,
+      label: name,
+    }));
+  };
 
   useEffect(() => {
     if (matterFiles === null) {
       getMatterFiles();
+    }
+
+    if (labels === null) {
+      getLabels();
     }
   }, [matterFiles]);
 
@@ -88,6 +181,7 @@ export default function FileBucket() {
     };
 
     await API.graphql(params).then((files) => {
+      console.log("Files", files.data.matterFile);
       setMatterFiles(files.data.matterFile);
     });
   };
@@ -106,11 +200,97 @@ export default function FileBucket() {
       }
     });
   }
+
+  async function updateMatterFile(id, data) {
+    console.log(data);
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateMatterFile,
+          variables: {
+            id: id,
+            name: data.name,
+            details: data.details,
+            labels: data.labels,
+          },
+        });
+
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   const mainGrid = {
     display: "grid",
     gridtemplatecolumn: "1fr auto",
   };
 
+  const textName = useRef("");
+  const textDetails = useRef("");
+
+  const handleChangeDesc = (evt) => {
+    textDetails.current = evt.target.value;
+  };
+
+  const handleMatterChanged = (options, id, name, details) => {
+    const newOptions = options.map(({ value: id, label: name, ...rest }) => ({
+      id,
+      name,
+      ...rest,
+    }));
+
+    // console.log(newArray);
+    const data = {
+      name: name,
+      details: details,
+      labels: newOptions,
+    };
+    updateMatterFile(id, data);
+  };
+
+  const HandleChangeToTD = (id, name, details) => {
+    const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
+    const ouputDetails = textDetails.current;
+    const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
+    let emptyArray = [];
+    const data = {
+      details: !textDetails.current ? filterDetails : finaloutput,
+      name: name,
+      labels: emptyArray,
+    };
+
+    updateMatterFile(id, data);
+    setResultMessage(`Successfully updated`);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles();
+    }, 1000);
+  };
+
+  const handleChangeName = (labels) => {};
+
+  const HandleChangeToTDName = (id, details, name) => {
+    const filterName = name.replace(/(<([^>]+)>)/gi, "");
+    const ouputName = textName.current;
+    const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
+    let emptyArray = [];
+    const data = {
+      name: !textName.current ? filterName : finaloutput,
+      details: details,
+      labels: emptyArray,
+    };
+
+    updateMatterFile(id, data);
+    setResultMessage(`Successfully updated `);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles();
+    }, 1000);
+  };
   return (
     <>
       <div
@@ -171,12 +351,18 @@ export default function FileBucket() {
             ) : (
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
-                  <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
+                  <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
                           <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
                             Name
+                          </th>
+                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                            Description
+                          </th>
+                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                            Labels
                           </th>
                         </tr>
                       </thead>
@@ -184,11 +370,25 @@ export default function FileBucket() {
                         {matterFiles.map((data, index) => (
                           <tr key={data.id} index={index}>
                             <td className="px-6 py-4 w-10 align-top place-items-center">
-                              <div>
-                                <span>{data.name} </span>
-                                <span className="absolute right-20">
+                              <div className="inline-flex">
+                                <ContentEditable
+                                  html={
+                                    !data.name
+                                      ? "<p>no file name</p>"
+                                      : `<p>${data.name}</p>`
+                                  }
+                                  onChange={(evt) => handleChangeName(evt)}
+                                  onBlur={() =>
+                                    HandleChangeToTDName(
+                                      data.id,
+                                      data.details,
+                                      data.name
+                                    )
+                                  }
+                                />
+                                <span>
                                   <AiOutlineDownload
-                                    className="text-blue-400"
+                                    className="text-blue-400 mx-1"
                                     onClick={() =>
                                       //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
                                       openNewTab(data.downloadURL)
@@ -196,6 +396,43 @@ export default function FileBucket() {
                                   />
                                 </span>
                               </div>
+                            </td>
+
+                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                              <ContentEditable
+                                html={
+                                  !data.details
+                                    ? "<p>no file details yet</p>"
+                                    : `<p>${data.details}</p>`
+                                }
+                                onChange={(evt) => handleChangeDesc(evt)}
+                                onBlur={() =>
+                                  HandleChangeToTD(
+                                    data.id,
+                                    data.name,
+                                    data.details
+                                  )
+                                }
+                              />
+                            </td>
+
+                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                              <CreatableSelect
+                                options={labels}
+                                isMulti
+                                isClearable
+                                isSearchable
+                                onChange={(options) =>
+                                  handleMatterChanged(
+                                    options,
+                                    data.id,
+                                    data.name,
+                                    data.details
+                                  )
+                                }
+                                placeholder="Labels"
+                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full z-100"
+                              />
                             </td>
                           </tr>
                         ))}
