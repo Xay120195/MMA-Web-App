@@ -241,7 +241,7 @@ mutation createLabel($companyId: String, $name: String) {
       ...rest,
     }));
 
-    // console.log(newArray);
+    // console.log(newOptions);
     const data = {
       name: name,
       details: details,
@@ -271,7 +271,9 @@ mutation createLabel($companyId: String, $name: String) {
     }, 1000);
   };
 
-  const handleChangeName = (labels) => {};
+  const handleChangeName = (evt) => {
+    textName.current = evt.target.value;
+  };
 
   const HandleChangeToTDName = (id, details, name) => {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
