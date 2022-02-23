@@ -301,6 +301,8 @@ async function createClientMatter(data) {
     });
     const request = await client.send(command);
 
+    console.log("ClientMatterTable", request);
+
     const companyClientMatterParams = {
       id: v4(),
       clientMatterId: rawParams.id,
@@ -319,6 +321,7 @@ async function createClientMatter(data) {
 
     response = companyClientMatterRequest ? rawParams : {};
   } catch (e) {
+    console.log("errr", e);
     response = {
       error: e.message,
       errorStack: e.stack,
