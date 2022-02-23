@@ -69,11 +69,15 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String) {
-        matterFileUpdate(id: $id, name: $name, details: $details) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels) {
           id
           name
           details
+          labels {
+            id
+            name
+          }
         }
       }
   `;
@@ -198,7 +202,7 @@ mutation createLabel($companyId: String, $name: String) {
   }
 
   async function updateMatterFile(id, data) {
-    console.log({ id: id, data: data });
+    console.log(data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -260,6 +264,7 @@ mutation createLabel($companyId: String, $name: String) {
     };
 
     updateMatterFile(id, data);
+
     setResultMessage(`Successfully updated`);
     setShowToast(true);
     setTimeout(() => {
