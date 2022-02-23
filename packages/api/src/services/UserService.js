@@ -3,7 +3,6 @@ import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provide
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import ddbClient from "../lib/dynamodb-client";
 import identityClient from "../lib/cognito-identity-provider-client";
-import AWS_COGNITO_USERPOOL_ID from "../constants";
 import randomString from "../shared/randomString";
 import { v4 } from "uuid";
 
@@ -83,7 +82,7 @@ export async function createUser(data) {
 
 export async function inviteUser(data) {
   const user = await createCognitoUser({
-    UserPoolId: AWS_COGNITO_USERPOOL_ID,
+    UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
     Username: data.email,
     DesiredDeliveryMediums: ["EMAIL"],
     TemporaryPassword: randomString(),
