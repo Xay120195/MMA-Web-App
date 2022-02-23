@@ -156,6 +156,11 @@ custom:
         field: matterFileCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterFileUpdate
+        request: false
+        response: false
       - dataSource: LambdaFileDS
         type: File
         field: downloadURL
@@ -228,7 +233,7 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: backgroundUpdate
+        field: backgroundCreate
         request: false
         response: false
       - dataSource: LambdaCompanyDS
