@@ -24,6 +24,7 @@ type Company {
   clients: CompanyClientConnection
   matters: CompanyMatterConnection
   clientMatters: CompanyClientMatterConnection
+  backgroundMatters: CompanyBackgroundMatterConnection
   phone: String
   email: AWSEmail
   representative: User
@@ -49,6 +50,11 @@ type CompanyMatterConnection {
 
 type CompanyClientMatterConnection {
   items: [ClientMatter]
+  # nextToken: String
+}
+
+type CompanyBackgroundMatterConnection {
+  items: [Background]
   # nextToken: String
 }
 
@@ -136,8 +142,8 @@ type ClientMatter {
 
 type Background {
   id: ID
-  date: AWSDateTime
-  companyId: ID
+  date: String
+  matter: Matter
   description: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -162,7 +168,7 @@ type Query {
   matters: [Matter]
   matter(id: ID): Matter
   matterFile(matterId: ID): [File]
-  background(companyId: ID): [Background]
+  background(id: ID): Background
 }
 
 type Mutation {
@@ -206,8 +212,7 @@ type Mutation {
   ): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(companyId: String, client: ClientInput, matter:MatterInput): ClientMatter
-  backgroundCreate(companyId: ID): Background
-  backgroundUpdate(id: ID, description: String): Background
+  backgroundCreate(companyId: String, matter:MatterInput): Background
 }
 
 input MatterInput {

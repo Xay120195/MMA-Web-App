@@ -206,7 +206,7 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: backgroundUpdate
+        field: backgroundCreate
         request: false
         response: false
       - dataSource: LambdaCompanyDS

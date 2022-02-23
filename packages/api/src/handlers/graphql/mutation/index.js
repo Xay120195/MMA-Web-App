@@ -305,7 +305,7 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
-      companyId: data.companyId,
+      matter: data.matter,
       createdAt: new Date().toISOString(),
     };
 
@@ -314,47 +314,25 @@ async function createBackground(data) {
       TableName: "BackgroundTable",
       Item: params,
     });
-
-    console.log(params);
-
     const request = await client.send(command);
-    response = request ? unmarshall(params) : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
+
+    const companyBackgroundMatterParams = {
+      id: v4(),
+      clientMatterId: rawParams.id,
+      companyId: data.companyId,
+      createdAt: new Date().toISOString(),
     };
-  }
-
-  return response;
-}
-
-async function updateBackground(id, data) {
-  let response = {};
-  try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const params = {
-      id,
-      ...data,
-    };
-
-    console.log(data);
-
-    const command = new UpdateItemCommand({
-      TableName: "BackgroundTable",
-      Key: marshall({ id }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
+  
+    const companyBackgroundMatterCommand = new PutItemCommand({
+      TableName: "CompanyBackgroundMatterTable",
+      Item: marshall(companyBackgroundMatterParams),
     });
-    const request = await client.send(command);
-    response = request ? params : {};
+    
+    const companyBackgroundMatterRequest = await client.send(companyBackgroundMatterCommand);
+  
+    console.log(companyBackgroundMatterRequest);
+    response = companyBackgroundMatterRequest ? rawParams : {};
+
   } catch (e) {
     response = {
       error: e.message,
@@ -427,14 +405,6 @@ const resolvers = {
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
-    },
-    backgroundUpdate: async (ctx) => {
-      const { id, description } = ctx.arguments;
-      const data = {
-        description: description,
-        updatedAt: new Date().toISOString(),
-      };
-      return await updateBackground(id, data);
     },
   },
 };

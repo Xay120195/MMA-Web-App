@@ -224,7 +224,7 @@ async function listCompanyClientMatters(ctx) {
         },
       },
     };
-
+    
     const clientMattersCommand = new BatchGetItemCommand(clientMatterParams);
     const clientMattersResult = await client.send(clientMattersCommand);
 
@@ -234,6 +234,69 @@ async function listCompanyClientMatters(ctx) {
     const response = objCompanyClientMatters.map((item) => {
       const filterClientMatter = objClientMatters.find((u) => u.id === item.clientMatterId);
       return { ...item, ...filterClientMatter };
+    });
+
+    return {
+      items: response,
+      // nextToken: companyClientMatterResult.LastEvaluatedKey
+      //   ? Buffer.from(
+      //       JSON.stringify(companyClientMatterResult.LastEvaluatedKey)
+      //     ).toString("base64")
+      //   : null,
+    };
+  } catch (e) {
+    console.log(e);
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
+
+async function listBackgroundMatters(ctx) {
+  const { id } = ctx.source;
+  // const { limit = 100, nextToken } = ctx.args;
+  try {
+    const companyBackgroundMatterParams = {
+      TableName: "CompanyBackgroundMatterTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": id,
+      }),
+      // ExclusiveStartKey: nextToken
+      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+      //   : undefined,
+      // Limit: limit,
+    };
+    
+    const companyBackroundMatterCommand = new QueryCommand(companyBackgroundMatterParams);
+    const companyBackgroundMatterResult = await client.send(companyBackroundMatterCommand);
+
+    const backgroundMatterIds = companyBackgroundMatterResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.backgroundMatterId })
+    );
+
+    const backgroundMatterParams = {
+      RequestItems: {
+        BackgroundTable: {
+          Keys: backgroundMatterIds,
+        },
+      },
+    };
+
+    const backgroundMattersCommand = new BatchGetItemCommand(backgroundMatterParams);
+    const backgroundMattersResult = await client.send(backgroundMattersCommand);
+
+    const objBackgroundMatters = backgroundMattersResult.Responses.BackgroundTable.map((i) => unmarshall(i));
+    const objCompanyBackgroundMatters = companyBackgroundMatterResult.Items.map((i) => unmarshall(i));
+
+    const response = objCompanyBackgroundMatters.map((item) => {
+      const filterBackgroundMatter = objBackgroundMatters.find((u) => u.id === item.backgroundMatterId);
+      return { ...item, ...filterBackgroundMatter };
     });
 
     return {
@@ -270,6 +333,9 @@ const resolvers = {
     },
     clientMatters:async (ctx) => {
       return listCompanyClientMatters(ctx);
+    },
+    backgroundMatters:async (ctx) => {
+      return listBackgroundMatters(ctx);
     },
   },
 };

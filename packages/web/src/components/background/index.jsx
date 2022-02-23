@@ -24,7 +24,6 @@ export default function Background() {
   const { matter_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
-
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
@@ -32,8 +31,9 @@ export default function Background() {
   const [totalChecked, settotalChecked] = useState(0);
 
   useEffect(() => {
-    rundata();
+    //rundata();
   }, []);
+
   const rundata = () => {
     setAllData(allData.find((item) => item.id === Number(matter_id)));
   };
