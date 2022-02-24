@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { matters } from "../dashboard/data-source";
+import { client, matters } from "../dashboard/data-source";
 import { useParams } from "react-router-dom";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
@@ -17,10 +17,11 @@ const mainGrid = {
 };
 
 export default function Background() {
-  const [clientMatterList, setClientMattersList] = useState([]);
+  const [matterList, setClientMattersList] = useState([]);
   const [witness, setWitness] = useState([]);
   const [idList, setIdList] = useState([]);
   const [getId, setId] = useState([{}]);
+  const [matters, setMatters] = useState([]);
   const params = useParams();
   const { matter_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
@@ -38,7 +39,6 @@ export default function Background() {
   const rundata = () => {
     //setAllData(allData.find((item) => item.id === Number(matter_id)));
   };
-
 
   const listClientMatters = `
   query listClientMatters($companyId: String) {
@@ -79,9 +79,14 @@ export default function Background() {
         ...v,
       }));
 
-      console.log(apdPr);
+      setClientMattersList(apdPr);
     }
   };
+
+  const matt = matterList.find((i) => i.id === matter_id);
+  const obj = { ...matt };
+  const client = Object.values(obj);
+  const cname = Object.values(client).map((o) => o.name);
 
   return (
     <>
@@ -95,9 +100,9 @@ export default function Background() {
           <div style={mainGrid}>
             <div>
               <span className="text-lg mt-3 font-medium">
-                Client/Matter Name Background
+                Client/Matter {cname[3]} Background
               </span>
-              <BreadCrumb data={clientMatterList} />
+              <BreadCrumb />
               <ActionButtons
                 setWitness={setWitness}
                 witness={witness}

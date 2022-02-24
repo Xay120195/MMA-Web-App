@@ -5,7 +5,7 @@ const style = {
   paddingLeft: "0rem",
 };
 
-const BreadCrumb = ({ data }) => {
+const BreadCrumb = () => {
   return (
     <div className="pt-4">
       <nav aria-label="Breadcrumb" style={style}>
@@ -16,7 +16,7 @@ const BreadCrumb = ({ data }) => {
           <li>
             <div className="flex items-center">
               <Link className="mr-2 text-sm font-medium text-gray-900">
-                Dashboard {data}
+                Dashboard
               </Link>
               <svg
                 width="16"
