@@ -14,7 +14,7 @@ import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 
-export default function FileBucket() {
+export default function FileBucket(){
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
@@ -256,6 +256,7 @@ mutation createLabel($companyId: String, $name: String) {
 
     await updateMatterFile(id, data);
   };
+ 
 
   const HandleChangeToTD = (id, name, details) => {
     const filterDetails = !details
@@ -266,22 +267,26 @@ mutation createLabel($companyId: String, $name: String) {
     let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
-      name: name,
-      labels: lbls,
+      name: name
     };
 
     updateMatterFile(id, data);
-
-    setResultMessage(`Successfully updated`);
-    setShowToast(true);
+  
     setTimeout(() => {
-      setShowToast(false);
       getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }, 500);
     }, 1000);
   };
 
   const handleChangeName = (evt) => {
     textName.current = evt.target.value;
+    
   };
 
   const HandleChangeToTDName = (id, details, name) => {
@@ -291,16 +296,19 @@ mutation createLabel($companyId: String, $name: String) {
     let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: !details ? "no data details" : details,
-      labels: lbls,
+      details: !details ? "no data details" : details
     };
-
     updateMatterFile(id, data);
-    setResultMessage(`Successfully updated `);
-    setShowToast(true);
+
     setTimeout(() => {
-      setShowToast(false);
       getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }, 500);
     }, 1000);
   };
 
@@ -398,7 +406,7 @@ mutation createLabel($companyId: String, $name: String) {
                                 <ContentEditable
                                   html={
                                     !data.name
-                                      ? "<p>no file details yet</p>"
+                                      ? "<p>no name</p>"
                                       : `<p>${data.name}</p>`
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
@@ -429,6 +437,7 @@ mutation createLabel($companyId: String, $name: String) {
                                     ? "<p>no file details yet</p>"
                                     : `<p>${data.details}</p>`
                                 }
+                                placeholder="no file details yet"
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
                                   HandleChangeToTD(
