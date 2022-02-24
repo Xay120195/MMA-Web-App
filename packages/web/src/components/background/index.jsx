@@ -32,11 +32,55 @@ export default function Background() {
   const [totalChecked, settotalChecked] = useState(0);
 
   useEffect(() => {
-    //rundata();
+    ClientMatterList();
   }, []);
 
   const rundata = () => {
     //setAllData(allData.find((item) => item.id === Number(matter_id)));
+  };
+
+
+  const listClientMatters = `
+  query listClientMatters($companyId: String) {
+    company(id: $companyId) {
+      clientMatters {
+        items {
+          id
+          createdAt
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+  `;
+
+  const ClientMatterList = async () => {
+    let result = [];
+
+    const companyId = localStorage.getItem("companyId");
+    const clientMattersOpt = await API.graphql({
+      query: listClientMatters,
+      variables: {
+        companyId: companyId,
+      },
+    });
+
+    if (clientMattersOpt.data.company.clientMatters.items !== null) {
+      result = clientMattersOpt.data.company.clientMatters.items;
+
+      var apdPr = result.map((v) => ({
+        ...v,
+      }));
+
+      console.log(apdPr);
+    }
   };
 
   return (
