@@ -154,60 +154,17 @@ async function listClientMatters() {
   return response;
 }
 
-async function listClientMatterBackground(ctx) {
-  const { id } = ctx.source;
-  // const { limit = 100, nextToken } = ctx.args;
+async function listClientMatterBackground() {
   try {
-    const clientMatterBackgroundParams = {
+    const params = {
       TableName: "ClientMatterBackgroundTable",
-      IndexName: "byClientMatter",
-      KeyConditionExpression: "clientMatterId = :clientMatterId",
-      ExpressionAttributeValues: marshall({
-        ":clientMatterId": id,
-      }),
-      // ExclusiveStartKey: nextToken
-      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-      //   : undefined,
-      // Limit: limit,
     };
 
-    const clientMatterBackgroundCommand = new QueryCommand(clientMatterBackgroundParams);
-    const clientMatterBackgroundResult = await client.send(clientMatterBackgroundCommand);
-
-    console.log("ClientMatterBackgroundCommand", clientMatterBackgroundCommand);
-    const backgroundIds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.labelId })
-    );
-
-    const backgroundParams = {
-      RequestItems: {
-        BackgroundsTable: {
-          Keys: backgroundIds,
-        },
-      },
-    };
-
-    const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
-    const backgroundsResult = await client.send(backgroundsCommand);
-
-    const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map((i) => unmarshall(i));
-    const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i));
-
-    const response = objClientMatterBackgrounds.map((item) => {
-      const filterBackground = objBackgrounds.find((u) => u.id === item.backgroundId);
-      return { ...item, ...filterBackground };
-    });
-
-    return {
-      items: response,
-      // nextToken: clientMatterBackgroundResult.LastEvaluatedKey
-      //   ? Buffer.from(
-      //       JSON.stringify(clientMatterBackgroundResult.LastEvaluatedKey)
-      //     ).toString("base64")
-      //   : null,
-    };
+    const command = new ScanCommand(params);
+    const request = await client.send(command);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    response = request ? parseResponse : {};
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
@@ -216,6 +173,62 @@ async function listClientMatterBackground(ctx) {
   }
   return response;
 }
+
+
+
+// async function listClientMatterBackground(ctx) {
+
+//   const { id } = ctx.source;
+//   try {
+//     const clientMatterBackgroundParams = {
+//       TableName: "ClientMatterBackgroundTable",
+//       IndexName: "byClientMatter",
+//       KeyConditionExpression: "clientMatterId = :clientMatterId",
+//       ExpressionAttributeValues: marshall({
+//         ":clientMatterId": id,
+//       }),
+//     };
+
+//     const clientMatterBackgroundCommand = new QueryCommand(clientMatterBackgroundParams);
+//     const clientMatterBackgroundResult = await client.send(clientMatterBackgroundCommand);
+
+//     console.log("ClientMatterBackgroundCommand", clientMatterBackgroundCommand);
+//     const backgroundIds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i)).map(
+//       (f) => marshall({ id: f.backgroundId })
+//     );
+
+//     const backgroundParams = {
+//       RequestItems: {
+//         BackgroundsTable: {
+//           Keys: backgroundIds,
+//         },
+//       },
+//     };
+
+//     const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
+//     const backgroundsResult = await client.send(backgroundsCommand);
+
+//     const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map((i) => unmarshall(i));
+//     const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i));
+
+//     const response = objClientMatterBackgrounds.map((item) => {
+//       const filterBackground = objBackgrounds.find((u) => u.id === item.backgroundId);
+//       return { ...item, ...filterBackground };
+//     });
+
+//     return {
+//       items: response,
+//     };
+//   } catch (e) {
+//     console.log(e);
+//     response = {
+//       error: e.message,
+//       errorStack: e.stack,
+//       statusCode: 500,
+//     };
+//   }
+//   return response;
+// }
 
 async function getCompanyAccessType(data) {
   try {
