@@ -16,7 +16,7 @@ const BreadCrumb = ({ data }) => {
           <li>
             <div className="flex items-center">
               <Link className="mr-2 text-sm font-medium text-gray-900">
-                MATTER AFFIDAVITS OVERVIEW
+                Dashboard {data}
               </Link>
               <svg
                 width="16"
@@ -26,25 +26,6 @@ const BreadCrumb = ({ data }) => {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 className="w-4 h-5 text-gray-300"
-              >
-                <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-              </svg>
-            </div>
-          </li>
-
-          <li>
-            <div className="flex items-center">
-              <Link className="mr-2 text-sm font-medium text-gray-900">
-                {data.name}
-              </Link>
-              <svg
-                width="16"
-                height="20"
-                viewBox="0 0 16 20"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-                class="w-4 h-5 text-gray-300"
               >
                 <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
               </svg>
