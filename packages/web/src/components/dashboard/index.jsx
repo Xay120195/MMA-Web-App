@@ -158,7 +158,7 @@ export default function Dashboard() {
         id: matterName.value,
         name: matterName.label,
       };
-
+    
     await addClientMatter(client, matter);
   };
 
@@ -386,26 +386,26 @@ mutation addMatter($companyId: String, $name: String) {
 `;
 
   const addClientMatter = async (client, matter) => {
-    const companyId = localStorage.getItem("companyId");
-    const addedClientMatter = await API.graphql({
-      query: createClientMatter,
-      variables: {
-        companyId: companyId,
-        client: client,
-        matter: matter,
-      },
-    });
+      const companyId = localStorage.getItem("companyId");
+      const addedClientMatter = await API.graphql({
+        query: createClientMatter,
+        variables: {
+          companyId: companyId,
+          client: client,
+          matter: matter,
+        },
+      });
 
-    setalertMessage(createMatterAlertMsg);
-    handleModalClose();
-    setShowToast(true);
-    setSelectedClient([]);
-    setSelectedMatter([]);
-    ClientMatterList();
-    setTimeout(() => {
-      setShowToast(false);
-      setmatterName("");
-    }, 3000);
+      setalertMessage(createMatterAlertMsg);
+      handleModalClose();
+      setShowToast(true);
+      setSelectedClient([]);
+      setSelectedMatter([]);
+      ClientMatterList();
+      setTimeout(() => {
+        setShowToast(false);
+        setmatterName("");
+      }, 3000);
   };
 
   return userInfo ? (
@@ -436,7 +436,11 @@ mutation addMatter($companyId: String, $name: String) {
                             placeholder="Client"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
-                          {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
+                          {errors.clientName?.type === "required" && (
+                            <small className="text-red-400">
+                              Client is required
+                            </small>
+                          )}
                         </div>
                       </div>
                       <div className="pr-2">
