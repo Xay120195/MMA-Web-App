@@ -154,7 +154,7 @@ async function listClientMatters() {
   return response;
 }
 
-async function listBackgrounds() {
+async function listClientMatterBackground() {
   try {
     const params = {
       TableName: "BackgroundsTable",
@@ -173,6 +173,62 @@ async function listBackgrounds() {
   }
   return response;
 }
+
+
+
+// async function listClientMatterBackground(ctx) {
+
+//   const { id } = ctx.source;
+//   try {
+//     const clientMatterBackgroundParams = {
+//       TableName: "ClientMatterBackgroundTable",
+//       IndexName: "byClientMatter",
+//       KeyConditionExpression: "clientMatterId = :clientMatterId",
+//       ExpressionAttributeValues: marshall({
+//         ":clientMatterId": id,
+//       }),
+//     };
+
+//     const clientMatterBackgroundCommand = new QueryCommand(clientMatterBackgroundParams);
+//     const clientMatterBackgroundResult = await client.send(clientMatterBackgroundCommand);
+
+//     console.log("ClientMatterBackgroundCommand", clientMatterBackgroundCommand);
+//     const backgroundIds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i)).map(
+//       (f) => marshall({ id: f.backgroundId })
+//     );
+
+//     const backgroundParams = {
+//       RequestItems: {
+//         BackgroundsTable: {
+//           Keys: backgroundIds,
+//         },
+//       },
+//     };
+
+//     const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
+//     const backgroundsResult = await client.send(backgroundsCommand);
+
+//     const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map((i) => unmarshall(i));
+//     const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map((i) => unmarshall(i));
+
+//     const response = objClientMatterBackgrounds.map((item) => {
+//       const filterBackground = objBackgrounds.find((u) => u.id === item.backgroundId);
+//       return { ...item, ...filterBackground };
+//     });
+
+//     return {
+//       items: response,
+//     };
+//   } catch (e) {
+//     console.log(e);
+//     response = {
+//       error: e.message,
+//       errorStack: e.stack,
+//       statusCode: 500,
+//     };
+//   }
+//   return response;
+// }
 
 async function getCompanyAccessType(data) {
   try {
@@ -315,29 +371,6 @@ async function getClientMatter(data) {
   return response;
 }
 
-async function getBackround(data) {
-  try {
-    const params = {
-      TableName: "BackgroundsTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-  console.log(response);
-  return response;
-}
-
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -384,7 +417,7 @@ const resolvers = {
       return getMatterFile(ctx.arguments);
     },
     backgrounds: async (ctx) => {
-      return listBackgrounds(ctx.arguments);
+      return listClientMatterBackground(ctx.arguments);
     },
   },
 };

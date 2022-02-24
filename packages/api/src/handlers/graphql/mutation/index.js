@@ -399,7 +399,7 @@ async function createBackground(data) {
     };
 
     const clientMatterBackgroundCommand = new PutItemCommand({
-      TableName: "CompanyClientMatterTable",
+      TableName: "ClientMatterBackgroundTable",
       Item: marshall(clientMatterBackgroundParams),
     });
 
