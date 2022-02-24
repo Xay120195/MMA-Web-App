@@ -157,7 +157,7 @@ async function listClientMatters() {
 async function listClientMatterBackground() {
   try {
     const params = {
-      TableName: "ClientMatterBackgroundTable",
+      TableName: "BackgroundsTable",
     };
 
     const command = new ScanCommand(params);
