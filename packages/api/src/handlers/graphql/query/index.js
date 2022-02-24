@@ -358,29 +358,6 @@ async function getClientMatter(data) {
   return response;
 }
 
-async function getBackround(data) {
-  try {
-    const params = {
-      TableName: "BackgroundsTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-  console.log(response);
-  return response;
-}
-
 const resolvers = {
   Query: {
     company: async (ctx) => {
