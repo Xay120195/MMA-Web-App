@@ -258,17 +258,19 @@ mutation createLabel($companyId: String, $name: String) {
   };
  
 
-  const HandleChangeToTD = (id, name, details) => {
+  const HandleChangeToTD = (id, name, details, labels) => {
     const filterDetails = !details
-      ? "no file name"
+      ? ""
       : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
-      name: name
+      name: !name ? "" : name,
+      labels: labels
     };
+
 
     updateMatterFile(id, data);
   
@@ -289,15 +291,17 @@ mutation createLabel($companyId: String, $name: String) {
     
   };
 
-  const HandleChangeToTDName = (id, details, name) => {
+  const HandleChangeToTDName = (id, details, name, labels) => {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: !details ? "no data details" : details
+      details: !details ? "" : details, 
+      labels: labels
     };
+    // alert(labels);
     updateMatterFile(id, data);
 
     setTimeout(() => {
@@ -323,6 +327,7 @@ mutation createLabel($companyId: String, $name: String) {
       return null;
     }
   };
+  
   return (
     <>
       <div
@@ -384,16 +389,16 @@ mutation createLabel($companyId: String, $name: String) {
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
                   <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className=" table-fixed min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
                             Name
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
                             Description
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
                             Labels
                           </th>
                         </tr>
@@ -401,12 +406,12 @@ mutation createLabel($companyId: String, $name: String) {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {matterFiles.map((data, index) => (
                           <tr key={data.id} index={index}>
-                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                            <td className="px-6 py-4 align-top place-items-center relative">
                               <div className="inline-flex">
                                 <ContentEditable
                                   html={
                                     !data.name
-                                      ? "<p>no name</p>"
+                                      ? "<p>no_filename</p>"
                                       : `<p>${data.name}</p>`
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
@@ -414,7 +419,8 @@ mutation createLabel($companyId: String, $name: String) {
                                     HandleChangeToTDName(
                                       data.id,
                                       data.details,
-                                      data.name
+                                      data.name, 
+                                      data.labels
                                     )
                                   }
                                 />
@@ -430,26 +436,28 @@ mutation createLabel($companyId: String, $name: String) {
                               </div>
                             </td>
 
-                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                            <td className="px-6 py-4 align-top place-items-center relative">
                               <ContentEditable
                                 html={
                                   !data.details
-                                    ? "<p>no file details yet</p>"
+                                    ? `<p> &nbsp </p>`
                                     : `<p>${data.details}</p>`
+
                                 }
-                                placeholder="no file details yet"
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
                                   HandleChangeToTD(
                                     data.id,
                                     data.name,
-                                    data.details
+                                    data.details, 
+                                    data.labels
                                   )
                                 }
+                                className="px-4"
                               />
                             </td>
 
-                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                            <td className="px-6 py-4 w-10 align-top place-items-center relative">
                               <CreatableSelect
                                 defaultValue={extractArray(
                                   data.labels
@@ -469,7 +477,7 @@ mutation createLabel($companyId: String, $name: String) {
                                   )
                                 }
                                 placeholder="Labels"
-                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full z-100"
+                                className=" placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                               />
                             </td>
                           </tr>
