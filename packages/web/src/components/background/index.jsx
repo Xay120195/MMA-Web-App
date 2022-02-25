@@ -111,7 +111,6 @@ export default function Background() {
         id: matterId,
       },
     });
-    console.log(backgroundOpt);
 
     if (backgroundOpt.data.clientMatter.backgrounds !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items
