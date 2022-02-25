@@ -8,6 +8,7 @@ import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import Loading from "../loading/loading";
+import { API } from "aws-amplify";
 
 const TableInfo = ({
   witness,
@@ -31,6 +32,8 @@ const TableInfo = ({
   const hideToast = () => {
     setShowToast(false);
   };
+
+  const counterRow = 0;
   const handleCheckboxChange = (position, event) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
@@ -72,31 +75,67 @@ const TableInfo = ({
 
   const handleChange = (evt, id) => {
     text.current = evt.target.value;
-    const updatedComments = witness.map((x) =>
-      x.id === id ? { ...x, comments: text.current } : x
-    );
-    setWitness(updatedComments);
+    console.log(text.current);
   };
-  const handleChangeDate = (date, id) => {
-    const updatedDate = witness.map((x) =>
-      x.id === id ? { ...x, date: date } : x
-    );
-    setWitness(updatedDate);
-    if (updatedDate) {
-      setalertMessage(`Successfully updated`);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-    }
-  };
-  const HandleChangeToTD = (evt) => {
+
+  const handleChangeDate = (id, description, date) => {
+    const data = {
+      id: id,
+      description: description,
+      date: date,
+    };
+
+    updateBackgroundDetails(id, data);
+
     setalertMessage(`Successfully updated`);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
   };
+
+  const HandleChangeToTD = (id, description, date) => {
+    const data = {
+      id: id,
+      description: description,
+      date: date,
+    };
+
+    updateBackgroundDetails(id, data);
+
+    setalertMessage(`Successfully updated`);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
+  const mUpdateBackground = `
+    mutation updateBackground($date: String, $description: String, $id: ID) {
+      backgroundUpdate(id: $id, description: $description, date: $date) {
+        id
+      }
+    }
+  `;
+
+  async function updateBackgroundDetails(id, data) {
+    console.log("updateBakcground", data);
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackground,
+          variables: {
+            id: id,
+            name: data.date,
+            details: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
 
   return (
     <>
@@ -163,7 +202,7 @@ const TableInfo = ({
                                   htmlFor="checkbox-1"
                                   className="text-sm font-medium text-gray-900 dark:text-gray-300"
                                 >
-                                  {item.id}
+                                  {index+1}
                                 </label>
                               </div>
                             </td>
@@ -172,18 +211,28 @@ const TableInfo = ({
                                 <DatePicker
                                   className="border w-28 rounded border-gray-300"
                                   selected={new Date(item.date)}
-                                  onChange={(date) =>
-                                    handleChangeDate(date, item.id)
+                                  onChange={() =>
+                                    handleChangeDate(
+                                      item.id,
+                                      item.description,
+                                      item.date
+                                    )
                                   }
                                 />
                               </div>
                             </td>
                             <td className="py-2 px-3 w-full">
                               <ContentEditable
-                                html={item.comments}
+                                html={item.description}
                                 className="w-full py-2 px-3"
                                 onChange={(evt) => handleChange(evt, item.id)}
-                                onBlur={HandleChangeToTD}
+                                onBlur={() =>
+                                  HandleChangeToTD(
+                                    item.id,
+                                    item.description,
+                                    item.date
+                                  )
+                                }
                               />
                             </td>
                             {/* <td className="py-2 px-3 w-80 text-sm text-gray-500">

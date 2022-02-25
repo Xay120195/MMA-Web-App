@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
+import { API } from "aws-amplify";
 
 const ActionButtons = ({
   idList,
@@ -13,6 +14,7 @@ const ActionButtons = ({
   setSearch,
   search,
   setId,
+  matterId
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -22,38 +24,60 @@ const ActionButtons = ({
     setShowToast(false);
   };
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     console.log(item);
     if (item.length <= 1) {
-      window.alert("Please select one id");
+      window.alert("Please select row.");
     } else {
-      var id = item.map(function (x) {
-        return parseInt(x, 10);
+      var id = item.map(async function (x) {
+        const mDeleteBackground = `
+          mutation deleteBackground($id: ID) {
+            backgroundDelete(id: $id) {
+              id
+            }
+          }
+        `;
+
+        const deleteBackgroundRow = await API.graphql({
+          query: mDeleteBackground,
+          variables: {
+            id: x
+          },
+        });
       });
 
-      let lists = witness.filter((item) => !id.includes(item.id));
-      setList(lists);
-      if (lists) {
-        setalertMessage(`Successfully deleted`);
-        setShowToast(true);
-        setTimeout(() => {
-          setShowToast(false);
-        }, 3000);
-      }
+      setTimeout(() => {
+        getBackground();
+      }, 1000);
+
+      setalertMessage(`Successfully deleted`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+
     }
   };
 
-  const handleAddRow = () => {
-    const item = {
-      id: witness.length + 1,
-      name: "John Doe",
-      date: "2012-04-23T18:25:43.511Z",
-      comments: "",
-      rfi: {},
-    };
+  const handleAddRow = async () => {
+    const dateToday = new Date().getFullYear()+"/"+(new Date().getMonth()+1)+"/"+new Date().getDate();
+    
+    const mCreateBackground = `
+        mutation createBackground($clientMatterId: String, $date: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, date: $date) {
+            id
+          }
+        }
+    `;
 
-    const newlisted = witness.concat(item);
-    setList(newlisted);
+    const createBackgroundRow = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        clientMatterId: matterId,
+        date: dateToday
+      },
+    });
+    getBackground();
   };
 
   const handleCheckAllChange = (ischecked) => {
@@ -84,6 +108,44 @@ const ActionButtons = ({
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
+
+
+  const qListBackground = `
+    query listBackground($id: ID) {
+      clientMatter(id: $id) {
+        id
+        backgrounds {
+          items {
+            id
+            description
+            date
+          }
+        }
+      }
+    }
+  `;
+
+  const getBackground = async () => {
+    let result = [];
+
+    const backgroundOpt = await API.graphql({
+      query: qListBackground,
+      variables: {
+        id: matterId,
+      },
+    });
+
+    if (backgroundOpt.data.clientMatter.backgrounds !== null) {
+      result = backgroundOpt.data.clientMatter.backgrounds.items
+        .map(({ id, description, date }) => ({
+          id: id,
+          description: description,
+          date: date
+        }));
+        setList(result);
+    }
+  };
+
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5">
