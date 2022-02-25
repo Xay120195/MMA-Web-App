@@ -127,6 +127,10 @@ export default function Dashboard() {
         )
         .sort((a, b) => a.matter.name.localeCompare(b.matter.name))
     );
+    
+    if(v === ""){
+      ClientMatterList();
+    }
   };
 
   const handleClientChanged = (newValue) => {
