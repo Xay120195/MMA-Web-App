@@ -24,13 +24,26 @@ const ActionButtons = ({
     setShowToast(false);
   };
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     console.log(item);
     if (item.length <= 1) {
-      window.alert("Please select one id");
+      window.alert("Please select row.");
     } else {
-      var id = item.map(function (x) {
-        return parseInt(x, 10);
+      var id = item.map(async function (x) {
+        const mDeleteBackground = `
+          mutation deleteBackground($id: ID) {
+            backgroundDelete(id: $id) {
+              id
+            }
+          }
+        `;
+
+        const deleteBackgroundRow = await API.graphql({
+          query: mDeleteBackground,
+          variables: {
+            id: x
+          },
+        });
       });
 
       let lists = witness.filter((item) => !id.includes(item.id));

@@ -74,16 +74,14 @@ const TableInfo = ({
 
   const handleChange = (evt, id) => {
     text.current = evt.target.value;
-    const updatedComments = witness.map((x) =>
-      x.id === id ? { ...x, comments: text.current } : x
-    );
-    setWitness(updatedComments);
+
   };
+
   const handleChangeDate = (date, id) => {
     const updatedDate = witness.map((x) =>
       x.id === id ? { ...x, date: date } : x
     );
-    setWitness(updatedDate);
+    //setWitness(updatedDate);
     if (updatedDate) {
       setalertMessage(`Successfully updated`);
       setShowToast(true);
