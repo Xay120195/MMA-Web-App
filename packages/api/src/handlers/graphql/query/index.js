@@ -355,6 +355,54 @@ async function getClientMatter(data) {
 
     const res = unmarshall(Item);
     res.backgrounds = { items: rs };
+
+    const clientMatterLabelParams = {
+      TableName: "ClientMatterLabelTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": clientMatterId,
+      }),
+    };
+  
+    const clientMatterLabelCommand = new QueryCommand(
+      clientMatterLabelParams
+    );
+    const clientMatterLabelResult = await client.send(
+      clientMatterLabelCommand
+    );
+    
+    const labelIds = clientMatterLabelResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.labelId }));
+
+    const labelParams = {
+      RequestItems: {
+        LabelsTable: {
+          Keys: labelIds,
+        },
+      },
+    };
+
+    const labelsCommand = new BatchGetItemCommand(labelParams);
+    const labelsResult = await client.send(labelsCommand);
+
+    const objLabels = labelsResult.Responses.LabelsTable.map(
+      (i) => unmarshall(i)
+    );
+    const objClientMatterLabels = clientMatterLabelResult.Items.map(
+      (i) => unmarshall(i)
+    );
+
+    const extractLabels = objClientMatterLabels.map((item) => {
+      const filterLabel = objLabels.find(
+        (u) => u.id === item.labelId
+      );
+      return { ...item, ...filterLabel };
+    });
+
+    res.labels = {items: extractLabels}
+
     
     response = res ? res : {};
   } catch (e) {
@@ -401,6 +449,9 @@ const resolvers = {
     },
     clientMatters: async (ctx) => {
       return listClientMatters(ctx.arguments);
+    },
+    label: async (ctx) => {
+      return getLabel(ctx.arguments);
     },
     labels: async (ctx) => {
       return listLabels(ctx.arguments);
