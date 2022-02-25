@@ -381,7 +381,7 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
-      description: data.description,
+      date: data.date,
       createdAt: new Date().toISOString(),
     };
 
@@ -441,7 +441,9 @@ async function updateBackground(id, data) {
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
+
     const request = await client.send(command);
+
     response = request ? params : {};
   } catch (e) {
     response = {
@@ -593,9 +595,8 @@ const resolvers = {
       return await createBackground(ctx.arguments);
     },
     backgroundUpdate: async (ctx) => {
-      const { id, description, date } = ctx.arguments;
+      const { id, date } = ctx.arguments;
       const data = {
-        description: description,
         date: date,
         updatedAt: new Date().toISOString(),
       };
