@@ -266,11 +266,11 @@ custom:
         field: clientMatters
         request: false
         response: false
-      - dataSource: LambdaCompanyDS
-        type: Company
-        field: labels
-        request: false
-        response: false
+      # - dataSource: LambdaCompanyDS
+      #   type: Company
+      #   field: labels
+      #   request: false
+      #   response: false
       
     dataSources:
       - type: AMAZON_DYNAMODB
