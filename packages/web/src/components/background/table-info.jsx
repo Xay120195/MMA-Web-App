@@ -93,6 +93,7 @@ const TableInfo = ({
     }
   };
   const HandleChangeToTD = (evt) => {
+    console.log(evt);
     setalertMessage(`Successfully updated`);
     setShowToast(true);
     setTimeout(() => {

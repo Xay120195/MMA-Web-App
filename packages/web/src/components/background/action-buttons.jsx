@@ -46,18 +46,11 @@ const ActionButtons = ({
   };
 
   const handleAddRow = async () => {
-    const item = {
-      id: witness.length + 1,
-      name: "John Doe",
-      date: "2012-04-23T18:25:43.511Z",
-      description: "",
-    };
-
-    const dateToday = new Date().getMonth()+1+"/"+(new Date().getDate())+"/"+new Date().getFullYear();
-
+    const dateToday = new Date().getFullYear()+"/"+(new Date().getMonth()+1)+"/"+new Date().getDate();
+    
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $description: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
+        mutation createBackground($clientMatterId: String, $date: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, date: $date) {
             id
           }
         }
@@ -67,15 +60,15 @@ const ActionButtons = ({
       query: mCreateBackground,
       variables: {
         clientMatterId: matterId,
-        description: "",
         date: dateToday
       },
     });
 
-    console.log(createBackgroundRow);
-
-    //result = createBackgroundRow.data.labelCreate;
-    //return result;
+    const item = {
+      id: witness.length + 1,
+      date: dateToday,
+      description: "",
+    };
 
     const newlisted = witness.concat(item);
     setList(newlisted);
