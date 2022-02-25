@@ -452,11 +452,6 @@ mutation addMatter($companyId: String, $name: String) {
                             placeholder="Client"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
-                          {errors.clientName?.type === "required" && (
-                            <small className="text-red-400">
-                              Client is required
-                            </small>
-                          )}
                         </div>
                       </div>
                       <div className="pr-2">
@@ -471,11 +466,6 @@ mutation addMatter($companyId: String, $name: String) {
                             placeholder="Matters"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
-                          {errors.matterName?.type === "required" && (
-                            <small className="text-red-400">
-                              Matter is required
-                            </small>
-                          )}
                         </div>
                       </div>
                       <div className="pr-2">
