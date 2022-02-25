@@ -7,7 +7,10 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
 const { inviteUser, createUser } = require("../../../services/UserService");
-const { createMatterFile, updateMatterFile } = require("../../../services/MatterService");
+const {
+  createMatterFile,
+  updateMatterFile,
+} = require("../../../services/MatterService");
 
 async function createCompany(data) {
   let response = {};
@@ -206,8 +209,6 @@ async function createClient(data) {
 }
 
 async function createLabel(data) {
-
-  console.log("createLabel()");
   let response = {};
   try {
     const rawParams = {
@@ -223,8 +224,6 @@ async function createLabel(data) {
     });
     const request = await client.send(command);
 
-    console.log("request:", request);
-
     const clientMatterLabelParams = {
       id: v4(),
       labelId: rawParams.id,
@@ -232,19 +231,14 @@ async function createLabel(data) {
       createdAt: new Date().toISOString(),
     };
 
-
-    console.log("clientMatterLabelParams", clientMatterLabelParams);
     const clientMatterLabelCommand = new PutItemCommand({
       TableName: "ClientMatterLabelTable",
       Item: marshall(clientMatterLabelParams),
     });
 
-    console.log("clientMatterLabelCommand:", clientMatterLabelCommand);
-
-    console.log("clientMatterLabelRequest()-----");
-    const clientMatterLabelRequest = await client.send(clientMatterLabelCommand);
-
-    console.log("clientMatterLabelRequest:", clientMatterLabelRequest);
+    const clientMatterLabelRequest = await client.send(
+      clientMatterLabelCommand
+    );
 
     response = clientMatterLabelRequest ? rawParams : {};
   } catch (e) {
@@ -257,9 +251,6 @@ async function createLabel(data) {
 
   return response;
 }
-
-
-
 
 async function updateLabel(id, data) {
   let response = {};
@@ -312,8 +303,6 @@ async function createClientMatter(data) {
     });
     const request = await client.send(command);
 
-    console.log("ClientMatterTable", request);
-
     const companyClientMatterParams = {
       id: v4(),
       clientMatterId: rawParams.id,
@@ -332,7 +321,6 @@ async function createClientMatter(data) {
 
     response = companyClientMatterRequest ? rawParams : {};
   } catch (e) {
-    console.log("errr", e);
     response = {
       error: e.message,
       errorStack: e.stack,
@@ -394,7 +382,7 @@ async function createBackground(data) {
       description: data.description,
       createdAt: new Date().toISOString(),
     };
-    
+
     const params = marshall(rawParams);
     const command = new PutItemCommand({
       TableName: "BackgroundsTable",
@@ -414,7 +402,9 @@ async function createBackground(data) {
       Item: marshall(clientMatterBackgroundParams),
     });
 
-    const clientMatterBackgroundRequest = await client.send(clientMatterBackgroundCommand);
+    const clientMatterBackgroundRequest = await client.send(
+      clientMatterBackgroundCommand
+    );
 
     response = clientMatterBackgroundRequest ? rawParams : {};
   } catch (e) {
