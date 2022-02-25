@@ -39,10 +39,6 @@ export default function Background() {
     //}
   }, []);
 
-  const rundata = () => {
-    //setAllData(allData.find((item) => item.id === Number(matter_id)));
-  };
-
   const listClientMatters = `
   query listClientMatters($companyId: String) {
     company(id: $companyId) {

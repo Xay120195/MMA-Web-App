@@ -46,15 +46,16 @@ const ActionButtons = ({
         });
       });
 
-      let lists = witness.filter((item) => !id.includes(item.id));
-      setList(lists);
-      if (lists) {
-        setalertMessage(`Successfully deleted`);
-        setShowToast(true);
-        setTimeout(() => {
-          setShowToast(false);
-        }, 3000);
-      }
+      setTimeout(() => {
+        getBackground();
+      }, 1000);
+
+      setalertMessage(`Successfully deleted`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+
     }
   };
 
@@ -76,15 +77,7 @@ const ActionButtons = ({
         date: dateToday
       },
     });
-
-    const item = {
-      id: witness.length + 1,
-      date: dateToday,
-      description: "",
-    };
-
-    const newlisted = witness.concat(item);
-    setList(newlisted);
+    getBackground();
   };
 
   const handleCheckAllChange = (ischecked) => {
@@ -115,6 +108,43 @@ const ActionButtons = ({
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
+
+
+  const qListBackground = `
+    query listBackground($id: ID) {
+      clientMatter(id: $id) {
+        id
+        backgrounds {
+          items {
+            id
+            description
+            date
+          }
+        }
+      }
+    }
+  `;
+
+  const getBackground = async () => {
+    let result = [];
+
+    const backgroundOpt = await API.graphql({
+      query: qListBackground,
+      variables: {
+        id: matterId,
+      },
+    });
+
+    if (backgroundOpt.data.clientMatter.backgrounds !== null) {
+      result = backgroundOpt.data.clientMatter.backgrounds.items
+        .map(({ id, description, date }) => ({
+          id: id,
+          description: description,
+          date: date
+        }));
+        setList(result);
+    }
+  };
 
   return (
     <>
