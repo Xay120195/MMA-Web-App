@@ -34,7 +34,9 @@ export default function Background() {
 
   useEffect(() => {
     ClientMatterList();
-    getBackground();
+    //if (witness === null) {
+      getBackground();
+    //}
   }, []);
 
   const rundata = () => {
@@ -109,16 +111,17 @@ export default function Background() {
         id: matterId,
       },
     });
+    console.log(backgroundOpt);
 
-    if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+    if (backgroundOpt.data.clientMatter.backgrounds !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items
         .map(({ id, description, date }) => ({
           id: id,
           description: description,
           date: date
         }));
+        setWitness(result);
     }
-    setWitness(result);
   };
 
   const matt = matterList.find((i) => i.id === matter_id);
