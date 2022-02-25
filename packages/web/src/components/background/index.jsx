@@ -87,6 +87,8 @@ export default function Background() {
   const obj = { ...matt };
   const client = Object.values(obj);
   const cname = Object.values(client).map((o) => o.name);
+  const clientName = cname[2];
+  const matterName = cname[3];
 
   return (
     <>
@@ -100,9 +102,9 @@ export default function Background() {
           <div style={mainGrid}>
             <div>
               <span className="text-lg mt-3 font-medium">
-                Client/Matter {cname[3]} Background
+                {clientName}/{matterName} Background
               </span>
-              <BreadCrumb />
+              <BreadCrumb matterId={matter_id} />
               <ActionButtons
                 setWitness={setWitness}
                 witness={witness}
