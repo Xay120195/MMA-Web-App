@@ -1,14 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 
 body {
   --darkGrey: #454545;
   --white: #ffffff;
   --smallFont: 14px;
-  --fontFamily: 'Poppins', sans-serif;
+  --fontFamily: "Poppins", sans-serif;
+  --darkRed: rgba(226, 17, 17, 0.856);
+  --darkSuccess: #10d41ad8;
 }
 
 * {
-    margin: 0;
+  margin: 0;
 }
 
 .main-div {
@@ -21,7 +23,26 @@ body {
   top: 1rem;
   right: 1rem;
 }
-
+.main-div-error {
+  display: inline-grid;
+  padding: 10px 15px;
+  background-color: var(--darkRed);
+  border-radius: 5px;
+  position: fixed;
+  z-index: 10000;
+  top: 1rem;
+  right: 1rem;
+}
+.main-div-success {
+  display: inline-grid;
+  padding: 10px 15px;
+  background-color: var(--darkSuccess);
+  border-radius: 5px;
+  position: fixed;
+  z-index: 10000;
+  top: 1rem;
+  right: 1rem;
+}
 .content-grid {
   display: grid;
   grid-template-columns: 1fr auto;

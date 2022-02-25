@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [selectedMatter, setSelectedMatter] = useState();
   const [clientMattersList, setClientMattersList] = useState([]);
   const [isLoaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
   const {
     register,
@@ -153,16 +154,20 @@ export default function Dashboard() {
     if (clientName === null) {
       setShowToast(true);
       setalertMessage("Client name is required");
+      setError(true);
       setTimeout(() => {
         setShowToast(false);
         setalertMessage("");
+        setError(false);
       }, 3000);
     } else if (matterName === null) {
       setShowToast(true);
       setalertMessage("Matter name is required");
+      setError(true);
       setTimeout(() => {
         setShowToast(false);
         setalertMessage("");
+        setError(false);
       }, 3000);
     } else {
       let client = {
@@ -556,7 +561,11 @@ mutation addMatter($companyId: String, $name: String) {
           )}
 
           {showToast && (
-            <ToastNotification title={alertMessage} hideToast={hideToast} />
+            <ToastNotification
+              error={error}
+              title={alertMessage}
+              hideToast={hideToast}
+            />
           )}
         </div>
       </div>
