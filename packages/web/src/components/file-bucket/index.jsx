@@ -14,7 +14,7 @@ import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 
-export default function FileBucket(){
+export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
@@ -99,8 +99,8 @@ export default function FileBucket(){
   }`;
 
   const listLabels = `
-query listLabels($companyId: String) {
-  company(id: $companyId) {
+query listLabels($clientMatterId: ID) {
+  clientMatter(id: $clientMatterId) {
     labels {
       items {
         id
@@ -112,8 +112,8 @@ query listLabels($companyId: String) {
 `;
 
   const mCreateLabel = `
-mutation createLabel($companyId: String, $name: String) {
-    labelCreate(companyId:$companyId, name:$name) {
+mutation createLabel($clientMatterId: String, $name: String) {
+    labelCreate(clientMatterId:$clientMatterId, name:$name) {
         id
         name
     }
@@ -123,18 +123,16 @@ mutation createLabel($companyId: String, $name: String) {
   const getLabels = async () => {
     let result = [];
 
-    const companyId = localStorage.getItem("companyId");
-
     const labelsOpt = await API.graphql({
       query: listLabels,
       variables: {
-        companyId: companyId,
+        clientMatterId: matter_id,
       },
     });
 
-    if (labelsOpt.data.company.labels.items !== null) {
-      console.log("Labels", labelsOpt.data.company.labels.items);
-      result = labelsOpt.data.company.labels.items
+    console.log(labelsOpt.data.clientMatter);
+    if (labelsOpt.data.clientMatter.labels !== null) {
+      result = labelsOpt.data.clientMatter.labels.items
         .map(({ id, name }) => ({
           value: id,
           label: name,
@@ -148,12 +146,10 @@ mutation createLabel($companyId: String, $name: String) {
   const addLabel = async (data) => {
     let result;
 
-    const companyId = localStorage.getItem("companyId");
-
     const createLabel = await API.graphql({
       query: mCreateLabel,
       variables: {
-        companyId: companyId,
+        clientMatterId: matter_id,
         name: data,
       },
     });
@@ -256,24 +252,20 @@ mutation createLabel($companyId: String, $name: String) {
 
     await updateMatterFile(id, data);
   };
- 
 
   const HandleChangeToTD = (id, name, details, labels) => {
-    const filterDetails = !details
-      ? ""
-      : details.replace(/(<([^>]+)>)/gi, "");
+    const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
       name: !name ? "" : name,
-      labels: labels
+      labels: labels,
     };
 
-
     updateMatterFile(id, data);
-  
+
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
@@ -288,7 +280,6 @@ mutation createLabel($companyId: String, $name: String) {
 
   const handleChangeName = (evt) => {
     textName.current = evt.target.value;
-    
   };
 
   const HandleChangeToTDName = (id, details, name, labels) => {
@@ -298,8 +289,8 @@ mutation createLabel($companyId: String, $name: String) {
     let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: !details ? "" : details, 
-      labels: labels
+      details: !details ? "" : details,
+      labels: labels,
     };
     // alert(labels);
     updateMatterFile(id, data);
@@ -327,7 +318,7 @@ mutation createLabel($companyId: String, $name: String) {
       return null;
     }
   };
-  
+
   return (
     <>
       <div
@@ -419,7 +410,7 @@ mutation createLabel($companyId: String, $name: String) {
                                     HandleChangeToTDName(
                                       data.id,
                                       data.details,
-                                      data.name, 
+                                      data.name,
                                       data.labels
                                     )
                                   }
@@ -442,14 +433,13 @@ mutation createLabel($companyId: String, $name: String) {
                                   !data.details
                                     ? `<p> &nbsp </p>`
                                     : `<p>${data.details}</p>`
-
                                 }
                                 onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
                                   HandleChangeToTD(
                                     data.id,
                                     data.name,
-                                    data.details, 
+                                    data.details,
                                     data.labels
                                   )
                                 }

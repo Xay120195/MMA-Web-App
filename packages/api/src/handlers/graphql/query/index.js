@@ -308,6 +308,8 @@ async function getClientMatter(data) {
 
     const { Item } = await client.send(command);
 
+    const res = unmarshall(Item);
+
     const clientMatterBackgroundParams = {
       TableName: "ClientMatterBackgroundTable",
       IndexName: "byClientMatter",
@@ -328,33 +330,34 @@ async function getClientMatter(data) {
       unmarshall(i)
     ).map((f) => marshall({ id: f.backgroundId }));
 
-    const backgroundParams = {
-      RequestItems: {
-        BackgroundsTable: {
-          Keys: backgroundIds,
+    if (backgroundIds.length != 0) {
+      const backgroundParams = {
+        RequestItems: {
+          BackgroundsTable: {
+            Keys: backgroundIds,
+          },
         },
-      },
-    };
+      };
 
-    const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
-    const backgroundsResult = await client.send(backgroundsCommand);
+      const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
+      const backgroundsResult = await client.send(backgroundsCommand);
 
-    const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
-      (i) => unmarshall(i)
-    );
-    const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map(
-      (i) => unmarshall(i)
-    );
-
-    const rs = objClientMatterBackgrounds.map((item) => {
-      const filterBackground = objBackgrounds.find(
-        (u) => u.id === item.backgroundId
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
       );
-      return { ...item, ...filterBackground };
-    });
+      const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map(
+        (i) => unmarshall(i)
+      );
 
-    const res = unmarshall(Item);
-    res.backgrounds = { items: rs };
+      const extractLabels = objClientMatterBackgrounds.map((item) => {
+        const filterBackground = objBackgrounds.find(
+          (u) => u.id === item.backgroundId
+        );
+        return { ...item, ...filterBackground };
+      });
+
+      res.backgrounds = { items: extractLabels };
+    }
 
     const clientMatterLabelParams = {
       TableName: "ClientMatterLabelTable",
@@ -364,46 +367,41 @@ async function getClientMatter(data) {
         ":clientMatterId": clientMatterId,
       }),
     };
-  
-    const clientMatterLabelCommand = new QueryCommand(
-      clientMatterLabelParams
-    );
-    const clientMatterLabelResult = await client.send(
-      clientMatterLabelCommand
-    );
-    
+
+    const clientMatterLabelCommand = new QueryCommand(clientMatterLabelParams);
+    const clientMatterLabelResult = await client.send(clientMatterLabelCommand);
+
     const labelIds = clientMatterLabelResult.Items.map((i) =>
       unmarshall(i)
     ).map((f) => marshall({ id: f.labelId }));
 
-    const labelParams = {
-      RequestItems: {
-        LabelsTable: {
-          Keys: labelIds,
+    if (labelIds.length != 0) {
+      const labelParams = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
         },
-      },
-    };
+      };
 
-    const labelsCommand = new BatchGetItemCommand(labelParams);
-    const labelsResult = await client.send(labelsCommand);
+      const labelsCommand = new BatchGetItemCommand(labelParams);
+      const labelsResult = await client.send(labelsCommand);
 
-    const objLabels = labelsResult.Responses.LabelsTable.map(
-      (i) => unmarshall(i)
-    );
-    const objClientMatterLabels = clientMatterLabelResult.Items.map(
-      (i) => unmarshall(i)
-    );
-
-    const extractLabels = objClientMatterLabels.map((item) => {
-      const filterLabel = objLabels.find(
-        (u) => u.id === item.labelId
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
       );
-      return { ...item, ...filterLabel };
-    });
+      const objClientMatterLabels = clientMatterLabelResult.Items.map((i) =>
+        unmarshall(i)
+      );
 
-    res.labels = {items: extractLabels}
+      const extractLabels = objClientMatterLabels.map((item) => {
+        const filterLabel = objLabels.find((u) => u.id === item.labelId);
+        return { ...item, ...filterLabel };
+      });
 
-    
+      res.labels = { items: extractLabels };
+    }
+
     response = res ? res : {};
   } catch (e) {
     response = {
