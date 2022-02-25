@@ -102,7 +102,7 @@ export default function Background() {
           <div style={mainGrid}>
             <div>
               <span className="text-lg mt-3 font-medium">
-                {clientName}/{matterName} Background
+                {clientName}/{matterName}
               </span>
               <BreadCrumb matterId={matter_id} />
               <ActionButtons
