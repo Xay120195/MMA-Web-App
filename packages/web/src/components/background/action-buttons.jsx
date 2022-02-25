@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
+import { API } from "aws-amplify";
 
 const ActionButtons = ({
   idList,
@@ -13,6 +14,7 @@ const ActionButtons = ({
   setSearch,
   search,
   setId,
+  matterId
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -43,14 +45,37 @@ const ActionButtons = ({
     }
   };
 
-  const handleAddRow = () => {
+  const handleAddRow = async () => {
     const item = {
       id: witness.length + 1,
       name: "John Doe",
       date: "2012-04-23T18:25:43.511Z",
-      comments: "",
-      rfi: {},
+      description: "",
     };
+
+    const dateToday = new Date().getMonth()+1+"/"+(new Date().getDate())+"/"+new Date().getFullYear();
+
+    const mCreateBackground = `
+        mutation createBackground($clientMatterId: String, $description: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
+            id
+          }
+        }
+    `;
+
+    const createBackgroundRow = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        clientMatterId: matterId,
+        description: "",
+        date: dateToday
+      },
+    });
+
+    console.log(createBackgroundRow);
+
+    //result = createBackgroundRow.data.labelCreate;
+    //return result;
 
     const newlisted = witness.concat(item);
     setList(newlisted);
@@ -84,6 +109,7 @@ const ActionButtons = ({
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
+
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5">

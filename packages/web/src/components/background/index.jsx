@@ -34,6 +34,7 @@ export default function Background() {
 
   useEffect(() => {
     ClientMatterList();
+    getBackground();
   }, []);
 
   const rundata = () => {
@@ -83,6 +84,43 @@ export default function Background() {
     }
   };
 
+  const qListBackground = `
+    query listBackground($id: ID) {
+      clientMatter(id: $id) {
+        id
+        backgrounds {
+          items {
+            id
+            description
+            date
+          }
+        }
+      }
+    }
+  `;
+
+  const getBackground = async () => {
+    let result = [];
+    const matterId = matter_id
+
+    const backgroundOpt = await API.graphql({
+      query: qListBackground,
+      variables: {
+        id: matterId,
+      },
+    });
+
+    if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+      result = backgroundOpt.data.clientMatter.backgrounds.items
+        .map(({ id, description, date }) => ({
+          id: id,
+          description: description,
+          date: date
+        }));
+    }
+    setWitness(result);
+  };
+
   const matt = matterList.find((i) => i.id === matter_id);
   const obj = { ...matt };
   const client = Object.values(obj);
@@ -119,6 +157,7 @@ export default function Background() {
                 search={search}
                 setSearch={setSearch}
                 getId={getId}
+                matterId={matter_id}
               />
             </div>
           </div>
