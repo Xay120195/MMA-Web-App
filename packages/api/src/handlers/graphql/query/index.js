@@ -294,6 +294,28 @@ async function getLabel(data) {
   return response;
 }
 
+async function getBackground(data) {
+  try {
+    const params = {
+      TableName: "BackgroundsTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+    const { Item } = await client.send(command);
+    response = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
 async function getClientMatter(data) {
   const clientMatterId = data.id;
   try {
@@ -459,6 +481,9 @@ const resolvers = {
     },
     matterFile: async (ctx) => {
       return getMatterFile(ctx.arguments);
+    },
+    background: async (ctx) => {
+      return getBackground(ctx.arguments);
     },
     backgrounds: async (ctx) => {
       return listBackgrounds(ctx.arguments);
