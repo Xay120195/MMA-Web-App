@@ -406,7 +406,7 @@ mutation createLabel($companyId: String, $name: String) {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {matterFiles.map((data, index) => (
                           <tr key={data.id} index={index}>
-                            <td className="px-6 py-4 align-top place-items-center relative">
+                            <td className="px-6 py-4 place-items-center relative">
                               <div className="inline-flex">
                                 <ContentEditable
                                   html={
@@ -423,6 +423,7 @@ mutation createLabel($companyId: String, $name: String) {
                                       data.labels
                                     )
                                   }
+                                  className="w-full h-5"
                                 />
                                 <span>
                                   <AiOutlineDownload
@@ -440,7 +441,7 @@ mutation createLabel($companyId: String, $name: String) {
                               <ContentEditable
                                 html={
                                   !data.details
-                                    ? `<p> &nbsp </p>`
+                                    ? `<p> </p>`
                                     : `<p>${data.details}</p>`
 
                                 }
@@ -453,7 +454,7 @@ mutation createLabel($companyId: String, $name: String) {
                                     data.labels
                                   )
                                 }
-                                className="px-4"
+                                className="w-full h-5"
                               />
                             </td>
 
