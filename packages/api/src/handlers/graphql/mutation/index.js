@@ -206,6 +206,8 @@ async function createClient(data) {
 }
 
 async function createLabel(data) {
+
+  console.log("createLabel()");
   let response = {};
   try {
     const rawParams = {
@@ -221,21 +223,30 @@ async function createLabel(data) {
     });
     const request = await client.send(command);
 
-    const companyLabelParams = {
+    console.log("request:", request);
+
+    const clientMatterLabelParams = {
       id: v4(),
       labelId: rawParams.id,
-      companyId: data.companyId,
+      clientMatterId: data.clientMatterId,
       createdAt: new Date().toISOString(),
     };
 
-    const companyLabelCommand = new PutItemCommand({
-      TableName: "CompanyLabelTable",
-      Item: marshall(companyLabelParams),
+
+    console.log("clientMatterLabelParams", clientMatterLabelParams);
+    const clientMatterLabelCommand = new PutItemCommand({
+      TableName: "ClientMatterLabelTable",
+      Item: marshall(clientMatterLabelParams),
     });
 
-    const companyLabelRequest = await client.send(companyLabelCommand);
+    console.log("clientMatterLabelCommand:", clientMatterLabelCommand);
 
-    response = companyLabelRequest ? rawParams : {};
+    console.log("clientMatterLabelRequest()-----");
+    const clientMatterLabelRequest = await client.send(clientMatterLabelCommand);
+
+    console.log("clientMatterLabelRequest:", clientMatterLabelRequest);
+
+    response = clientMatterLabelRequest ? rawParams : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -510,9 +521,10 @@ const resolvers = {
       return await createLabel(ctx.arguments);
     },
     labelUpdate: async (ctx) => {
-      const { id, name } = ctx.arguments;
+      const { id, name, description } = ctx.arguments;
       const data = {
         name: name,
+        description: description,
         updatedAt: new Date().toISOString(),
       };
       return await updateLabel(id, data);
