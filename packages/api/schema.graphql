@@ -245,7 +245,7 @@ type Mutation {
   labelCreate(name: String, clientMatterId: String): Label
   labelUpdate(id: ID, name: String, description: String): Label
   backgroundCreate(date: String, clientMatterId: String): Background
-  backgroundUpdate(id: ID, description: String, date: String): Background
+  backgroundUpdate(id: ID, date: String): Background
   backgroundDelete(id: ID): Background
 }
 
