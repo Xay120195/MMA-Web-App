@@ -6,7 +6,7 @@ body {
   --smallFont: 14px;
   --fontFamily: "Poppins", sans-serif;
   --darkRed: rgba(226, 17, 17, 0.856);
-  --darkSuccess: #10d41ad8;
+  --darkSuccess: #18da21d8;
 }
 
 * {
