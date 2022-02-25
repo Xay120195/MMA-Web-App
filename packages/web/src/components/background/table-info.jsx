@@ -31,6 +31,8 @@ const TableInfo = ({
   const hideToast = () => {
     setShowToast(false);
   };
+
+  const counterRow = 0;
   const handleCheckboxChange = (position, event) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
@@ -163,7 +165,7 @@ const TableInfo = ({
                                   htmlFor="checkbox-1"
                                   className="text-sm font-medium text-gray-900 dark:text-gray-300"
                                 >
-                                  {item.id}
+                                  {index+1}
                                 </label>
                               </div>
                             </td>
@@ -180,7 +182,7 @@ const TableInfo = ({
                             </td>
                             <td className="py-2 px-3 w-full">
                               <ContentEditable
-                                html={item.comments}
+                                html={item.description}
                                 className="w-full py-2 px-3"
                                 onChange={(evt) => handleChange(evt, item.id)}
                                 onBlur={HandleChangeToTD}
