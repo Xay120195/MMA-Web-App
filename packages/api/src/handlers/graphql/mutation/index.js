@@ -2,6 +2,8 @@ const client = require("../../../lib/dynamodb-client");
 const {
   PutItemCommand,
   UpdateItemCommand,
+  DeleteItemCommand,
+  QueryCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
@@ -471,6 +473,60 @@ export function getUpdateExpressions(data) {
   };
 }
 
+export async function deleteBackground(id) {
+  let response = {};
+  try {
+    const clientMatterBackgroundParams = {
+      TableName: "ClientMatterBackgroundTable",
+      IndexName: "byBackground",
+      KeyConditionExpression: "backgroundId = :backgroundId",
+      ExpressionAttributeValues: marshall({
+        ":backgroundId": id,
+      }),
+    };
+
+    const clientMatterBackgroundCommand = new QueryCommand(
+      clientMatterBackgroundParams
+    );
+    const clientMatterBackgroundResult = await client.send(
+      clientMatterBackgroundCommand
+    );
+
+    const clientMatterBackgroundId = clientMatterBackgroundResult.Items.map(
+      (i) => i.id
+    );
+
+    const filterClientMatterBackgroundId = clientMatterBackgroundId[0];
+
+    const deleateClientMatterBackgroundCommand = new DeleteItemCommand({
+      TableName: "ClientMatterBackgroundTable",
+      Key: { id: filterClientMatterBackgroundId },
+    });
+
+    const deleateClientMatterBackgroundResult = await client.send(
+      deleateClientMatterBackgroundCommand
+    );
+
+    if (deleateClientMatterBackgroundResult) {
+      const command = new DeleteItemCommand({
+        TableName: "BackgroundsTable",
+        Key: marshall({ id }),
+      });
+      const request = await client.send(command);
+
+      response = request ? { id: id } : {};
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -544,6 +600,10 @@ const resolvers = {
         updatedAt: new Date().toISOString(),
       };
       return await updateBackground(id, data);
+    },
+    backgroundDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      return await deleteBackground(id);
     },
   },
 };
