@@ -89,7 +89,7 @@ const TableInfo = ({
       date: !textDate.current ? filterDate : finalDate
     };
     
-    //updateBackgroundDetails(id, data);
+    updateBackgroundDetails(id, data);
 
     setalertMessage(`Successfully updated`);
     setShowToast(true);
