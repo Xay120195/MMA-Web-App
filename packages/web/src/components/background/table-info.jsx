@@ -72,20 +72,24 @@ const TableInfo = ({
   }, [witness, getId]);
 
   const text = useRef("");
+  const textDate = useRef("");
+  const textDescription = useRef("");
 
-  const handleChange = (evt, id) => {
-    text.current = evt.target.value;
-    console.log(id);
+  const handleChangeDesc = (evt) => {
+    textDescription.current = evt.target.value;
   };
 
-  const handleChangeDate = (id, description, date) => {
+  const handleChangeDate = (id, date, description) => {
+    const filterDate = !date ? "" : date.replace(/(<([^>]+)>)/gi, "");
+    const ouputDate = textDate.current;
+    const finalDate = ouputDate.replace(/(<([^>]+)>)/gi, "");
     const data = {
       id: id,
-      description: description,
-      date: date,
+      description: !description ? "" : description,
+      date: !textDate.current ? filterDate : finalDate
     };
-
-    updateBackgroundDetails(id, data);
+    
+    //updateBackgroundDetails(id, data);
 
     setalertMessage(`Successfully updated`);
     setShowToast(true);
@@ -95,12 +99,15 @@ const TableInfo = ({
   };
 
   const HandleChangeToTD = (id, description, date) => {
+    const filterDescription = !description ? "" : description.replace(/(<([^>]+)>)/gi, "");
+    const ouputDescription = textDescription.current;
+    const finalDescription = ouputDescription.replace(/(<([^>]+)>)/gi, "");
     const data = {
       id: id,
-      description: description,
-      date: date,
+      description: !textDescription.current ? filterDescription : finalDescription,
+      date: !date ? "" : date,
     };
-    
+
     updateBackgroundDetails(id, data);
 
     setalertMessage(`Successfully updated`);
@@ -119,7 +126,7 @@ const TableInfo = ({
   `;
 
   async function updateBackgroundDetails(id, data) {
-    //console.log("updateBakcground", data);
+    console.log("updateBakcground", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -214,8 +221,8 @@ const TableInfo = ({
                                   onChange={() =>
                                     handleChangeDate(
                                       item.id,
-                                      item.description,
-                                      item.date
+                                      item.date,
+                                      item.description
                                     )
                                   }
                                 />
@@ -223,8 +230,13 @@ const TableInfo = ({
                             </td>
                             <td className="py-2 px-3 w-full">
                               <ContentEditable
-                                html={item.description}
+                                html={
+                                  !item.description
+                                    ? `<p> </p>`
+                                    : `<p>${item.description}</p>`
+                                }
                                 className="w-full py-2 px-3"
+                                onChange={(evt) => handleChangeDesc(evt)}
                                 onBlur={() =>
                                   HandleChangeToTD(
                                     item.id,
