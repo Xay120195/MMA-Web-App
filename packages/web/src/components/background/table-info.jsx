@@ -75,7 +75,7 @@ const TableInfo = ({
 
   const handleChange = (evt, id) => {
     text.current = evt.target.value;
-    console.log(text.current);
+    console.log(id);
   };
 
   const handleChangeDate = (id, description, date) => {
@@ -100,7 +100,7 @@ const TableInfo = ({
       description: description,
       date: date,
     };
-
+    
     updateBackgroundDetails(id, data);
 
     setalertMessage(`Successfully updated`);
@@ -119,7 +119,7 @@ const TableInfo = ({
   `;
 
   async function updateBackgroundDetails(id, data) {
-    console.log("updateBakcground", data);
+    //console.log("updateBakcground", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -225,7 +225,6 @@ const TableInfo = ({
                               <ContentEditable
                                 html={item.description}
                                 className="w-full py-2 px-3"
-                                onChange={(evt) => handleChange(evt, item.id)}
                                 onBlur={() =>
                                   HandleChangeToTD(
                                     item.id,

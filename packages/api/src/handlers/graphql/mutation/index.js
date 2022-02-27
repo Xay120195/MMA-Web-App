@@ -595,9 +595,10 @@ const resolvers = {
       return await createBackground(ctx.arguments);
     },
     backgroundUpdate: async (ctx) => {
-      const { id, date } = ctx.arguments;
+      const { id, date, description } = ctx.arguments;
       const data = {
         date: date,
+        description: description,
         updatedAt: new Date().toISOString(),
       };
       return await updateBackground(id, data);
