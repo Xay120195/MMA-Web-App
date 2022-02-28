@@ -105,6 +105,7 @@ export default function FileBucket() {
         id
         name
       }
+      createdAt
     }
   }`;
 
@@ -329,6 +330,11 @@ mutation createLabel($clientMatterId: String, $name: String) {
       return null;
     }
   };
+  
+  function sortByDate(arr) {
+    arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return arr;
+  }
 
   return (
     <>
@@ -411,7 +417,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {matterFiles.map((data, index) => (
+                        {sortByDate(matterFiles).map((data, index) => (
                           <tr key={data.id} index={index}>
                             <td className="px-6 py-4 place-items-center relative">
                               <div className="inline-flex">
