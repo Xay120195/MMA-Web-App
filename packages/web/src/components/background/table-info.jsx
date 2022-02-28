@@ -28,6 +28,7 @@ const TableInfo = ({
   const [alertMessage, setalertMessage] = useState();
   const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sDate, setsDate] = useState(new Date());
 
   const hideToast = () => {
     setShowToast(false);
@@ -79,23 +80,20 @@ const TableInfo = ({
     textDescription.current = evt.target.value;
   };
 
-  const handleChangeDate = (id, date, description) => {
-    const filterDate = !date ? "" : date.replace(/(<([^>]+)>)/gi, "");
-    const ouputDate = textDate.current;
-    const finalDate = ouputDate.replace(/(<([^>]+)>)/gi, "");
+  const handleChangeDate = (event, id, description) => {
+    setsDate(event);
     const data = {
       id: id,
       description: !description ? "" : description,
-      date: !textDate.current ? filterDate : finalDate
+      date: event
     };
-    
     updateBackgroundDetails(id, data);
   };
 
   const HandleChangeToTD = (id, description, date) => {
     const filterDescription = !description ? "" : description;
-    const ouputDescription = textDescription.current;
-    const finalDescription = ouputDescription;
+    const outputDescription = textDescription.current;
+    const finalDescription = outputDescription;
     const data = {
       id: id,
       description: !textDescription.current ? filterDescription : finalDescription,
@@ -121,7 +119,7 @@ const TableInfo = ({
           query: mUpdateBackground,
           variables: {
             id: id,
-            date: null,
+            date: data.date,
             description: data.description,
           },
         });
@@ -201,7 +199,7 @@ const TableInfo = ({
                                 </label>
                               </div>
                             </td>
-                            <td className="px-3 py-3">
+                            {/* <td className="px-3 py-3">
                               <div>
                                 <DatePicker
                                   className="border w-28 rounded border-gray-300"
@@ -211,6 +209,20 @@ const TableInfo = ({
                                       item.id,
                                       item.date,
                                       item.description
+                                    )
+                                  }
+                                />
+                              </div>
+                            </td> */}
+                            <td className="px-3 py-3">
+                              <div>
+                                <DatePicker
+                                  className="border w-28 rounded border-gray-300"
+                                  selected={sDate}
+                                  onChange={(date) => handleChangeDate(
+                                    date, 
+                                    item.id, 
+                                    item.description
                                     )
                                   }
                                 />
