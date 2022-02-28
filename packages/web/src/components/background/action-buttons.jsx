@@ -25,7 +25,6 @@ const ActionButtons = ({
   };
 
   const handleDelete = async (item) => {
-    console.log(item);
     if (item.length <= 1) {
       window.alert("Please select row.");
     } else {
@@ -51,6 +50,7 @@ const ActionButtons = ({
       }, 1000);
 
       setalertMessage(`Successfully deleted`);
+      setCheckedState(new Array(witness.length).fill(false));
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
