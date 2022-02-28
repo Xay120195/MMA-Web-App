@@ -47,7 +47,7 @@ const ActionButtons = ({
       });
 
       setTimeout(() => {
-        getBackground();
+        window.location.reload(true);
       }, 1000);
 
       setalertMessage(`Successfully deleted`);
