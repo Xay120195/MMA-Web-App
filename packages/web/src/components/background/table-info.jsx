@@ -90,18 +90,12 @@ const TableInfo = ({
     };
     
     updateBackgroundDetails(id, data);
-
-    setalertMessage(`Successfully updated`);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
   };
 
   const HandleChangeToTD = (id, description, date) => {
-    const filterDescription = !description ? "" : description.replace(/(<([^>]+)>)/gi, "");
+    const filterDescription = !description ? "" : description;
     const ouputDescription = textDescription.current;
-    const finalDescription = ouputDescription.replace(/(<([^>]+)>)/gi, "");
+    const finalDescription = ouputDescription;
     const data = {
       id: id,
       description: !textDescription.current ? filterDescription : finalDescription,
@@ -109,12 +103,6 @@ const TableInfo = ({
     };
 
     updateBackgroundDetails(id, data);
-
-    setalertMessage(`Successfully updated`);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
   };
 
   const mUpdateBackground = `
@@ -133,8 +121,8 @@ const TableInfo = ({
           query: mUpdateBackground,
           variables: {
             id: id,
-            name: data.date,
-            details: data.description,
+            date: null,
+            description: data.description,
           },
         });
         resolve(request);
