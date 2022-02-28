@@ -388,7 +388,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                   <BlankState
                     title={"items"}
                     txtLink={"file upload button"}
-                    onClick={() => setShowUploadModal(true)}
+                    handleClick={() => setShowUploadModal(true)}
                   />
                 </div>
               </div>
