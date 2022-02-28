@@ -83,28 +83,25 @@ const TableInfo = ({
   const handleChangeDate = (event, id, description) => {
     setsDate(event);
     const data = {
-      id: id,
       description: !description ? "" : description,
       date: event
     };
     updateBackgroundDetails(id, data);
   };
 
-  const HandleChangeToTD = (id, description, date) => {
+  const HandleChangeToTD = async (id, description, date) => {
     const filterDescription = !description ? "" : description;
     const outputDescription = textDescription.current;
     const finalDescription = outputDescription;
     const data = {
-      id: id,
       description: !textDescription.current ? filterDescription : finalDescription,
       date: !date ? "" : date,
     };
-
-    updateBackgroundDetails(id, data);
+    await updateBackgroundDetails(id, data);
   };
 
   const mUpdateBackground = `
-    mutation updateBackground($date: String, $description: String, $id: ID) {
+    mutation updateBackground($id: ID, $description: String, $date: String) {
       backgroundUpdate(id: $id, description: $description, date: $date) {
         id
       }
@@ -112,7 +109,7 @@ const TableInfo = ({
   `;
 
   async function updateBackgroundDetails(id, data) {
-    console.log("updateBakcground", data);
+    console.log(id, data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
