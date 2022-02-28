@@ -19,6 +19,8 @@ export default function FileBucket() {
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
   const [labels, setLabels] = useState(null);
+  const [clientMatterName, setClientMatterName] = useState("");
+
   const { matter_id } = useParams();
   const [getReload, setReload] = useState(false);
 
@@ -84,6 +86,14 @@ export default function FileBucket() {
 
   const qGetMatterFiles = `
   query getMatterFile($matterId: ID) {
+    clientMatter(id: $matterId) {
+      matter {
+        name
+      }
+      client {
+        name
+      }
+    }
     matterFile(matterId: $matterId) {
       id
       name
@@ -95,6 +105,7 @@ export default function FileBucket() {
         id
         name
       }
+      createdAt
     }
   }`;
 
@@ -130,7 +141,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
       },
     });
 
-    console.log(labelsOpt.data.clientMatter);
     if (labelsOpt.data.clientMatter.labels !== null) {
       result = labelsOpt.data.clientMatter.labels.items
         .map(({ id, name }) => ({
@@ -177,8 +187,11 @@ mutation createLabel($clientMatterId: String, $name: String) {
     };
 
     await API.graphql(params).then((files) => {
-      console.log("Files", files.data.matterFile);
       setMatterFiles(files.data.matterFile);
+
+      setClientMatterName(
+        `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
+      );
     });
   };
 
@@ -198,7 +211,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
   }
 
   async function updateMatterFile(id, data) {
-    console.log("updateMatterFile", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -318,6 +330,11 @@ mutation createLabel($clientMatterId: String, $name: String) {
       return null;
     }
   };
+  
+  function sortByDate(arr) {
+    arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return arr;
+  }
 
   return (
     <>
@@ -330,7 +347,12 @@ mutation createLabel($clientMatterId: String, $name: String) {
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
-              <h1 className="font-bold text-3xl">&nbsp; File Bucket</h1>
+              <h1 className="font-bold text-3xl">
+                File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
+                <span className="font-semibold text-3xl">
+                  {clientMatterName}
+                </span>
+              </h1>
             </div>
             <div className="absolute right-0">
               <Link to={AppRoutes.DASHBOARD}>
@@ -344,9 +366,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
         </div>
 
         <div className="p-5 left-0">
-          <div>
+          {/* <div>
             <span className={"text-sm mt-3 font-medium"}>FILE BUCKET</span>
-          </div>
+          </div> */}
         </div>
         <div className="p-5 py-1 left-0">
           <div>
@@ -372,7 +394,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                   <BlankState
                     title={"items"}
                     txtLink={"file upload button"}
-                    onClick={() => setShowUploadModal(true)}
+                    handleClick={() => setShowUploadModal(true)}
                   />
                 </div>
               </div>
@@ -395,7 +417,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {matterFiles.map((data, index) => (
+                        {sortByDate(matterFiles).map((data, index) => (
                           <tr key={data.id} index={index}>
                             <td className="px-6 py-4 place-items-center relative">
                               <div className="inline-flex">
