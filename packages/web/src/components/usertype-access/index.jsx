@@ -6,6 +6,7 @@ import { Switch } from "./switch";
 import { LockAccess } from "./lock";
 //import { PageList } from "./page-list";
 import { API } from "aws-amplify";
+import {AiFillCloseCircle} from "react-icons/ai";
 
 const UserTypeAccess = (props) => {
   const title = "All changes has been saved!";
@@ -198,6 +199,11 @@ const UserTypeAccess = (props) => {
       }
     });
   }
+  const [showRestriction, setShowRestriction] = useState(true);
+
+  const close = () => {
+    setShowRestriction(false);
+  }
 
   return (
     <>
@@ -206,10 +212,17 @@ const UserTypeAccess = (props) => {
         <div className="flex flex-col">
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-              <Info
-                title="Page Restriction"
-                message="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla maximus fringilla tellus eget dapibus. Maecenas id leo sit amet lacus eleifend eleifend et in diam. Vivamus sed pellentesque nunc, sit amet ultricies arcu. Suspendisse a vestibulum libero. Curabitur sed convallis lorem, nec volutpat massa."
-              />
+            {showRestriction &&
+              <div className="w-1/2 flex inline-block" onClick={() => close()}> 
+                <Info
+                  title="Page Restriction"
+                  message="This page allows you to turn on/off the flags so you can restrict the features and pages every user types has an access to."
+                />
+                <button className="-ml-7 -mt-12">
+                  <AiFillCloseCircle />
+                </button>
+              </div>
+            }
               <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200 border-separate">
                   <thead>

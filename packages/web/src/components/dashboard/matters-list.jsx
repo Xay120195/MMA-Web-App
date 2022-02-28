@@ -81,27 +81,21 @@ export function ClientMatters({
       ) : (
         <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
           <div>
-            {showDeleteMatter && (
-              <button
-                className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                onClick={() => setshowDeleteModal(true)}
-              >
-                <svg
-                  stroke="currentColor"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  height="1em"
-                  width="1em"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fill="none"
-                    stroke="#000"
-                    d="M3,3 L21,21 M3,21 L21,3"
-                  ></path>
-                </svg>
-              </button>
-            )}
+            {(allowOpenFileBucket || allowOpenBackground || showDeleteMatter) ? (
+              <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
+                <div className="dropdown">
+                    <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
+                    <FaIcons.FaEllipsisV />
+                    </button>
+                    <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
+                    {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}`}>File Bucket</Link></li>) : null}
+                    {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>
+                    ) : null}
+                    {showDeleteMatter && (<li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Delete</a></li>)}
+                    </ul>
+                </div>
+              </div>
+            ) : null}
             {/* <Link to={redirectToBackground}> */}
               <div className="grid grid-cols-4 gap-4">
                 <div className="col-span-2">
@@ -124,14 +118,14 @@ export function ClientMatters({
                     {dateFormat(clientMatter.createdAt, "dd mmmm yyyy, h:MM:ss TT")}
                   </p>
                 </div>
-                <div className="col-span-2 grid place-self-end mb-2">
+                {/* <div className="col-span-2 grid place-self-end mb-2">
                   <img
                     className="relative z-30 inline object-cover w-8 h-8 border-2 border-white rounded-full"
                     src={clientMatter.substantially_responsible.profile_picture}
                     alt={clientMatter.substantially_responsible.name}
                     title={clientMatter.substantially_responsible.name}
                   />
-                </div>
+                </div> */}
               </div>
             {/* </Link> */}
           </div>

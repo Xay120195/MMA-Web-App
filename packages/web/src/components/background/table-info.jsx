@@ -8,6 +8,7 @@ import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import Loading from "../loading/loading";
+import { API } from "aws-amplify";
 
 const TableInfo = ({
   witness,
@@ -21,16 +22,19 @@ const TableInfo = ({
   search,
   getId,
   setId,
-  matterId
+  matterId,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sDate, setsDate] = useState(new Date());
 
   const hideToast = () => {
     setShowToast(false);
   };
+
+  const counterRow = 0;
   const handleCheckboxChange = (position, event) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
@@ -69,34 +73,62 @@ const TableInfo = ({
   }, [witness, getId]);
 
   const text = useRef("");
+  const textDate = useRef("");
+  const textDescription = useRef("");
 
-  const handleChange = (evt, id) => {
-    text.current = evt.target.value;
-    const updatedComments = witness.map((x) =>
-      x.id === id ? { ...x, comments: text.current } : x
-    );
-    setWitness(updatedComments);
+  const handleChangeDesc = (evt) => {
+    textDescription.current = evt.target.value;
   };
-  const handleChangeDate = (date, id) => {
-    const updatedDate = witness.map((x) =>
-      x.id === id ? { ...x, date: date } : x
-    );
-    setWitness(updatedDate);
-    if (updatedDate) {
-      setalertMessage(`Successfully updated`);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+
+  const handleChangeDate = (event, id, description) => {
+    setsDate(event);
+    const data = {
+      id: id,
+      description: !description ? "" : description,
+      date: event
+    };
+    updateBackgroundDetails(id, data);
+  };
+
+  const HandleChangeToTD = (id, description, date) => {
+    const filterDescription = !description ? "" : description;
+    const outputDescription = textDescription.current;
+    const finalDescription = outputDescription;
+    const data = {
+      id: id,
+      description: !textDescription.current ? filterDescription : finalDescription,
+      date: !date ? "" : date,
+    };
+
+    updateBackgroundDetails(id, data);
+  };
+
+  const mUpdateBackground = `
+    mutation updateBackground($date: String, $description: String, $id: ID) {
+      backgroundUpdate(id: $id, description: $description, date: $date) {
+        id
+      }
     }
-  };
-  const HandleChangeToTD = (evt) => {
-    setalertMessage(`Successfully updated`);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
-  };
+  `;
+
+  async function updateBackgroundDetails(id, data) {
+    console.log("updateBakcground", data);
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackground,
+          variables: {
+            id: id,
+            date: data.date,
+            description: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
 
   return (
     <>
@@ -135,12 +167,12 @@ const TableInfo = ({
                           >
                             Description of Background
                           </th>
-                          <th
+                          {/* <th
                             scope="col"
                             className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Document
-                          </th>
+                          </th> */}
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -163,32 +195,65 @@ const TableInfo = ({
                                   htmlFor="checkbox-1"
                                   className="text-sm font-medium text-gray-900 dark:text-gray-300"
                                 >
-                                  {item.id}
+                                  {index+1}
                                 </label>
                               </div>
                             </td>
-                            <td className="px-3 py-3">
+                            {/* <td className="px-3 py-3">
                               <div>
                                 <DatePicker
                                   className="border w-28 rounded border-gray-300"
                                   selected={new Date(item.date)}
-                                  onChange={(date) =>
-                                    handleChangeDate(date, item.id)
+                                  onChange={() =>
+                                    handleChangeDate(
+                                      item.id,
+                                      item.date,
+                                      item.description
+                                    )
+                                  }
+                                />
+                              </div>
+                            </td> */}
+                            <td className="px-3 py-3">
+                              <div>
+                                <DatePicker
+                                  className="border w-28 rounded border-gray-300"
+                                  selected={sDate}
+                                  onChange={(date) => handleChangeDate(
+                                    date, 
+                                    item.id, 
+                                    item.description
+                                    )
                                   }
                                 />
                               </div>
                             </td>
                             <td className="py-2 px-3 w-full">
                               <ContentEditable
-                                html={item.comments}
+                                html={
+                                  !item.description
+                                    ? `<p> </p>`
+                                    : `<p>${item.description}</p>`
+                                }
                                 className="w-full py-2 px-3"
-                                onChange={(evt) => handleChange(evt, item.id)}
-                                onBlur={HandleChangeToTD}
+                                onChange={(evt) => handleChangeDesc(evt)}
+                                onBlur={() =>
+                                  HandleChangeToTD(
+                                    item.id,
+                                    item.description,
+                                    item.date
+                                  )
+                                }
                               />
                             </td>
-                            <td className="py-2 px-3 w-80 text-sm text-gray-500">
-                              <Link className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" to={`${AppRoutes.FILEBUCKET}/${matterId}`}>File Bucket</Link>
-                            </td>
+                            {/* <td className="py-2 px-3 w-80 text-sm text-gray-500">
+                              <Link
+                                className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                to={`${AppRoutes.FILEBUCKET}/${matterId}`}
+                              >
+                                File Bucket
+                              </Link>
+                            </td> */}
                           </tr>
                         ))}
                       </tbody>

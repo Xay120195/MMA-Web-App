@@ -3,6 +3,7 @@ const {
   GetItemCommand,
   ScanCommand,
   QueryCommand,
+  BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser } = require("../../../services/UserService");
@@ -293,29 +294,7 @@ async function getLabel(data) {
   return response;
 }
 
-async function getClientMatter(data) {
-  try {
-    const params = {
-      TableName: "ClientMatterTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-  return response;
-}
-
-async function getBackround(data) {
+async function getBackground(data) {
   try {
     const params = {
       TableName: "BackgroundsTable",
@@ -334,7 +313,125 @@ async function getBackround(data) {
       statusCode: 500,
     };
   }
-  console.log(response);
+  return response;
+}
+
+async function getClientMatter(data) {
+  const clientMatterId = data.id;
+  try {
+    const params = {
+      TableName: "ClientMatterTable",
+      Key: marshall({
+        id: clientMatterId,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+
+    const { Item } = await client.send(command);
+
+    const res = unmarshall(Item);
+
+    const clientMatterBackgroundParams = {
+      TableName: "ClientMatterBackgroundTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": clientMatterId,
+      }),
+    };
+
+    const clientMatterBackgroundCommand = new QueryCommand(
+      clientMatterBackgroundParams
+    );
+    const clientMatterBackgroundResult = await client.send(
+      clientMatterBackgroundCommand
+    );
+
+    const backgroundIds = clientMatterBackgroundResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.backgroundId }));
+
+    if (backgroundIds.length != 0) {
+      const backgroundParams = {
+        RequestItems: {
+          BackgroundsTable: {
+            Keys: backgroundIds,
+          },
+        },
+      };
+
+      const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
+      const backgroundsResult = await client.send(backgroundsCommand);
+
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
+      );
+      const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map(
+        (i) => unmarshall(i)
+      );
+
+      const extractLabels = objClientMatterBackgrounds.map((item) => {
+        const filterBackground = objBackgrounds.find(
+          (u) => u.id === item.backgroundId
+        );
+        return { ...item, ...filterBackground };
+      });
+
+      res.backgrounds = { items: extractLabels };
+    }
+
+    const clientMatterLabelParams = {
+      TableName: "ClientMatterLabelTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": clientMatterId,
+      }),
+    };
+
+    const clientMatterLabelCommand = new QueryCommand(clientMatterLabelParams);
+    const clientMatterLabelResult = await client.send(clientMatterLabelCommand);
+
+    const labelIds = clientMatterLabelResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.labelId }));
+
+    if (labelIds.length != 0) {
+      const labelParams = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
+        },
+      };
+
+      const labelsCommand = new BatchGetItemCommand(labelParams);
+      const labelsResult = await client.send(labelsCommand);
+
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
+      );
+      const objClientMatterLabels = clientMatterLabelResult.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      const extractLabels = objClientMatterLabels.map((item) => {
+        const filterLabel = objLabels.find((u) => u.id === item.labelId);
+        return { ...item, ...filterLabel };
+      });
+
+      res.labels = { items: extractLabels };
+    }
+
+    response = res ? res : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
   return response;
 }
 
@@ -371,8 +468,10 @@ const resolvers = {
       return getClientMatter(ctx.arguments);
     },
     clientMatters: async (ctx) => {
-      console.log({ctx});
       return listClientMatters(ctx.arguments);
+    },
+    label: async (ctx) => {
+      return getLabel(ctx.arguments);
     },
     labels: async (ctx) => {
       return listLabels(ctx.arguments);
@@ -382,6 +481,9 @@ const resolvers = {
     },
     matterFile: async (ctx) => {
       return getMatterFile(ctx.arguments);
+    },
+    background: async (ctx) => {
+      return getBackground(ctx.arguments);
     },
     backgrounds: async (ctx) => {
       return listBackgrounds(ctx.arguments);

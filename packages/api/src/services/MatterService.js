@@ -13,7 +13,7 @@ const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 export async function generatePresignedUrl(Key) {
-  console.log("S3_UPLOAD_BUCKET: ", process.env.REACT_APP_S3_UPLOAD_BUCKET);
+  //console.log("S3_UPLOAD_BUCKET: ", process.env.REACT_APP_S3_UPLOAD_BUCKET);
   const command = new GetObjectCommand({
     Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
     Key,
