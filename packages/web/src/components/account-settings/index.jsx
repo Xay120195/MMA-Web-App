@@ -80,13 +80,13 @@ function AccountSettings() {
                                 <input type="text" className="input-field" defaultValue={userInfo?.email}/>
                             </div>
                         </div>
-                        <div className="relative flex-auto">
+                        {/* <div className="relative flex-auto">
                             <p className="input-name">Password
                             </p>
                             <div className="relative my-2">
                                 <input type="password" className="input-field" defaultValue="Test"/>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                     <ChangePassword />
                 </div>
