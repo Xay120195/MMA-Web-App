@@ -15,7 +15,7 @@ const BlankState = (props) => {
 
             <p>
               Click on the
-              <span onClick={handleClick}>
+              <span onClick={handleClick} className="mx-1">
                 {props.txtLink || "add row"}
               </span>{" "}
               button above to start adding one now.
