@@ -14,14 +14,74 @@ const ActionButtons = ({
   setSearch,
   search,
   setId,
-  matterId
+  matterId,
 }) => {
-  const [newWitness, setList] = useState([]);
+  const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const hideToast = () => {
     setShowToast(false);
+  };
+
+  const handleDelete = async (item) => {
+    console.log(item);
+    if (item.length <= 1) {
+      window.alert("Please select row.");
+    } else {
+      var id = item.map(async function (x) {
+        const mDeleteBackground = `
+          mutation deleteBackground($id: ID) {
+            backgroundDelete(id: $id) {
+              id
+            }
+          }
+        `;
+
+        const deleteBackgroundRow = await API.graphql({
+          query: mDeleteBackground,
+          variables: {
+            id: x,
+          },
+        });
+      });
+
+      setTimeout(() => {
+        getBackground();
+      }, 1000);
+
+      setalertMessage(`Successfully deleted`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
+
+  const handleAddRow = async () => {
+    const dateToday =
+      new Date().getFullYear() +
+      "/" +
+      (new Date().getMonth() + 1) +
+      "/" +
+      new Date().getDate();
+
+    const mCreateBackground = `
+        mutation createBackground($clientMatterId: String, $date: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, date: $date) {
+            id
+          }
+        }
+    `;
+
+    const createBackgroundRow = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        clientMatterId: matterId,
+        date: dateToday,
+      },
+    });
+    getBackground();
   };
 
   const handleCheckAllChange = (ischecked) => {
@@ -37,10 +97,21 @@ const ActionButtons = ({
     }
   };
 
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+    var dm = event.target.value;
+    var str = dm.toString();
+    var result = newWitness.filter((x) => x.name.toLowerCase().includes(str));
+    if (result === []) {
+      setWitness(witness);
+      setShowSearch(true);
+    } else {
+      setWitness(result);
+    }
+  };
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
-
 
   const qListBackground = `
     query listBackground($id: ID) {
@@ -68,61 +139,15 @@ const ActionButtons = ({
     });
 
     if (backgroundOpt.data.clientMatter.backgrounds !== null) {
-      result = backgroundOpt.data.clientMatter.backgrounds.items
-        .map(({ id, description, date }) => ({
+      result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+        ({ id, description, date }) => ({
           id: id,
           description: description,
-          date: date
-        }));
-        setList(result);
+          date: date,
+        })
+      );
+      setList(result);
     }
-  };
-
-
-  const mDeleteBackground = `
-    mutation deleteBackground($id: ID) {
-      backgroundDelete(id: $id) {
-        id
-      }
-    }
-  `;
-
-  const handleDelete = async (item) => {
-    if (item.length <= 1) {
-      window.alert("Please select row.");
-    } else {
-      item.map(async function (x) {
-        const deleteBackgroundRow = await API.graphql({
-          query: mDeleteBackground,
-          variables: {
-            id: x
-          },
-        });
-        await getBackground();
-      });
-    }
-  };
-
-
-  const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $date: String) {
-        backgroundCreate(clientMatterId: $clientMatterId, date: $date) {
-          id
-        }
-      }
-  `;
-
-  const handleAddRow = async () => {
-    const dateToday = new Date().getFullYear()+"/"+(new Date().getMonth()+1)+"/"+new Date().getDate();
-    const createBackgroundRow = await API.graphql({
-      query: mCreateBackground,
-      variables: {
-        clientMatterId: matterId,
-        date: dateToday
-      },
-    });
-
-    await getBackground();
   };
 
   return (
@@ -181,7 +206,44 @@ const ActionButtons = ({
           </button>
         </div>
         <div className="col-span-3">
-          {/*Add Search*/}
+          <input
+            value={search}
+            onChange={handleSearchChange}
+            type="search"
+            placeholder="Search ..."
+            className="px-3 py-3 mr-4 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full"
+          />
+        </div>
+        <div className=" col-span-1 pt-2">
+          <span className="inline-flex items-center  text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+            <svg
+              className="mr-2 w-4 h-5 pt-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              ></path>
+            </svg>
+          </span>
+          <span className="inline-flex items-center font-medium">1 of 1</span>
+          <span className="inline-flex items-center text-sm font-medium text-gray-500 bg-white  hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+            <svg
+              className="ml-2 w-5 h-5 pt-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              ></path>
+            </svg>
+          </span>
         </div>
       </div>
       {showToast && (
