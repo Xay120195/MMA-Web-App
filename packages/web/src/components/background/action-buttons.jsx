@@ -41,7 +41,7 @@ const ActionButtons = ({
         const deleteBackgroundRow = await API.graphql({
           query: mDeleteBackground,
           variables: {
-            id: x,
+            id: String(x),
           },
         });
       });
