@@ -7,8 +7,11 @@ import InfoMessage from "../info-message";
 import { AiFillInfoCircle } from 'react-icons/ai';
 import { MdSave } from 'react-icons/md';
 import '../../assets/styles/AccountSettings.css';
+import { useHistory } from "react-router-dom";
 
 export default function ChangePassword() {
+
+  let history = useHistory();
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const hideToast = () => {
@@ -52,7 +55,8 @@ export default function ChangePassword() {
           setTimeout(() => {
             setShowToast(false);
             reset({ oldPassword: "", newPassword: "" });
-          }, 3000);
+            history.push("/signout");
+          }, 2000);
         }
       })
       .catch((err) => {
