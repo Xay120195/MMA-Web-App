@@ -165,6 +165,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
     });
 
     result = createLabel.data.labelCreate;
+
+    getLabels();
     return result;
   };
 
