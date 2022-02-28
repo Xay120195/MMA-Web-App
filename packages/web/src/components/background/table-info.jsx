@@ -81,7 +81,7 @@ const TableInfo = ({
   };
 
   const handleChangeDate = (event, id, description) => {
-    setsDate(event);
+    //setsDate(event);
     const data = {
       description: !description ? "" : description,
       date: event
@@ -100,6 +100,8 @@ const TableInfo = ({
     await updateBackgroundDetails(id, data);
   };
 
+ 
+
   const mUpdateBackground = `
     mutation updateBackground($id: ID, $description: String, $date: String) {
       backgroundUpdate(id: $id, description: $description, date: $date) {
@@ -109,7 +111,7 @@ const TableInfo = ({
   `;
 
   async function updateBackgroundDetails(id, data) {
-    console.log(id, data);
+    console.log("updateBackgroundDetails",id, data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -120,11 +122,17 @@ const TableInfo = ({
             description: data.description,
           },
         });
+        console.log(request);
         resolve(request);
       } catch (e) {
         reject(e.errors[0].message);
       }
     });
+  }
+
+  function sortByDate(arr) {
+    arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    return arr;
   }
 
   return (
@@ -173,7 +181,7 @@ const TableInfo = ({
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {witness.map((item, index) => (
+                        {sortByDate(witness).map((item, index) => (
                           <tr key={index}>
                             <td className="px-3 py-3 w-10">
                               <div className="flex items-center ">
@@ -215,7 +223,7 @@ const TableInfo = ({
                               <div>
                                 <DatePicker
                                   className="border w-28 rounded border-gray-300"
-                                  selected={sDate}
+                                  selected={item.date !== null ? new Date(item.date.replace(/-/g, "/").replace('T', ' ')) : sDate }
                                   onChange={(date) => handleChangeDate(
                                     date, 
                                     item.id, 

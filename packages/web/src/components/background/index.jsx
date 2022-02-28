@@ -91,6 +91,7 @@ export default function Background() {
             id
             description
             date
+            createdAt
           }
         }
       }
@@ -110,11 +111,13 @@ export default function Background() {
 
     if (backgroundOpt.data.clientMatter.backgrounds !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items
-        .map(({ id, description, date }) => ({
+        .map(({ id, description, date, createdAt }) => ({
+          createdAt:createdAt,
           id: id,
           description: description,
           date: date
         }));
+        console.log(result);
         setWitness(result);
     }
   };
