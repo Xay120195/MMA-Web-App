@@ -35,7 +35,7 @@ export default function Background() {
   useEffect(() => {
     ClientMatterList();
     //if (witness === null) {
-      getBackground();
+    getBackground();
     //}
   }, []);
 
@@ -91,6 +91,7 @@ export default function Background() {
             id
             description
             date
+            createdAt
           }
         }
       }
@@ -99,7 +100,7 @@ export default function Background() {
 
   const getBackground = async () => {
     let result = [];
-    const matterId = matter_id
+    const matterId = matter_id;
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
@@ -109,13 +110,16 @@ export default function Background() {
     });
 
     if (backgroundOpt.data.clientMatter.backgrounds !== null) {
-      result = backgroundOpt.data.clientMatter.backgrounds.items
-        .map(({ id, description, date }) => ({
+      result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+        ({ id, description, date, createdAt }) => ({
+          createdAt: createdAt,
           id: id,
           description: description,
-          date: date
-        }));
-        setWitness(result);
+          date: date,
+        })
+      );
+      console.log(result);
+      setWitness(result);
     }
   };
 
@@ -175,6 +179,7 @@ export default function Background() {
         getId={getId}
         search={search}
         matterId={matter_id}
+        getBackground={getBackground}
       />
     </>
   );

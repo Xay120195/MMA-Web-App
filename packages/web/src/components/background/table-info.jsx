@@ -22,13 +22,14 @@ const TableInfo = ({
   search,
   getId,
   setId,
-  matterId,
+  getBackground,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sDate, setsDate] = useState(new Date());
+  const [selected, setSelected] = useState(new Date());
 
   const hideToast = () => {
     setShowToast(false);
@@ -80,13 +81,13 @@ const TableInfo = ({
     textDescription.current = evt.target.value;
   };
 
-  const handleChangeDate = (event, id, description) => {
-    setsDate(event);
+  const handleChangeDate = async (selected, id, description) => {
     const data = {
       description: !description ? "" : description,
-      date: event
+      date: String(selected),
     };
-    updateBackgroundDetails(id, data);
+    await updateBackgroundDetails(id, data);
+    getBackground();
   };
 
   const HandleChangeToTD = async (id, description, date) => {
@@ -94,7 +95,9 @@ const TableInfo = ({
     const outputDescription = textDescription.current;
     const finalDescription = outputDescription;
     const data = {
-      description: !textDescription.current ? filterDescription : finalDescription,
+      description: !textDescription.current
+        ? filterDescription
+        : finalDescription,
       date: !date ? "" : date,
     };
     await updateBackgroundDetails(id, data);
@@ -104,12 +107,14 @@ const TableInfo = ({
     mutation updateBackground($id: ID, $description: String, $date: String) {
       backgroundUpdate(id: $id, description: $description, date: $date) {
         id
+        description
+        date
       }
     }
   `;
 
   async function updateBackgroundDetails(id, data) {
-    console.log(id, data);
+    console.log("updateBackgroundDetails", id, data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -120,11 +125,17 @@ const TableInfo = ({
             description: data.description,
           },
         });
+        console.log(request);
         resolve(request);
       } catch (e) {
         reject(e.errors[0].message);
       }
     });
+  }
+
+  function sortByDate(arr) {
+    arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    return arr;
   }
 
   return (
@@ -173,7 +184,7 @@ const TableInfo = ({
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {witness.map((item, index) => (
+                        {sortByDate(witness).map((item, index) => (
                           <tr key={index}>
                             <td className="px-3 py-3 w-10">
                               <div className="flex items-center ">
@@ -192,34 +203,23 @@ const TableInfo = ({
                                   htmlFor="checkbox-1"
                                   className="text-sm font-medium text-gray-900 dark:text-gray-300"
                                 >
-                                  {index+1}
+                                  {index + 1}
                                 </label>
                               </div>
                             </td>
-                            {/* <td className="px-3 py-3">
-                              <div>
-                                <DatePicker
-                                  className="border w-28 rounded border-gray-300"
-                                  selected={new Date(item.date)}
-                                  onChange={() =>
-                                    handleChangeDate(
-                                      item.id,
-                                      item.date,
-                                      item.description
-                                    )
-                                  }
-                                />
-                              </div>
-                            </td> */}
+
                             <td className="px-3 py-3">
                               <div>
                                 <DatePicker
                                   className="border w-28 rounded border-gray-300"
-                                  selected={sDate}
-                                  onChange={(date) => handleChangeDate(
-                                    date, 
-                                    item.id, 
-                                    item.description
+                                  selected={
+                                    item.date ? new Date(item.date) : sDate
+                                  }
+                                  onChange={(selected) =>
+                                    handleChangeDate(
+                                      selected,
+                                      item.id,
+                                      item.description
                                     )
                                   }
                                 />
