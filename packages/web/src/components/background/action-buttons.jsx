@@ -43,11 +43,12 @@ const ActionButtons = ({
             id: String(x),
           },
         });
+        if (deleteBackgroundRow) {
+          getBackground();
+          setWitness([]);
+          setcheckAllState(false);
+        }
       });
-
-      setTimeout(() => {
-        getBackground();
-      }, 1000);
 
       setalertMessage(`Successfully deleted`);
       setCheckedState(new Array(witness.length).fill(false));
