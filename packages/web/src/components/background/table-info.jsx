@@ -7,7 +7,6 @@ import ContentEditable from "react-contenteditable";
 import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
 import Modal from "./modal";
-import Loading from "../loading/loading";
 import { API } from "aws-amplify";
 
 const TableInfo = ({
@@ -23,6 +22,7 @@ const TableInfo = ({
   getId,
   setId,
   getBackground,
+  matterId
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -34,7 +34,6 @@ const TableInfo = ({
     setShowToast(false);
   };
 
-  const counterRow = 0;
   const handleCheckboxChange = (position, event) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
@@ -71,8 +70,6 @@ const TableInfo = ({
     setIdList(getId);
   }, [getId]);
 
-  const text = useRef("");
-  const textDate = useRef("");
   const textDescription = useRef("");
 
   const handleChangeDesc = (evt) => {
@@ -170,17 +167,17 @@ const TableInfo = ({
                         >
                           Description of Background
                         </th>
-                        {/* <th
+                        <th
                             scope="col"
                             className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Document
-                          </th> */}
+                          </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {sortByDate(witness).map((item, index) => (
-                        <tr key={item.id}>
+                      {witness.map((item, index) => (
+                        <tr key={item.id} className="h-full">
                           <td className="px-3 py-3 w-10">
                             <div className="flex items-center ">
                               <input
@@ -218,14 +215,14 @@ const TableInfo = ({
                               />
                             </div>
                           </td>
-                          <td className="py-2 px-3 w-full">
+                          <td className="w-full px-6 py-4">
                             <ContentEditable
                               html={
                                 !item.description
                                   ? `<p></p>`
                                   : `<p>${item.description}</p>`
                               }
-                              className="w-full h-5  px-2"
+                              className="w-full p-2"
                               onChange={(evt) => handleChangeDesc(evt)}
                               onBlur={() =>
                                 HandleChangeToTD(
@@ -236,14 +233,14 @@ const TableInfo = ({
                               }
                             />
                           </td>
-                          {/* <td className="py-2 px-3 w-80 text-sm text-gray-500">
+                          <td className="py-2 px-3 w-80 text-sm text-gray-500">
                               <Link
                                 className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                 to={`${AppRoutes.FILEBUCKET}/${matterId}`}
                               >
                                 File Bucket
                               </Link>
-                            </td> */}
+                            </td>
                         </tr>
                       ))}
                     </tbody>
