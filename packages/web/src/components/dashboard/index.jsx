@@ -337,7 +337,10 @@ query listMatter($companyId: String) {
         matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
           -4
         )}/${v.client.id.slice(-4)}}`,
-      }));
+      })).sort((a,b) => {
+        return new Date(a.createdAt).getTime() - 
+            new Date(b.createdAt).getTime()
+      }).reverse();
 
       setClientMattersList(apdMn);
     }
