@@ -49,6 +49,7 @@ export default function FileBucket() {
         setTimeout(() => {
           setShowToast(false);
           getMatterFiles();
+          tempArr = [];
         }, 3000);
       });
     });
@@ -248,7 +249,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
   
 
-  const handleMatterChanged = async (options, id, name, details) => {
+  const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
 
     options.map(async (o) => {
@@ -268,29 +269,29 @@ mutation createLabel($clientMatterId: String, $name: String) {
       labels: newOptions,
     };
 
-    updateArr(data.labels);
+    updateArr(data.labels, index);
     await updateMatterFile(id, data);
   };
 
-  function updateArr(labels){
-    tempArr[0] = labels;
+  function updateArr(data, index){
+    tempArr[index] = data;
     // alert(tempArr[0]);
   }
 
-  const HandleChangeToTD = (id, name, details, labels) => {
+  const HandleChangeToTD = (id, name, details, labels, index) => {
     var updatedLabels = [];
     var updatedName = [];
  
-    if(tempArr.length){
-      updatedLabels[0] = tempArr[0];
+    if(typeof tempArr[index] === 'undefined'){
+      updatedLabels[0] = labels; //no changes in labels
     }else{
-      updatedLabels[0] = labels;
+      updatedLabels[0] = tempArr[index]; //change in label
     }
 
-    if(nameArr.length){
-      updatedName[0] = nameArr[0];
+    if(typeof nameArr[index] === 'undefined'){
+      updatedName[0] = name; //no changes in name
     }else{
-      updatedName[0] = name;
+      updatedName[0] = nameArr[index]; //change in name
     }
 
     const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
@@ -303,7 +304,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
       labels: updatedLabels[0],
     };
 
-    tempArr[1] = finaloutput; //Save changes in desc
+    descArr[index] = finaloutput; //Save changes in desc
 
     updateMatterFile(id, data);
 
@@ -323,20 +324,20 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textName.current = evt.target.value;
   };
 
-  const HandleChangeToTDName = (id, details, name, labels) => {
+  const HandleChangeToTDName = (id, details, name, labels, index) => {
     var updatedLabels = [];
     var updatedDesc= [];
  
-    if(tempArr.length){
-      updatedLabels[0] = tempArr[0];
-    }else{
+    if(typeof tempArr[index] === 'undefined'){
       updatedLabels[0] = labels;
+    }else{
+      updatedLabels[0] = tempArr[index];
     }
 
-    if(nameArr.length){
-      updatedDesc[0] = descArr[0];
-    }else{
+    if(typeof descArr[index] === 'undefined'){
       updatedDesc[0] = details;
+    }else{
+      updatedDesc[0] = descArr[index];
     }
 
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
@@ -349,7 +350,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
       labels: updatedLabels[0],
     };
 
-    nameArr[0] = finaloutput; //Save changes File name
+    nameArr[index] = finaloutput; //Save changes File name
     updateMatterFile(id, data);
 
     setTimeout(() => {
@@ -450,13 +451,13 @@ mutation createLabel($clientMatterId: String, $name: String) {
                     <table className=" table-fixed min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
                             Name
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-3/5">
                             Description
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
                             Labels
                           </th>
                         </tr>
@@ -478,7 +479,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                       data.id,
                                       data.details,
                                       data.name,
-                                      data.labels
+                                      data.labels, index
                                     )
                                   }
                                   className="w-full h-5"
@@ -503,13 +504,13 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                     : `<p>${data.details}</p>`
                                 }
                                 onChange={(evt) => handleChangeDesc(evt)}
-                                onBlur={(options) =>
+                                onBlur={() =>
                                   HandleChangeToTD(
                                     data.id,
                                     data.name,
                                     data.details,
                                     data.labels,
-                                    options
+                                    index
                                   )
                                 }
                                 className="w-full h-5"
@@ -533,7 +534,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                     options,
                                     data.id,
                                     data.name,
-                                    data.details
+                                    data.details,
+                                    index
                                   )
                                 }
                                 // onBlur={(options) =>
