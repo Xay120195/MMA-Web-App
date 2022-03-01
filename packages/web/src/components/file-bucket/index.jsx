@@ -13,7 +13,9 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
-
+let tempArr = [];
+let nameArr = [];
+let descArr = [];
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
@@ -242,6 +244,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
+  
+
   const handleMatterChanged = async (options, id, name, details) => {
     let newOptions = [];
 
@@ -262,19 +266,42 @@ mutation createLabel($clientMatterId: String, $name: String) {
       labels: newOptions,
     };
 
+    updateArr(data.labels);
     await updateMatterFile(id, data);
   };
 
+  function updateArr(labels){
+    tempArr[0] = labels;
+    // alert(tempArr[0]);
+  }
+
   const HandleChangeToTD = (id, name, details, labels) => {
+    var updatedLabels = [];
+    var updatedName = [];
+ 
+    if(tempArr.length){
+      updatedLabels[0] = tempArr[0];
+    }else{
+      updatedLabels[0] = labels;
+    }
+
+    if(nameArr.length){
+      updatedName[0] = nameArr[0];
+    }else{
+      updatedName[0] = name;
+    }
+
     const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
-      name: !name ? "" : name,
-      labels: labels,
+      name: !name ? "" : updatedName[0],
+      labels: updatedLabels[0],
     };
+
+    tempArr[1] = finaloutput; //Save changes in desc
 
     updateMatterFile(id, data);
 
@@ -286,8 +313,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
         setTimeout(() => {
           setShowToast(false);
         }, 1000);
-      }, 500);
-    }, 1000);
+      }, 1000);
+    }, 1500);
   };
 
   const handleChangeName = (evt) => {
@@ -295,16 +322,32 @@ mutation createLabel($clientMatterId: String, $name: String) {
   };
 
   const HandleChangeToTDName = (id, details, name, labels) => {
+    var updatedLabels = [];
+    var updatedDesc= [];
+ 
+    if(tempArr.length){
+      updatedLabels[0] = tempArr[0];
+    }else{
+      updatedLabels[0] = labels;
+    }
+
+    if(nameArr.length){
+      updatedDesc[0] = descArr[0];
+    }else{
+      updatedDesc[0] = details;
+    }
+
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: !details ? "" : details,
-      labels: labels,
+      details: !details ? "" : updatedDesc[0],
+      labels: updatedLabels[0],
     };
-    // alert(labels);
+
+    nameArr[0] = finaloutput; //Save changes File name
     updateMatterFile(id, data);
 
     setTimeout(() => {
@@ -315,8 +358,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
         setTimeout(() => {
           setShowToast(false);
         }, 1000);
-      }, 500);
-    }, 1000);
+      }, 1000);
+    }, 1500);
   };
 
   const extractArray = (ar) => {
@@ -458,15 +501,17 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                     : `<p>${data.details}</p>`
                                 }
                                 onChange={(evt) => handleChangeDesc(evt)}
-                                onBlur={() =>
+                                onBlur={(options) =>
                                   HandleChangeToTD(
                                     data.id,
                                     data.name,
                                     data.details,
-                                    data.labels
+                                    data.labels,
+                                    options
                                   )
                                 }
                                 className="w-full h-5"
+                                options={labels}
                               />
                             </td>
 
@@ -489,6 +534,14 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                     data.details
                                   )
                                 }
+                                // onBlur={(options) =>
+                                //   handleMatterChanged(
+                                //     options,
+                                //     data.id,
+                                //     data.name,
+                                //     data.details
+                                //   )
+                                // }
                                 placeholder="Labels"
                                 className=" placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                               />
