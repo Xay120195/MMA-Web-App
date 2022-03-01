@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
   const [clientName, setclientName] = useState(null);
-  const [matterName, setmatterName] = useState();
+  const [matterName, setmatterName] = useState(null);
   const modalDeleteAlertMsg = "Successfully deleted!";
   const createMatterAlertMsg = "Matter successfully added!";
 
@@ -36,7 +36,8 @@ export default function Dashboard() {
   const [selectedClient, setSelectedClient] = useState();
   const [selectedMatter, setSelectedMatter] = useState();
   const [clientMattersList, setClientMattersList] = useState([]);
-  const [isLoaded, setLoaded] = useState(false)
+  const [isLoaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
   const {
     register,
@@ -66,7 +67,7 @@ export default function Dashboard() {
       featureAccessFilters();
     }
 
-    if(!isLoaded) {
+    if (!isLoaded) {
       if (clientMattersList !== undefined) {
         ClientMatterList();
       }
@@ -127,6 +128,10 @@ export default function Dashboard() {
         )
         .sort((a, b) => a.matter.name.localeCompare(b.matter.name))
     );
+    
+    if(v === ""){
+      ClientMatterList();
+    }
   };
 
   const handleClientChanged = (newValue) => {
@@ -150,16 +155,36 @@ export default function Dashboard() {
   };
 
   const handleNewMatter = async () => {
-    let client = {
-        id: clientName.value,
-        name: clientName.label,
-      },
-      matter = {
-        id: matterName.value,
-        name: matterName.label,
-      };
+    if (clientName === null) {
+      setShowToast(true);
+      setalertMessage("Client name is required");
+      setError(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setalertMessage("");
+        setError(false);
+      }, 3000);
+    } else if (matterName === null) {
+      setShowToast(true);
+      setalertMessage("Matter name is required");
+      setError(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setalertMessage("");
+        setError(false);
+      }, 3000);
+    } else {
+      let client = {
+          id: clientName.value,
+          name: clientName.label,
+        },
+        matter = {
+          id: matterName.value,
+          name: matterName.label,
+        };
 
-    await addClientMatter(client, matter);
+      await addClientMatter(client, matter);
+    }
   };
 
   const contentDiv = {
@@ -312,7 +337,10 @@ query listMatter($companyId: String) {
         matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
           -4
         )}/${v.client.id.slice(-4)}}`,
-      }));
+      })).sort((a,b) => {
+        return new Date(a.createdAt).getTime() - 
+            new Date(b.createdAt).getTime()
+      }).reverse();
 
       setClientMattersList(apdMn);
     }
@@ -436,7 +464,6 @@ mutation addMatter($companyId: String, $name: String) {
                             placeholder="Client"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
-                          {/* {errors.clientName?.type === 'required' && <small className="text-red-400">Client is required</small>} */}
                         </div>
                       </div>
                       <div className="pr-2">
@@ -451,11 +478,6 @@ mutation addMatter($companyId: String, $name: String) {
                             placeholder="Matters"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
-                          {errors.matterName?.type === "required" && (
-                            <small className="text-red-400">
-                              Matter is required
-                            </small>
-                          )}
                         </div>
                       </div>
                       <div className="pr-2">
@@ -546,7 +568,11 @@ mutation addMatter($companyId: String, $name: String) {
           )}
 
           {showToast && (
-            <ToastNotification title={alertMessage} hideToast={hideToast} />
+            <ToastNotification
+              error={error}
+              title={alertMessage}
+              hideToast={hideToast}
+            />
           )}
         </div>
       </div>

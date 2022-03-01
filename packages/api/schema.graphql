@@ -23,9 +23,7 @@ type Company {
   users: CompanyUserConnection
   clients: CompanyClientConnection
   matters: CompanyMatterConnection
-  labels: CompanyLabelConnection
   clientMatters: CompanyClientMatterConnection
-  backgroundMatters: CompanyBackgroundMatterConnection
   phone: String
   email: AWSEmail
   representative: User
@@ -51,15 +49,6 @@ type CompanyMatterConnection {
 
 type CompanyClientMatterConnection {
   items: [ClientMatter]
-  # nextToken: String
-}
-type CompanyLabelConnection {
-  items: [Label]
-  # nextToken: String
-}
-
-type CompanyBackgroundMatterConnection {
-  items: [Background]
   # nextToken: String
 }
 
@@ -142,6 +131,7 @@ type Matter {
 type Label {
   id: ID!
   name: String
+  description: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -150,14 +140,25 @@ type ClientMatter {
   id: ID!
   matter: Matter
   client: Client
+  backgrounds: ClientMatterBackgroundConnection
+  labels: ClientMatterLabelConnection
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+type ClientMatterBackgroundConnection {
+  items: [Background]
+  # nextToken: String
+}
+
+type ClientMatterLabelConnection {
+  items: [Label]
+  # nextToken: String
 }
 
 type Background {
   id: ID
   date: String
-  matter: Matter
   description: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -178,12 +179,14 @@ type Query {
   feature(id: String): Feature
   clients: [Client]
   client(id: ID): Client
+  clientMatters: [ClientMatter]
   clientMatter(id: ID): ClientMatter
   matters: [Matter]
   matter(id: ID): Matter
   matterFile(matterId: ID): [File]
   labels: [Label]
   label(id: ID): Label
+  backgrounds: [Background]
   background(id: ID): Background
 }
 
@@ -219,7 +222,6 @@ type Mutation {
   featureCreate(name: String, label: String, page: PageInput): Feature
   clientCreate(name: String, companyId: String): Client
   matterCreate(name: String, companyId: String): Matter
-
   matterFileCreate(
     matterId: ID
     s3ObjectKey: String
@@ -240,10 +242,15 @@ type Mutation {
     client: ClientInput
     matter: MatterInput
   ): ClientMatter
-  backgroundUpdate(id: ID, description: String): Background
-  labelCreate(name: String, companyId: String): Label
-  labelUpdate(id: ID, name: String): Label
-  backgroundCreate(companyId: String, matter: MatterInput): Background
+  labelCreate(name: String, clientMatterId: String): Label
+  labelUpdate(id: ID, name: String, description: String): Label
+  backgroundCreate(date: String, clientMatterId: String): Background
+  backgroundUpdate(id: ID, date: String, description: String): Background
+  backgroundDelete(id: ID): Background
+}
+
+input ClientMatterInput {
+  id: ID
 }
 
 input MatterInput {
@@ -259,6 +266,7 @@ input ClientInput {
 input LabelInput {
   id: ID
   name: String
+  description: String
 }
 
 input AccessInput {

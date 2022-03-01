@@ -2,12 +2,17 @@ const client = require("../../../lib/dynamodb-client");
 const {
   PutItemCommand,
   UpdateItemCommand,
+  DeleteItemCommand,
+  QueryCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
 
 const { inviteUser, createUser } = require("../../../services/UserService");
-const { createMatterFile, updateMatterFile } = require("../../../services/MatterService");
+const {
+  createMatterFile,
+  updateMatterFile,
+} = require("../../../services/MatterService");
 
 async function createCompany(data) {
   let response = {};
@@ -221,21 +226,23 @@ async function createLabel(data) {
     });
     const request = await client.send(command);
 
-    const companyLabelParams = {
+    const clientMatterLabelParams = {
       id: v4(),
       labelId: rawParams.id,
-      companyId: data.companyId,
+      clientMatterId: data.clientMatterId,
       createdAt: new Date().toISOString(),
     };
 
-    const companyLabelCommand = new PutItemCommand({
-      TableName: "CompanyLabelTable",
-      Item: marshall(companyLabelParams),
+    const clientMatterLabelCommand = new PutItemCommand({
+      TableName: "ClientMatterLabelTable",
+      Item: marshall(clientMatterLabelParams),
     });
 
-    const companyLabelRequest = await client.send(companyLabelCommand);
+    const clientMatterLabelRequest = await client.send(
+      clientMatterLabelCommand
+    );
 
-    response = companyLabelRequest ? rawParams : {};
+    response = clientMatterLabelRequest ? rawParams : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -246,9 +253,6 @@ async function createLabel(data) {
 
   return response;
 }
-
-
-
 
 async function updateLabel(id, data) {
   let response = {};
@@ -301,8 +305,6 @@ async function createClientMatter(data) {
     });
     const request = await client.send(command);
 
-    console.log("ClientMatterTable", request);
-
     const companyClientMatterParams = {
       id: v4(),
       clientMatterId: rawParams.id,
@@ -321,7 +323,6 @@ async function createClientMatter(data) {
 
     response = companyClientMatterRequest ? rawParams : {};
   } catch (e) {
-    console.log("errr", e);
     response = {
       error: e.message,
       errorStack: e.stack,
@@ -380,34 +381,70 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
-      matter: data.matter,
+      date: data.date,
       createdAt: new Date().toISOString(),
     };
 
     const params = marshall(rawParams);
     const command = new PutItemCommand({
-      TableName: "BackgroundTable",
+      TableName: "BackgroundsTable",
       Item: params,
     });
     const request = await client.send(command);
 
-    const companyBackgroundMatterParams = {
+    const clientMatterBackgroundParams = {
       id: v4(),
-      backgroundMatterId: rawParams.id,
-      companyId: data.companyId,
+      backgroundId: rawParams.id,
+      clientMatterId: data.clientMatterId,
       createdAt: new Date().toISOString(),
     };
-  
-    const companyBackgroundMatterCommand = new PutItemCommand({
-      TableName: "CompanyBackgroundMatterTable",
-      Item: marshall(companyBackgroundMatterParams),
-    });
-    
-    const companyBackgroundMatterRequest = await client.send(companyBackgroundMatterCommand);
-  
-    console.log(companyBackgroundMatterRequest);
-    response = companyBackgroundMatterRequest ? rawParams : {};
 
+    const clientMatterBackgroundCommand = new PutItemCommand({
+      TableName: "ClientMatterBackgroundTable",
+      Item: marshall(clientMatterBackgroundParams),
+    });
+
+    const clientMatterBackgroundRequest = await client.send(
+      clientMatterBackgroundCommand
+    );
+
+    response = clientMatterBackgroundRequest ? rawParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
+}
+
+async function updateBackground(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "BackgroundsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await client.send(command);
+
+    response = request ? params : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -436,6 +473,60 @@ export function getUpdateExpressions(data) {
     ExpressionAttributeNames: names,
     ExpressionAttributeValues: marshall(values),
   };
+}
+
+export async function deleteBackground(id) {
+  let response = {};
+  try {
+    const clientMatterBackgroundParams = {
+      TableName: "ClientMatterBackgroundTable",
+      IndexName: "byBackground",
+      KeyConditionExpression: "backgroundId = :backgroundId",
+      ExpressionAttributeValues: marshall({
+        ":backgroundId": id,
+      }),
+    };
+
+    const clientMatterBackgroundCommand = new QueryCommand(
+      clientMatterBackgroundParams
+    );
+    const clientMatterBackgroundResult = await client.send(
+      clientMatterBackgroundCommand
+    );
+
+    const clientMatterBackgroundId = clientMatterBackgroundResult.Items.map(
+      (i) => i.id
+    );
+
+    const filterClientMatterBackgroundId = clientMatterBackgroundId[0];
+
+    const deleateClientMatterBackgroundCommand = new DeleteItemCommand({
+      TableName: "ClientMatterBackgroundTable",
+      Key: { id: filterClientMatterBackgroundId },
+    });
+
+    const deleateClientMatterBackgroundResult = await client.send(
+      deleateClientMatterBackgroundCommand
+    );
+
+    if (deleateClientMatterBackgroundResult) {
+      const command = new DeleteItemCommand({
+        TableName: "BackgroundsTable",
+        Key: marshall({ id }),
+      });
+      const request = await client.send(command);
+
+      response = request ? { id: id } : {};
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+
+  return response;
 }
 
 const resolvers = {
@@ -478,9 +569,10 @@ const resolvers = {
       return await createLabel(ctx.arguments);
     },
     labelUpdate: async (ctx) => {
-      const { id, name } = ctx.arguments;
+      const { id, name, description } = ctx.arguments;
       const data = {
         name: name,
+        description: description,
         updatedAt: new Date().toISOString(),
       };
       return await updateLabel(id, data);
@@ -501,6 +593,19 @@ const resolvers = {
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
+    },
+    backgroundUpdate: async (ctx) => {
+      const { id, date, description } = ctx.arguments;
+      const data = {
+        date: date,
+        description: description,
+        updatedAt: new Date().toISOString(),
+      };
+      return await updateBackground(id, data);
+    },
+    backgroundDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      return await deleteBackground(id);
     },
   },
 };

@@ -255,134 +255,68 @@ async function listCompanyClientMatters(ctx) {
   return response;
 }
 
+// async function listCompanyLabels(ctx) {
+//   const { id } = ctx.source;
+//   // const { limit = 100, nextToken } = ctx.args;
+//   try {
+//     const companyLabelParams = {
+//       TableName: "CompanyLabelTable",
+//       IndexName: "byCompany",
+//       KeyConditionExpression: "companyId = :companyId",
+//       ExpressionAttributeValues: marshall({
+//         ":companyId": id,
+//       }),
+//       // ExclusiveStartKey: nextToken
+//       //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+//       //   : undefined,
+//       // Limit: limit,
+//     };
 
-async function listBackgroundMatters(ctx) {
-  const { id } = ctx.source;
-  // const { limit = 100, nextToken } = ctx.args;
-  try {
-    const companyBackgroundMatterParams = {
-      TableName: "CompanyBackgroundMatterTable",
-      IndexName: "byCompany",
-      KeyConditionExpression: "companyId = :companyId",
-      ExpressionAttributeValues: marshall({
-        ":companyId": id,
-      }),
-      // ExclusiveStartKey: nextToken
-      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-      //   : undefined,
-      // Limit: limit,
-    };
-    
-    const companyBackroundMatterCommand = new QueryCommand(companyBackgroundMatterParams);
-    const companyBackgroundMatterResult = await client.send(companyBackroundMatterCommand);
+//     const companyLabelCommand = new QueryCommand(companyLabelParams);
+//     const companyLabelResult = await client.send(companyLabelCommand);
 
-    const backgroundMatterIds = companyBackgroundMatterResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.backgroundMatterId })
-    );
+//     console.log("companyLabelCommand", companyLabelCommand);
+//     const labelIds = companyLabelResult.Items.map((i) => unmarshall(i)).map(
+//       (f) => marshall({ id: f.labelId })
+//     );
 
-    const backgroundMatterParams = {
-      RequestItems: {
-        BackgroundTable: {
-          Keys: backgroundMatterIds,
-        },
-      },
-    };
+//     const labelParams = {
+//       RequestItems: {
+//         LabelsTable: {
+//           Keys: labelIds,
+//         },
+//       },
+//     };
 
-    const backgroundMattersCommand = new BatchGetItemCommand(backgroundMatterParams);
-    const backgroundMattersResult = await client.send(backgroundMattersCommand);
+//     const labelsCommand = new BatchGetItemCommand(labelParams);
+//     const labelsResult = await client.send(labelsCommand);
 
-    const objBackgroundMatters = backgroundMattersResult.Responses.BackgroundTable.map((i) => unmarshall(i));
-    const objCompanyBackgroundMatters = companyBackgroundMatterResult.Items.map((i) => unmarshall(i));
+//     const objLabels = labelsResult.Responses.LabelsTable.map((i) => unmarshall(i));
+//     const objCompanyLabels = companyLabelResult.Items.map((i) => unmarshall(i));
 
-    const response = objCompanyBackgroundMatters.map((item) => {
-      const filterBackgroundMatter = objBackgroundMatters.find((u) => u.id === item.backgroundMatterId);
-      return { ...item, ...filterBackgroundMatter };
-    });
+//     const response = objCompanyLabels.map((item) => {
+//       const filterLabel = objLabels.find((u) => u.id === item.labelId);
+//       return { ...item, ...filterLabel };
+//     });
 
-    return {
-      items: response,
-      // nextToken: companyClientMatterResult.LastEvaluatedKey
-      //   ? Buffer.from(
-      //       JSON.stringify(companyClientMatterResult.LastEvaluatedKey)
-      //     ).toString("base64")
-      //   : null,
-    };
-  } catch (e) {
-    console.log(e);
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-  return response;
-}
-
-
-
-
-async function listCompanyLabels(ctx) {
-  const { id } = ctx.source;
-  // const { limit = 100, nextToken } = ctx.args;
-  try {
-    const companyLabelParams = {
-      TableName: "CompanyLabelTable",
-      IndexName: "byCompany",
-      KeyConditionExpression: "companyId = :companyId",
-      ExpressionAttributeValues: marshall({
-        ":companyId": id,
-      }),
-      // ExclusiveStartKey: nextToken
-      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-      //   : undefined,
-      // Limit: limit,
-    };
-
-    const companyLabelCommand = new QueryCommand(companyLabelParams);
-    const companyLabelResult = await client.send(companyLabelCommand);
-
-    console.log("companyLabelCommand", companyLabelCommand);
-    const labelIds = companyLabelResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.labelId })
-    );
-
-    const labelParams = {
-      RequestItems: {
-        LabelsTable: {
-          Keys: labelIds,
-        },
-      },
-    };
-
-    const labelsCommand = new BatchGetItemCommand(labelParams);
-    const labelsResult = await client.send(labelsCommand);
-
-    const objLabels = labelsResult.Responses.LabelsTable.map((i) => unmarshall(i));
-    const objCompanyLabels = companyLabelResult.Items.map((i) => unmarshall(i));
-
-    const response = objCompanyLabels.map((item) => {
-      const filterLabel = objLabels.find((u) => u.id === item.labelId);
-      return { ...item, ...filterLabel };
-    });
-
-    return {
-      items: response,
-      // nextToken: companyLabelResult.LastEvaluatedKey
-      //   ? Buffer.from(
-      //       JSON.stringify(companyLabelResult.LastEvaluatedKey)
-      //     ).toString("base64")
-      //   : null,
-    };
-  } catch (e) {
-    console.log(e);
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-  }
-  return response;
-}
+//     return {
+//       items: response,
+//       // nextToken: companyLabelResult.LastEvaluatedKey
+//       //   ? Buffer.from(
+//       //       JSON.stringify(companyLabelResult.LastEvaluatedKey)
+//       //     ).toString("base64")
+//       //   : null,
+//     };
+//   } catch (e) {
+//     console.log(e);
+//     response = {
+//       error: e.message,
+//       errorStack: e.stack,
+//       statusCode: 500,
+//     };
+//   }
+//   return response;
+// }
 
 const resolvers = {
   Company: {
@@ -398,12 +332,9 @@ const resolvers = {
     clientMatters:async (ctx) => {
       return listCompanyClientMatters(ctx);
     },
-    labels: async (ctx) => {
-      return listCompanyLabels(ctx);
-    },
-    backgroundMatters:async (ctx) => {
-      return listBackgroundMatters(ctx);
-    },
+    // labels: async (ctx) => {
+    //   return listCompanyLabels(ctx);
+    // },
   },
 };
 

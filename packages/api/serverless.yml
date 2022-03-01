@@ -188,6 +188,11 @@ custom:
         response: false
       - dataSource: LambdaQueryDS
         type: Query
+        field: clientMatters
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
         field: clients
         request: false
         response: false
@@ -231,9 +236,24 @@ custom:
         field: background
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: backgrounds
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: backgroundCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: backgroundUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: backgroundDelete
         request: false
         response: false
       - dataSource: LambdaCompanyDS
@@ -256,11 +276,11 @@ custom:
         field: clientMatters
         request: false
         response: false
-      - dataSource: LambdaCompanyDS
-        type: Company
-        field: labels
-        request: false
-        response: false
+      # - dataSource: LambdaCompanyDS
+      #   type: Company
+      #   field: labels
+      #   request: false
+      #   response: false
       
     dataSources:
       - type: AMAZON_DYNAMODB

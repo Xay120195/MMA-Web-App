@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { matters } from "../dashboard/data-source";
+import { client, matters } from "../dashboard/data-source";
 import { useParams } from "react-router-dom";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import { witness_affidavits } from "./data-source";
+import { API } from "aws-amplify";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -16,10 +17,11 @@ const mainGrid = {
 };
 
 export default function Background() {
-  const [allData, setAllData] = useState(matters);
-  const [witness, setWitness] = useState(witness_affidavits);
+  const [matterList, setClientMattersList] = useState([]);
+  const [witness, setWitness] = useState([]);
   const [idList, setIdList] = useState([]);
   const [getId, setId] = useState([{}]);
+  const [matters, setMatters] = useState([]);
   const params = useParams();
   const { matter_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
@@ -31,12 +33,102 @@ export default function Background() {
   const [totalChecked, settotalChecked] = useState(0);
 
   useEffect(() => {
-    //rundata();
+    ClientMatterList();
+    //if (witness === null) {
+    getBackground();
+    //}
   }, []);
 
-  const rundata = () => {
-    setAllData(allData.find((item) => item.id === Number(matter_id)));
+  const listClientMatters = `
+  query listClientMatters($companyId: String) {
+    company(id: $companyId) {
+      clientMatters {
+        items {
+          id
+          createdAt
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+  `;
+
+  const ClientMatterList = async () => {
+    let result = [];
+
+    const companyId = localStorage.getItem("companyId");
+    const clientMattersOpt = await API.graphql({
+      query: listClientMatters,
+      variables: {
+        companyId: companyId,
+      },
+    });
+
+    if (clientMattersOpt.data.company.clientMatters.items !== null) {
+      result = clientMattersOpt.data.company.clientMatters.items;
+
+      var apdPr = result.map((v) => ({
+        ...v,
+      }));
+
+      setClientMattersList(apdPr);
+    }
   };
+
+  const qListBackground = `
+    query listBackground($id: ID) {
+      clientMatter(id: $id) {
+        id
+        backgrounds {
+          items {
+            id
+            description
+            date
+            createdAt
+          }
+        }
+      }
+    }
+  `;
+
+  const getBackground = async () => {
+    let result = [];
+    const matterId = matter_id;
+
+    const backgroundOpt = await API.graphql({
+      query: qListBackground,
+      variables: {
+        id: matterId,
+      },
+    });
+
+    if (backgroundOpt.data.clientMatter.backgrounds !== null) {
+      result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+        ({ id, description, date, createdAt }) => ({
+          createdAt: createdAt,
+          id: id,
+          description: description,
+          date: date,
+        })
+      );
+      console.log(result);
+      setWitness(result);
+    }
+  };
+
+  const matt = matterList.find((i) => i.id === matter_id);
+  const obj = { ...matt };
+  const client = Object.values(obj);
+  const cname = Object.values(client).map((o) => o.name);
+  const clientName = cname[2];
+  const matterName = cname[3];
 
   return (
     <>
@@ -50,9 +142,9 @@ export default function Background() {
           <div style={mainGrid}>
             <div>
               <span className="text-lg mt-3 font-medium">
-                Claire Greene {allData.name} Background
+                {clientName}/{matterName}
               </span>
-              <BreadCrumb data={allData} />
+              <BreadCrumb matterId={matter_id} />
               <ActionButtons
                 setWitness={setWitness}
                 witness={witness}
@@ -67,6 +159,7 @@ export default function Background() {
                 search={search}
                 setSearch={setSearch}
                 getId={getId}
+                matterId={matter_id}
               />
             </div>
           </div>
@@ -86,6 +179,7 @@ export default function Background() {
         getId={getId}
         search={search}
         matterId={matter_id}
+        getBackground={getBackground}
       />
     </>
   );

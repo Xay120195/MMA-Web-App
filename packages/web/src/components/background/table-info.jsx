@@ -8,6 +8,7 @@ import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import Loading from "../loading/loading";
+import { API } from "aws-amplify";
 
 const TableInfo = ({
   witness,
@@ -21,16 +22,19 @@ const TableInfo = ({
   search,
   getId,
   setId,
-  matterId
+  getBackground,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sDate, setsDate] = useState(new Date());
 
   const hideToast = () => {
     setShowToast(false);
   };
+
+  const counterRow = 0;
   const handleCheckboxChange = (position, event) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
@@ -51,54 +55,86 @@ const TableInfo = ({
       }
     }
     if (event.target.checked) {
-      if (!witness.includes({ id: event.target.value })) {
-        setId((item) => [...item, event.target.value]);
+      if (!witness.includes({ id: event.target.name })) {
+        setId((item) => [...item, event.target.name]);
       }
     } else {
-      setId((item) => [...item.filter((x) => x !== event.target.value)]);
+      setId((item) => [...item.filter((x) => x !== event.target.name)]);
     }
   };
-
-  console.log(matterId);
 
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-    setWitness(witness);
 
     setIdList(getId);
-  }, [witness, getId]);
+  }, [getId]);
 
   const text = useRef("");
+  const textDate = useRef("");
+  const textDescription = useRef("");
 
-  const handleChange = (evt, id) => {
-    text.current = evt.target.value;
-    const updatedComments = witness.map((x) =>
-      x.id === id ? { ...x, comments: text.current } : x
-    );
-    setWitness(updatedComments);
+  const handleChangeDesc = (evt) => {
+    textDescription.current = evt.target.value;
   };
-  const handleChangeDate = (date, id) => {
-    const updatedDate = witness.map((x) =>
-      x.id === id ? { ...x, date: date } : x
-    );
-    setWitness(updatedDate);
-    if (updatedDate) {
-      setalertMessage(`Successfully updated`);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+
+  const handleChangeDate = async (selected, id, description) => {
+    const data = {
+      description: !description ? "" : description,
+      date: String(selected),
+    };
+    await updateBackgroundDetails(id, data);
+    getBackground();
+  };
+
+  const HandleChangeToTD = async (id, description, date) => {
+    const filterDescription = !description ? "" : description;
+    const outputDescription = textDescription.current;
+    const finalDescription = outputDescription;
+    const data = {
+      description: !textDescription.current
+        ? filterDescription
+        : finalDescription,
+      date: !date ? "" : date,
+    };
+    await updateBackgroundDetails(id, data);
+  };
+
+  const mUpdateBackground = `
+    mutation updateBackground($id: ID, $description: String, $date: String) {
+      backgroundUpdate(id: $id, description: $description, date: $date) {
+        id
+        description
+        date
+      }
     }
-  };
-  const HandleChangeToTD = (evt) => {
-    setalertMessage(`Successfully updated`);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
-  };
+  `;
+
+  async function updateBackgroundDetails(id, data) {
+    console.log("updateBackgroundDetails", id, data);
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackground,
+          variables: {
+            id: id,
+            date: data.date,
+            description: data.description,
+          },
+        });
+        console.log(request);
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  function sortByDate(arr) {
+    arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    return arr;
+  }
 
   return (
     <>
@@ -109,93 +145,109 @@ const TableInfo = ({
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              {witness.length <= 0 ? (
+              {witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
                 <>
-                  {loading ? (
-                    <Loading content="Loading background data..." />
-                  ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            No
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Date
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Description of Background
-                          </th>
-                          <th
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          No
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Date
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Description of Background
+                        </th>
+                        {/* <th
                             scope="col"
                             className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Document
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {witness.map((item, index) => (
-                          <tr key={index}>
-                            <td className="px-3 py-3 w-10">
-                              <div className="flex items-center ">
-                                <input
-                                  type="checkbox"
-                                  value={`${item.id}`}
-                                  name={`${item.id}`}
-                                  id={`${item.id}`}
-                                  className="cursor-pointer w-10"
-                                  checked={checkedState[index]}
-                                  onChange={(event) =>
-                                    handleCheckboxChange(index, event)
-                                  }
-                                />
-                                <label
-                                  htmlFor="checkbox-1"
-                                  className="text-sm font-medium text-gray-900 dark:text-gray-300"
-                                >
-                                  {item.id}
-                                </label>
-                              </div>
-                            </td>
-                            <td className="px-3 py-3">
-                              <div>
-                                <DatePicker
-                                  className="border w-28 rounded border-gray-300"
-                                  selected={new Date(item.date)}
-                                  onChange={(date) =>
-                                    handleChangeDate(date, item.id)
-                                  }
-                                />
-                              </div>
-                            </td>
-                            <td className="py-2 px-3 w-full">
-                              <ContentEditable
-                                html={item.comments}
-                                className="w-full"
-                                onChange={(evt) => handleChange(evt, item.id)}
-                                onBlur={HandleChangeToTD}
+                          </th> */}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {sortByDate(witness).map((item, index) => (
+                        <tr key={item.id}>
+                          <td className="px-3 py-3 w-10">
+                            <div className="flex items-center ">
+                              <input
+                                type="checkbox"
+                                name={item.id}
+                                className="cursor-pointer w-10"
+                                checked={checkedState[index]}
+                                onChange={(event) =>
+                                  handleCheckboxChange(index, event)
+                                }
                               />
-                            </td>
-                            <td className="py-2 px-3 w-80 text-sm text-gray-500">
-                              <Link className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" to={`${AppRoutes.FILEBUCKET}/${matterId}`}>File Bucket</Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
+                              <label
+                                htmlFor="checkbox-1"
+                                className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                              >
+                                {index + 1}
+                              </label>
+                            </div>
+                          </td>
+
+                          <td className="px-3 py-3">
+                            <div>
+                              <DatePicker
+                                className="border w-28 rounded border-gray-300"
+                                selected={
+                                  !item.date ? sDate : new Date(item.date)
+                                }
+                                onChange={(selected) =>
+                                  handleChangeDate(
+                                    selected,
+                                    item.id,
+                                    item.description
+                                  )
+                                }
+                              />
+                            </div>
+                          </td>
+                          <td className="py-2 px-3 w-full">
+                            <ContentEditable
+                              html={
+                                !item.description
+                                  ? `<p></p>`
+                                  : `<p>${item.description}</p>`
+                              }
+                              className="w-full h-5  px-2"
+                              onChange={(evt) => handleChangeDesc(evt)}
+                              onBlur={() =>
+                                HandleChangeToTD(
+                                  item.id,
+                                  item.description,
+                                  item.date
+                                )
+                              }
+                            />
+                          </td>
+                          {/* <td className="py-2 px-3 w-80 text-sm text-gray-500">
+                              <Link
+                                className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                to={`${AppRoutes.FILEBUCKET}/${matterId}`}
+                              >
+                                File Bucket
+                              </Link>
+                            </td> */}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </>
               )}
             </div>

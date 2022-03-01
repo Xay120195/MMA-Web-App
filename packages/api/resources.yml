@@ -372,14 +372,14 @@ Resources:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
-  CompanyLabelTable:
+  ClientMatterLabelTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: CompanyLabelTable
+      TableName: ClientMatterLabelTable
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        - AttributeName: companyId
+        - AttributeName: clientMatterId
           AttributeType: S
         - AttributeName: labelId
           AttributeType: S
@@ -387,9 +387,9 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: byCompany
+        - IndexName: byClientMatter
           KeySchema:
-            - AttributeName: companyId
+            - AttributeName: clientMatterId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
@@ -417,10 +417,10 @@ Resources:
               - "*"
             MaxAge: "3600"
 
-  BackgroundTable:
+  BackgroundsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: BackgroundTable
+      TableName: BackgroundsTable
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
@@ -429,30 +429,30 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
-  CompanyBackgroundMatterTable:
+  ClientMatterBackgroundTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: CompanyBackgroundMatterTable
+      TableName: ClientMatterBackgroundTable
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        - AttributeName: companyId
-          AttributeType: S
         - AttributeName: clientMatterId
+          AttributeType: S
+        - AttributeName: backgroundId
           AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: byCompany
-          KeySchema:
-            - AttributeName: companyId
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
         - IndexName: byClientMatter
           KeySchema:
             - AttributeName: clientMatterId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byBackground
+          KeySchema:
+            - AttributeName: backgroundId
               KeyType: HASH
           Projection:
             ProjectionType: ALL

@@ -13,12 +13,16 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
-
+let tempArr = [];
+let nameArr = [];
+let descArr = [];
 export default function FileBucket() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
   const [labels, setLabels] = useState(null);
+  const [clientMatterName, setClientMatterName] = useState("");
+
   const { matter_id } = useParams();
   const [getReload, setReload] = useState(false);
 
@@ -45,6 +49,7 @@ export default function FileBucket() {
         setTimeout(() => {
           setShowToast(false);
           getMatterFiles();
+          tempArr = [];
         }, 3000);
       });
     });
@@ -84,6 +89,14 @@ export default function FileBucket() {
 
   const qGetMatterFiles = `
   query getMatterFile($matterId: ID) {
+    clientMatter(id: $matterId) {
+      matter {
+        name
+      }
+      client {
+        name
+      }
+    }
     matterFile(matterId: $matterId) {
       id
       name
@@ -95,12 +108,13 @@ export default function FileBucket() {
         id
         name
       }
+      createdAt
     }
   }`;
 
   const listLabels = `
-query listLabels($companyId: String) {
-  company(id: $companyId) {
+query listLabels($clientMatterId: ID) {
+  clientMatter(id: $clientMatterId) {
     labels {
       items {
         id
@@ -112,8 +126,8 @@ query listLabels($companyId: String) {
 `;
 
   const mCreateLabel = `
-mutation createLabel($companyId: String, $name: String) {
-    labelCreate(companyId:$companyId, name:$name) {
+mutation createLabel($clientMatterId: String, $name: String) {
+    labelCreate(clientMatterId:$clientMatterId, name:$name) {
         id
         name
     }
@@ -123,18 +137,15 @@ mutation createLabel($companyId: String, $name: String) {
   const getLabels = async () => {
     let result = [];
 
-    const companyId = localStorage.getItem("companyId");
-
     const labelsOpt = await API.graphql({
       query: listLabels,
       variables: {
-        companyId: companyId,
+        clientMatterId: matter_id,
       },
     });
 
-    if (labelsOpt.data.company.labels.items !== null) {
-      console.log("Labels", labelsOpt.data.company.labels.items);
-      result = labelsOpt.data.company.labels.items
+    if (labelsOpt.data.clientMatter.labels !== null) {
+      result = labelsOpt.data.clientMatter.labels.items
         .map(({ id, name }) => ({
           value: id,
           label: name,
@@ -148,17 +159,17 @@ mutation createLabel($companyId: String, $name: String) {
   const addLabel = async (data) => {
     let result;
 
-    const companyId = localStorage.getItem("companyId");
-
     const createLabel = await API.graphql({
       query: mCreateLabel,
       variables: {
-        companyId: companyId,
+        clientMatterId: matter_id,
         name: data,
       },
     });
 
     result = createLabel.data.labelCreate;
+
+    getLabels();
     return result;
   };
 
@@ -181,8 +192,11 @@ mutation createLabel($companyId: String, $name: String) {
     };
 
     await API.graphql(params).then((files) => {
-      console.log("Files", files.data.matterFile);
       setMatterFiles(files.data.matterFile);
+
+      setClientMatterName(
+        `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
+      );
     });
   };
 
@@ -202,7 +216,6 @@ mutation createLabel($companyId: String, $name: String) {
   }
 
   async function updateMatterFile(id, data) {
-    console.log("updateMatterFile", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -234,7 +247,9 @@ mutation createLabel($companyId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-  const handleMatterChanged = async (options, id, name, details) => {
+  
+
+  const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
 
     options.map(async (o) => {
@@ -254,54 +269,100 @@ mutation createLabel($companyId: String, $name: String) {
       labels: newOptions,
     };
 
+    updateArr(data.labels, index);
     await updateMatterFile(id, data);
   };
 
-  const HandleChangeToTD = (id, name, details) => {
-    const filterDetails = !details
-      ? "no file name"
-      : details.replace(/(<([^>]+)>)/gi, "");
+  function updateArr(data, index){
+    tempArr[index] = data;
+    // alert(tempArr[0]);
+  }
+
+  const HandleChangeToTD = (id, name, details, labels, index) => {
+    var updatedLabels = [];
+    var updatedName = [];
+ 
+    if(typeof tempArr[index] === 'undefined'){
+      updatedLabels[0] = labels; //no changes in labels
+    }else{
+      updatedLabels[0] = tempArr[index]; //change in label
+    }
+
+    if(typeof nameArr[index] === 'undefined'){
+      updatedName[0] = name; //no changes in name
+    }else{
+      updatedName[0] = nameArr[index]; //change in name
+    }
+
+    const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
     const ouputDetails = textDetails.current;
     const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
-      name: name,
-      labels: lbls,
+      name: !name ? "" : updatedName[0],
+      labels: updatedLabels[0],
     };
+
+    descArr[index] = finaloutput; //Save changes in desc
 
     updateMatterFile(id, data);
 
-    setResultMessage(`Successfully updated`);
-    setShowToast(true);
     setTimeout(() => {
-      setShowToast(false);
       getMatterFiles();
-    }, 1000);
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }, 1000);
+    }, 1500);
   };
 
   const handleChangeName = (evt) => {
     textName.current = evt.target.value;
   };
 
-  const HandleChangeToTDName = (id, details, name) => {
+  const HandleChangeToTDName = (id, details, name, labels, index) => {
+    var updatedLabels = [];
+    var updatedDesc= [];
+ 
+    if(typeof tempArr[index] === 'undefined'){
+      updatedLabels[0] = labels;
+    }else{
+      updatedLabels[0] = tempArr[index];
+    }
+
+    if(typeof descArr[index] === 'undefined'){
+      updatedDesc[0] = details;
+    }else{
+      updatedDesc[0] = descArr[index];
+    }
+
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: !details ? "no data details" : details,
-      labels: lbls,
+      details: !details ? "" : updatedDesc[0],
+      labels: updatedLabels[0],
     };
 
+    nameArr[index] = finaloutput; //Save changes File name
     updateMatterFile(id, data);
-    setResultMessage(`Successfully updated `);
-    setShowToast(true);
+
     setTimeout(() => {
-      setShowToast(false);
       getMatterFiles();
-    }, 1000);
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }, 1000);
+    }, 1500);
   };
 
   const extractArray = (ar) => {
@@ -315,6 +376,12 @@ mutation createLabel($companyId: String, $name: String) {
       return null;
     }
   };
+  
+  function sortByDate(arr) {
+    arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return arr;
+  }
+
   return (
     <>
       <div
@@ -326,7 +393,12 @@ mutation createLabel($companyId: String, $name: String) {
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
-              <h1 className="font-bold text-3xl">&nbsp; File Bucket</h1>
+              <h1 className="font-bold text-3xl">
+                File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
+                <span className="font-semibold text-3xl">
+                  {clientMatterName}
+                </span>
+              </h1>
             </div>
             <div className="absolute right-0">
               <Link to={AppRoutes.DASHBOARD}>
@@ -340,9 +412,9 @@ mutation createLabel($companyId: String, $name: String) {
         </div>
 
         <div className="p-5 left-0">
-          <div>
+          {/* <div>
             <span className={"text-sm mt-3 font-medium"}>FILE BUCKET</span>
-          </div>
+          </div> */}
         </div>
         <div className="p-5 py-1 left-0">
           <div>
@@ -368,7 +440,7 @@ mutation createLabel($companyId: String, $name: String) {
                   <BlankState
                     title={"items"}
                     txtLink={"file upload button"}
-                    onClick={() => setShowUploadModal(true)}
+                    handleClick={() => setShowUploadModal(true)}
                   />
                 </div>
               </div>
@@ -376,29 +448,29 @@ mutation createLabel($companyId: String, $name: String) {
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
                   <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className=" table-fixed min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
                             Name
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-3/5">
                             Description
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap w-4 text-left">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
                             Labels
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {matterFiles.map((data, index) => (
+                        {sortByDate(matterFiles).map((data, index) => (
                           <tr key={data.id} index={index}>
-                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                            <td className="px-6 py-4 place-items-center relative">
                               <div className="inline-flex">
                                 <ContentEditable
                                   html={
                                     !data.name
-                                      ? "<p>no file details yet</p>"
+                                      ? "<p>no_filename</p>"
                                       : `<p>${data.name}</p>`
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
@@ -406,9 +478,11 @@ mutation createLabel($companyId: String, $name: String) {
                                     HandleChangeToTDName(
                                       data.id,
                                       data.details,
-                                      data.name
+                                      data.name,
+                                      data.labels, index
                                     )
                                   }
+                                  className="w-full h-5"
                                 />
                                 <span>
                                   <AiOutlineDownload
@@ -422,11 +496,11 @@ mutation createLabel($companyId: String, $name: String) {
                               </div>
                             </td>
 
-                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                            <td className="px-6 py-4 align-top place-items-center relative">
                               <ContentEditable
                                 html={
                                   !data.details
-                                    ? "<p>no file details yet</p>"
+                                    ? `<p> </p>`
                                     : `<p>${data.details}</p>`
                                 }
                                 onChange={(evt) => handleChangeDesc(evt)}
@@ -434,13 +508,17 @@ mutation createLabel($companyId: String, $name: String) {
                                   HandleChangeToTD(
                                     data.id,
                                     data.name,
-                                    data.details
+                                    data.details,
+                                    data.labels,
+                                    index
                                   )
                                 }
+                                className="w-full h-5"
+                                options={labels}
                               />
                             </td>
 
-                            <td className="px-6 py-4 w-10 align-top place-items-center">
+                            <td className="px-6 py-4 w-10 align-top place-items-center relative">
                               <CreatableSelect
                                 defaultValue={extractArray(
                                   data.labels
@@ -456,11 +534,20 @@ mutation createLabel($companyId: String, $name: String) {
                                     options,
                                     data.id,
                                     data.name,
-                                    data.details
+                                    data.details,
+                                    index
                                   )
                                 }
+                                // onBlur={(options) =>
+                                //   handleMatterChanged(
+                                //     options,
+                                //     data.id,
+                                //     data.name,
+                                //     data.details
+                                //   )
+                                // }
                                 placeholder="Labels"
-                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full z-100"
+                                className=" placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                               />
                             </td>
                           </tr>
