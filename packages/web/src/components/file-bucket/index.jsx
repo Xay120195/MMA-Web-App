@@ -451,13 +451,13 @@ mutation createLabel($clientMatterId: String, $name: String) {
                     <table className=" table-fixed min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
+                          <th className="px-6 py-4 text-left w-80">
                             Name
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-3/5">
+                          <th className="px-6 py-4 text-left w-3/5">
                             Description
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
+                          <th className="px-6 py-4 text-left w-80">
                             Labels
                           </th>
                         </tr>
@@ -465,7 +465,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {sortByDate(matterFiles).map((data, index) => (
                           <tr key={data.id} index={index}>
-                            <td className="px-6 py-4 place-items-center relative">
+                            <td className="px-6 py-4 place-items-center relative  flex-wrap">
                               <div className="inline-flex">
                                 <ContentEditable
                                   html={
@@ -482,7 +482,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                       data.labels, index
                                     )
                                   }
-                                  className="w-full h-5"
+                                  className="w-80"
                                 />
                                 <span>
                                   <AiOutlineDownload
@@ -496,7 +496,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               </div>
                             </td>
 
-                            <td className="px-6 py-4 align-top place-items-center relative">
+                            <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
                               <ContentEditable
                                 html={
                                   !data.details
@@ -518,7 +518,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               />
                             </td>
 
-                            <td className="px-6 py-4 w-10 align-top place-items-center relative">
+                            <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
                               <CreatableSelect
                                 defaultValue={extractArray(
                                   data.labels
@@ -547,7 +547,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                 //   )
                                 // }
                                 placeholder="Labels"
-                                className=" placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                               />
                             </td>
                           </tr>
