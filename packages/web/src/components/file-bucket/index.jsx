@@ -452,7 +452,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                           <th className="px-6 py-4 text-left w-80">
                             Name
                           </th>
-                          <th className="px-6 py-4 text-left w-3/5">
+                          <th className="px-6 py-4 text-left">
                             Description
                           </th>
                           <th className="px-6 py-4 text-left w-80">
@@ -462,8 +462,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {sortByDate(matterFiles).map((data, index) => (
-                          <tr key={data.id} index={index}>
-                            <td className="px-6 py-4 place-items-center relative  flex-wrap">
+                          <tr key={data.id} index={index} className="h-full">
+                            <td className="px-6 py-4 place-items-center relative flex-wrap">
                               <div className="inline-flex">
                                 <ContentEditable
                                   html={
@@ -494,7 +494,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               </div>
                             </td>
 
-                            <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
+                            <td className="px-6 py-4 align-top place-items-center  min-h-5 flex-wrap">
                               <ContentEditable
                                 html={
                                   !data.details
@@ -511,7 +511,12 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                     index
                                   )
                                 }
-                                className="w-full h-5"
+                                // className="w-full min-h-fit"
+                                className={
+                                  data.details
+                                    ? "w-full min-h-fit"
+                                    : "w-full h-5"
+                                }
                                 options={labels}
                               />
                             </td>
