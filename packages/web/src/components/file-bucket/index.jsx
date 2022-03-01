@@ -449,13 +449,13 @@ mutation createLabel($clientMatterId: String, $name: String) {
                     <table className=" table-fixed min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
                             Name
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-3/5">
                             Description
                           </th>
-                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/3">
+                          <th className="px-6 py-4 whitespace-nowrap text-left w-1/5">
                             Labels
                           </th>
                         </tr>
