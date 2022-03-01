@@ -215,14 +215,14 @@ const TableInfo = ({
                               />
                             </div>
                           </td>
-                          <td className="w-full">
+                          <td className="w-full px-6 py-4">
                             <ContentEditable
                               html={
                                 !item.description
                                   ? `<p></p>`
                                   : `<p>${item.description}</p>`
                               }
-                              className="w-full"
+                              className="w-full p-2"
                               onChange={(evt) => handleChangeDesc(evt)}
                               onBlur={() =>
                                 HandleChangeToTD(
