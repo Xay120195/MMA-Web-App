@@ -85,7 +85,6 @@ const ActionButtons = ({
     });
     if (createBackgroundRow) {
       getBackground();
-      setWitness([]);
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
     }
