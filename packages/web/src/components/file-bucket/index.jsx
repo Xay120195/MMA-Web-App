@@ -380,6 +380,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
     return arr;
   }
 
+  var str = "";
+
   return (
     <>
       <div
@@ -494,11 +496,11 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               </div>
                             </td>
 
-                            <td className="px-6 py-4 align-top place-items-center  min-h-5 flex-wrap">
+                            <td className="px-6 py-4 place-items-center w-full">
                               <ContentEditable
                                 html={
                                   !data.details
-                                    ? `<p> </p>`
+                                    ? `<div class="pb-2"> </div>`
                                     : `<p>${data.details}</p>`
                                 }
                                 onChange={(evt) => handleChangeDesc(evt)}
@@ -512,11 +514,12 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                   )
                                 }
                                 // className="w-full min-h-fit"
-                                className={
-                                  data.details
-                                    ? "w-full min-h-fit"
-                                    : "w-full h-5"
-                                }
+                                // className={
+                                //   data.details
+                                //     ? "w-full pt-1 pb-1 "
+                                //     : "w-full pt-1 pb-1 "
+                                // }
+                                className="pt-2 pb-5"
                                 options={labels}
                               />
                             </td>
