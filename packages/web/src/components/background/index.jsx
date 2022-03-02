@@ -160,6 +160,7 @@ export default function Background() {
                 setSearch={setSearch}
                 getId={getId}
                 matterId={matter_id}
+                getBackground={getBackground}
               />
             </div>
           </div>
