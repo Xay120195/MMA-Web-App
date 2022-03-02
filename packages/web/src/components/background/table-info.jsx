@@ -176,7 +176,7 @@ const TableInfo = ({
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {witness.map((item, index) => (
+                      {sortByDate(witness).map((item, index) => (
                         <tr key={item.id} className="h-full">
                           <td className="px-3 py-3 w-10">
                             <div className="flex items-center ">
