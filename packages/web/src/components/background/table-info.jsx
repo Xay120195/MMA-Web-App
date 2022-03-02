@@ -110,7 +110,6 @@ const TableInfo = ({
   `;
 
   async function updateBackgroundDetails(id, data) {
-    console.log("updateBackgroundDetails", id, data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -121,6 +120,16 @@ const TableInfo = ({
             description: data.description,
           },
         });
+
+        if(stripedTags(data.description) !== ""){
+          setalertMessage(`Successfully updated`);
+          setCheckedState(new Array(witness.length).fill(false));
+          setShowToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+          }, 2000);
+        }
+
         console.log(request);
         resolve(request);
       } catch (e) {
@@ -132,6 +141,11 @@ const TableInfo = ({
   function sortByDate(arr) {
     arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     return arr;
+  }
+
+  function stripedTags(str) {
+    const stripedStr = str.replace(/<[^>]+>/g, '');
+    return stripedStr;
   }
 
   return (
