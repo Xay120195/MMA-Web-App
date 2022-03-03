@@ -341,8 +341,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }else{
       updatedDesc[0] = descArr[index];
     }
-
-    alert(updatedDesc[0]);
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
