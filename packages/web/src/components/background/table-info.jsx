@@ -86,9 +86,9 @@ const TableInfo = ({
   };
 
   const HandleChangeToTD = async (id, description, date) => {
-    const filterDescription = !description ? "" : description;
+    const filterDescription = !description ? "" : description.replace(/(style=".+?")/gm, "");
     const outputDescription = textDescription.current;
-    const finalDescription = outputDescription;
+    const finalDescription = outputDescription.replace(/(style=".+?")/gm, "");
     const data = {
       description: !textDescription.current
         ? filterDescription
