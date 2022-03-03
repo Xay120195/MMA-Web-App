@@ -209,13 +209,10 @@ export default function UploadLinkModal(props) {
 
   // var index= 0;
   const generateRandomValues = (perc, idx) => {
-    // setArr((flagTemp) => [...flagTemp, perc]);
-
     const rand = (n) => Math.random() * n;
-    // setStart();
     setRandom({
       percentage: perc,
-      colour: `hsl(${rand(360)}, ${rand(50) + 50}%, ${rand(30) + 20}%)`,
+      colour: `hsl(121, 96%, 24%)`,
       index: idx,
     });
   };
