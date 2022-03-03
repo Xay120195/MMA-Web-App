@@ -50,6 +50,8 @@ export default function FileBucket() {
           setShowToast(false);
           getMatterFiles();
           tempArr = [];
+          nameArr = [];
+          descArr = [];
         }, 3000);
       });
     });
@@ -247,7 +249,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-  
 
   const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
@@ -275,23 +276,22 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
   function updateArr(data, index){
     tempArr[index] = data;
-    // alert(tempArr[0]);
   }
 
-  const HandleChangeToTD = (id, name, details, labels, index) => {
+  const HandleChangeToTD = async (id, name, details, labels, index) => {
     var updatedLabels = [];
     var updatedName = [];
  
     if(typeof tempArr[index] === 'undefined'){
-      updatedLabels[0] = labels; //no changes in labels
+      updatedLabels[0] = labels;
     }else{
-      updatedLabels[0] = tempArr[index]; //change in label
+      updatedLabels[0] = tempArr[index];
     }
 
     if(typeof nameArr[index] === 'undefined'){
-      updatedName[0] = name; //no changes in name
+      updatedName[0] = name;
     }else{
-      updatedName[0] = nameArr[index]; //change in name
+      updatedName[0] = nameArr[index];
     }
 
     const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
@@ -300,13 +300,15 @@ mutation createLabel($clientMatterId: String, $name: String) {
     let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
-      name: !name ? "" : updatedName[0],
+      name: !name ? "&nbsp;" : updatedName[0],
       labels: updatedLabels[0],
     };
 
-    descArr[index] = finaloutput; //Save changes in desc
+    descArr[index] = finaloutput; 
+    console.log(descArr);
+    console.log(nameArr);
 
-    updateMatterFile(id, data);
+    await updateMatterFile(id, data);
 
     setTimeout(() => {
       getMatterFiles();
@@ -316,7 +318,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
         setTimeout(() => {
           setShowToast(false);
         }, 1000);
-      }, 1000);
+      }, 1500);
     }, 1500);
   };
 
@@ -324,7 +326,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textName.current = evt.target.value;
   };
 
-  const HandleChangeToTDName = (id, details, name, labels, index) => {
+  const HandleChangeToTDName = async (id, details, name, labels, index) => {
     var updatedLabels = [];
     var updatedDesc= [];
  
@@ -333,25 +335,30 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }else{
       updatedLabels[0] = tempArr[index];
     }
-
-    if(typeof descArr[index] === 'undefined'){
+    
+    if(details == ""){
+      updatedDesc[0] = "";
+    }else if(typeof descArr[index] === 'undefined'){
       updatedDesc[0] = details;
     }else{
       updatedDesc[0] = descArr[index];
     }
 
+    alert(updatedDesc[0]);
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
     let lbls = [];
     const data = {
       name: !textName.current ? filterName : finaloutput,
-      details: !details ? "" : updatedDesc[0],
+      details: updatedDesc[0],
       labels: updatedLabels[0],
     };
 
-    nameArr[index] = finaloutput; //Save changes File name
-    updateMatterFile(id, data);
+    nameArr[index] = finaloutput;
+    console.log(nameArr);
+    console.log(descArr);
+    await updateMatterFile(id, data);
 
     setTimeout(() => {
       getMatterFiles();
@@ -414,9 +421,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
         </div>
 
         <div className="p-5 left-0">
-          {/* <div>
-            <span className={"text-sm mt-3 font-medium"}>FILE BUCKET</span>
-          </div> */}
         </div>
         <div className="p-5 py-1 left-0">
           <div>
@@ -472,7 +476,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                 <ContentEditable
                                   html={
                                     !data.name
-                                      ? "<p>no_filename</p>"
+                                      ? "<p> </p>"
                                       : `<p>${data.name}</p>`
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
@@ -481,7 +485,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                       data.id,
                                       data.details,
                                       data.name,
-                                      data.labels, index
+                                      data.labels, 
+                                      index
                                     )
                                   }
                                   className="w-80"
@@ -502,7 +507,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               <ContentEditable
                                 html={
                                   !data.details
-                                    ? `<div class="pb-2"> </div>`
+                                    ? `<p> </p>`
                                     : `<p>${data.details}</p>`
                                 }
                                 onChange={(evt) => handleChangeDesc(evt)}
