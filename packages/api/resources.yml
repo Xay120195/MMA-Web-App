@@ -457,3 +457,32 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
+
+  FileLabelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FileLabelTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: labelId
+          AttributeType: S
+        - AttributeName: fileId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byLabel
+          KeySchema:
+            - AttributeName: labelId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byFile
+          KeySchema:
+            - AttributeName: fileId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST

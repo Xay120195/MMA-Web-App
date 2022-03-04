@@ -254,6 +254,78 @@ async function createLabel(data) {
   return response;
 }
 
+async function createFileLabel(data) {
+  let response = {};
+  try {
+    const fileLabelParams = {
+      id: v4(),
+      labelId: data.label.id,
+      fileId: data.file.id,
+    };
+
+    const fileLabelCommand = new PutItemCommand({
+      TableName: "FileLabelTable",
+      Item: marshall(fileLabelParams),
+    });
+
+    const fileLabelRequest = await client.send(fileLabelCommand);
+
+    response = fileLabelRequest ? fileLabelParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
+async function deleteFileLabel(data) {
+  let response = {};
+  try {
+    const fileLabelParams = {
+      TableName: "FileLabelTable",
+      IndexName: "byFile",
+      KeyConditionExpression: "fileId = :fileId",
+      FilterExpression: "labelId = :labelId",
+      ExpressionAttributeValues: marshall({
+        ":labelId": data.label.id,
+        ":fileId": data.file.id,
+      }),
+    };
+
+    const fileLabelCommand = new QueryCommand(fileLabelParams);
+
+    const fileLabelResult = await client.send(fileLabelCommand);
+
+    const fileLabelId = fileLabelResult.Items.map((i) => i.id);
+    const filterFileLabelId = fileLabelId[0];
+
+    const deleteFileLabelCommand = new DeleteItemCommand({
+      TableName: "FileLabelTable",
+      Key: { id: filterFileLabelId },
+    });
+
+    const deleteFileLabelResult = await client.send(deleteFileLabelCommand);
+
+    response = deleteFileLabelResult
+      ? unmarshall({ id: filterFileLabelId })
+      : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
 async function updateLabel(id, data) {
   let response = {};
   try {
@@ -567,6 +639,12 @@ const resolvers = {
     },
     labelCreate: async (ctx) => {
       return await createLabel(ctx.arguments);
+    },
+    fileLabelCreate: async (ctx) => {
+      return await createFileLabel(ctx.arguments);
+    },
+    fileLabelDelete: async (ctx) => {
+      return await deleteFileLabel(ctx.arguments);
     },
     labelUpdate: async (ctx) => {
       const { id, name, description } = ctx.arguments;

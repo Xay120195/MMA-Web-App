@@ -228,6 +228,16 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: fileLabelCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: fileLabelDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: labelUpdate
         request: false
         response: false
