@@ -13,6 +13,7 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
+
 let tempArr = [];
 let nameArr = [];
 let descArr = [];
@@ -22,9 +23,9 @@ export default function FileBucket() {
   const [matterFiles, setMatterFiles] = useState(null);
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
+  const [updateProgess, setUpdateProgress] = useState(false);
 
   const { matter_id } = useParams();
-  const [getReload, setReload] = useState(false);
 
   const [selectedLabel, setSelectedLabel] = useState();
 
@@ -135,7 +136,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
 }
 `;
-
+  console.log(updateProgess);
   const getLabels = async () => {
     let result = [];
 
@@ -249,7 +250,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-
   const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
 
@@ -274,23 +274,26 @@ mutation createLabel($clientMatterId: String, $name: String) {
     await updateMatterFile(id, data);
   };
 
-  function updateArr(data, index){
+  function updateArr(data, index) {
     tempArr[index] = data;
   }
 
   const HandleChangeToTD = async (id, name, details, labels, index) => {
+    setResultMessage(`Saving in progress..`);
+    setShowToast(true);
+    setUpdateProgress(true);
     var updatedLabels = [];
     var updatedName = [];
- 
-    if(typeof tempArr[index] === 'undefined'){
+
+    if (typeof tempArr[index] === "undefined") {
       updatedLabels[0] = labels;
-    }else{
+    } else {
       updatedLabels[0] = tempArr[index];
     }
 
-    if(typeof nameArr[index] === 'undefined'){
+    if (typeof nameArr[index] === "undefined") {
       updatedName[0] = name;
-    }else{
+    } else {
       updatedName[0] = nameArr[index];
     }
 
@@ -304,7 +307,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
       labels: updatedLabels[0],
     };
 
-    descArr[index] = finaloutput; 
+    descArr[index] = finaloutput;
     console.log(descArr);
     console.log(nameArr);
 
@@ -317,6 +320,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          setUpdateProgress(false);
         }, 1000);
       }, 1500);
     }, 1500);
@@ -327,20 +331,23 @@ mutation createLabel($clientMatterId: String, $name: String) {
   };
 
   const HandleChangeToTDName = async (id, details, name, labels, index) => {
+    setUpdateProgress(true);
+    setResultMessage(`Saving in progress..`);
+    setShowToast(true);
     var updatedLabels = [];
-    var updatedDesc= [];
- 
-    if(typeof tempArr[index] === 'undefined'){
+    var updatedDesc = [];
+
+    if (typeof tempArr[index] === "undefined") {
       updatedLabels[0] = labels;
-    }else{
+    } else {
       updatedLabels[0] = tempArr[index];
     }
-    
-    if(details == ""){
+
+    if (details == "") {
       updatedDesc[0] = "";
-    }else if(typeof descArr[index] === 'undefined'){
+    } else if (typeof descArr[index] === "undefined") {
       updatedDesc[0] = details;
-    }else{
+    } else {
       updatedDesc[0] = descArr[index];
     }
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
@@ -356,6 +363,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     nameArr[index] = finaloutput;
     console.log(nameArr);
     console.log(descArr);
+
     await updateMatterFile(id, data);
 
     setTimeout(() => {
@@ -365,9 +373,10 @@ mutation createLabel($clientMatterId: String, $name: String) {
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          setUpdateProgress(false);
         }, 1000);
       }, 1000);
-    }, 1500);
+    }, 1000);
   };
 
   const extractArray = (ar) => {
@@ -381,7 +390,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
       return null;
     }
   };
-  
+
   function sortByDate(arr) {
     arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     return arr;
@@ -418,8 +427,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
           </div>
         </div>
 
-        <div className="p-5 left-0">
-        </div>
+        <div className="p-5 left-0"></div>
         <div className="p-5 py-1 left-0">
           <div>
             <button
@@ -455,35 +463,33 @@ mutation createLabel($clientMatterId: String, $name: String) {
                     <table className=" table-fixed min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="px-6 py-4 text-left w-80">
-                            Name
-                          </th>
-                          <th className="px-6 py-4 text-left">
-                            Description
-                          </th>
-                          <th className="px-6 py-4 text-left w-80">
-                            Labels
-                          </th>
+                          <th className="px-6 py-4 text-left w-80">Name</th>
+                          <th className="px-6 py-4 text-left">Description</th>
+                          <th className="px-6 py-4 text-left w-80">Labels</th>
                         </tr>
                       </thead>
+
                       <tbody className="bg-white divide-y divide-gray-200">
                         {sortByDate(matterFiles).map((data, index) => (
                           <tr key={data.id} index={index} className="h-full">
                             <td className="px-6 py-4 place-items-center relative flex-wrap">
                               <div className="inline-flex">
                                 <ContentEditable
+                                  style={{ cursor: "auto" }}
+                                  disabled={updateProgess ? true : false}
                                   html={
                                     !data.name
                                       ? "<p> </p>"
                                       : `<p>${data.name}</p>`
                                   }
+                                  disabled={updateProgess ? true : false}
                                   onChange={(evt) => handleChangeName(evt)}
                                   onBlur={() =>
                                     HandleChangeToTDName(
                                       data.id,
                                       data.details,
                                       data.name,
-                                      data.labels, 
+                                      data.labels,
                                       index
                                     )
                                   }
@@ -503,6 +509,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
                             <td className="px-6 py-4 place-items-center w-full">
                               <ContentEditable
+                                style={{ cursor: "auto" }}
+                                disabled={updateProgess ? true : false}
                                 html={
                                   !data.details
                                     ? `<p> </p>`
