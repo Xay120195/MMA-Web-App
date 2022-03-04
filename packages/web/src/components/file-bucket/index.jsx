@@ -14,10 +14,10 @@ import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 
-let tempArr = [];
-let nameArr = [];
-let descArr = [];
 export default function FileBucket() {
+  let tempArr = [];
+  let nameArr = [];
+  let descArr = [];
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
@@ -64,6 +64,10 @@ export default function FileBucket() {
 
   const contentDiv = {
     margin: "0 0 0 65px",
+  };
+
+  const noStyle = {
+    textDecoration: "none",
   };
 
   const mCreateMatterFile = `
@@ -278,6 +282,16 @@ mutation createLabel($clientMatterId: String, $name: String) {
     tempArr[index] = data;
   }
 
+  const pasteHandler = (event) => {
+    // event.preventDefault();
+    event.target.style.textDecoration = "none";
+    textDetails.current = event.target.value;
+    
+    // console.log(event.clipboardData.getData("text"));
+
+ 
+  };
+
   const HandleChangeToTD = async (id, name, details, labels, index) => {
     setResultMessage(`Saving in progress..`);
     setShowToast(true);
@@ -297,9 +311,14 @@ mutation createLabel($clientMatterId: String, $name: String) {
       updatedName[0] = nameArr[index];
     }
 
-    const filterDetails = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
+    const filterDetailsInitial = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
+    const filterDetails = filterDetailsInitial.replace(/(style=".+?")/gm, "");
+
     const ouputDetails = textDetails.current;
-    const finaloutput = ouputDetails.replace(/(<([^>]+)>)/gi, "");
+
+    const finaloutputInitial = ouputDetails.replace(/(<([^>]+)>)/gi, ""); 
+    const finaloutput = finaloutputInitial.replace(/(style=".+?")/gm, "");
+    
     let lbls = [];
     const data = {
       details: !textDetails.current ? filterDetails : finaloutput,
@@ -322,8 +341,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
           setShowToast(false);
           setUpdateProgress(false);
         }, 1000);
-      }, 1500);
-    }, 1500);
+      }, 1000);
+    }, 1000);
   };
 
   const handleChangeName = (evt) => {
@@ -525,15 +544,14 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                     data.labels,
                                     index
                                   )
+
                                 }
-                                // className="w-full min-h-fit"
-                                // className={
-                                //   data.details
-                                //     ? "w-full pt-1 pb-1 "
-                                //     : "w-full pt-1 pb-1 "
-                                // }
-                                className="pt-2 pb-5"
+                                onPaste={pasteHandler}
+                           
+                                className="pt-2 pb-5 font-poppins"
                                 options={labels}
+                                type="text"
+                          
                               />
                             </td>
 
