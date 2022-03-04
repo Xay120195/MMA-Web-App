@@ -628,11 +628,12 @@ const resolvers = {
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
-      const { id, name, details, labels } = ctx.arguments;
+      const { id, name, details, labels, order } = ctx.arguments;
       const data = {
         name: name,
         details: details,
         labels: labels,
+        order: order,
         updatedAt: new Date().toISOString(),
       };
       return await updateMatterFile(id, data);
