@@ -13,7 +13,6 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 let tempArr = [];
 let nameArr = [];
@@ -461,154 +460,119 @@ mutation createLabel($clientMatterId: String, $name: String) {
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
                   <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                    <DragDropContext>
-                      <table className=" table-fixed min-w-full divide-y divide-gray-200">
-                        <thead>
-                          <tr>
-                            <th className="px-6 py-4 text-left w-80">Name</th>
-                            <th className="px-6 py-4 text-left">Description</th>
-                            <th className="px-6 py-4 text-left w-80">Labels</th>
+                    <table className=" table-fixed min-w-full divide-y divide-gray-200">
+                      <thead>
+                        <tr>
+                          <th className="px-6 py-4 text-left w-80">Name</th>
+                          <th className="px-6 py-4 text-left">Description</th>
+                          <th className="px-6 py-4 text-left w-80">Labels</th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {sortByDate(matterFiles).map((data, index) => (
+                          <tr key={data.id} index={index} className="h-full">
+                            <td className="px-6 py-4 place-items-center relative flex-wrap">
+                              <div className="inline-flex">
+                                <ContentEditable
+                                  style={{ cursor: "auto" }}
+                                  disabled={updateProgess ? true : false}
+                                  html={
+                                    !data.name
+                                      ? "<p> </p>"
+                                      : `<p>${data.name}</p>`
+                                  }
+                                  disabled={updateProgess ? true : false}
+                                  onChange={(evt) => handleChangeName(evt)}
+                                  onBlur={() =>
+                                    HandleChangeToTDName(
+                                      data.id,
+                                      data.details,
+                                      data.name,
+                                      data.labels,
+                                      index
+                                    )
+                                  }
+                                  className="w-80"
+                                />
+                                <span>
+                                  <AiOutlineDownload
+                                    className="text-blue-400 mx-1"
+                                    onClick={() =>
+                                      //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                      openNewTab(data.downloadURL)
+                                    }
+                                  />
+                                </span>
+                              </div>
+                            </td>
+
+                            <td className="px-6 py-4 place-items-center w-full">
+                              <ContentEditable
+                                style={{ cursor: "auto" }}
+                                disabled={updateProgess ? true : false}
+                                html={
+                                  !data.details
+                                    ? `<p> </p>`
+                                    : `<p>${data.details}</p>`
+                                }
+                                onChange={(evt) => handleChangeDesc(evt)}
+                                onBlur={() =>
+                                  HandleChangeToTD(
+                                    data.id,
+                                    data.name,
+                                    data.details,
+                                    data.labels,
+                                    index
+                                  )
+                                }
+                                // className="w-full min-h-fit"
+                                // className={
+                                //   data.details
+                                //     ? "w-full pt-1 pb-1 "
+                                //     : "w-full pt-1 pb-1 "
+                                // }
+                                className="pt-2 pb-5"
+                                options={labels}
+                              />
+                            </td>
+
+                            <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
+                              <CreatableSelect
+                                defaultValue={extractArray(
+                                  data.labels
+                                    ? data.labels
+                                    : { value: 0, label: "" }
+                                )}
+                                options={labels}
+                                isMulti
+                                isClearable
+                                isSearchable
+                                onChange={(options) =>
+                                  handleMatterChanged(
+                                    options,
+                                    data.id,
+                                    data.name,
+                                    data.details,
+                                    index
+                                  )
+                                }
+                                // onBlur={(options) =>
+                                //   handleMatterChanged(
+                                //     options,
+                                //     data.id,
+                                //     data.name,
+                                //     data.details
+                                //   )
+                                // }
+                                placeholder="Labels"
+                                className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                              />
+                            </td>
                           </tr>
-                        </thead>
-                        <Droppable droppableId="tbody">
-                          {(provided) => (
-                            <tbody
-                              ref={provided.innerRef}
-                              {...provided.droppableProps}
-                              className="bg-white divide-y divide-gray-200"
-                            >
-                              {matterFiles.map((data, index) => (
-                                <Draggable
-                                  draggableId={data.id}
-                                  key={data.id}
-                                  index={index}
-                                >
-                                  {(provided) => (
-                                    <tr
-                                      ref={provided.innerRef}
-                                      {...provided.dragHandleProps}
-                                      {...provided.draggableProps}
-                                      key={data.id}
-                                      index={index}
-                                      className="h-full"
-                                    >
-                                      <td className="px-6 py-4 place-items-center relative flex-wrap">
-                                        <div className="inline-flex">
-                                          <ContentEditable
-                                            style={{ cursor: "auto" }}
-                                            disabled={
-                                              updateProgess ? true : false
-                                            }
-                                            html={
-                                              !data.name
-                                                ? "<p> </p>"
-                                                : `<p>${data.name}</p>`
-                                            }
-                                            disabled={
-                                              updateProgess ? true : false
-                                            }
-                                            onChange={(evt) =>
-                                              handleChangeName(evt)
-                                            }
-                                            onBlur={() =>
-                                              HandleChangeToTDName(
-                                                data.id,
-                                                data.details,
-                                                data.name,
-                                                data.labels,
-                                                index
-                                              )
-                                            }
-                                            className="w-80"
-                                          />
-                                          <span>
-                                            <AiOutlineDownload
-                                              className="text-blue-400 mx-1"
-                                              onClick={() =>
-                                                //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
-                                                openNewTab(data.downloadURL)
-                                              }
-                                            />
-                                          </span>
-                                        </div>
-                                      </td>
-
-                                      <td className="px-6 py-4 place-items-center w-full">
-                                        <ContentEditable
-                                          style={{ cursor: "auto" }}
-                                          disabled={
-                                            updateProgess ? true : false
-                                          }
-                                          html={
-                                            !data.details
-                                              ? `<p> </p>`
-                                              : `<p>${data.details}</p>`
-                                          }
-                                          onChange={(evt) =>
-                                            handleChangeDesc(evt)
-                                          }
-                                          onBlur={() =>
-                                            HandleChangeToTD(
-                                              data.id,
-                                              data.name,
-                                              data.details,
-                                              data.labels,
-                                              index
-                                            )
-                                          }
-                                          // className="w-full min-h-fit"
-                                          // className={
-                                          //   data.details
-                                          //     ? "w-full pt-1 pb-1 "
-                                          //     : "w-full pt-1 pb-1 "
-                                          // }
-                                          className="pt-2 pb-5"
-                                          options={labels}
-                                        />
-                                      </td>
-
-                                      <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
-                                        <CreatableSelect
-                                          defaultValue={extractArray(
-                                            data.labels
-                                              ? data.labels
-                                              : { value: 0, label: "" }
-                                          )}
-                                          options={labels}
-                                          isMulti
-                                          isClearable
-                                          isSearchable
-                                          onChange={(options) =>
-                                            handleMatterChanged(
-                                              options,
-                                              data.id,
-                                              data.name,
-                                              data.details,
-                                              index
-                                            )
-                                          }
-                                          // onBlur={(options) =>
-                                          //   handleMatterChanged(
-                                          //     options,
-                                          //     data.id,
-                                          //     data.name,
-                                          //     data.details
-                                          //   )
-                                          // }
-                                          placeholder="Labels"
-                                          className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                        />
-                                      </td>
-                                    </tr>
-                                  )}
-                                </Draggable>
-                              ))}
-                              {provided.placeholder}
-                            </tbody>
-                          )}
-                        </Droppable>
-                      </table>
-                    </DragDropContext>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </>
