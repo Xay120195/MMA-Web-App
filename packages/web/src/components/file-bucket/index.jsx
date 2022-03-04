@@ -13,6 +13,8 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
 let tempArr = [];
 let nameArr = [];
 let descArr = [];
@@ -22,9 +24,9 @@ export default function FileBucket() {
   const [matterFiles, setMatterFiles] = useState(null);
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
+  const [updateProgess, setUpdateProgress] = useState(false);
 
   const { matter_id } = useParams();
-  const [getReload, setReload] = useState(false);
 
   const [selectedLabel, setSelectedLabel] = useState();
 
@@ -135,7 +137,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
 }
 `;
-
+  console.log(updateProgess);
   const getLabels = async () => {
     let result = [];
 
@@ -249,7 +251,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-
   const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
 
@@ -274,23 +275,26 @@ mutation createLabel($clientMatterId: String, $name: String) {
     await updateMatterFile(id, data);
   };
 
-  function updateArr(data, index){
+  function updateArr(data, index) {
     tempArr[index] = data;
   }
 
   const HandleChangeToTD = async (id, name, details, labels, index) => {
+    setResultMessage(`Saving in progress..`);
+    setShowToast(true);
+    setUpdateProgress(true);
     var updatedLabels = [];
     var updatedName = [];
- 
-    if(typeof tempArr[index] === 'undefined'){
+
+    if (typeof tempArr[index] === "undefined") {
       updatedLabels[0] = labels;
-    }else{
+    } else {
       updatedLabels[0] = tempArr[index];
     }
 
-    if(typeof nameArr[index] === 'undefined'){
+    if (typeof nameArr[index] === "undefined") {
       updatedName[0] = name;
-    }else{
+    } else {
       updatedName[0] = nameArr[index];
     }
 
@@ -304,7 +308,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
       labels: updatedLabels[0],
     };
 
-    descArr[index] = finaloutput; 
+    descArr[index] = finaloutput;
     console.log(descArr);
     console.log(nameArr);
 
@@ -317,6 +321,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          setUpdateProgress(false);
         }, 1000);
       }, 1500);
     }, 1500);
@@ -327,20 +332,23 @@ mutation createLabel($clientMatterId: String, $name: String) {
   };
 
   const HandleChangeToTDName = async (id, details, name, labels, index) => {
+    setUpdateProgress(true);
+    setResultMessage(`Saving in progress..`);
+    setShowToast(true);
     var updatedLabels = [];
-    var updatedDesc= [];
- 
-    if(typeof tempArr[index] === 'undefined'){
+    var updatedDesc = [];
+
+    if (typeof tempArr[index] === "undefined") {
       updatedLabels[0] = labels;
-    }else{
+    } else {
       updatedLabels[0] = tempArr[index];
     }
-    
-    if(details == ""){
+
+    if (details == "") {
       updatedDesc[0] = "";
-    }else if(typeof descArr[index] === 'undefined'){
+    } else if (typeof descArr[index] === "undefined") {
       updatedDesc[0] = details;
-    }else{
+    } else {
       updatedDesc[0] = descArr[index];
     }
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
@@ -356,6 +364,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     nameArr[index] = finaloutput;
     console.log(nameArr);
     console.log(descArr);
+
     await updateMatterFile(id, data);
 
     setTimeout(() => {
@@ -365,9 +374,10 @@ mutation createLabel($clientMatterId: String, $name: String) {
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          setUpdateProgress(false);
         }, 1000);
       }, 1000);
-    }, 1500);
+    }, 1000);
   };
 
   const extractArray = (ar) => {
@@ -381,7 +391,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
       return null;
     }
   };
-  
+
   function sortByDate(arr) {
     arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     return arr;
@@ -418,8 +428,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
           </div>
         </div>
 
-        <div className="p-5 left-0">
-        </div>
+        <div className="p-5 left-0"></div>
         <div className="p-5 py-1 left-0">
           <div>
             <button
@@ -452,119 +461,154 @@ mutation createLabel($clientMatterId: String, $name: String) {
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
                   <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                    <table className=" table-fixed min-w-full divide-y divide-gray-200">
-                      <thead>
-                        <tr>
-                          <th className="px-6 py-4 text-left w-80">
-                            Name
-                          </th>
-                          <th className="px-6 py-4 text-left">
-                            Description
-                          </th>
-                          <th className="px-6 py-4 text-left w-80">
-                            Labels
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {sortByDate(matterFiles).map((data, index) => (
-                          <tr key={data.id} index={index} className="h-full">
-                            <td className="px-6 py-4 place-items-center relative flex-wrap">
-                              <div className="inline-flex">
-                                <ContentEditable
-                                  html={
-                                    !data.name
-                                      ? "<p> </p>"
-                                      : `<p>${data.name}</p>`
-                                  }
-                                  onChange={(evt) => handleChangeName(evt)}
-                                  onBlur={() =>
-                                    HandleChangeToTDName(
-                                      data.id,
-                                      data.details,
-                                      data.name,
-                                      data.labels, 
-                                      index
-                                    )
-                                  }
-                                  className="w-80"
-                                />
-                                <span>
-                                  <AiOutlineDownload
-                                    className="text-blue-400 mx-1"
-                                    onClick={() =>
-                                      //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
-                                      openNewTab(data.downloadURL)
-                                    }
-                                  />
-                                </span>
-                              </div>
-                            </td>
-
-                            <td className="px-6 py-4 place-items-center w-full">
-                              <ContentEditable
-                                html={
-                                  !data.details
-                                    ? `<p> </p>`
-                                    : `<p>${data.details}</p>`
-                                }
-                                onChange={(evt) => handleChangeDesc(evt)}
-                                onBlur={() =>
-                                  HandleChangeToTD(
-                                    data.id,
-                                    data.name,
-                                    data.details,
-                                    data.labels,
-                                    index
-                                  )
-                                }
-                                // className="w-full min-h-fit"
-                                // className={
-                                //   data.details
-                                //     ? "w-full pt-1 pb-1 "
-                                //     : "w-full pt-1 pb-1 "
-                                // }
-                                className="pt-2 pb-5"
-                                options={labels}
-                              />
-                            </td>
-
-                            <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
-                              <CreatableSelect
-                                defaultValue={extractArray(
-                                  data.labels
-                                    ? data.labels
-                                    : { value: 0, label: "" }
-                                )}
-                                options={labels}
-                                isMulti
-                                isClearable
-                                isSearchable
-                                onChange={(options) =>
-                                  handleMatterChanged(
-                                    options,
-                                    data.id,
-                                    data.name,
-                                    data.details,
-                                    index
-                                  )
-                                }
-                                // onBlur={(options) =>
-                                //   handleMatterChanged(
-                                //     options,
-                                //     data.id,
-                                //     data.name,
-                                //     data.details
-                                //   )
-                                // }
-                                placeholder="Labels"
-                                className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                              />
-                            </td>
+                    <DragDropContext>
+                      <table className=" table-fixed min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr>
+                            <th className="px-6 py-4 text-left w-80">Name</th>
+                            <th className="px-6 py-4 text-left">Description</th>
+                            <th className="px-6 py-4 text-left w-80">Labels</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <Droppable droppableId="tbody">
+                          {(provided) => (
+                            <tbody
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                              className="bg-white divide-y divide-gray-200"
+                            >
+                              {matterFiles.map((data, index) => (
+                                <Draggable
+                                  draggableId={data.id}
+                                  key={data.id}
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <tr
+                                      ref={provided.innerRef}
+                                      {...provided.dragHandleProps}
+                                      {...provided.draggableProps}
+                                      key={data.id}
+                                      index={index}
+                                      className="h-full"
+                                    >
+                                      <td className="px-6 py-4 place-items-center relative flex-wrap">
+                                        <div className="inline-flex">
+                                          <ContentEditable
+                                            style={{ cursor: "auto" }}
+                                            disabled={
+                                              updateProgess ? true : false
+                                            }
+                                            html={
+                                              !data.name
+                                                ? "<p> </p>"
+                                                : `<p>${data.name}</p>`
+                                            }
+                                            disabled={
+                                              updateProgess ? true : false
+                                            }
+                                            onChange={(evt) =>
+                                              handleChangeName(evt)
+                                            }
+                                            onBlur={() =>
+                                              HandleChangeToTDName(
+                                                data.id,
+                                                data.details,
+                                                data.name,
+                                                data.labels,
+                                                index
+                                              )
+                                            }
+                                            className="w-80"
+                                          />
+                                          <span>
+                                            <AiOutlineDownload
+                                              className="text-blue-400 mx-1"
+                                              onClick={() =>
+                                                //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                                openNewTab(data.downloadURL)
+                                              }
+                                            />
+                                          </span>
+                                        </div>
+                                      </td>
+
+                                      <td className="px-6 py-4 place-items-center w-full">
+                                        <ContentEditable
+                                          style={{ cursor: "auto" }}
+                                          disabled={
+                                            updateProgess ? true : false
+                                          }
+                                          html={
+                                            !data.details
+                                              ? `<p> </p>`
+                                              : `<p>${data.details}</p>`
+                                          }
+                                          onChange={(evt) =>
+                                            handleChangeDesc(evt)
+                                          }
+                                          onBlur={() =>
+                                            HandleChangeToTD(
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              data.labels,
+                                              index
+                                            )
+                                          }
+                                          // className="w-full min-h-fit"
+                                          // className={
+                                          //   data.details
+                                          //     ? "w-full pt-1 pb-1 "
+                                          //     : "w-full pt-1 pb-1 "
+                                          // }
+                                          className="pt-2 pb-5"
+                                          options={labels}
+                                        />
+                                      </td>
+
+                                      <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
+                                        <CreatableSelect
+                                          defaultValue={extractArray(
+                                            data.labels
+                                              ? data.labels
+                                              : { value: 0, label: "" }
+                                          )}
+                                          options={labels}
+                                          isMulti
+                                          isClearable
+                                          isSearchable
+                                          onChange={(options) =>
+                                            handleMatterChanged(
+                                              options,
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              index
+                                            )
+                                          }
+                                          // onBlur={(options) =>
+                                          //   handleMatterChanged(
+                                          //     options,
+                                          //     data.id,
+                                          //     data.name,
+                                          //     data.details
+                                          //   )
+                                          // }
+                                          placeholder="Labels"
+                                          className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                        />
+                                      </td>
+                                    </tr>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
+                            </tbody>
+                          )}
+                        </Droppable>
+                      </table>
+                    </DragDropContext>
                   </div>
                 )}
               </>
