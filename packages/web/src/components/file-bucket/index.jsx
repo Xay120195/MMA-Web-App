@@ -13,7 +13,7 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
-import { GrDocumentImage, GrDocumentPdf, GrDocumentText  } from "react-icons/gr";
+import { GrDocumentImage, GrDocumentPdf, GrDocumentText } from "react-icons/gr";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
@@ -341,10 +341,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
     };
 
     descArr[index] = finaloutput;
-    console.log(descArr);
-    console.log(nameArr);
 
     await updateMatterFile(id, data);
+    extDetails.current = "";
 
     setTimeout(() => {
       getMatterFiles();
@@ -394,11 +393,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
     };
 
     nameArr[index] = finaloutput;
-    console.log(nameArr);
-    console.log(descArr);
 
     await updateMatterFile(id, data);
-
+    textName.current = "";
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
@@ -442,9 +439,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
     let [source_data] = tempData.splice(e.source.index, 1);
     tempData.splice(e.destination.index, 0, source_data);
     setMatterFiles(tempData);
-    tempArr=[];
-    nameArr=[];
-    descArr=[];
+    tempArr = [];
+    nameArr = [];
+    descArr = [];
   };
   return (
     <>
@@ -549,13 +546,30 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
-                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-1xl"/> 
-                                        : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-1xl"/> 
-                                        : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-1xl"/> 
-                                        : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-1xl"/>
-                                        : <GrDocumentText className="text-1xl"/>
-                                        }
-                                        &nbsp;&nbsp;
+                                          {data.type
+                                            .split("/")
+                                            .slice(0, -1)
+                                            .join("/") == "image" ? (
+                                            <GrDocumentImage className="text-1xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "audio" ? (
+                                            <FaRegFileAudio className="text-1xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "video" ? (
+                                            <FaRegFileVideo className="text-1xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" ? (
+                                            <GrDocumentPdf className="text-1xl" />
+                                          ) : (
+                                            <GrDocumentText className="text-1xl" />
+                                          )}
+                                          &nbsp;&nbsp;
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
