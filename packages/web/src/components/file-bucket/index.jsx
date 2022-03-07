@@ -147,6 +147,16 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
 }
 `;
+
+const mTagFileLabel = `
+mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
+  fileLabelTag(file: {id: $fileId}, label: $labels) {
+    file {
+      id
+    }
+  }
+}
+`;
   console.log(updateProgess);
   const getLabels = async () => {
     let result = [];
@@ -249,6 +259,24 @@ mutation createLabel($clientMatterId: String, $name: String) {
     });
   }
 
+  async function tagFileLabel(fileId, labels) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mTagFileLabel,
+          variables: {
+            fileId: fileId,
+            labels: labels,
+          },
+        });
+        resolve(request);
+        
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   const mainGrid = {
     display: "grid",
     gridtemplatecolumn: "1fr auto",
@@ -283,6 +311,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
     updateArr(data.labels, index);
     await updateMatterFile(id, data);
+    await tagFileLabel(id, data.labels);
   };
 
   function updateArr(data, index) {
