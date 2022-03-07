@@ -629,13 +629,20 @@ const resolvers = {
     },
     matterFileUpdate: async (ctx) => {
       const { id, name, details, labels, order } = ctx.arguments;
+
       const data = {
-        name: name,
-        details: details,
-        labels: labels,
-        order: order,
         updatedAt: new Date().toISOString(),
       };
+
+      if (name !== undefined) data.name = name;
+
+      if (details !== undefined) data.details = details;
+
+      if (labels !== undefined) data.labels = labels;
+
+      if (order !== undefined) data.order = order;
+
+      console.log(data);
       return await updateMatterFile(id, data);
     },
     labelCreate: async (ctx) => {
@@ -650,10 +657,13 @@ const resolvers = {
     labelUpdate: async (ctx) => {
       const { id, name, description } = ctx.arguments;
       const data = {
-        name: name,
-        description: description,
         updatedAt: new Date().toISOString(),
       };
+
+      if (name !== undefined) data.name = name;
+
+      if (description !== undefined) data.description = description;
+
       return await updateLabel(id, data);
     },
     companyAccessTypeCreate: async (ctx) => {
@@ -662,9 +672,11 @@ const resolvers = {
     companyAccessTypeUpdate: async (ctx) => {
       const { id, access } = ctx.arguments;
       const data = {
-        access: access,
         updatedAt: new Date().toISOString(),
       };
+
+      if (access !== undefined) data.access = access;
+
       return await updateCompanyAccessType(id, data);
     },
     clientMatterCreate: async (ctx) => {
@@ -676,10 +688,13 @@ const resolvers = {
     backgroundUpdate: async (ctx) => {
       const { id, date, description } = ctx.arguments;
       const data = {
-        date: date,
-        description: description,
         updatedAt: new Date().toISOString(),
       };
+
+      if (date !== undefined) data.date = date;
+
+      if (description !== undefined) data.description = description;
+
       return await updateBackground(id, data);
     },
     backgroundDelete: async (ctx) => {
