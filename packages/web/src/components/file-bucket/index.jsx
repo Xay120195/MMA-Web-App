@@ -433,6 +433,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
     let [source_data] = tempData.splice(e.source.index, 1);
     tempData.splice(e.destination.index, 0, source_data);
     setMatterFiles(tempData);
+    tempArr=[];
+    nameArr=[];
+    descArr=[];
   };
   return (
     <>
