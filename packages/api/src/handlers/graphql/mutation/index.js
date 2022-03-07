@@ -39,6 +39,7 @@ async function createCompany(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -70,6 +71,7 @@ async function createPage(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -100,6 +102,7 @@ async function createFeature(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -130,6 +133,7 @@ async function createCompanyAccessType(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -164,6 +168,7 @@ async function updateCompanyAccessType(id, data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -206,6 +211,7 @@ async function createClient(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -250,15 +256,38 @@ async function createLabel(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
 }
 
-async function createFileLabel(data) {
+async function tagFileLabel(data) {
   let response = {};
   try {
     const arrItems = [];
+
+    const fileLabelIdParams = {
+      TableName: "FileLabelTable",
+      IndexName: "byFile",
+      KeyConditionExpression: "fileId = :fileId",
+      ExpressionAttributeValues: marshall({
+        ":fileId": data.file.id,
+      }),
+    };
+
+    const fileLabelIdCommand = new QueryCommand(fileLabelIdParams);
+    const fileLabelIdResult = await client.send(fileLabelIdCommand);
+
+    for (var a = 0; a < fileLabelIdResult.Items.length; a++) {
+      var fileLabelId = { id: fileLabelIdResult.Items[a].id };
+      arrItems.push({
+        DeleteRequest: {
+          Key: fileLabelId,
+        },
+      });
+    }
+
     for (var i = 0; i < data.label.length; i++) {
       arrItems.push({
         PutRequest: {
@@ -281,49 +310,6 @@ async function createFileLabel(data) {
     const fileLabelResult = await client.send(fileLabelCommand);
 
     response = fileLabelResult ? { file: { id: data.file.id } } : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-    console.log(response);
-  }
-
-  return response;
-}
-
-async function deleteFileLabel(data) {
-  let response = {};
-  try {
-    const fileLabelParams = {
-      TableName: "FileLabelTable",
-      IndexName: "byFile",
-      KeyConditionExpression: "fileId = :fileId",
-      FilterExpression: "labelId = :labelId",
-      ExpressionAttributeValues: marshall({
-        ":labelId": data.label.id,
-        ":fileId": data.file.id,
-      }),
-    };
-
-    const fileLabelCommand = new QueryCommand(fileLabelParams);
-
-    const fileLabelResult = await client.send(fileLabelCommand);
-
-    const fileLabelId = fileLabelResult.Items.map((i) => i.id);
-    const filterFileLabelId = fileLabelId[0];
-
-    const deleteFileLabelCommand = new DeleteItemCommand({
-      TableName: "FileLabelTable",
-      Key: { id: filterFileLabelId },
-    });
-
-    const deleteFileLabelResult = await client.send(deleteFileLabelCommand);
-
-    response = deleteFileLabelResult
-      ? unmarshall({ id: filterFileLabelId })
-      : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -365,6 +351,7 @@ async function updateLabel(id, data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -410,6 +397,7 @@ async function createClientMatter(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -453,6 +441,7 @@ async function createMatter(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -497,6 +486,7 @@ async function createBackground(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -533,6 +523,7 @@ async function updateBackground(id, data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -606,6 +597,7 @@ export async function deleteBackground(id) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -652,17 +644,13 @@ const resolvers = {
 
       if (order !== undefined) data.order = order;
 
-      console.log(data);
       return await updateMatterFile(id, data);
     },
     labelCreate: async (ctx) => {
       return await createLabel(ctx.arguments);
     },
-    fileLabelCreate: async (ctx) => {
-      return await createFileLabel(ctx.arguments);
-    },
-    fileLabelDelete: async (ctx) => {
-      return await deleteFileLabel(ctx.arguments);
+    fileLabelTag: async (ctx) => {
+      return await tagFileLabel(ctx.arguments);
     },
     labelUpdate: async (ctx) => {
       const { id, name, description } = ctx.arguments;
