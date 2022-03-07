@@ -121,15 +121,6 @@ const TableInfo = ({
           },
         });
 
-        if(stripedTags(data.description) !== ""){
-          setalertMessage(`Successfully updated`);
-          setCheckedState(new Array(witness.length).fill(false));
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 2000);
-        }
-
         console.log(request);
         resolve(request);
       } catch (e) {
