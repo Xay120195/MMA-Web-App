@@ -13,11 +13,13 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
-
+import { GrDocumentImage, GrDocumentPdf, GrDocumentText  } from "react-icons/gr";
+import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
+let tempArr = [];
+let nameArr = [];
+let descArr = [];
 export default function FileBucket() {
-  let tempArr = [];
-  let nameArr = [];
-  let descArr = [];
+
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [matterFiles, setMatterFiles] = useState(null);
@@ -416,6 +418,10 @@ mutation createLabel($clientMatterId: String, $name: String) {
   }
 
   var str = "";
+  var re = /[^/]+(?=;[^;]*$)/;
+
+  const imageFiles = [".jpeg", ".jpg", ".png"];
+  const documentFiles = [".docx", ".doc"];
 
   return (
     <>
@@ -493,6 +499,14 @@ mutation createLabel($clientMatterId: String, $name: String) {
                           <tr key={data.id} index={index} className="h-full">
                             <td className="px-6 py-4 place-items-center relative flex-wrap">
                               <div className="inline-flex">
+                                    {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-1xl"/> 
+                                    : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-1xl"/> 
+                                    : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-1xl"/> 
+                                    : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-1xl"/>
+                                    : <GrDocumentText className="text-1xl"/>
+                                    }
+                                    &nbsp;&nbsp;
+                                    {/* <input defaultValue={data.type.split('/').slice(0, -1).join('/')} /> */}
                                 <ContentEditable
                                   style={{ cursor: "auto" }}
                                   disabled={updateProgess ? true : false}
