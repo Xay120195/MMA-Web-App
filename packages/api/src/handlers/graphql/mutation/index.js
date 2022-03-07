@@ -4,6 +4,7 @@ const {
   UpdateItemCommand,
   DeleteItemCommand,
   QueryCommand,
+  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
@@ -257,20 +258,29 @@ async function createLabel(data) {
 async function createFileLabel(data) {
   let response = {};
   try {
+    const arrItems = [];
+    for (var i = 0; i < data.label.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            fileId: data.file.id,
+            labelId: data.label[i].id,
+          }),
+        },
+      });
+    }
+
     const fileLabelParams = {
-      id: v4(),
-      labelId: data.label.id,
-      fileId: data.file.id,
+      RequestItems: {
+        FileLabelTable: arrItems,
+      },
     };
 
-    const fileLabelCommand = new PutItemCommand({
-      TableName: "FileLabelTable",
-      Item: marshall(fileLabelParams),
-    });
+    const fileLabelCommand = new BatchWriteItemCommand(fileLabelParams);
+    const fileLabelResult = await client.send(fileLabelCommand);
 
-    const fileLabelRequest = await client.send(fileLabelCommand);
-
-    response = fileLabelRequest ? fileLabelParams : {};
+    response = fileLabelResult ? { file: { id: data.file.id } } : {};
   } catch (e) {
     response = {
       error: e.message,
