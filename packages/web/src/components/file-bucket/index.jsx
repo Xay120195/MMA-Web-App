@@ -13,8 +13,6 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
-import { GrDocumentImage, GrDocumentPdf, GrDocumentText  } from "react-icons/gr";
-import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function FileBucket() {
@@ -27,6 +25,8 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
+  const [sortNo, setSortNo] = useState(0);
+  const [mId, setMid] = useState();
 
   const { matter_id } = useParams();
 
@@ -84,24 +84,15 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
-        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput], $order: Int) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels, order: $order) {
           id
           name
           details
-          order
           labels {
             id
             name
           }
-        }
-      }
-  `;
-
-  const mUpdateMatterFileOrder = `
-      mutation updateMatterFile ($id: ID, $order: Int) {
-        matterFileUpdate(id: $id, order: $order) {
-          id
           order
         }
       }
@@ -335,17 +326,16 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
     let lbls = [];
     const data = {
-      details: !textDetails.current ? filterDetails : finaloutput,
+      details:
+        !textDetails.current && !filterDetails ? filterDetails : finaloutput,
       name: !name ? "&nbsp;" : updatedName[0],
       labels: updatedLabels[0],
     };
 
     descArr[index] = finaloutput;
-    console.log(descArr);
-    console.log(nameArr);
 
     await updateMatterFile(id, data);
-
+    textDetails.current = "";
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
@@ -386,7 +376,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-    let lbls = [];
+
     const data = {
       name: !textName.current ? filterName : finaloutput,
       details: updatedDesc[0],
@@ -394,11 +384,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
     };
 
     nameArr[index] = finaloutput;
-    console.log(nameArr);
-    console.log(descArr);
 
     await updateMatterFile(id, data);
-
+    textName.current = "";
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
@@ -430,22 +418,16 @@ mutation createLabel($clientMatterId: String, $name: String) {
   }
 
   var str = "";
-  var re = /[^/]+(?=;[^;]*$)/;
-
-  const imageFiles = [".jpeg", ".jpg", ".png"];
-  const documentFiles = [".docx", ".doc"];
 
   //drag and drop functions
   const handleDragEnd = (e) => {
     if (!e.destination) return;
-    let tempData = Array.from(matterFiles);
-    let [source_data] = tempData.splice(e.source.index, 1);
-    tempData.splice(e.destination.index, 0, source_data);
-    setMatterFiles(tempData);
-    tempArr=[];
-    nameArr=[];
-    descArr=[];
+
+    setSortNo(e.destination.index);
+    setMid(e.draggableId);
+    console.log(e);
   };
+
   return (
     <>
       <div
@@ -526,8 +508,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
                             >
                               {matterFiles.map((data, index) => (
                                 <Draggable
-                                  key={data.name}
-                                  draggableId={data.name}
+                                  key={data.id}
+                                  draggableId={data.id}
                                   index={index}
                                 >
                                   {(provider, snapshot) => (
@@ -549,13 +531,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
-                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-1xl"/> 
-                                        : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-1xl"/> 
-                                        : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-1xl"/> 
-                                        : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-1xl"/>
-                                        : <GrDocumentText className="text-1xl"/>
-                                        }
-                                        &nbsp;&nbsp;
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
@@ -565,6 +540,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                               !data.name
                                                 ? "<p> </p>"
                                                 : `<p>${data.name}</p>`
+                                            }
+                                            disabled={
+                                              updateProgess ? true : false
                                             }
                                             onChange={(evt) =>
                                               handleChangeName(evt)
