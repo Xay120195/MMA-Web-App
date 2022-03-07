@@ -343,7 +343,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     descArr[index] = finaloutput;
 
     await updateMatterFile(id, data);
-    extDetails.current = "";
+    textDetails.current = "";
 
     setTimeout(() => {
       getMatterFiles();
