@@ -14,6 +14,8 @@ import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
+import { GrDocumentPdf, GrDocumentText, GrDocumentImage } from "react-icons/gr";
 
 export default function FileBucket() {
   let tempArr = [];
