@@ -13,6 +13,7 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function FileBucket() {
   let tempArr = [];
@@ -24,6 +25,8 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
+  const [sortNo, setSortNo] = useState(0);
+  const [mId, setMid] = useState();
 
   const { matter_id } = useParams();
 
@@ -81,8 +84,8 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
-        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput], $order: Int) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels, order: $order) {
           id
           name
           details
@@ -90,6 +93,7 @@ export default function FileBucket() {
             id
             name
           }
+          order
         }
       }
   `;
@@ -116,6 +120,7 @@ export default function FileBucket() {
         name
       }
       createdAt
+      order
     }
   }`;
 
@@ -286,10 +291,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
     // event.preventDefault();
     event.target.style.textDecoration = "none";
     textDetails.current = event.target.value;
-    
-    // console.log(event.clipboardData.getData("text"));
 
- 
+    // console.log(event.clipboardData.getData("text"));
   };
 
   const HandleChangeToTD = async (id, name, details, labels, index) => {
@@ -311,27 +314,28 @@ mutation createLabel($clientMatterId: String, $name: String) {
       updatedName[0] = nameArr[index];
     }
 
-    const filterDetailsInitial = !details ? "" : details.replace(/(<([^>]+)>)/gi, "");
+    const filterDetailsInitial = !details
+      ? ""
+      : details.replace(/(<([^>]+)>)/gi, "");
     const filterDetails = filterDetailsInitial.replace(/(style=".+?")/gm, "");
 
     const ouputDetails = textDetails.current;
 
-    const finaloutputInitial = ouputDetails.replace(/(<([^>]+)>)/gi, ""); 
+    const finaloutputInitial = ouputDetails.replace(/(<([^>]+)>)/gi, "");
     const finaloutput = finaloutputInitial.replace(/(style=".+?")/gm, "");
-    
+
     let lbls = [];
     const data = {
-      details: !textDetails.current ? filterDetails : finaloutput,
+      details:
+        !textDetails.current && !filterDetails ? filterDetails : finaloutput,
       name: !name ? "&nbsp;" : updatedName[0],
       labels: updatedLabels[0],
     };
 
     descArr[index] = finaloutput;
-    console.log(descArr);
-    console.log(nameArr);
 
     await updateMatterFile(id, data);
-
+    textDetails.current = "";
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
@@ -372,7 +376,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
     const filterName = name.replace(/(<([^>]+)>)/gi, "");
     const ouputName = textName.current;
     const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-    let lbls = [];
+
     const data = {
       name: !textName.current ? filterName : finaloutput,
       details: updatedDesc[0],
@@ -380,11 +384,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
     };
 
     nameArr[index] = finaloutput;
-    console.log(nameArr);
-    console.log(descArr);
 
     await updateMatterFile(id, data);
-
+    textName.current = "";
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
@@ -416,6 +418,15 @@ mutation createLabel($clientMatterId: String, $name: String) {
   }
 
   var str = "";
+
+  //drag and drop functions
+  const handleDragEnd = (e) => {
+    if (!e.destination) return;
+
+    setSortNo(e.destination.index);
+    setMid(e.draggableId);
+    console.log(e);
+  };
 
   return (
     <>
@@ -479,118 +490,164 @@ mutation createLabel($clientMatterId: String, $name: String) {
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
                   <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                    <table className=" table-fixed min-w-full divide-y divide-gray-200">
-                      <thead>
-                        <tr>
-                          <th className="px-6 py-4 text-left w-80">Name</th>
-                          <th className="px-6 py-4 text-left">Description</th>
-                          <th className="px-6 py-4 text-left w-80">Labels</th>
-                        </tr>
-                      </thead>
-
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {sortByDate(matterFiles).map((data, index) => (
-                          <tr key={data.id} index={index} className="h-full">
-                            <td className="px-6 py-4 place-items-center relative flex-wrap">
-                              <div className="inline-flex">
-                                <ContentEditable
-                                  style={{ cursor: "auto" }}
-                                  disabled={updateProgess ? true : false}
-                                  html={
-                                    !data.name
-                                      ? "<p> </p>"
-                                      : `<p>${data.name}</p>`
-                                  }
-                                  disabled={updateProgess ? true : false}
-                                  onChange={(evt) => handleChangeName(evt)}
-                                  onBlur={() =>
-                                    HandleChangeToTDName(
-                                      data.id,
-                                      data.details,
-                                      data.name,
-                                      data.labels,
-                                      index
-                                    )
-                                  }
-                                  className="w-80"
-                                />
-                                <span>
-                                  <AiOutlineDownload
-                                    className="text-blue-400 mx-1"
-                                    onClick={() =>
-                                      //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
-                                      openNewTab(data.downloadURL)
-                                    }
-                                  />
-                                </span>
-                              </div>
-                            </td>
-
-                            <td className="px-6 py-4 place-items-center w-full">
-                              <ContentEditable
-                                style={{ cursor: "auto" }}
-                                disabled={updateProgess ? true : false}
-                                html={
-                                  !data.details
-                                    ? `<p> </p>`
-                                    : `<p>${data.details}</p>`
-                                }
-                                onChange={(evt) => handleChangeDesc(evt)}
-                                onBlur={() =>
-                                  HandleChangeToTD(
-                                    data.id,
-                                    data.name,
-                                    data.details,
-                                    data.labels,
-                                    index
-                                  )
-
-                                }
-                                onPaste={pasteHandler}
-                           
-                                className="pt-2 pb-5 font-poppins"
-                                options={labels}
-                                type="text"
-                          
-                              />
-                            </td>
-
-                            <td className="px-6 py-4 align-top place-items-center relative  flex-wrap">
-                              <CreatableSelect
-                                defaultValue={extractArray(
-                                  data.labels
-                                    ? data.labels
-                                    : { value: 0, label: "" }
-                                )}
-                                options={labels}
-                                isMulti
-                                isClearable
-                                isSearchable
-                                onChange={(options) =>
-                                  handleMatterChanged(
-                                    options,
-                                    data.id,
-                                    data.name,
-                                    data.details,
-                                    index
-                                  )
-                                }
-                                // onBlur={(options) =>
-                                //   handleMatterChanged(
-                                //     options,
-                                //     data.id,
-                                //     data.name,
-                                //     data.details
-                                //   )
-                                // }
-                                placeholder="Labels"
-                                className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                              />
-                            </td>
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                      <table className=" table-fixed min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr>
+                            <th className="px-6 py-4 text-left w-80">Name</th>
+                            <th className="px-6 py-4 text-left">Description</th>
+                            <th className="px-6 py-4 text-left w-80">Labels</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <Droppable droppableId="droppable-1">
+                          {(provider) => (
+                            <tbody
+                              ref={provider.innerRef}
+                              {...provider.droppableProps}
+                              className="bg-white divide-y divide-gray-200"
+                            >
+                              {matterFiles.map((data, index) => (
+                                <Draggable
+                                  key={data.id}
+                                  draggableId={data.id}
+                                  index={index}
+                                >
+                                  {(provider, snapshot) => (
+                                    <tr
+                                      key={data.id}
+                                      index={index}
+                                      className="h-full"
+                                      {...provider.draggableProps}
+                                      ref={provider.innerRef}
+                                      style={{
+                                        ...provider.draggableProps.style,
+                                        backgroundColor: snapshot.isDragging
+                                          ? "rgba(255, 255, 239, 0.767)"
+                                          : "white",
+                                      }}
+                                    >
+                                      <td
+                                        {...provider.dragHandleProps}
+                                        className="px-6 py-4 place-items-center relative flex-wrap"
+                                      >
+                                        <div className="inline-flex">
+                                          <ContentEditable
+                                            style={{ cursor: "auto" }}
+                                            disabled={
+                                              updateProgess ? true : false
+                                            }
+                                            html={
+                                              !data.name
+                                                ? "<p> </p>"
+                                                : `<p>${data.name}</p>`
+                                            }
+                                            disabled={
+                                              updateProgess ? true : false
+                                            }
+                                            onChange={(evt) =>
+                                              handleChangeName(evt)
+                                            }
+                                            onBlur={() =>
+                                              HandleChangeToTDName(
+                                                data.id,
+                                                data.details,
+                                                data.name,
+                                                data.labels,
+                                                index
+                                              )
+                                            }
+                                            className="w-80"
+                                          />
+                                          <span>
+                                            <AiOutlineDownload
+                                              className="text-blue-400 mx-1"
+                                              onClick={() =>
+                                                //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                                openNewTab(data.downloadURL)
+                                              }
+                                            />
+                                          </span>
+                                        </div>
+                                      </td>
+
+                                      <td
+                                        {...provider.dragHandleProps}
+                                        className="px-6 py-4 place-items-center w-full"
+                                      >
+                                        <ContentEditable
+                                          style={{ cursor: "auto" }}
+                                          disabled={
+                                            updateProgess ? true : false
+                                          }
+                                          html={
+                                            !data.details
+                                              ? `<p> </p>`
+                                              : `<p>${data.details}</p>`
+                                          }
+                                          onChange={(evt) =>
+                                            handleChangeDesc(evt)
+                                          }
+                                          onBlur={() =>
+                                            HandleChangeToTD(
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              data.labels,
+                                              index
+                                            )
+                                          }
+                                          onPaste={pasteHandler}
+                                          className="pt-2 pb-5 font-poppins"
+                                          options={labels}
+                                          type="text"
+                                        />
+                                      </td>
+
+                                      <td
+                                        {...provider.dragHandleProps}
+                                        className="px-6 py-4 align-top place-items-center relative  flex-wrap"
+                                      >
+                                        <CreatableSelect
+                                          defaultValue={extractArray(
+                                            data.labels
+                                              ? data.labels
+                                              : { value: 0, label: "" }
+                                          )}
+                                          options={labels}
+                                          isMulti
+                                          isClearable
+                                          isSearchable
+                                          onChange={(options) =>
+                                            handleMatterChanged(
+                                              options,
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              index
+                                            )
+                                          }
+                                          // onBlur={(options) =>
+                                          //   handleMatterChanged(
+                                          //     options,
+                                          //     data.id,
+                                          //     data.name,
+                                          //     data.details
+                                          //   )
+                                          // }
+                                          placeholder="Labels"
+                                          className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                        />
+                                      </td>
+                                    </tr>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provider.placeholder}
+                            </tbody>
+                          )}
+                        </Droppable>
+                      </table>
+                    </DragDropContext>
                   </div>
                 )}
               </>
