@@ -253,8 +253,7 @@ type Mutation {
   ): ClientMatter
   labelCreate(name: String, clientMatterId: String): Label
   labelUpdate(id: ID, name: String, description: String): Label
-  fileLabelCreate(file: FileInput, label: LabelInput): FileLabel
-  fileLabelDelete(file: FileInput, label: LabelInput): FileLabel
+  fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
   backgroundCreate(date: String, clientMatterId: String): Background
   backgroundUpdate(id: ID, date: String, description: String): Background
   backgroundDelete(id: ID): Background
