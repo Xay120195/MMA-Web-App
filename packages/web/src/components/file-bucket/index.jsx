@@ -14,8 +14,6 @@ import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
-import { GrDocumentPdf, GrDocumentText, GrDocumentImage } from "react-icons/gr";
 
 export default function FileBucket() {
   let tempArr = [];
@@ -27,12 +25,9 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
-  const [sortNo, setSortNo] = useState(0);
-  const [mId, setMid] = useState();
+  const [clickSort, setClickSort] = useState(false);
 
   const { matter_id } = useParams();
-
-  const [selectedLabel, setSelectedLabel] = useState();
 
   const hideToast = () => {
     setShowToast(false);
@@ -147,6 +142,34 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
 }
 `;
+
+  const mUpdateMatterFileOrder = `
+      mutation updateMatterFile ($id: ID, $order: Int) {
+        matterFileUpdate(id: $id, order: $order) {
+          id
+          order
+        }
+      }
+  `;
+
+  async function UpdateMatterFileOrder(id, order) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateMatterFileOrder,
+          variables: {
+            id: id,
+            order: order,
+          },
+        });
+
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   console.log(updateProgess);
   const getLabels = async () => {
     let result = [];
@@ -414,23 +437,40 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
   };
 
-  function sortByDate(arr) {
-    arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  function sortByOrder(arr) {
+    arr.sort((a, b) => a.order - b.order);
     return arr;
   }
 
   //drag and drop functions
-  const handleDragEnd = (e) => {
+  const handleDragEnd = async (e) => {
+    setUpdateProgress(true);
+    setResultMessage(`Sorting in progress..`);
+    setShowToast(true);
     if (!e.destination) return;
 
-    setSortNo(e.destination.index);
-    setMid(e.draggableId);
-    console.log(e);
-    tempArr=[];
-    nameArr=[];
-    descArr=[];
+    await UpdateMatterFileOrder(e.draggableId, e.destination.index);
+
+    setTimeout(() => {
+      getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Sort Successfully`);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+          setUpdateProgress(false);
+        }, 1000);
+      }, 1000);
+    }, 1000);
   };
 
+  const handleClickSort = () => {
+    if (clickSort) {
+      setClickSort(false);
+    } else {
+      setClickSort(true);
+    }
+  };
   return (
     <>
       <div
@@ -497,6 +537,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
+                            <th className="px-6 py-4 text-left">Item No.</th>
                             <th className="px-6 py-4 text-left w-80">Name</th>
                             <th className="px-6 py-4 text-left">Description</th>
                             <th className="px-6 py-4 text-left w-80">Labels</th>
@@ -509,7 +550,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
-                              {matterFiles.map((data, index) => (
+                              {sortByOrder(matterFiles).map((data, index) => (
                                 <Draggable
                                   key={data.id}
                                   draggableId={data.id}
@@ -531,16 +572,30 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                     >
                                       <td
                                         {...provider.dragHandleProps}
+                                        className="px-6 py-4 flex items-center w-40"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          onClick={handleClickSort}
+                                          className="h-5 w-5"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                        </svg>
+
+                                        <input
+                                          type="checkbox"
+                                          name={data.id}
+                                          className="cursor-pointer w-10"
+                                        />
+                                        <span>{index + 1}</span>
+                                      </td>
+                                      <td
+                                        {...provider.dragHandleProps}
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
-                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-1xl"/>
-                                          : <GrDocumentText className="text-1xl"/>
-                                          }
-                                          &nbsp;&nbsp;
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
@@ -550,6 +605,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                               !data.name
                                                 ? "<p> </p>"
                                                 : `<p>${data.name}</p>`
+                                            }
+                                            disabled={
+                                              updateProgess ? true : false
                                             }
                                             onChange={(evt) =>
                                               handleChangeName(evt)
