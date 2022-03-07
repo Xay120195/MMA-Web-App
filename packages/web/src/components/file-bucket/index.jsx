@@ -84,15 +84,24 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput], $order: Int) {
-        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels, order: $order) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels) {
           id
           name
           details
+          order
           labels {
             id
             name
           }
+        }
+      }
+  `;
+
+  const mUpdateMatterFileOrder = `
+      mutation updateMatterFile ($id: ID, $order: Int) {
+        matterFileUpdate(id: $id, order: $order) {
+          id
           order
         }
       }
