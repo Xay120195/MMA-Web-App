@@ -13,6 +13,8 @@ import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
 import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
+import { GrDocumentImage, GrDocumentPdf, GrDocumentText  } from "react-icons/gr";
+import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function FileBucket() {
@@ -419,6 +421,10 @@ mutation createLabel($clientMatterId: String, $name: String) {
   }
 
   var str = "";
+  var re = /[^/]+(?=;[^;]*$)/;
+
+  const imageFiles = [".jpeg", ".jpg", ".png"];
+  const documentFiles = [".docx", ".doc"];
 
   //drag and drop functions
   const handleDragEnd = (e) => {
@@ -427,6 +433,9 @@ mutation createLabel($clientMatterId: String, $name: String) {
     let [source_data] = tempData.splice(e.source.index, 1);
     tempData.splice(e.destination.index, 0, source_data);
     setMatterFiles(tempData);
+    tempArr=[];
+    nameArr=[];
+    descArr=[];
   };
   return (
     <>
@@ -531,6 +540,13 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
+                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-1xl"/> 
+                                        : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-1xl"/> 
+                                        : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-1xl"/> 
+                                        : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-1xl"/>
+                                        : <GrDocumentText className="text-1xl"/>
+                                        }
+                                        &nbsp;&nbsp;
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
@@ -540,9 +556,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                               !data.name
                                                 ? "<p> </p>"
                                                 : `<p>${data.name}</p>`
-                                            }
-                                            disabled={
-                                              updateProgess ? true : false
                                             }
                                             onChange={(evt) =>
                                               handleChangeName(evt)
