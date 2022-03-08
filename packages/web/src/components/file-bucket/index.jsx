@@ -106,8 +106,8 @@ export default function FileBucket() {
   `;
 
   const qGetMatterFiles = `
-  query getMatterFile($matterId: ID) {
-    clientMatter(id: $matterId) {
+  query getMatterFile($matterId: ID, $isDeleted: Boolean) {
+    clientMatter(id: $matterId, isDeleted: $isDeleted) {
       matter {
         name
       }
@@ -244,6 +244,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       query: qGetMatterFiles,
       variables: {
         matterId: matter_id,
+        isDeleted: false
       },
     };
 
