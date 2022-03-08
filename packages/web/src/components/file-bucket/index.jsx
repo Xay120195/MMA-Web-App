@@ -27,9 +27,6 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
-  const [clickSort, setClickSort] = useState(false);
-  const [clickActiveSort, setClickActiveSort] = useState("");
-  const [click, setClick] = useState(false);
 
   const { matter_id } = useParams();
 
@@ -147,6 +144,16 @@ mutation createLabel($clientMatterId: String, $name: String) {
 }
 `;
 
+  const mTagFileLabel = `
+mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
+  fileLabelTag(file: {id: $fileId}, label: $labels) {
+    file {
+      id
+    }
+  }
+}
+`;
+
   const mUpdateMatterFileOrder = `
       mutation updateMatterFile ($id: ID, $order: Int) {
         matterFileUpdate(id: $id, order: $order) {
@@ -156,14 +163,14 @@ mutation createLabel($clientMatterId: String, $name: String) {
       }
   `;
 
-  async function UpdateMatterFileOrder(id, order) {
+  async function updateMatterFileOrder(id, data) {
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
           query: mUpdateMatterFileOrder,
           variables: {
             id: id,
-            order: order,
+            order: data.order,
           },
         });
 
@@ -174,7 +181,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
     });
   }
 
-  console.log(updateProgess);
   const getLabels = async () => {
     let result = [];
 
@@ -276,6 +282,23 @@ mutation createLabel($clientMatterId: String, $name: String) {
     });
   }
 
+  async function tagFileLabel(fileId, labels) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mTagFileLabel,
+          variables: {
+            fileId: fileId,
+            labels: labels,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   const mainGrid = {
     display: "grid",
     gridtemplatecolumn: "1fr auto",
@@ -310,6 +333,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
     updateArr(data.labels, index);
     await updateMatterFile(id, data);
+    await tagFileLabel(id, data.labels);
   };
 
   function updateArr(data, index) {
@@ -448,17 +472,21 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
   //drag and drop functions
   const handleDragEnd = async (e) => {
-    setUpdateProgress(true);
-    setResultMessage(`Sorting in progress..`);
+    setResultMessage(`sorting in progress..`);
     setShowToast(true);
-    if (!e.destination) return;
+    setUpdateProgress(true);
 
-    await UpdateMatterFileOrder(e.draggableId, e.destination.index);
+    const data = {
+      order: e.destination.index,
+    };
+    const id = e.draggableId;
+
+    await updateMatterFileOrder(id, data);
 
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
-        setResultMessage(`Sort Successfully`);
+        setResultMessage(`Successfully Sorted`);
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
@@ -468,24 +496,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }, 1000);
   };
 
-  const handleClickSort = () => {
-    if (clickSort) {
-      setClickSort(false);
-    } else {
-      setClickSort(true);
-    }
-  };
-
-  const showHiddenMessage = (id) => {
-    const selectedClick = matterFiles.find((bs) => bs.id === id);
-    if (selectedClick && click) {
-      clickSort(false);
-      clickActiveSort(selectedClick.id);
-    } else {
-      clickSort(true);
-      clickActiveSort(selectedClick.id);
-    }
-  };
   return (
     <>
       <div
@@ -582,37 +592,60 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                         ...provider.draggableProps.style,
                                         backgroundColor: snapshot.isDragging
                                           ? "rgba(255, 255, 239, 0.767)"
-                                          : click && data.id === clickActiveSort
-                                          ? "rgba(255, 255, 239, 0.767)"
                                           : "white",
                                       }}
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 flex items-center w-40"
+                                        className="px-6 py-6 inline-flex"
                                       >
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
-                                          onClick={handleClickSort}
-                                          className="h-5 w-5"
-                                          viewBox="0 0 20 20"
-                                          fill="currentColor"
+                                          className="h-6 w-6"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                          strokeWidth={2}
                                         >
-                                          <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                                          />
                                         </svg>
-
-                                        <input
-                                          type="checkbox"
-                                          name={data.id}
-                                          className="cursor-pointer w-10"
-                                        />
-                                        <span>{index + 1}</span>
+                                        <span className="px-3">
+                                          {index + 1}
+                                        </span>
                                       </td>
                                       <td
                                         {...provider.dragHandleProps}
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
-                                        <div className="inline-flex">
+                                        <div className="inline-flex ml-2">
+                                          {data.type
+                                            .split("/")
+                                            .slice(0, -1)
+                                            .join("/") == "image" ? (
+                                            <GrDocumentImage className="text-1xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "audio" ? (
+                                            <FaRegFileAudio className="text-1xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "video" ? (
+                                            <FaRegFileVideo className="text-1xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" ? (
+                                            <GrDocumentPdf className="text-1xl" />
+                                          ) : (
+                                            <GrDocumentText className="text-1xl" />
+                                          )}
+
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
@@ -622,9 +655,6 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                               !data.name
                                                 ? "<p> </p>"
                                                 : `<p>${data.name}</p>`
-                                            }
-                                            disabled={
-                                              updateProgess ? true : false
                                             }
                                             onChange={(evt) =>
                                               handleChangeName(evt)
