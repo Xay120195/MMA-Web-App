@@ -28,6 +28,8 @@ export default function FileBucket() {
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
   const [clickSort, setClickSort] = useState(false);
+  const [clickActiveSort, setClickActiveSort] = useState("");
+  const [click, setClick] = useState(false);
 
   const { matter_id } = useParams();
 
@@ -473,6 +475,17 @@ mutation createLabel($clientMatterId: String, $name: String) {
       setClickSort(true);
     }
   };
+
+  const showHiddenMessage = (id) => {
+    const selectedClick = matterFiles.find((bs) => bs.id === id);
+    if (selectedClick && click) {
+      clickSort(false);
+      clickActiveSort(selectedClick.id);
+    } else {
+      clickSort(true);
+      clickActiveSort(selectedClick.id);
+    }
+  };
   return (
     <>
       <div
@@ -568,6 +581,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                       style={{
                                         ...provider.draggableProps.style,
                                         backgroundColor: snapshot.isDragging
+                                          ? "rgba(255, 255, 239, 0.767)"
+                                          : click && data.id === clickActiveSort
                                           ? "rgba(255, 255, 239, 0.767)"
                                           : "white",
                                       }}
