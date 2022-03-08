@@ -13,6 +13,7 @@ const { inviteUser, createUser } = require("../../../services/UserService");
 const {
   createMatterFile,
   updateMatterFile,
+  softDeleteMatterFile,
 } = require("../../../services/MatterService");
 
 async function createCompany(data) {
@@ -645,6 +646,15 @@ const resolvers = {
       if (order !== undefined) data.order = order;
 
       return await updateMatterFile(id, data);
+    },
+    matterFileSoftDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      const data = {
+        updatedAt: new Date().toISOString(),
+        isDeleted: true,
+      };
+
+      return await softDeleteMatterFile(id, data);
     },
     labelCreate: async (ctx) => {
       return await createLabel(ctx.arguments);
