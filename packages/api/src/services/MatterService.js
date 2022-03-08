@@ -3,6 +3,7 @@ const {
   GetItemCommand,
   UpdateItemCommand,
   QueryCommand,
+  BatchWriteItemCommand
 } = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 const { v4 } = require("uuid");
@@ -13,7 +14,6 @@ const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 export async function generatePresignedUrl(Key) {
-  //console.log("S3_UPLOAD_BUCKET: ", process.env.REACT_APP_S3_UPLOAD_BUCKET);
   const command = new GetObjectCommand({
     Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
     Key,
@@ -32,8 +32,10 @@ export async function getMatterFile(data) {
       TableName: "MatterFileTable",
       IndexName: "byMatter",
       KeyConditionExpression: "matterId = :matterId",
+      FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
         ":matterId": data.matterId,
+        ":isDeleted": data.isDeleted,
       }),
     };
 
@@ -61,6 +63,7 @@ export async function createMatterFile(data) {
       size: data.size,
       type: data.type,
       name: data.name,
+      isDeleted: false,
       createdAt: new Date().toISOString(),
     };
 
@@ -78,6 +81,41 @@ export async function createMatterFile(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+  }
+  return response;
+}
+
+export async function softDeleteMatterFile(id, data) {
+  let response = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "MatterFileTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await ddbClient.send(command);
+    response = request ? params : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
   }
   return response;
 }
@@ -111,6 +149,7 @@ export async function updateMatterFile(id, data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }

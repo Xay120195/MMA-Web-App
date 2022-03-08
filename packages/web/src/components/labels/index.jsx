@@ -24,7 +24,7 @@ import RemoveLabelModal from "./remove-label-modal";
 export let dummyData = [
   {
     id: 0,
-    labelName: "Test1",
+    labelName: "Test0",
     conversations: [
       { id: 111, subject: "Test message", from: "kmfrias@up.edu.ph" }, 
       { id: 222, subject: "Test message", from: "kmfrias@up.edu.ph" },

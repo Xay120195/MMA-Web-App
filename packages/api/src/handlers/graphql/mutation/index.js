@@ -4,6 +4,7 @@ const {
   UpdateItemCommand,
   DeleteItemCommand,
   QueryCommand,
+  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
@@ -12,6 +13,7 @@ const { inviteUser, createUser } = require("../../../services/UserService");
 const {
   createMatterFile,
   updateMatterFile,
+  softDeleteMatterFile,
 } = require("../../../services/MatterService");
 
 async function createCompany(data) {
@@ -38,6 +40,7 @@ async function createCompany(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -69,6 +72,7 @@ async function createPage(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -99,6 +103,7 @@ async function createFeature(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -129,6 +134,7 @@ async function createCompanyAccessType(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -163,6 +169,7 @@ async function updateCompanyAccessType(id, data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -205,6 +212,7 @@ async function createClient(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -249,6 +257,67 @@ async function createLabel(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
+  }
+
+  return response;
+}
+
+async function tagFileLabel(data) {
+  let response = {};
+  try {
+    const arrItems = [];
+
+    const fileLabelIdParams = {
+      TableName: "FileLabelTable",
+      IndexName: "byFile",
+      KeyConditionExpression: "fileId = :fileId",
+      ExpressionAttributeValues: marshall({
+        ":fileId": data.file.id,
+      }),
+    };
+
+    const fileLabelIdCommand = new QueryCommand(fileLabelIdParams);
+    const fileLabelIdResult = await client.send(fileLabelIdCommand);
+
+    for (var a = 0; a < fileLabelIdResult.Items.length; a++) {
+      var fileLabelId = { id: fileLabelIdResult.Items[a].id };
+      arrItems.push({
+        DeleteRequest: {
+          Key: fileLabelId,
+        },
+      });
+    }
+
+    for (var i = 0; i < data.label.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            fileId: data.file.id,
+            labelId: data.label[i].id,
+          }),
+        },
+      });
+    }
+
+    const fileLabelParams = {
+      RequestItems: {
+        FileLabelTable: arrItems,
+      },
+    };
+
+    const fileLabelCommand = new BatchWriteItemCommand(fileLabelParams);
+    const fileLabelResult = await client.send(fileLabelCommand);
+
+    response = fileLabelResult ? { file: { id: data.file.id } } : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
   }
 
   return response;
@@ -283,6 +352,7 @@ async function updateLabel(id, data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -328,6 +398,7 @@ async function createClientMatter(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -371,6 +442,7 @@ async function createMatter(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -415,6 +487,7 @@ async function createBackground(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -451,6 +524,7 @@ async function updateBackground(id, data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -524,6 +598,7 @@ export async function deleteBackground(id) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -556,25 +631,47 @@ const resolvers = {
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
-      const { id, name, details, labels } = ctx.arguments;
+      const { id, name, details, labels, order } = ctx.arguments;
+
       const data = {
-        name: name,
-        details: details,
-        labels: labels,
         updatedAt: new Date().toISOString(),
       };
+
+      if (name !== undefined) data.name = name;
+
+      if (details !== undefined) data.details = details;
+
+      if (labels !== undefined) data.labels = labels;
+
+      if (order !== undefined) data.order = order;
+
       return await updateMatterFile(id, data);
+    },
+    matterFileSoftDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      const data = {
+        updatedAt: new Date().toISOString(),
+        isDeleted: true,
+      };
+
+      return await softDeleteMatterFile(id, data);
     },
     labelCreate: async (ctx) => {
       return await createLabel(ctx.arguments);
     },
+    fileLabelTag: async (ctx) => {
+      return await tagFileLabel(ctx.arguments);
+    },
     labelUpdate: async (ctx) => {
       const { id, name, description } = ctx.arguments;
       const data = {
-        name: name,
-        description: description,
         updatedAt: new Date().toISOString(),
       };
+
+      if (name !== undefined) data.name = name;
+
+      if (description !== undefined) data.description = description;
+
       return await updateLabel(id, data);
     },
     companyAccessTypeCreate: async (ctx) => {
@@ -583,9 +680,11 @@ const resolvers = {
     companyAccessTypeUpdate: async (ctx) => {
       const { id, access } = ctx.arguments;
       const data = {
-        access: access,
         updatedAt: new Date().toISOString(),
       };
+
+      if (access !== undefined) data.access = access;
+
       return await updateCompanyAccessType(id, data);
     },
     clientMatterCreate: async (ctx) => {
@@ -597,10 +696,13 @@ const resolvers = {
     backgroundUpdate: async (ctx) => {
       const { id, date, description } = ctx.arguments;
       const data = {
-        date: date,
-        description: description,
         updatedAt: new Date().toISOString(),
       };
+
+      if (date !== undefined) data.date = date;
+
+      if (description !== undefined) data.description = description;
+
       return await updateBackground(id, data);
     },
     backgroundDelete: async (ctx) => {

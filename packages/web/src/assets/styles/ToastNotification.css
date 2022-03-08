@@ -7,6 +7,7 @@ body {
   --fontFamily: "Poppins", sans-serif;
   --darkRed: rgba(226, 17, 17, 0.856);
   --darkSuccess: #18da21d8;
+  --darkWarning: rgba(255, 166, 0, 0.836);
 }
 
 * {
@@ -17,6 +18,16 @@ body {
   display: inline-grid;
   padding: 10px 15px;
   background-color: var(--darkGrey);
+  border-radius: 5px;
+  position: fixed;
+  z-index: 10000;
+  top: 1rem;
+  right: 1rem;
+}
+.main-div-progress {
+  display: inline-grid;
+  padding: 10px 15px;
+  background-color: var(--darkWarning);
   border-radius: 5px;
   position: fixed;
   z-index: 10000;

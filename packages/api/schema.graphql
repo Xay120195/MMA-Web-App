@@ -108,10 +108,18 @@ type File {
   size: Int
   type: String
   details: String
+  order: Int
   labels: [Label]
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+  isDeleted: Boolean
+}
+
+type FileLabel {
+  id: ID
+  file: File
+  label: Label
 }
 
 type Client {
@@ -183,7 +191,7 @@ type Query {
   clientMatter(id: ID): ClientMatter
   matters: [Matter]
   matter(id: ID): Matter
-  matterFile(matterId: ID): [File]
+  matterFile(matterId: ID, isDeleted: Boolean): [File]
   labels: [Label]
   label(id: ID): Label
   backgrounds: [Background]
@@ -229,13 +237,16 @@ type Mutation {
     type: String
     name: String
     details: String
+    order: Int
   ): File
   matterFileUpdate(
     id: ID
     name: String
     details: String
+    order: Int
     labels: [LabelInput]
   ): File
+  matterFileSoftDelete(id: ID): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(
     companyId: String
@@ -244,6 +255,7 @@ type Mutation {
   ): ClientMatter
   labelCreate(name: String, clientMatterId: String): Label
   labelUpdate(id: ID, name: String, description: String): Label
+  fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
   backgroundCreate(date: String, clientMatterId: String): Background
   backgroundUpdate(id: ID, date: String, description: String): Background
   backgroundDelete(id: ID): Background
@@ -254,6 +266,11 @@ input ClientMatterInput {
 }
 
 input MatterInput {
+  id: ID
+  name: String
+}
+
+input FileInput {
   id: ID
   name: String
 }

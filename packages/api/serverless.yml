@@ -161,6 +161,11 @@ custom:
         field: matterFileUpdate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterFileSoftDelete
+        request: false
+        response: false
       - dataSource: LambdaFileDS
         type: File
         field: downloadURL
@@ -228,6 +233,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: fileLabelTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: labelUpdate
         request: false
         response: false
@@ -281,7 +291,7 @@ custom:
       #   field: labels
       #   request: false
       #   response: false
-      
+
     dataSources:
       - type: AMAZON_DYNAMODB
         name: DynamoDBColorTableDS
