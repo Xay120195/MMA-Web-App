@@ -35,7 +35,8 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
-
+  const [active, setActive] = useState(false);
+  const [selected, setSelected] = useState("");
   const { matter_id } = useParams();
 
   const hideToast = () => {
@@ -519,6 +520,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }, 1000);
   };
 
+  const handleChageBackground = (id) => {
+    setSelected(id);
+    if (active) {
+      setActive(false);
+    } else {
+      setActive(true);
+    }
+  };
+
   return (
     <>
       <div
@@ -613,9 +623,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       ref={provider.innerRef}
                                       style={{
                                         ...provider.draggableProps.style,
-                                        backgroundColor: snapshot.isDragging
-                                          ? "rgba(255, 255, 239, 0.767)"
-                                          : "white",
+                                        backgroundColor:
+                                          snapshot.isDragging ||
+                                          (active && data.id === selected)
+                                            ? "rgba(255, 255, 239, 0.767)"
+                                            : "white",
                                       }}
                                     >
                                       <td
@@ -626,6 +638,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           xmlns="http://www.w3.org/2000/svg"
                                           className="h-6 w-6"
                                           fill="none"
+                                          onClick={() =>
+                                            handleChageBackground(data.id)
+                                          }
                                           viewBox="0 0 24 24"
                                           stroke="currentColor"
                                           strokeWidth={2}
