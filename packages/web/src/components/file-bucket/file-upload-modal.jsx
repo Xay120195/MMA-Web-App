@@ -107,6 +107,7 @@ export default function UploadLinkModal(props) {
       return;
     }
     const tempArr = [];
+    console.log(e.target.files);
 
     [...e.target.files].forEach((file) => {
       var re = /(?:\.([^.]+))?$/;
@@ -152,12 +153,23 @@ export default function UploadLinkModal(props) {
   const handleUpload = async () => {
     setUploadStart(true);
     selectedFiles.map(async (uf, index) => {
-      var name = uf.data.name,
+      
+      if(uf.data.name.split('.').pop() == "docx"){
+        // console.log(uf.data.type);
+        var name = uf.data.name,
+        size = uf.data.size,
+        type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        key = `${props.bucketName}/${Number(new Date())}${name
+          .replaceAll(/\s/g, "")
+          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+      }else{
+        var name = uf.data.name,
         size = uf.data.size,
         type = uf.data.type,
         key = `${props.bucketName}/${Number(new Date())}${name
           .replaceAll(/\s/g, "")
           .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+      }
 
       await Storage.put(key, uf.data, {
         contentType: type,
@@ -166,6 +178,7 @@ export default function UploadLinkModal(props) {
             (progress.loaded / progress.total) * 100
           );
           console.log(`Progress: ${progressInPercentage}%`);
+          
           generateRandomValues(progressInPercentage, index);
         },
         errorCallback: (err) => {
