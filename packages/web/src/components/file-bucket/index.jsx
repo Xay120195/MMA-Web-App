@@ -15,7 +15,15 @@ import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
-import { GrDocumentPdf, GrDocumentText, GrDocumentImage, GrDocument, GrDocumentExcel, GrDocumentWord, GrDocumentTxt } from "react-icons/gr";
+import {
+  GrDocumentPdf,
+  GrDocumentText,
+  GrDocumentImage,
+  GrDocument,
+  GrDocumentExcel,
+  GrDocumentWord,
+  GrDocumentTxt,
+} from "react-icons/gr";
 
 export default function FileBucket() {
   let tempArr = [];
@@ -27,12 +35,8 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
-  const [sortNo, setSortNo] = useState(0);
-  const [mId, setMid] = useState();
 
   const { matter_id } = useParams();
-
-  const [selectedLabel, setSelectedLabel] = useState();
 
   const hideToast = () => {
     setShowToast(false);
@@ -147,7 +151,44 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
 }
 `;
-  console.log(updateProgess);
+
+  const mTagFileLabel = `
+mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
+  fileLabelTag(file: {id: $fileId}, label: $labels) {
+    file {
+      id
+    }
+  }
+}
+`;
+
+  const mUpdateMatterFileOrder = `
+      mutation updateMatterFile ($id: ID, $order: Int) {
+        matterFileUpdate(id: $id, order: $order) {
+          id
+          order
+        }
+      }
+  `;
+
+  async function updateMatterFileOrder(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateMatterFileOrder,
+          variables: {
+            id: id,
+            order: data.order,
+          },
+        });
+
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   const getLabels = async () => {
     let result = [];
 
@@ -249,6 +290,23 @@ mutation createLabel($clientMatterId: String, $name: String) {
     });
   }
 
+  async function tagFileLabel(fileId, labels) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mTagFileLabel,
+          variables: {
+            fileId: fileId,
+            labels: labels,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   const mainGrid = {
     display: "grid",
     gridtemplatecolumn: "1fr auto",
@@ -283,6 +341,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
     updateArr(data.labels, index);
     await updateMatterFile(id, data);
+    await tagFileLabel(id, data.labels);
   };
 
   function updateArr(data, index) {
@@ -411,24 +470,36 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
   };
 
-  function sortByDate(arr) {
-    arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  function sortByOrder(arr) {
+    arr.sort((a, b) => a.order - b.order);
     return arr;
   }
 
   //drag and drop functions
-  const handleDragEnd = (e) => {
-    if (!e.destination) return;
+  const handleDragEnd = async (e) => {
+    setResultMessage(`sorting in progress..`);
+    setShowToast(true);
+    setUpdateProgress(true);
 
-    setSortNo(e.destination.index);
-    setMid(e.draggableId);
-    console.log(e);
-    tempArr=[];
-    nameArr=[];
-    descArr=[];
+    const data = {
+      order: e.destination.index + 1,
+    };
+    const id = e.draggableId;
+
+    await updateMatterFileOrder(id, data);
+
+    setTimeout(() => {
+      getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully Sorted`);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+          setUpdateProgress(false);
+        }, 1000);
+      }, 1000);
+    }, 1000);
   };
-
-  
 
   return (
     <>
@@ -496,6 +567,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
+                            <th className="px-6 py-4 text-left">Item No.</th>
                             <th className="px-6 py-4 text-left w-80">Name</th>
                             <th className="px-6 py-4 text-left">Description</th>
                             <th className="px-6 py-4 text-left w-80">Labels</th>
@@ -508,7 +580,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
-                              {matterFiles.map((data, index) => (
+                              {sortByOrder(matterFiles).map((data, index) => (
                                 <Draggable
                                   key={data.id}
                                   draggableId={data.id}
@@ -528,6 +600,28 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                           : "white",
                                       }}
                                     >
+                                      <td
+                                        {...provider.dragHandleProps}
+                                        className="px-6 py-6 inline-flex"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-6 w-6"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                          strokeWidth={2}
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                                          />
+                                        </svg>
+                                        <span className="px-3">
+                                          {index + 1}
+                                        </span>
+                                      </td>
                                       <td
                                         {...provider.dragHandleProps}
                                         className="px-6 py-4 place-items-center relative flex-wrap"
