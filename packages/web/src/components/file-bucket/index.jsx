@@ -106,7 +106,7 @@ export default function FileBucket() {
   `;
 
   const qGetMatterFiles = `
-  query getMatterFile($matterId: ID) {
+  query getMatterFile($matterId: ID, $isDeleted: Boolean) {
     clientMatter(id: $matterId) {
       matter {
         name
@@ -115,7 +115,7 @@ export default function FileBucket() {
         name
       }
     }
-    matterFile(matterId: $matterId) {
+    matterFile(matterId: $matterId, isDeleted: $isDeleted) {
       id
       name
       downloadURL
@@ -244,6 +244,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       query: qGetMatterFiles,
       variables: {
         matterId: matter_id,
+        isDeleted: false
       },
     };
 
@@ -500,8 +501,17 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setShowToast(true);
     setUpdateProgress(true);
 
+    let targetLocation;
+    if (e.source.index <= e.destination.index) {
+      targetLocation = e.destination.index + 1;
+    } else if (e.source.index >= e.destination.index) {
+      targetLocation = e.destination.index - 1;
+    } else {
+      targetLocation = e.destination.index;
+    }
+
     const data = {
-      order: e.destination.index + 1,
+      order: targetLocation,
     };
     const id = e.draggableId;
 
@@ -595,7 +605,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-left w-20">Item No.</th>
+                            <th className="px-6 py-4 text-left w-20">
+                              Item No.
+                            </th>
                             <th className="px-6 py-4 text-left w-40">Name</th>
                             <th className="px-6 py-4 text-left">Description</th>
                             <th className="px-6 py-4 text-left w-40">Labels</th>
