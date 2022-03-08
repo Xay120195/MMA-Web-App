@@ -107,7 +107,7 @@ export default function FileBucket() {
 
   const qGetMatterFiles = `
   query getMatterFile($matterId: ID, $isDeleted: Boolean) {
-    clientMatter(id: $matterId, isDeleted: $isDeleted) {
+    clientMatter(id: $matterId) {
       matter {
         name
       }
@@ -115,7 +115,7 @@ export default function FileBucket() {
         name
       }
     }
-    matterFile(matterId: $matterId) {
+    matterFile(matterId: $matterId, isDeleted: $isDeleted) {
       id
       name
       downloadURL
