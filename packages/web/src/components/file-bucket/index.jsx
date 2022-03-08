@@ -36,11 +36,8 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
-  const [fileList, setFileList] = useState([]);
-  const [checkedState, setCheckedState] = useState(
-    new Array(fileList.length).fill(false)
-  );
-
+  const [active, setActive] = useState(false);
+  const [selected, setSelected] = useState("");
   const { matter_id } = useParams();
 
   const hideToast = () => {
@@ -110,7 +107,7 @@ export default function FileBucket() {
   `;
 
   const qGetMatterFiles = `
-  query getMatterFile($matterId: ID) {
+  query getMatterFile($matterId: ID, $isDeleted: Boolean) {
     clientMatter(id: $matterId) {
       matter {
         name
@@ -119,7 +116,7 @@ export default function FileBucket() {
         name
       }
     }
-    matterFile(matterId: $matterId) {
+    matterFile(matterId: $matterId, isDeleted: $isDeleted) {
       id
       name
       downloadURL
@@ -248,6 +245,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       query: qGetMatterFiles,
       variables: {
         matterId: matter_id,
+        isDeleted: false
       },
     };
 
@@ -285,6 +283,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             name: data.name,
             details: data.details,
             labels: data.labels,
+            order: data.order,
           },
         });
 
@@ -324,7 +323,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     textDetails.current = evt.target.value;
   };
 
-  const handleMatterChanged = async (options, id, name, details, index) => {
+  const handleMatterChanged = async (
+    options,
+    id,
+    name,
+    details,
+    index,
+    order
+  ) => {
     let newOptions = [];
 
     options.map(async (o) => {
@@ -342,6 +348,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       name: name,
       details: details,
       labels: newOptions,
+      order: order,
     };
 
     updateArr(data.labels, index);
@@ -358,7 +365,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     textDetails.current = event.target.value;
   };
 
-  const HandleChangeToTD = async (id, name, details, labels, index) => {
+  const HandleChangeToTD = async (id, name, details, labels, index, order) => {
     setResultMessage(`Saving in progress..`);
     setShowToast(true);
     setUpdateProgress(true);
@@ -393,6 +400,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         !textDetails.current && !filterDetails ? filterDetails : finaloutput,
       name: !name ? "&nbsp;" : updatedName[0],
       labels: updatedLabels[0],
+      order: order,
     };
 
     descArr[index] = finaloutput;
@@ -416,7 +424,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     textName.current = evt.target.value;
   };
 
-  const HandleChangeToTDName = async (id, details, name, labels, index) => {
+  const HandleChangeToTDName = async (
+    id,
+    details,
+    name,
+    labels,
+    index,
+    order
+  ) => {
     setUpdateProgress(true);
     setResultMessage(`Saving in progress..`);
     setShowToast(true);
@@ -444,6 +459,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       name: !textName.current ? filterName : finaloutput,
       details: updatedDesc[0],
       labels: updatedLabels[0],
+      order: order,
     };
 
     nameArr[index] = finaloutput;
@@ -486,8 +502,17 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setShowToast(true);
     setUpdateProgress(true);
 
+    let targetLocation;
+    if (e.source.index <= e.destination.index) {
+      targetLocation = e.destination.index + 1;
+    } else if (e.source.index >= e.destination.index) {
+      targetLocation = e.destination.index - 1;
+    } else {
+      targetLocation = e.destination.index;
+    }
+
     const data = {
-      order: e.destination.index + 1,
+      order: targetLocation,
     };
     const id = e.draggableId;
 
@@ -518,6 +543,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       alert(selectedRows);
     }
   }
+  const handleChageBackground = (id) => {
+    setSelected(id);
+    if (active) {
+      setActive(false);
+    } else {
+      setActive(true);
+    }
+  };
 
   return (
     <>
@@ -596,7 +629,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-left w-20">Item No.</th>
+                            <th className="px-6 py-4 text-left w-20">
+                              Item No.
+                            </th>
                             <th className="px-6 py-4 text-left w-40">Name</th>
                             <th className="px-6 py-4 text-left">Description</th>
                             <th className="px-6 py-4 text-left w-40">Labels</th>
@@ -624,9 +659,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       ref={provider.innerRef}
                                       style={{
                                         ...provider.draggableProps.style,
-                                        backgroundColor: snapshot.isDragging
-                                          ? "rgba(255, 255, 239, 0.767)"
-                                          : "white",
+                                        backgroundColor:
+                                          snapshot.isDragging ||
+                                          (active && data.id === selected)
+                                            ? "rgba(255, 255, 239, 0.767)"
+                                            : "white",
                                       }}
                                     >
                                       <td
@@ -637,6 +674,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           xmlns="http://www.w3.org/2000/svg"
                                           className="h-6 w-6"
                                           fill="none"
+                                          onClick={() =>
+                                            handleChageBackground(data.id)
+                                          }
                                           viewBox="0 0 24 24"
                                           stroke="currentColor"
                                           strokeWidth={2}
@@ -663,16 +703,55 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         className="px-6 py-4 place-items-center relative flex-wrap w-40"
                                       >
                                         <div className="inline-flex">
-                                          {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-2xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-2xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-2xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "text") ? <GrDocumentTxt className="text-2xl"/>
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "sheet") ? <GrDocumentExcel className="text-2xl"/>
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "document") ? <GrDocumentWord className="text-2xl"/>
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "text") ? <GrDocumentText className="text-2xl"/>  
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-2xl"/>   
-                                          : <GrDocumentText className="text-2xl"/>
-                                          }
+                                          {data.type
+                                            .split("/")
+                                            .slice(0, -1)
+                                            .join("/") == "image" ? (
+                                            <GrDocumentImage className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "audio" ? (
+                                            <FaRegFileAudio className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "video" ? (
+                                            <FaRegFileVideo className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "text" ? (
+                                            <GrDocumentTxt className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "sheet" ? (
+                                            <GrDocumentExcel className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "document" ? (
+                                            <GrDocumentWord className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "text" ? (
+                                            <GrDocumentText className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" ? (
+                                            <GrDocumentPdf className="text-2xl" />
+                                          ) : (
+                                            <GrDocumentText className="text-2xl" />
+                                          )}
                                           &nbsp;&nbsp;
                                           {/* <input defaultValue={data.type.split('.').pop()}/> */}
                                           <ContentEditable
@@ -694,7 +773,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                 data.details,
                                                 data.name,
                                                 data.labels,
-                                                index
+                                                index,
+                                                data.order
                                               )
                                             }
                                             className="w-40"
@@ -734,7 +814,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               data.name,
                                               data.details,
                                               data.labels,
-                                              index
+                                              index,
+                                              data.order
                                             )
                                           }
                                           onPaste={pasteHandler}
@@ -764,7 +845,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               data.id,
                                               data.name,
                                               data.details,
-                                              index
+                                              index,
+                                              data.order
                                             )
                                           }
                                          
