@@ -15,7 +15,15 @@ import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
-import { GrDocumentPdf, GrDocumentText, GrDocumentImage, GrDocument, GrDocumentExcel, GrDocumentWord, GrDocumentTxt } from "react-icons/gr";
+import {
+  GrDocumentPdf,
+  GrDocumentText,
+  GrDocumentImage,
+  GrDocument,
+  GrDocumentExcel,
+  GrDocumentWord,
+  GrDocumentTxt,
+} from "react-icons/gr";
 
 export default function FileBucket() {
   let tempArr = [];
@@ -144,7 +152,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
 }
 `;
 
-const mTagFileLabel = `
+  const mTagFileLabel = `
 mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   fileLabelTag(file: {id: $fileId}, label: $labels) {
     file {
@@ -293,7 +301,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           },
         });
         resolve(request);
-        
       } catch (e) {
         reject(e.errors[0].message);
       }
@@ -475,7 +482,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setUpdateProgress(true);
 
     const data = {
-      order: e.destination.index,
+      order: e.destination.index + 1,
     };
     const id = e.draggableId;
 
@@ -493,8 +500,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }, 1000);
     }, 1000);
   };
-
-  
 
   return (
     <>
@@ -622,18 +627,61 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
-                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-2xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-2xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-2xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "text") ? <GrDocumentTxt className="text-2xl"/>
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "sheet") ? <GrDocumentExcel className="text-2xl"/>
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "document") ? <GrDocumentWord className="text-2xl"/>
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "text") ? <GrDocumentText className="text-2xl"/>  
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-2xl"/>   
-                                          : <GrDocumentText className="text-2xl"/>
-                                          }
+                                          {data.type
+                                            .split("/")
+                                            .slice(0, -1)
+                                            .join("/") == "image" ? (
+                                            <GrDocumentImage className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "audio" ? (
+                                            <FaRegFileAudio className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "video" ? (
+                                            <FaRegFileVideo className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "text" ? (
+                                            <GrDocumentTxt className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "sheet" ? (
+                                            <GrDocumentExcel className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "document" ? (
+                                            <GrDocumentWord className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "text" ? (
+                                            <GrDocumentText className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" ? (
+                                            <GrDocumentPdf className="text-2xl" />
+                                          ) : (
+                                            <GrDocumentText className="text-2xl" />
+                                          )}
                                           &nbsp;&nbsp;
-                                          <input defaultValue={data.type.split('.').pop()}/>
+                                          <input
+                                            defaultValue={data.type
+                                              .split(".")
+                                              .pop()}
+                                          />
                                           {/* <p> {data.type.split('.').slice(3, -1).join('.')}</p> */}
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
