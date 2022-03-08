@@ -504,7 +504,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     const source = matterFiles.find(
       (element) => element.order === e.destination.index
     );
-    console.log(source);
+
     const src = source ? source.order : e.destination.index;
     let targetLocation;
     if (e.source.index <= e.destination.index) {
