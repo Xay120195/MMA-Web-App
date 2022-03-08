@@ -627,62 +627,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
-                                          {data.type
-                                            .split("/")
-                                            .slice(0, -1)
-                                            .join("/") == "image" ? (
-                                            <GrDocumentImage className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "audio" ? (
-                                            <FaRegFileAudio className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "video" ? (
-                                            <FaRegFileVideo className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "text" ? (
-                                            <GrDocumentTxt className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
-                                              "sheet" ? (
-                                            <GrDocumentExcel className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
-                                              "document" ? (
-                                            <GrDocumentWord className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
-                                              "text" ? (
-                                            <GrDocumentText className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" ? (
-                                            <GrDocumentPdf className="text-2xl" />
-                                          ) : (
-                                            <GrDocumentText className="text-2xl" />
-                                          )}
+                                          {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-2xl"/> 
+                                          : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-2xl"/> 
+                                          : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-2xl"/> 
+                                          : (data.type.split('/').slice(0, -1).join('/') == "text") ? <GrDocumentTxt className="text-2xl"/>
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "sheet") ? <GrDocumentExcel className="text-2xl"/>
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "document") ? <GrDocumentWord className="text-2xl"/>
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "text") ? <GrDocumentText className="text-2xl"/>  
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-2xl"/>   
+                                          : <GrDocumentText className="text-2xl"/>
+                                          }
                                           &nbsp;&nbsp;
-                                          <input
-                                            defaultValue={data.type
-                                              .split(".")
-                                              .pop()}
-                                          />
-                                          {/* <p> {data.type.split('.').slice(3, -1).join('.')}</p> */}
+                                          {/* <input defaultValue={data.type.split('.').pop()}/> */}
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
