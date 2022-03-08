@@ -585,10 +585,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-left">Item No.</th>
-                            <th className="px-6 py-4 text-left w-80">Name</th>
+                            <th className="px-6 py-4 text-left w-20">Item No.</th>
+                            <th className="px-6 py-4 text-left w-40">Name</th>
                             <th className="px-6 py-4 text-left">Description</th>
-                            <th className="px-6 py-4 text-left w-80">Labels</th>
+                            <th className="px-6 py-4 text-left w-40">Labels</th>
                           </tr>
                         </thead>
                         <Droppable droppableId="droppable-1">
@@ -642,7 +642,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       </td>
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center relative flex-wrap"
+                                        className="px-6 py-4 place-items-center relative flex-wrap w-40"
                                       >
                                         <div className="inline-flex">
                                           {data.type
@@ -719,7 +719,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                 data.order
                                               )
                                             }
-                                            className="w-80"
+                                            className="w-40"
                                           />
                                           <span>
                                             <AiOutlineDownload
@@ -800,7 +800,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           //   )
                                           // }
                                           placeholder="Labels"
-                                          className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                          className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
                                       </td>
                                     </tr>
