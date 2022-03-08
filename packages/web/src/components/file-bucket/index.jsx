@@ -24,6 +24,7 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
+import { BsFillTrashFill } from "react-icons/bs";
 
 export default function FileBucket() {
   let tempArr = [];
@@ -35,6 +36,10 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
+  const [fileList, setFileList] = useState([]);
+  const [checkedState, setCheckedState] = useState(
+    new Array(fileList.length).fill(false)
+  );
 
   const { matter_id } = useParams();
 
@@ -501,6 +506,19 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }, 1000);
   };
 
+  var selectedRows = [];
+
+  const checked = (id) => {
+    //check if checkbox is checked
+    if(selectedRows.indexOf(id) > -1){ //if in array = checked already, remove
+      selectedRows.splice(selectedRows.indexOf(id), 1);
+      alert(selectedRows);
+    }else{ //not in array = unchecked, add
+      selectedRows = [...selectedRows, id];
+      alert(selectedRows);
+    }
+  }
+
   return (
     <>
       <div
@@ -533,12 +551,23 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         <div className="p-5 left-0"></div>
         <div className="p-5 py-1 left-0">
           <div>
+            <input type="checkbox" className="mt-1 mr-3 px-2"
+              
+            />
             <button
-              className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+              className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
               onClick={() => setShowUploadModal(true)}
             >
               FILE UPLOAD &nbsp;
               <FiUpload />
+            </button>
+
+            <button
+              className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+              // onClick={() => }
+            >
+              DELETE &nbsp;
+              <BsFillTrashFill />
             </button>
           </div>
         </div>
@@ -618,7 +647,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                                           />
                                         </svg>
-                                        <span className="px-3">
+                                        
+                                        <span className="px-3 flex">
+                                          <input type="checkbox" class="mt-1 mr-1"
+                                            name={data.id}
+                                            className="cursor-pointer w-10"
+                                            // checked={checkedState[index]}
+                                            onChange={checked(data.id)}
+                                          />
                                           {index + 1}
                                         </span>
                                       </td>
@@ -731,14 +767,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               index
                                             )
                                           }
-                                          // onBlur={(options) =>
-                                          //   handleMatterChanged(
-                                          //     options,
-                                          //     data.id,
-                                          //     data.name,
-                                          //     data.details
-                                          //   )
-                                          // }
+                                         
                                           placeholder="Labels"
                                           className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
