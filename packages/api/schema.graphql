@@ -113,6 +113,7 @@ type File {
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+  isDeleted: Boolean
 }
 
 type FileLabel {
@@ -245,6 +246,7 @@ type Mutation {
     order: Int
     labels: [LabelInput]
   ): File
+  matterFileSoftDelete(id: ID): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(
     companyId: String
