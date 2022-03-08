@@ -15,7 +15,15 @@ import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
-import { GrDocumentPdf, GrDocumentText, GrDocumentImage } from "react-icons/gr";
+import {
+  GrDocumentPdf,
+  GrDocumentText,
+  GrDocumentImage,
+  GrDocument,
+  GrDocumentExcel,
+  GrDocumentWord,
+  GrDocumentTxt,
+} from "react-icons/gr";
 
 export default function FileBucket() {
   let tempArr = [];
@@ -27,12 +35,9 @@ export default function FileBucket() {
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
-  const [sortNo, setSortNo] = useState(0);
-  const [mId, setMid] = useState();
-
+  const [active, setActive] = useState(false);
+  const [selected, setSelected] = useState("");
   const { matter_id } = useParams();
-
-  const [selectedLabel, setSelectedLabel] = useState();
 
   const hideToast = () => {
     setShowToast(false);
@@ -147,7 +152,44 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
 }
 `;
-  console.log(updateProgess);
+
+  const mTagFileLabel = `
+mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
+  fileLabelTag(file: {id: $fileId}, label: $labels) {
+    file {
+      id
+    }
+  }
+}
+`;
+
+  const mUpdateMatterFileOrder = `
+      mutation updateMatterFile ($id: ID, $order: Int) {
+        matterFileUpdate(id: $id, order: $order) {
+          id
+          order
+        }
+      }
+  `;
+
+  async function updateMatterFileOrder(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateMatterFileOrder,
+          variables: {
+            id: id,
+            order: data.order,
+          },
+        });
+
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   const getLabels = async () => {
     let result = [];
 
@@ -207,7 +249,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
     await API.graphql(params).then((files) => {
       setMatterFiles(files.data.matterFile);
-
+      console.log(files.data.matterFile);
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
@@ -239,9 +281,27 @@ mutation createLabel($clientMatterId: String, $name: String) {
             name: data.name,
             details: data.details,
             labels: data.labels,
+            order: data.order,
           },
         });
 
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  async function tagFileLabel(fileId, labels) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mTagFileLabel,
+          variables: {
+            fileId: fileId,
+            labels: labels,
+          },
+        });
         resolve(request);
       } catch (e) {
         reject(e.errors[0].message);
@@ -261,7 +321,14 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textDetails.current = evt.target.value;
   };
 
-  const handleMatterChanged = async (options, id, name, details, index) => {
+  const handleMatterChanged = async (
+    options,
+    id,
+    name,
+    details,
+    index,
+    order
+  ) => {
     let newOptions = [];
 
     options.map(async (o) => {
@@ -279,10 +346,12 @@ mutation createLabel($clientMatterId: String, $name: String) {
       name: name,
       details: details,
       labels: newOptions,
+      order: order,
     };
 
     updateArr(data.labels, index);
     await updateMatterFile(id, data);
+    await tagFileLabel(id, data.labels);
   };
 
   function updateArr(data, index) {
@@ -290,14 +359,11 @@ mutation createLabel($clientMatterId: String, $name: String) {
   }
 
   const pasteHandler = (event) => {
-    // event.preventDefault();
     event.target.style.textDecoration = "none";
     textDetails.current = event.target.value;
-
-    // console.log(event.clipboardData.getData("text"));
   };
 
-  const HandleChangeToTD = async (id, name, details, labels, index) => {
+  const HandleChangeToTD = async (id, name, details, labels, index, order) => {
     setResultMessage(`Saving in progress..`);
     setShowToast(true);
     setUpdateProgress(true);
@@ -332,6 +398,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
         !textDetails.current && !filterDetails ? filterDetails : finaloutput,
       name: !name ? "&nbsp;" : updatedName[0],
       labels: updatedLabels[0],
+      order: order,
     };
 
     descArr[index] = finaloutput;
@@ -355,7 +422,14 @@ mutation createLabel($clientMatterId: String, $name: String) {
     textName.current = evt.target.value;
   };
 
-  const HandleChangeToTDName = async (id, details, name, labels, index) => {
+  const HandleChangeToTDName = async (
+    id,
+    details,
+    name,
+    labels,
+    index,
+    order
+  ) => {
     setUpdateProgress(true);
     setResultMessage(`Saving in progress..`);
     setShowToast(true);
@@ -383,6 +457,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
       name: !textName.current ? filterName : finaloutput,
       details: updatedDesc[0],
       labels: updatedLabels[0],
+      order: order,
     };
 
     nameArr[index] = finaloutput;
@@ -414,21 +489,44 @@ mutation createLabel($clientMatterId: String, $name: String) {
     }
   };
 
-  function sortByDate(arr) {
-    arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  function sortByOrder(arr) {
+    arr.sort((a, b) => a.order - b.order);
     return arr;
   }
 
   //drag and drop functions
-  const handleDragEnd = (e) => {
-    if (!e.destination) return;
+  const handleDragEnd = async (e) => {
+    setResultMessage(`sorting in progress..`);
+    setShowToast(true);
+    setUpdateProgress(true);
 
-    setSortNo(e.destination.index);
-    setMid(e.draggableId);
-    console.log(e);
-    tempArr=[];
-    nameArr=[];
-    descArr=[];
+    const data = {
+      order: e.destination.index + 1,
+    };
+    const id = e.draggableId;
+
+    await updateMatterFileOrder(id, data);
+
+    setTimeout(() => {
+      getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully Sorted`);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+          setUpdateProgress(false);
+        }, 1000);
+      }, 1000);
+    }, 1000);
+  };
+
+  const handleChageBackground = (id) => {
+    setSelected(id);
+    if (active) {
+      setActive(false);
+    } else {
+      setActive(true);
+    }
   };
 
   return (
@@ -497,9 +595,10 @@ mutation createLabel($clientMatterId: String, $name: String) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-left w-80">Name</th>
+                            <th className="px-6 py-4 text-left w-20">Item No.</th>
+                            <th className="px-6 py-4 text-left w-40">Name</th>
                             <th className="px-6 py-4 text-left">Description</th>
-                            <th className="px-6 py-4 text-left w-80">Labels</th>
+                            <th className="px-6 py-4 text-left w-40">Labels</th>
                           </tr>
                         </thead>
                         <Droppable droppableId="droppable-1">
@@ -509,7 +608,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
-                              {matterFiles.map((data, index) => (
+                              {sortByOrder(matterFiles).map((data, index) => (
                                 <Draggable
                                   key={data.id}
                                   draggableId={data.id}
@@ -524,23 +623,94 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                       ref={provider.innerRef}
                                       style={{
                                         ...provider.draggableProps.style,
-                                        backgroundColor: snapshot.isDragging
-                                          ? "rgba(255, 255, 239, 0.767)"
-                                          : "white",
+                                        backgroundColor:
+                                          snapshot.isDragging ||
+                                          (active && data.id === selected)
+                                            ? "rgba(255, 255, 239, 0.767)"
+                                            : "white",
                                       }}
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center relative flex-wrap"
+                                        className="px-6 py-6 inline-flex"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-6 w-6"
+                                          fill="none"
+                                          onClick={() =>
+                                            handleChageBackground(data.id)
+                                          }
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                          strokeWidth={2}
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                                          />
+                                        </svg>
+                                        <span className="px-3">
+                                          {index + 1}
+                                        </span>
+                                      </td>
+                                      <td
+                                        {...provider.dragHandleProps}
+                                        className="px-6 py-4 place-items-center relative flex-wrap w-40"
                                       >
                                         <div className="inline-flex">
-                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-1xl"/>
-                                          : <GrDocumentText className="text-1xl"/>
-                                          }
+                                          {data.type
+                                            .split("/")
+                                            .slice(0, -1)
+                                            .join("/") == "image" ? (
+                                            <GrDocumentImage className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "audio" ? (
+                                            <FaRegFileAudio className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "video" ? (
+                                            <FaRegFileVideo className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "text" ? (
+                                            <GrDocumentTxt className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "sheet" ? (
+                                            <GrDocumentExcel className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "document" ? (
+                                            <GrDocumentWord className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" &&
+                                            data.type.split(".").pop() ==
+                                              "text" ? (
+                                            <GrDocumentText className="text-2xl" />
+                                          ) : data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") == "application" ? (
+                                            <GrDocumentPdf className="text-2xl" />
+                                          ) : (
+                                            <GrDocumentText className="text-2xl" />
+                                          )}
                                           &nbsp;&nbsp;
+                                          {/* <input defaultValue={data.type.split('.').pop()}/> */}
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
@@ -560,10 +730,11 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                                 data.details,
                                                 data.name,
                                                 data.labels,
-                                                index
+                                                index,
+                                                data.order
                                               )
                                             }
-                                            className="w-80"
+                                            className="w-40"
                                           />
                                           <span>
                                             <AiOutlineDownload
@@ -600,7 +771,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                               data.name,
                                               data.details,
                                               data.labels,
-                                              index
+                                              index,
+                                              data.order
                                             )
                                           }
                                           onPaste={pasteHandler}
@@ -630,7 +802,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                               data.id,
                                               data.name,
                                               data.details,
-                                              index
+                                              index,
+                                              data.order
                                             )
                                           }
                                           // onBlur={(options) =>
@@ -642,7 +815,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                           //   )
                                           // }
                                           placeholder="Labels"
-                                          className="w-80 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                          className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
                                       </td>
                                     </tr>
