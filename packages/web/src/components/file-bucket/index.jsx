@@ -15,7 +15,7 @@ import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
-import { GrDocumentPdf, GrDocumentText, GrDocumentImage } from "react-icons/gr";
+import { GrDocumentPdf, GrDocumentText, GrDocumentImage, GrDocument, GrDocumentExcel, GrDocumentWord, GrDocumentTxt } from "react-icons/gr";
 
 export default function FileBucket() {
   let tempArr = [];
@@ -207,7 +207,7 @@ mutation createLabel($clientMatterId: String, $name: String) {
 
     await API.graphql(params).then((files) => {
       setMatterFiles(files.data.matterFile);
-
+      console.log(files.data.matterFile);
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
@@ -290,11 +290,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
   }
 
   const pasteHandler = (event) => {
-    // event.preventDefault();
     event.target.style.textDecoration = "none";
     textDetails.current = event.target.value;
-
-    // console.log(event.clipboardData.getData("text"));
   };
 
   const HandleChangeToTD = async (id, name, details, labels, index) => {
@@ -431,6 +428,8 @@ mutation createLabel($clientMatterId: String, $name: String) {
     descArr=[];
   };
 
+  
+
   return (
     <>
       <div
@@ -534,13 +533,19 @@ mutation createLabel($clientMatterId: String, $name: String) {
                                         className="px-6 py-4 place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
-                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-1xl"/> 
-                                          : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-1xl"/>
-                                          : <GrDocumentText className="text-1xl"/>
+                                        {(data.type.split('/').slice(0, -1).join('/') == "image") ? <GrDocumentImage className="text-2xl"/> 
+                                          : (data.type.split('/').slice(0, -1).join('/') == "audio") ? <FaRegFileAudio className="text-2xl"/> 
+                                          : (data.type.split('/').slice(0, -1).join('/') == "video") ? <FaRegFileVideo className="text-2xl"/> 
+                                          : (data.type.split('/').slice(0, -1).join('/') == "text") ? <GrDocumentTxt className="text-2xl"/>
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "sheet") ? <GrDocumentExcel className="text-2xl"/>
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "document") ? <GrDocumentWord className="text-2xl"/>
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application" && data.type.split('.').pop() == "text") ? <GrDocumentText className="text-2xl"/>  
+                                          : (data.type.split('/').slice(0, -1).join('/') == "application") ? <GrDocumentPdf className="text-2xl"/>   
+                                          : <GrDocumentText className="text-2xl"/>
                                           }
                                           &nbsp;&nbsp;
+                                          <input defaultValue={data.type.split('.').pop()}/>
+                                          {/* <p> {data.type.split('.').slice(3, -1).join('.')}</p> */}
                                           <ContentEditable
                                             style={{ cursor: "auto" }}
                                             disabled={
