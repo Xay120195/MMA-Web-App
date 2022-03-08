@@ -191,7 +191,7 @@ type Query {
   clientMatter(id: ID): ClientMatter
   matters: [Matter]
   matter(id: ID): Matter
-  matterFile(matterId: ID): [File]
+  matterFile(matterId: ID, isDeleted: Boolean): [File]
   labels: [Label]
   label(id: ID): Label
   backgrounds: [Background]

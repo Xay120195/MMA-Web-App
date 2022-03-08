@@ -32,8 +32,10 @@ export async function getMatterFile(data) {
       TableName: "MatterFileTable",
       IndexName: "byMatter",
       KeyConditionExpression: "matterId = :matterId",
+      FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
         ":matterId": data.matterId,
+        ":isDeleted": data.isDeleted,
       }),
     };
 
