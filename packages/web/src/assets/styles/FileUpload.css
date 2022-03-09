@@ -7,7 +7,7 @@
     --mysteryGrey: #8A8A8A;
     --white: #ffffff;
     --darkGrey: #454545;
-    --primaryDefault: #1CC1E9;
+    --primaryDefault: rgba(28,193,233,1);
     --largeFont: 21px;
     --mediumFont: 18px;
     --smallFont: 16px;
@@ -36,7 +36,14 @@
 }
 
 .disabled-btn {
-    background-color: var(--defaultBgColor) !important;
+    background-color: rgba(28,193,233,.5) !important;
+    color: var(--white) !important;
+    cursor:not-allowed !important;
+    pointer-events: none !important;
+    border: 1px solid var(--defaultBorderColor) !important;
+}
+.disabled-cancel-btn {
+    background-color:var(--defaultBgColor) !important;
     color: var(--darkGrey) !important;
     cursor:not-allowed !important;
     pointer-events: none !important;
