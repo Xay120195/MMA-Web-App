@@ -18,9 +18,18 @@ export default function RemoveFileModal(props) {
   };
 
   //confirm deletion function
-  const handleConfirm = () => {
-     //use selectedRows from line 8. contains [{id, fileName}, ...]
+  const handleDelete = async () => {
+
+
   }
+
+  useEffect(() => {
+    if (
+      selectedRows.length !== 0
+    ) {
+      props.handleSave();
+    }
+  }, [selectedRows]);
 
   return (
     <>
@@ -58,7 +67,7 @@ export default function RemoveFileModal(props) {
                         
                         <button className="ml-2 bg-red-400 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
                         type="button"
-                        onClick={() => handleConfirm()}
+                        onClick={() => handleDelete()}
                         >
                             Delete Permanently &nbsp; <FaTimes/>
                         </button>
