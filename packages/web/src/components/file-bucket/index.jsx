@@ -715,7 +715,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                             index={index}
                             className="h-full"
                           >
-                                        
+                          <div className="mt-3">       
                                         <span className="px-3 flex">
                                           <input type="checkbox"
                                             name={data.id}
@@ -725,7 +725,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           />
                                           {index + 1}
                                         </span>
-                                      
+                            </div>          
                             <td
                               // {...provider.dragHandleProps}
                               className="px-6 py-4 place-items-center relative flex-wrap w-40"
