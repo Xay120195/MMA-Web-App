@@ -24,6 +24,10 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
+import { BsFillTrashFill } from "react-icons/bs";
+import RemoveFileModal from "./remove-file-modal";
+
+export var selectedRows = [];
 
 export default function FileBucket() {
   let tempArr = [];
@@ -38,6 +42,11 @@ export default function FileBucket() {
   const [active, setActive] = useState(false);
   const [selected, setSelected] = useState("");
   const { matter_id } = useParams();
+
+  const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
+  const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
+  var fileCount = 0;
+  
 
   const hideToast = () => {
     setShowToast(false);
@@ -70,6 +79,7 @@ export default function FileBucket() {
 
   const handleModalClose = () => {
     setShowUploadModal(false);
+    setshowRemoveFileModal(false);
   };
 
   const contentDiv = {
@@ -239,6 +249,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   }, [matterFiles]);
 
+  
+
   let getMatterFiles = async () => {
     const params = {
       query: qGetMatterFiles,
@@ -254,12 +266,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const matterFilesList = mf.map((obj) => {
         return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
       });
+      fileCount = matterFilesList.length;
 
       setMatterFiles(matterFilesList);
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
     });
+
+   
   };
 
   async function createMatterFile(file) {
@@ -557,7 +572,78 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         }, 1000);
       }, 1000);
     }, 1000);
-  };
+  };  
+
+  var tempCount = 99;
+  const [checkedState, setCheckedState] = useState(
+    new Array(fileCount).fill(false)
+  );
+  const [isAllChecked, setIsAllChecked] = useState(false);
+
+  //function for selecting rows
+  function checked(id, fileName, idx){
+    if(isAllChecked){
+      selectedRows.splice(selectedRows.indexOf(selectedRows.find(temp => temp.id === id)), 1);
+      const updatedCheckedState = checkedState.map((item, index) =>
+        index === idx ? !item : item
+      );
+
+      setCheckedState(updatedCheckedState);
+      setIsAllChecked(false);
+    }else{
+      if(selectedRows.indexOf(selectedRows.find(temp => temp.id === id)) > -1){
+          selectedRows.splice(selectedRows.indexOf(selectedRows.find(temp => temp.id === id)), 1);
+          setIsAllChecked(false);
+          const updatedCheckedState = checkedState.map((item, index) =>
+            index === idx ? !item : item
+          );
+          setCheckedState(updatedCheckedState);
+      }else{
+          selectedRows = [...selectedRows, {id: id, fileName: fileName}];
+          setIsAllChecked(false);
+          const updatedCheckedState = checkedState.map((item, index) =>
+            index === idx ? !item : item
+          );
+          setCheckedState(updatedCheckedState);
+      }
+    }
+
+    if(selectedRows.length > 0){
+      setshowRemoveFileButton(true);
+    }else{
+      setshowRemoveFileButton(false);
+    }
+  }
+
+
+  function checkAll(files){
+    if(isAllChecked){
+      setIsAllChecked(false);
+      selectedRows = [];
+      const newArr =  Array(files.length).fill(false);
+      setCheckedState(newArr);
+    }else{
+      setIsAllChecked(true);
+      selectedRows = [];
+      files.map((data) => ( 
+        selectedRows = [...selectedRows, {id: data.id, fileName: data.name}]
+      ))
+      const newArr =  Array(files.length).fill(true);
+      setCheckedState(newArr);
+    }
+
+    if(selectedRows.length > 0){
+      setshowRemoveFileButton(true);
+    }else{
+      setshowRemoveFileButton(false);
+    }
+  }
+
+  //delete function
+  const handleDeleteFile = (uf) => {
+
+    
+  }
 
   const handleChageBackground = (id) => {
     setSelected(id);
@@ -600,13 +686,27 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         <div className="p-5 left-0"></div>
         <div className="p-5 py-1 left-0">
           <div>
+            <input type="checkbox" className="mt-1 mr-3 px-2"
+              onChange={()=>checkAll(matterFiles)}
+              checked={isAllChecked}
+            />
             <button
-              className="bg-white hover:bg-gray-100 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+              className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
               onClick={() => setShowUploadModal(true)}
             >
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>
+            {
+              showRemoveFileButton &&
+              <button
+                className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                onClick={() => setshowRemoveFileModal(true)}
+              >
+                DELETE &nbsp;
+                <BsFillTrashFill />
+              </button>
+            }
           </div>
         </div>
 
@@ -634,7 +734,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                     <table className=" table-fixed min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          {/* <th className="px-6 py-4 text-left w-20">Item No.</th> */}
+                          <th className="px-6 py-4 text-left w-20">Item No.</th>
                           <th className="px-6 py-4 text-left w-40">Name</th>
                           <th className="px-6 py-4 text-left">Description</th>
                           <th className="px-6 py-4 text-left w-40">Labels</th>
@@ -648,52 +748,25 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                         className="bg-white divide-y divide-gray-200"
                       >
                         {sortByOrder(matterFiles).map((data, index) => (
-                          // <Draggable
-                          //   key={data.id}
-                          //   draggableId={data.id}
-                          //   index={index}
-                          // >
-                          //   {(provider, snapshot) => (
+                        
                           <tr
                             key={data.id}
                             index={index}
                             className="h-full"
-                            // {...provider.draggableProps}
-                            // ref={provider.innerRef}
-                            // style={{
-                            //   ...provider.draggableProps.style,
-                            //   backgroundColor:
-                            //     snapshot.isDragging ||
-                            //     (active && data.id === selected)
-                            //       ? "rgba(255, 255, 239, 0.767)"
-                            //       : "white",
-                            // }}
                           >
-                            {/* <td
-                                        {...provider.dragHandleProps}
-                                        className="px-6 py-6 inline-flex"
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-6 w-6"
-                                          fill="none"
-                                          onClick={() =>
-                                            handleChageBackground(data.id)
-                                          }
-                                          viewBox="0 0 24 24"
-                                          stroke="currentColor"
-                                          strokeWidth={2}
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                                          />
-                                        </svg>
-                                        <span className="px-3">
-                                          {index + 1}
-                                        </span>
-                                      </td> */}
+                          <td className="px-6 py-4 place-items-center relative flex-wrap w-40">
+                                   
+                                          <span className="px-3 flex">
+                                            <input type="checkbox"
+                                              name={data.id}
+                                              className="cursor-pointer w-10 mt-1"
+                                              checked={checkedState[index]}
+                                              onChange={()=>checked(data.id, data.name, index)}
+                                            />
+                                            {index + 1}
+                                          </span>
+                               
+                            </td>     
                             <td
                               // {...provider.dragHandleProps}
                               className="px-6 py-4 place-items-center relative flex-wrap w-40"
@@ -864,6 +937,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           </>
         )}
       </div>
+      {showRemoveFileModal && (
+        <RemoveFileModal
+          handleSave={handleDeleteFile}
+          handleModalClose={handleModalClose}
+        />
+      )}
 
       {showUploadModal && (
         <UploadLinkModal
