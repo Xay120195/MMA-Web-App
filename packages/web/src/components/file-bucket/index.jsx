@@ -446,59 +446,61 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     evt
   ) => {
     if (
-      textName.current === undefined ||
-      textName.current.replace(/(<([^>]+)>)/gi, "").trim() === ""
+      evt.target.innerText === undefined ||
+      evt.target.innerText.replace(/(<([^>]+)>)/gi, "").trim() === ""
     ) {
       evt.currentTarget.parentNode.nextSibling.innerHTML =
         "File name can't be blank.";
     } else {
       evt.currentTarget.parentNode.nextSibling.innerHTML = "";
 
-      setUpdateProgress(true);
-      setResultMessage(`Saving in progress..`);
-      setShowToast(true);
-      var updatedLabels = [];
-      var updatedDesc = [];
+      if (textName.current !== "") {
+        setUpdateProgress(true);
+        setResultMessage(`Saving in progress..`);
+        setShowToast(true);
+        var updatedLabels = [];
+        var updatedDesc = [];
 
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+        if (typeof tempArr[index] === "undefined") {
+          updatedLabels[0] = labels;
+        } else {
+          updatedLabels[0] = tempArr[index];
+        }
 
-      if (details == "") {
-        updatedDesc[0] = "";
-      } else if (typeof descArr[index] === "undefined") {
-        updatedDesc[0] = details;
-      } else {
-        updatedDesc[0] = descArr[index];
-      }
-      const filterName = name.replace(/(<([^>]+)>)/gi, "");
-      const ouputName = textName.current;
-      const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
+        if (details == "") {
+          updatedDesc[0] = "";
+        } else if (typeof descArr[index] === "undefined") {
+          updatedDesc[0] = details;
+        } else {
+          updatedDesc[0] = descArr[index];
+        }
+        const filterName = name.replace(/(<([^>]+)>)/gi, "");
+        const ouputName = textName.current;
+        const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
 
-      const data = {
-        name: !textName.current ? filterName : finaloutput,
-        details: updatedDesc[0],
-        labels: updatedLabels[0],
-        order: order,
-      };
+        const data = {
+          name: !textName.current ? filterName : finaloutput,
+          details: updatedDesc[0],
+          labels: updatedLabels[0],
+          order: order,
+        };
 
-      nameArr[index] = finaloutput;
+        nameArr[index] = finaloutput;
 
-      await updateMatterFile(id, data);
-      textName.current = "";
-      setTimeout(() => {
-        getMatterFiles();
+        await updateMatterFile(id, data);
+        textName.current = "";
         setTimeout(() => {
-          setResultMessage(`Successfully updated `);
-          setShowToast(true);
+          getMatterFiles();
           setTimeout(() => {
-            setShowToast(false);
-            setUpdateProgress(false);
+            setResultMessage(`Successfully updated `);
+            setShowToast(true);
+            setTimeout(() => {
+              setShowToast(false);
+              setUpdateProgress(false);
+            }, 1000);
           }, 1000);
         }, 1000);
-      }, 1000);
+      }
     }
   };
 
