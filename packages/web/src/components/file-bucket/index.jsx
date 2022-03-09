@@ -249,8 +249,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     };
 
     await API.graphql(params).then((files) => {
-      setMatterFiles(files.data.matterFile);
-      console.log(files.data.matterFile);
+      const mf = files.data.matterFile;
+
+      const matterFilesList = mf.map((obj) => {
+        return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
+      });
+
+      setMatterFiles(matterFilesList);
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
@@ -420,7 +425,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const handleChangeName = (evt) => {
-    textName.current = evt.target.value;
+    evt.currentTarget.parentNode.nextSibling.innerHTML = "";
+    var name = evt.target.value;
+
+    if (name === undefined || name.replace(/(<([^>]+)>)/gi, "").trim() === "") {
+      evt.currentTarget.parentNode.nextSibling.innerHTML =
+        "File name can't be blank.";
+    } else {
+      textName.current = name;
+    }
   };
 
   const HandleChangeToTDName = async (
@@ -429,53 +442,66 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     name,
     labels,
     index,
-    order
+    order,
+    evt
   ) => {
-    setUpdateProgress(true);
-    setResultMessage(`Saving in progress..`);
-    setShowToast(true);
-    var updatedLabels = [];
-    var updatedDesc = [];
-
-    if (typeof tempArr[index] === "undefined") {
-      updatedLabels[0] = labels;
+    if (
+      evt.target.innerText === undefined ||
+      evt.target.innerText.replace(/(<([^>]+)>)/gi, "").trim() === ""
+    ) {
+      evt.currentTarget.parentNode.nextSibling.innerHTML =
+        "File name can't be blank.";
     } else {
-      updatedLabels[0] = tempArr[index];
-    }
+      evt.currentTarget.parentNode.nextSibling.innerHTML = "";
 
-    if (details == "") {
-      updatedDesc[0] = "";
-    } else if (typeof descArr[index] === "undefined") {
-      updatedDesc[0] = details;
-    } else {
-      updatedDesc[0] = descArr[index];
-    }
-    const filterName = name.replace(/(<([^>]+)>)/gi, "");
-    const ouputName = textName.current;
-    const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-
-    const data = {
-      name: !textName.current ? filterName : finaloutput,
-      details: updatedDesc[0],
-      labels: updatedLabels[0],
-      order: order,
-    };
-
-    nameArr[index] = finaloutput;
-
-    await updateMatterFile(id, data);
-    textName.current = "";
-    setTimeout(() => {
-      getMatterFiles();
-      setTimeout(() => {
-        setResultMessage(`Successfully updated `);
+      if (textName.current !== "") {
+        setUpdateProgress(true);
+        setResultMessage(`Saving in progress..`);
         setShowToast(true);
+        var updatedLabels = [];
+        var updatedDesc = [];
+
+        if (typeof tempArr[index] === "undefined") {
+          updatedLabels[0] = labels;
+        } else {
+          updatedLabels[0] = tempArr[index];
+        }
+
+        if (details == "") {
+          updatedDesc[0] = "";
+        } else if (typeof descArr[index] === "undefined") {
+          updatedDesc[0] = details;
+        } else {
+          updatedDesc[0] = descArr[index];
+        }
+        const filterName = name.replace(/(<([^>]+)>)/gi, "");
+        const ouputName = textName.current;
+        const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
+
+        const data = {
+          name: !textName.current ? filterName : finaloutput,
+          details: updatedDesc[0],
+          labels: updatedLabels[0],
+          order: order,
+        };
+
+        nameArr[index] = finaloutput;
+
+        await updateMatterFile(id, data);
+        textName.current = "";
         setTimeout(() => {
-          setShowToast(false);
-          setUpdateProgress(false);
+          getMatterFiles();
+          setTimeout(() => {
+            setResultMessage(`Successfully updated `);
+            setShowToast(true);
+            setTimeout(() => {
+              setShowToast(false);
+              setUpdateProgress(false);
+            }, 1000);
+          }, 1000);
         }, 1000);
-      }, 1000);
-    }, 1000);
+      }
+    }
   };
 
   const extractArray = (ar) => {
@@ -728,14 +754,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       : `<p>${data.name}</p>`
                                   }
                                   onChange={(evt) => handleChangeName(evt)}
-                                  onBlur={() =>
+                                  onBlur={(evt) =>
                                     HandleChangeToTDName(
                                       data.id,
                                       data.details,
                                       data.name,
                                       data.labels,
                                       index,
-                                      data.order
+                                      data.order,
+                                      evt
                                     )
                                   }
                                   className="w-40"
@@ -750,6 +777,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                   />
                                 </span>
                               </div>
+                              <p className="text-red-400 filename-validation"></p>{" "}
+                              {/* do not change */}
                             </td>
 
                             <td

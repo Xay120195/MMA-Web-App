@@ -56,12 +56,10 @@ function Navbar() {
         };
         setuserInfo(ls);
       }
-
     }
 
     if (userInfo) {
       featureAccessFilters();
-      console.log("env",process.env.NODE_ENV);
     }
   }, [userInfo]);
 
@@ -80,7 +78,7 @@ function Navbar() {
     } else {
       console.log(userTypeAccess.message);
     }
-  }
+  };
 
   return (
     <IconContext.Provider value={{ color: "#fff" }}>
@@ -101,7 +99,8 @@ function Navbar() {
           <ul className="nav-menus">
             {userInfo &&
               SidebarData.map((item, index) => {
-                return (item.name === "DASHBOARD" && showDashboard) || (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
+                return (item.name === "DASHBOARD" && showDashboard) ||
+                  (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
                   item.name === "ACCOUNTSETTINGS" ? (
                   <li
                     className={
