@@ -25,6 +25,9 @@ import {
   GrDocumentTxt,
 } from "react-icons/gr";
 import { BsFillTrashFill } from "react-icons/bs";
+import RemoveFileModal from "./remove-file-modal";
+
+export var selectedRows = [];
 
 export default function FileBucket() {
   let tempArr = [];
@@ -39,6 +42,17 @@ export default function FileBucket() {
   const [active, setActive] = useState(false);
   const [selected, setSelected] = useState("");
   const { matter_id } = useParams();
+
+  const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
+  const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
+  // const [checkedState, setCheckedState] = useState(
+  //       new Array(matterFiles.length).fill(false)
+  //     );
+
+  // var checkedState = Array(matterFiles.length).fill(false);
+  
+
+  
 
   const hideToast = () => {
     setShowToast(false);
@@ -71,6 +85,7 @@ export default function FileBucket() {
 
   const handleModalClose = () => {
     setShowUploadModal(false);
+    setshowRemoveFileModal(false);
   };
 
   const contentDiv = {
@@ -256,6 +271,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
     });
+
+  
   };
 
   async function createMatterFile(file) {
@@ -529,20 +546,39 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         }, 1000);
       }, 1000);
     }, 1000);
-  };
+  };  
 
-  var selectedRows = [];
+  //function for selecting rows
+  function checked(id, fileName, idx){
+    if(selectedRows.indexOf(selectedRows.find(temp => temp.id === id)) > -1){ //alreadychecked or in array already
+      selectedRows.splice(selectedRows.indexOf(selectedRows.find(temp => temp.id === id)), 1);
+      // checkedState[idx] = false;
+      console.log(selectedRows);
+      // console.log(checkedState);
+    }else{ //notchecked, add id in array
+      selectedRows = [...selectedRows, {id: id, fileName: fileName}];
+      // checkedState[idx] = true;
+      console.log(selectedRows);
+      // console.log(checkedState);
+    }
 
-  const checked = (id) => {
-    //check if checkbox is checked
-    if(selectedRows.indexOf(id) > -1){ //if in array = checked already, remove
-      selectedRows.splice(selectedRows.indexOf(id), 1);
-      alert(selectedRows);
-    }else{ //not in array = unchecked, add
-      selectedRows = [...selectedRows, id];
-      alert(selectedRows);
+    if(selectedRows.length > 0){
+      setshowRemoveFileButton(true);
+    }else{
+      setshowRemoveFileButton(false);
     }
   }
+
+  function checkAll(){
+
+    alert("Under maintenance. Still ongoing");
+  }
+
+  //delete function
+  const handleDelete = () => {
+    setshowRemoveFileModal(true);
+  }
+
   const handleChageBackground = (id) => {
     setSelected(id);
     if (active) {
@@ -585,7 +621,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         <div className="p-5 py-1 left-0">
           <div>
             <input type="checkbox" className="mt-1 mr-3 px-2"
-              
+              onChange={()=>checkAll()}
+              disabled
             />
             <button
               className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
@@ -594,14 +631,16 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>
-
-            <button
-              className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-              // onClick={() => }
-            >
-              DELETE &nbsp;
-              <BsFillTrashFill />
-            </button>
+            {
+              showRemoveFileButton &&
+              <button
+                className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                onClick={() => handleDelete()}
+              >
+                DELETE &nbsp;
+                <BsFillTrashFill />
+              </button>
+            }
           </div>
         </div>
 
@@ -689,11 +728,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         </svg>
                                         
                                         <span className="px-3 flex">
-                                          <input type="checkbox" class="mt-1 mr-1"
+                                          <input type="checkbox"
                                             name={data.id}
-                                            className="cursor-pointer w-10"
-                                            // checked={checkedState[index]}
-                                            onChange={checked(data.id)}
+                                            className="cursor-pointer w-10 mt-1"
+                                            // checked={checkedState}
+                                            onChange={()=>checked(data.id, data.name, index)}
                                           />
                                           {index + 1}
                                         </span>
@@ -871,6 +910,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           </>
         )}
       </div>
+      {showRemoveFileModal && (
+        <RemoveFileModal
+          // handleSave={ }
+          handleModalClose={handleModalClose}
+        />
+      )}
 
       {showUploadModal && (
         <UploadLinkModal
