@@ -103,6 +103,7 @@ export default function UploadLinkModal(props) {
   const onDrop = () => dropRef.current.classList.remove("dragover");
 
   const onSelectFile = (e) => {
+    console.log(e.target.files.length);
     if (!e.target.files || e.target.files.length === 0) {
       return;
     }
@@ -189,7 +190,7 @@ export default function UploadLinkModal(props) {
           s3ObjectKey: fd.key,
           size: parseInt(size),
           type: type,
-          name: name,
+          name: name.replace(/\.[^/.]+$/, ""),
         };
 
         setUploadedFiles((prevState) => ({
@@ -306,13 +307,13 @@ export default function UploadLinkModal(props) {
             ) : null}
             <div className="btn-grid">
               <div
-                className={`cancel-btn ${uploadStart ? "disabled-btn" : ""}`}
+                className={`cancel-btn ${uploadStart ? "disabled-cancel-btn" : ""}`}
                 onClick={handleModalClose}
               >
                 <span>Cancel</span>
               </div>
               <div
-                className={`upload-btn ${uploadStart ? "disabled-btn" : ""}`}
+                className={`upload-btn ${uploadStart || selectedFiles.length === 0 ? "disabled-btn" : ""}`}
                 onClick={() => handleUpload()}
               >
                 <span>Upload</span>

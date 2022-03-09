@@ -260,13 +260,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       query: qGetMatterFiles,
       variables: {
         matterId: matter_id,
-        isDeleted: false
+        isDeleted: false,
       },
     };
 
     await API.graphql(params).then((files) => {
-      setMatterFiles(files.data.matterFile);
-      console.log(files.data.matterFile);
+      const mf = files.data.matterFile;
+
+      const matterFilesList = mf.map((obj) => {
+        return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
+      });
+
+      setMatterFiles(matterFilesList);
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
@@ -438,7 +443,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const handleChangeName = (evt) => {
-    textName.current = evt.target.value;
+    evt.currentTarget.parentNode.nextSibling.innerHTML = "";
+    var name = evt.target.value;
+
+    if (name === undefined || name.replace(/(<([^>]+)>)/gi, "").trim() === "") {
+      evt.currentTarget.parentNode.nextSibling.innerHTML =
+        "File name can't be blank.";
+    } else {
+      textName.current = name;
+    }
   };
 
   const HandleChangeToTDName = async (
@@ -447,53 +460,64 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     name,
     labels,
     index,
-    order
+    order,
+    evt
   ) => {
-    setUpdateProgress(true);
-    setResultMessage(`Saving in progress..`);
-    setShowToast(true);
-    var updatedLabels = [];
-    var updatedDesc = [];
-
-    if (typeof tempArr[index] === "undefined") {
-      updatedLabels[0] = labels;
+    if (
+      textName.current === undefined ||
+      textName.current.replace(/(<([^>]+)>)/gi, "").trim() === ""
+    ) {
+      evt.currentTarget.parentNode.nextSibling.innerHTML =
+        "File name can't be blank.";
     } else {
-      updatedLabels[0] = tempArr[index];
-    }
+      evt.currentTarget.parentNode.nextSibling.innerHTML = "";
 
-    if (details == "") {
-      updatedDesc[0] = "";
-    } else if (typeof descArr[index] === "undefined") {
-      updatedDesc[0] = details;
-    } else {
-      updatedDesc[0] = descArr[index];
-    }
-    const filterName = name.replace(/(<([^>]+)>)/gi, "");
-    const ouputName = textName.current;
-    const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
+      setUpdateProgress(true);
+      setResultMessage(`Saving in progress..`);
+      setShowToast(true);
+      var updatedLabels = [];
+      var updatedDesc = [];
 
-    const data = {
-      name: !textName.current ? filterName : finaloutput,
-      details: updatedDesc[0],
-      labels: updatedLabels[0],
-      order: order,
-    };
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
 
-    nameArr[index] = finaloutput;
+      if (details == "") {
+        updatedDesc[0] = "";
+      } else if (typeof descArr[index] === "undefined") {
+        updatedDesc[0] = details;
+      } else {
+        updatedDesc[0] = descArr[index];
+      }
+      const filterName = name.replace(/(<([^>]+)>)/gi, "");
+      const ouputName = textName.current;
+      const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
 
-    await updateMatterFile(id, data);
-    textName.current = "";
-    setTimeout(() => {
-      getMatterFiles();
+      const data = {
+        name: !textName.current ? filterName : finaloutput,
+        details: updatedDesc[0],
+        labels: updatedLabels[0],
+        order: order,
+      };
+
+      nameArr[index] = finaloutput;
+
+      await updateMatterFile(id, data);
+      textName.current = "";
       setTimeout(() => {
-        setResultMessage(`Successfully updated `);
-        setShowToast(true);
+        getMatterFiles();
         setTimeout(() => {
-          setShowToast(false);
-          setUpdateProgress(false);
+          setResultMessage(`Successfully updated `);
+          setShowToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+            setUpdateProgress(false);
+          }, 1000);
         }, 1000);
       }, 1000);
-    }, 1000);
+    }
   };
 
   const extractArray = (ar) => {
@@ -519,13 +543,16 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setShowToast(true);
     setUpdateProgress(true);
 
+    const source = matterFiles.find(
+      (element) => element.order === e.destination.index
+    );
+
+    const src = source ? source.order : e.destination.index;
     let targetLocation;
     if (e.source.index <= e.destination.index) {
-      targetLocation = e.destination.index + 1;
+      targetLocation = src + 1;
     } else if (e.source.index >= e.destination.index) {
-      targetLocation = e.destination.index - 1;
-    } else {
-      targetLocation = e.destination.index;
+      targetLocation = src - 1;
     }
 
     const data = {
@@ -664,68 +691,30 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               <>
                 {matterFiles !== null && matterFiles.length !== 0 && (
                   <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                    <DragDropContext onDragEnd={handleDragEnd}>
-                      <table className=" table-fixed min-w-full divide-y divide-gray-200">
-                        <thead>
-                          <tr>
-                            <th className="px-6 py-4 text-left w-20">
-                              Item No.
-                            </th>
-                            <th className="px-6 py-4 text-left w-40">Name</th>
-                            <th className="px-6 py-4 text-left">Description</th>
-                            <th className="px-6 py-4 text-left w-40">Labels</th>
-                          </tr>
-                        </thead>
-                        <Droppable droppableId="droppable-1">
-                          {(provider) => (
-                            <tbody
-                              ref={provider.innerRef}
-                              {...provider.droppableProps}
-                              className="bg-white divide-y divide-gray-200"
-                            >
-                              {sortByOrder(matterFiles).map((data, index) => (
-                                <Draggable
-                                  key={data.id}
-                                  draggableId={data.id}
-                                  index={index}
-                                >
-                                  {(provider, snapshot) => (
-                                    <tr
-                                      key={data.id}
-                                      index={index}
-                                      className="h-full"
-                                      {...provider.draggableProps}
-                                      ref={provider.innerRef}
-                                      style={{
-                                        ...provider.draggableProps.style,
-                                        backgroundColor:
-                                          snapshot.isDragging ||
-                                          (active && data.id === selected)
-                                            ? "rgba(255, 255, 239, 0.767)"
-                                            : "white",
-                                      }}
-                                    >
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="px-6 py-6 inline-flex"
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-6 w-6"
-                                          fill="none"
-                                          onClick={() =>
-                                            handleChageBackground(data.id)
-                                          }
-                                          viewBox="0 0 24 24"
-                                          stroke="currentColor"
-                                          strokeWidth={2}
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                                          />
-                                        </svg>
+                    {/* <DragDropContext onDragEnd={handleDragEnd}> */}
+                    <table className=" table-fixed min-w-full divide-y divide-gray-200">
+                      <thead>
+                        <tr>
+                          {/* <th className="px-6 py-4 text-left w-20">Item No.</th> */}
+                          <th className="px-6 py-4 text-left w-40">Name</th>
+                          <th className="px-6 py-4 text-left">Description</th>
+                          <th className="px-6 py-4 text-left w-40">Labels</th>
+                        </tr>
+                      </thead>
+                      {/* <Droppable droppableId="droppable-1">
+                          {(provider) => ( */}
+                      <tbody
+                        // ref={provider.innerRef}
+                        // {...provider.droppableProps}
+                        className="bg-white divide-y divide-gray-200"
+                      >
+                        {sortByOrder(matterFiles).map((data, index) => (
+                        
+                          <tr
+                            key={data.id}
+                            index={index}
+                            className="h-full"
+                          >
                                         
                                         <span className="px-3 flex">
                                           <input type="checkbox"
@@ -736,173 +725,170 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           />
                                           {index + 1}
                                         </span>
-                                      </td>
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center relative flex-wrap w-40"
-                                      >
-                                        <div className="inline-flex">
-                                          {data.type
-                                            .split("/")
-                                            .slice(0, -1)
-                                            .join("/") == "image" ? (
-                                            <GrDocumentImage className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "audio" ? (
-                                            <FaRegFileAudio className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "video" ? (
-                                            <FaRegFileVideo className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "text" ? (
-                                            <GrDocumentTxt className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
-                                              "sheet" ? (
-                                            <GrDocumentExcel className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
-                                              "document" ? (
-                                            <GrDocumentWord className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
-                                              "text" ? (
-                                            <GrDocumentText className="text-2xl" />
-                                          ) : data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") == "application" ? (
-                                            <GrDocumentPdf className="text-2xl" />
-                                          ) : (
-                                            <GrDocumentText className="text-2xl" />
-                                          )}
-                                          &nbsp;&nbsp;
-                                          {/* <input defaultValue={data.type.split('.').pop()}/> */}
-                                          <ContentEditable
-                                            style={{ cursor: "auto" }}
-                                            disabled={
-                                              updateProgess ? true : false
-                                            }
-                                            html={
-                                              !data.name
-                                                ? "<p> </p>"
-                                                : `<p>${data.name}</p>`
-                                            }
-                                            onChange={(evt) =>
-                                              handleChangeName(evt)
-                                            }
-                                            onBlur={() =>
-                                              HandleChangeToTDName(
-                                                data.id,
-                                                data.details,
-                                                data.name,
-                                                data.labels,
-                                                index,
-                                                data.order
-                                              )
-                                            }
-                                            className="w-40"
-                                          />
-                                          <span>
-                                            <AiOutlineDownload
-                                              className="text-blue-400 mx-1"
-                                              onClick={() =>
-                                                //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
-                                                openNewTab(data.downloadURL)
-                                              }
-                                            />
-                                          </span>
-                                        </div>
-                                      </td>
+                                      
+                            <td
+                              // {...provider.dragHandleProps}
+                              className="px-6 py-4 place-items-center relative flex-wrap w-40"
+                            >
+                              <div className="inline-flex">
+                                {data.type.split("/").slice(0, -1).join("/") ==
+                                "image" ? (
+                                  <GrDocumentImage className="text-2xl" />
+                                ) : data.type
+                                    .split("/")
+                                    .slice(0, -1)
+                                    .join("/") == "audio" ? (
+                                  <FaRegFileAudio className="text-2xl" />
+                                ) : data.type
+                                    .split("/")
+                                    .slice(0, -1)
+                                    .join("/") == "video" ? (
+                                  <FaRegFileVideo className="text-2xl" />
+                                ) : data.type
+                                    .split("/")
+                                    .slice(0, -1)
+                                    .join("/") == "text" ? (
+                                  <GrDocumentTxt className="text-2xl" />
+                                ) : data.type
+                                    .split("/")
+                                    .slice(0, -1)
+                                    .join("/") == "application" &&
+                                  data.type.split(".").pop() == "sheet" ? (
+                                  <GrDocumentExcel className="text-2xl" />
+                                ) : data.type
+                                    .split("/")
+                                    .slice(0, -1)
+                                    .join("/") == "application" &&
+                                  data.type.split(".").pop() == "document" ? (
+                                  <GrDocumentWord className="text-2xl" />
+                                ) : data.type
+                                    .split("/")
+                                    .slice(0, -1)
+                                    .join("/") == "application" &&
+                                  data.type.split(".").pop() == "text" ? (
+                                  <GrDocumentText className="text-2xl" />
+                                ) : data.type
+                                    .split("/")
+                                    .slice(0, -1)
+                                    .join("/") == "application" ? (
+                                  <GrDocumentPdf className="text-2xl" />
+                                ) : (
+                                  <GrDocumentText className="text-2xl" />
+                                )}
+                                &nbsp;&nbsp;
+                                {/* <input defaultValue={data.type.split('.').pop()}/> */}
+                                <ContentEditable
+                                  style={{ cursor: "auto" }}
+                                  disabled={updateProgess ? true : false}
+                                  html={
+                                    !data.name
+                                      ? "<p> </p>"
+                                      : `<p>${data.name}</p>`
+                                  }
+                                  onChange={(evt) => handleChangeName(evt)}
+                                  onBlur={(evt) =>
+                                    HandleChangeToTDName(
+                                      data.id,
+                                      data.details,
+                                      data.name,
+                                      data.labels,
+                                      index,
+                                      data.order,
+                                      evt
+                                    )
+                                  }
+                                  className="w-40"
+                                />
+                                <span>
+                                  <AiOutlineDownload
+                                    className="text-blue-400 mx-1"
+                                    onClick={() =>
+                                      //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
+                                      openNewTab(data.downloadURL)
+                                    }
+                                  />
+                                </span>
+                              </div>
+                              <p className="text-red-400 filename-validation"></p>{" "}
+                              {/* do not change */}
+                            </td>
 
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center w-full"
-                                      >
-                                        <ContentEditable
-                                          style={{ cursor: "auto" }}
-                                          disabled={
-                                            updateProgess ? true : false
-                                          }
-                                          html={
-                                            !data.details
-                                              ? `<p> </p>`
-                                              : `<p>${data.details}</p>`
-                                          }
-                                          onChange={(evt) =>
-                                            handleChangeDesc(evt)
-                                          }
-                                          onBlur={() =>
-                                            HandleChangeToTD(
-                                              data.id,
-                                              data.name,
-                                              data.details,
-                                              data.labels,
-                                              index,
-                                              data.order
-                                            )
-                                          }
-                                          onPaste={pasteHandler}
-                                          className="pt-2 pb-5 font-poppins"
-                                          options={labels}
-                                          type="text"
-                                        />
-                                      </td>
+                            <td
+                              // {...provider.dragHandleProps}
+                              className="px-6 py-4 place-items-center w-full"
+                            >
+                              <ContentEditable
+                                style={{ cursor: "auto" }}
+                                disabled={updateProgess ? true : false}
+                                html={
+                                  !data.details
+                                    ? `<p> </p>`
+                                    : `<p>${data.details}</p>`
+                                }
+                                onChange={(evt) => handleChangeDesc(evt)}
+                                onBlur={() =>
+                                  HandleChangeToTD(
+                                    data.id,
+                                    data.name,
+                                    data.details,
+                                    data.labels,
+                                    index,
+                                    data.order
+                                  )
+                                }
+                                onPaste={pasteHandler}
+                                className="pt-2 pb-5 font-poppins"
+                                options={labels}
+                                type="text"
+                              />
+                            </td>
 
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="px-6 py-4 align-top place-items-center relative  flex-wrap"
-                                      >
-                                        <CreatableSelect
-                                          defaultValue={extractArray(
-                                            data.labels
-                                              ? data.labels
-                                              : { value: 0, label: "" }
-                                          )}
-                                          options={labels}
-                                          isMulti
-                                          isClearable
-                                          isSearchable
-                                          onChange={(options) =>
-                                            handleMatterChanged(
-                                              options,
-                                              data.id,
-                                              data.name,
-                                              data.details,
-                                              index,
-                                              data.order
-                                            )
-                                          }
-                                         
-                                          placeholder="Labels"
-                                          className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                        />
-                                      </td>
-                                    </tr>
-                                  )}
-                                </Draggable>
-                              ))}
-                              {provider.placeholder}
-                            </tbody>
-                          )}
-                        </Droppable>
-                      </table>
-                    </DragDropContext>
+                            <td
+                              // {...provider.dragHandleProps}
+                              className="px-6 py-4 align-top place-items-center relative  flex-wrap"
+                            >
+                              <CreatableSelect
+                                defaultValue={extractArray(
+                                  data.labels
+                                    ? data.labels
+                                    : { value: 0, label: "" }
+                                )}
+                                options={labels}
+                                isMulti
+                                isClearable
+                                isSearchable
+                                onChange={(options) =>
+                                  handleMatterChanged(
+                                    options,
+                                    data.id,
+                                    data.name,
+                                    data.details,
+                                    index,
+                                    data.order
+                                  )
+                                }
+                                // onBlur={(options) =>
+                                //   handleMatterChanged(
+                                //     options,
+                                //     data.id,
+                                //     data.name,
+                                //     data.details
+                                //   )
+                                // }
+                                placeholder="Labels"
+                                className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                              />
+                            </td>
+                          </tr>
+                          //   )}
+                          // </Draggable>
+                        ))}
+                        {/* {provider.placeholder} */}
+                      </tbody>
+                      {/* )} */}
+                      {/* </Droppable> */}
+                    </table>
+                    {/* </DragDropContext> */}
                   </div>
                 )}
               </>
