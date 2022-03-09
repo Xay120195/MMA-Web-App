@@ -249,8 +249,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     };
 
     await API.graphql(params).then((files) => {
-      setMatterFiles(files.data.matterFile);
-      console.log(files.data.matterFile);
+      const mf = files.data.matterFile;
+
+      const matterFilesList = mf.map((obj) => {
+        return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
+      });
+
+      setMatterFiles(matterFilesList);
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );

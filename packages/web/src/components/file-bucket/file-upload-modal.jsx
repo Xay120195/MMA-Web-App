@@ -190,7 +190,7 @@ export default function UploadLinkModal(props) {
           s3ObjectKey: fd.key,
           size: parseInt(size),
           type: type,
-          name: name,
+          name: name.replace(/\.[^/.]+$/, ""),
         };
 
         setUploadedFiles((prevState) => ({
