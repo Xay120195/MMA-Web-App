@@ -266,15 +266,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     };
 
     await API.graphql(params).then((files) => {
-      const mf = files.data.matterFile;
+      const matterFilesList = files.data.matterFile;
 
-      const matterFilesList = mf.map((obj) => {
-        //return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
-        return {
-          ...obj,
-          name: obj.name.split(".").slice(0, -1).join("."),
-        };
-      });
+      // const matterFilesList = mf.map((obj) => {
+      //   //return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
+      //   return {
+      //     ...obj,
+      //     name: obj.name.split(".").slice(0, -1).join("."),
+      //   };
+      // });
 
       fileCount = matterFilesList.length;
 
