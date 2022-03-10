@@ -3,7 +3,7 @@ const {
   GetItemCommand,
   UpdateItemCommand,
   QueryCommand,
-  BatchWriteItemCommand
+  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 const { v4 } = require("uuid");
@@ -64,7 +64,7 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
-      order: 1,
+      order: 0,
       createdAt: new Date().toISOString(),
     };
 
