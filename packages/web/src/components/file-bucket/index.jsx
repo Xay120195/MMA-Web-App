@@ -269,8 +269,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const mf = files.data.matterFile;
 
       const matterFilesList = mf.map((obj) => {
-        return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
+        //return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
+        return {
+          ...obj,
+          name: obj.name.split(".").slice(0, -1).join("."),
+        };
       });
+
       fileCount = matterFilesList.length;
 
       setMatterFiles(sortByOrder(matterFilesList));
