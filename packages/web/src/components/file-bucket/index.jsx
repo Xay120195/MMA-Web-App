@@ -540,8 +540,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   function sortByOrder(arr) {
-    arr.sort((a, b) => a.order - b.order);
-    return arr;
+    const isAllZero = arr.every((item) => item.order === 0);
+    let sort;
+    if (isAllZero) {
+      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else {
+      sort = arr.sort((a, b) => a.order - b.order);
+    }
+    return sort;
   }
 
   //drag and drop functions
