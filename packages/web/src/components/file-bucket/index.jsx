@@ -5,7 +5,7 @@ import { API, toast } from "aws-amplify";
 import BlankState from "../blank-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
-import { MdArrowForwardIos } from "react-icons/md";
+import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
@@ -819,23 +819,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         {...provider.dragHandleProps}
                                         className="px-6 py-6 inline-flex"
                                       >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          className="h-6 w-6"
-                                          fill="none"
+                                        <MdDragIndicator
+                                          className="text-2xl"
                                           onClick={() =>
                                             handleChageBackground(data.id)
                                           }
-                                          viewBox="0 0 24 24"
-                                          stroke="currentColor"
-                                          strokeWidth={2}
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                                          />
-                                        </svg>
+                                        />
+
                                         <input
                                           type="checkbox"
                                           name={data.id}
@@ -855,48 +845,48 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           {data.type
                                             .split("/")
                                             .slice(0, -1)
-                                            .join("/") == "image" ? (
+                                            .join("/") === "image" ? (
                                             <GrDocumentImage className="text-2xl" />
                                           ) : data.type
                                               .split("/")
                                               .slice(0, -1)
-                                              .join("/") == "audio" ? (
+                                              .join("/") === "audio" ? (
                                             <FaRegFileAudio className="text-2xl" />
                                           ) : data.type
                                               .split("/")
                                               .slice(0, -1)
-                                              .join("/") == "video" ? (
+                                              .join("/") === "video" ? (
                                             <FaRegFileVideo className="text-2xl" />
                                           ) : data.type
                                               .split("/")
                                               .slice(0, -1)
-                                              .join("/") == "text" ? (
+                                              .join("/") === "text" ? (
                                             <GrDocumentTxt className="text-2xl" />
                                           ) : data.type
                                               .split("/")
                                               .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
+                                              .join("/") === "application" &&
+                                            data.type.split(".").pop() ===
                                               "sheet" ? (
                                             <GrDocumentExcel className="text-2xl" />
                                           ) : data.type
                                               .split("/")
                                               .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
+                                              .join("/") === "application" &&
+                                            data.type.split(".").pop() ===
                                               "document" ? (
                                             <GrDocumentWord className="text-2xl" />
                                           ) : data.type
                                               .split("/")
                                               .slice(0, -1)
-                                              .join("/") == "application" &&
-                                            data.type.split(".").pop() ==
+                                              .join("/") === "application" &&
+                                            data.type.split(".").pop() ===
                                               "text" ? (
                                             <GrDocumentText className="text-2xl" />
                                           ) : data.type
                                               .split("/")
                                               .slice(0, -1)
-                                              .join("/") == "application" ? (
+                                              .join("/") === "application" ? (
                                             <GrDocumentPdf className="text-2xl" />
                                           ) : (
                                             <GrDocumentText className="text-2xl" />
@@ -931,7 +921,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           />
                                           <span>
                                             <AiOutlineDownload
-                                              className="text-blue-400 mx-1"
+                                              className="text-blue-400 mx-1 text-2xl"
                                               onClick={() =>
                                                 //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
                                                 openNewTab(data.downloadURL)
