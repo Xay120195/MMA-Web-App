@@ -51,8 +51,17 @@ export default function FileBucket() {
     setShowToast(false);
   };
 
-  const openNewTab = (url) => {
-    window.open(url);
+  const previewAndDownloadFile = async (id) => {
+    const params = {
+      query: qGetFileDownloadLink,
+      variables: {
+        id: id,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      window.open(result.data.file.downloadURL);
+    });
   };
 
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -145,6 +154,13 @@ export default function FileBucket() {
       }
       createdAt
       order
+    }
+  }`;
+
+  const qGetFileDownloadLink = `
+  query getFileDownloadLink($id: ID) {
+    file(id: $id) {
+      downloadURL
     }
   }`;
 
@@ -267,15 +283,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     await API.graphql(params).then((files) => {
       const matterFilesList = files.data.matterFile;
-
-      // const matterFilesList = mf.map((obj) => {
-      //   //return { ...obj, name: obj.name.replace(/\.[^/.]+$/, "") };
-      //   return {
-      //     ...obj,
-      //     name: obj.name.split(".").slice(0, -1).join("."),
-      //   };
-      // });
-
       fileCount = matterFilesList.length;
 
       setMatterFiles(sortByOrder(matterFilesList));
@@ -932,10 +939,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           />
                                           <span>
                                             <AiOutlineDownload
-                                              className="text-blue-400 mx-1 text-2xl"
+                                              className="text-blue-400 mx-1 text-2xl cursor-pointer"
                                               onClick={() =>
-                                                //openNewTab(data.downloadURL.substr(0,data.downloadURL.indexOf("?")))
-                                                openNewTab(data.downloadURL)
+                                                previewAndDownloadFile(data.id)
                                               }
                                             />
                                           </span>
