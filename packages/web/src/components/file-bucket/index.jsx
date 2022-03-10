@@ -114,6 +114,14 @@ export default function FileBucket() {
       }
   `;
 
+  const mSoftDeleteMatterFile = `
+      mutation softDeleteMatterFile ($id: ID) {
+        matterFileSoftDelete(id: $id) {
+          id
+        }
+      }
+  `;
+
   const qGetMatterFiles = `
   query getMatterFile($matterId: ID, $isDeleted: Boolean) {
     clientMatter(id: $matterId) {
@@ -647,7 +655,38 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   //delete function
-  const handleDeleteFile = (uf) => {};
+  const handleDeleteFile = async (fileID) => {
+    fileID.map(async (id) => {
+      await deleteMatterFile(id);
+    });
+
+    setResultMessage(`File successfully deleted!`);
+    setShowToast(true);
+    handleModalClose();
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles();
+      tempArr = [];
+      nameArr = [];
+      descArr = [];
+      selectedRows = [];
+    }, 3000);
+  };
+
+  const deleteMatterFile = (fileID) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mSoftDeleteMatterFile,
+          variables: fileID,
+        });
+
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  };
 
   const handleChageBackground = (id) => {
     setSelected(id);
