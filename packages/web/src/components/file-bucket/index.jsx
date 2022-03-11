@@ -326,7 +326,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             name: data.name,
             details: data.details,
             labels: data.labels,
-            order: data.order,
           },
         });
 
@@ -391,7 +390,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       name: name,
       details: details,
       labels: updated,
-      order: order,
     };
 
     console.log(updated);
