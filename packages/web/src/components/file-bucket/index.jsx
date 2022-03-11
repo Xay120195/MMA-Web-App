@@ -440,9 +440,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         details: !textDetails.current
           ? fdetails
           : !fdetails
-          ? "nbsp"
+          ? ""
           : textDetails.current,
-        name: !name ? "&nbsp;" : updatedName[0],
+        name: !name ? "<p></p>" : updatedName[0],
         labels: updatedLabels[0],
       };
 
