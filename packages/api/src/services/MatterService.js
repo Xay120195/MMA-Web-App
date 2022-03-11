@@ -53,6 +53,31 @@ export async function getMatterFile(data) {
   return response;
 }
 
+export async function getFile(data) {
+  let response = {};
+  try {
+    const params = {
+      TableName: "MatterFileTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+    const { Item } = await ddbClient.send(command);
+    response = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
+
+
 export async function createMatterFile(data) {
   let response = {};
   try {
