@@ -24,7 +24,7 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
-import { BsFillTrashFill } from "react-icons/bs";
+import { BsConeStriped, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 
 export var selectedRows = [];
@@ -223,7 +223,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     });
   }
 
-  const getLabels = async () => {
+  const getLabels = async (data) => {
     let result = [];
 
     const labelsOpt = await API.graphql({
@@ -241,12 +241,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
     }
+    console.log(result);
+
+    // const newList = result.filter((item) => item.name !== data);
+    // console.log(newList);
 
     setLabels(result);
   };
 
   const addLabel = async (data) => {
     let result;
+  
+    // console.log(data);
 
     const createLabel = await API.graphql({
       query: mCreateLabel,
@@ -255,10 +261,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         name: data,
       },
     });
-
     result = createLabel.data.labelCreate;
+    console.log(result.name);
 
-    getLabels();
+    getLabels(data);
     return result;
   };
 
@@ -366,28 +372,36 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     order
   ) => {
     let newOptions = [];
+    let createdLabel;
+    var updated;
 
-    options.map(async (o) => {
-      if (o.__isNew__) {
-        newOptions = await addLabel(o.label);
-      }
-    });
+        options.map(async (o) => {
+          if (o.__isNew__) {
+            createdLabel = await addLabel(o.label);
+          }
+        });
 
-    newOptions = options.map(({ value: id, label: name }) => ({
-      id,
-      name,
-    }));
+        newOptions = options.map(({ value: id, label: name }) => ({
+          id: id,
+          name: name,
+        }));
 
-    const data = {
-      name: name,
-      details: details,
-      labels: newOptions,
-      order: order,
-    };
+        updated = newOptions.map(d => (
+          d.name==d.id ? {...d, id: id}: d
+        ))
 
-    updateArr(data.labels, index);
-    await updateMatterFile(id, data);
-    await tagFileLabel(id, data.labels);
+        const data = {
+          name: name,
+          details: details,
+          labels: updated,
+          order: order,
+        };
+
+        console.log(updated);
+        updateArr(data.labels, index);
+        await updateMatterFile(id, data);
+        await tagFileLabel(id, data.labels);
+
   };
 
   function updateArr(data, index) {
