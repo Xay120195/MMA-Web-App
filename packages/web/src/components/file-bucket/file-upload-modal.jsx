@@ -53,15 +53,17 @@ export default function UploadLinkModal(props) {
           showAlert = 1; //set flag to don't show
           return false;
         }
-      } else if (fileSize > 3145728) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file size exceeds the 3MB limit.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } else {
+      } 
+      // else if (fileSize > 3145728) {
+      //   if (showAlert == 1) {
+      //     return false;
+      //   } else {
+      //     alert("Your file size exceeds the 3MB limit.");
+      //     showAlert = 1; //set flag to don't show
+      //     return false;
+      //   }
+      // } 
+      else {
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
@@ -133,15 +135,17 @@ export default function UploadLinkModal(props) {
           showAlert = 1; //set flag to don't show
           return false;
         }
-      } else if (fileSize > 3145728) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file size exceeds the 3MB limit.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } else {
+      } 
+      // else if (fileSize > 3145728) {
+      //   if (showAlert == 1) {
+      //     return false;
+      //   } else {
+      //     alert("Your file size exceeds the 3MB limit.");
+      //     showAlert = 1; //set flag to don't show
+      //     return false;
+      //   }
+      // } 
+      else {
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
