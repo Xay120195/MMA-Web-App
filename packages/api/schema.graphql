@@ -192,6 +192,7 @@ type Query {
   matters: [Matter]
   matter(id: ID): Matter
   matterFile(matterId: ID, isDeleted: Boolean): [File]
+  file(id: ID): File
   labels: [Label]
   label(id: ID): Label
   backgrounds: [Background]

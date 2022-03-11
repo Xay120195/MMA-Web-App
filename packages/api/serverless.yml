@@ -151,6 +151,11 @@ custom:
         field: matterFile
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: file
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: matterFileCreate

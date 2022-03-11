@@ -3,7 +3,7 @@ const {
   GetItemCommand,
   UpdateItemCommand,
   QueryCommand,
-  BatchWriteItemCommand
+  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 const { v4 } = require("uuid");
@@ -53,6 +53,31 @@ export async function getMatterFile(data) {
   return response;
 }
 
+export async function getFile(data) {
+  let response = {};
+  try {
+    const params = {
+      TableName: "MatterFileTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const command = new GetItemCommand(params);
+    const { Item } = await ddbClient.send(command);
+    response = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+  }
+  return response;
+}
+
+
+
 export async function createMatterFile(data) {
   let response = {};
   try {
@@ -64,6 +89,7 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
+      order: 0,
       createdAt: new Date().toISOString(),
     };
 

@@ -12,13 +12,12 @@ const useRefEventListener = (fn) => {
 };
 
 export default function UploadLinkModal(props) {
-  
   Storage.configure({
     region: config.aws_user_files_s3_bucket_region,
     bucket: config.aws_user_files_s3_bucket,
     identityPoolId: config.aws_user_pools_id,
   });
-  
+
   const [selectedFiles, _setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState({ files: [] });
 
@@ -44,12 +43,21 @@ export default function UploadLinkModal(props) {
       var ext = re.exec(file.name)[0];
 
       const result = rejectFiles.find((item) => item.includes(ext));
+      const fileSize = file.size;
 
       if (result) {
         if (showAlert == 1) {
           return false;
         } else {
-          alert("Invalid file type");
+          alert("Your file type is invalid.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } else if (fileSize > 3145728) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file size exceeds the 3MB limit.");
           showAlert = 1; //set flag to don't show
           return false;
         }
@@ -103,6 +111,7 @@ export default function UploadLinkModal(props) {
   const onDrop = () => dropRef.current.classList.remove("dragover");
 
   const onSelectFile = (e) => {
+    console.log(e.target.files.length);
     if (!e.target.files || e.target.files.length === 0) {
       return;
     }
@@ -114,12 +123,21 @@ export default function UploadLinkModal(props) {
       var ext = re.exec(file.name)[0];
 
       const result = rejectFiles.find((item) => item.includes(ext));
+      const fileSize = file.size;
 
       if (result) {
         if (showAlert == 1) {
           return false;
         } else {
-          alert("Invalid file type");
+          alert("Your file type is invalid.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } else if (fileSize > 3145728) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file size exceeds the 3MB limit.");
           showAlert = 1; //set flag to don't show
           return false;
         }
@@ -153,49 +171,62 @@ export default function UploadLinkModal(props) {
   const handleUpload = async () => {
     setUploadStart(true);
     selectedFiles.map(async (uf, index) => {
-      
-      if(uf.data.name.split('.').pop() == "docx"){
+      if (uf.data.name.split(".").pop() == "docx") {
         // console.log(uf.data.type);
         var name = uf.data.name,
-        size = uf.data.size,
-        type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        key = `${props.bucketName}/${Number(new Date())}${name
-          .replaceAll(/\s/g, "")
-          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
-      }else{
+          size = uf.data.size,
+          type =
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          key = `${props.bucketName}/${Number(new Date())}${name
+            .replaceAll(/\s/g, "")
+            .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+      } else {
         var name = uf.data.name,
-        size = uf.data.size,
-        type = uf.data.type,
-        key = `${props.bucketName}/${Number(new Date())}${name
-          .replaceAll(/\s/g, "")
-          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+          size = uf.data.size,
+          type = uf.data.type,
+          key = `${props.bucketName}/${Number(new Date())}${name
+            .replaceAll(/\s/g, "")
+            .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
       }
 
-      await Storage.put(key, uf.data, {
-        contentType: type,
-        progressCallback(progress) {
-          const progressInPercentage = Math.round(
-            (progress.loaded / progress.total) * 100
-          );
-          console.log(`Progress: ${progressInPercentage}%`);
-          
-          generateRandomValues(progressInPercentage, index);
-        },
-        errorCallback: (err) => {
-          console.error("Unexpected error while uploading", err);
-        },
-      }).then(async (fd) => {
-        var fileData = {
-          s3ObjectKey: fd.key,
-          size: parseInt(size),
-          type: type,
-          name: name,
-        };
+      try {
+        await Storage.put(key, uf.data, {
+          contentType: type,
+          progressCallback(progress) {
+            const progressInPercentage = Math.round(
+              (progress.loaded / progress.total) * 100
+            );
+            console.log(`Progress: ${progressInPercentage}%`);
 
-        setUploadedFiles((prevState) => ({
-          files: [...prevState.files, fileData],
-        }));
-      });
+            generateRandomValues(progressInPercentage, index);
+          },
+          errorCallback: (err) => {
+            console.error("204: Unexpected error while uploading", err);
+          },
+        })
+          .then(async (fd) => {
+            var fileData = {
+              s3ObjectKey: fd.key,
+              size: parseInt(size),
+              type: type,
+              name: name.split(".").slice(0, -1).join("."),
+            };
+
+            setUploadedFiles((prevState) => ({
+              files: [...prevState.files, fileData],
+            }));
+          })
+          .catch((err) => {
+            console.error("220: Unexpected error while uploading", err);
+          });
+      } catch (e) {
+        const response = {
+          error: e.message,
+          errorStack: e.stack,
+          statusCode: 500,
+        };
+        console.error("228: Unexpected error while uploading", response);
+      }
     });
   };
 
@@ -306,13 +337,19 @@ export default function UploadLinkModal(props) {
             ) : null}
             <div className="btn-grid">
               <div
-                className={`cancel-btn ${uploadStart ? "disabled-btn" : ""}`}
+                className={`cancel-btn ${
+                  uploadStart ? "disabled-cancel-btn" : ""
+                }`}
                 onClick={handleModalClose}
               >
                 <span>Cancel</span>
               </div>
               <div
-                className={`upload-btn ${uploadStart ? "disabled-btn" : ""}`}
+                className={`upload-btn ${
+                  uploadStart || selectedFiles.length === 0
+                    ? "disabled-btn"
+                    : ""
+                }`}
                 onClick={() => handleUpload()}
               >
                 <span>Upload</span>
