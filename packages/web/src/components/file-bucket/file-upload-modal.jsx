@@ -43,12 +43,21 @@ export default function UploadLinkModal(props) {
       var ext = re.exec(file.name)[0];
 
       const result = rejectFiles.find((item) => item.includes(ext));
+      const fileSize = file.size;
 
       if (result) {
         if (showAlert == 1) {
           return false;
         } else {
-          alert("Invalid file type");
+          alert("Your file type is invalid.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } else if (fileSize > 3145728) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file size exceeds the 3MB limit.");
           showAlert = 1; //set flag to don't show
           return false;
         }
@@ -114,12 +123,21 @@ export default function UploadLinkModal(props) {
       var ext = re.exec(file.name)[0];
 
       const result = rejectFiles.find((item) => item.includes(ext));
+      const fileSize = file.size;
 
       if (result) {
         if (showAlert == 1) {
           return false;
         } else {
-          alert("Invalid file type");
+          alert("Your file type is invalid.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } else if (fileSize > 3145728) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file size exceeds the 3MB limit.");
           showAlert = 1; //set flag to don't show
           return false;
         }
@@ -183,7 +201,7 @@ export default function UploadLinkModal(props) {
             generateRandomValues(progressInPercentage, index);
           },
           errorCallback: (err) => {
-            console.error("186: Unexpected error while uploading", err);
+            console.error("204: Unexpected error while uploading", err);
           },
         })
           .then(async (fd) => {
@@ -198,8 +216,8 @@ export default function UploadLinkModal(props) {
               files: [...prevState.files, fileData],
             }));
           })
-          .error((err) => {
-            console.error("202: Unexpected error while uploading", err);
+          .catch((err) => {
+            console.error("220: Unexpected error while uploading", err);
           });
       } catch (e) {
         const response = {
@@ -207,7 +225,7 @@ export default function UploadLinkModal(props) {
           errorStack: e.stack,
           statusCode: 500,
         };
-        console.error("210: Unexpected error while uploading", response);
+        console.error("228: Unexpected error while uploading", response);
       }
     });
   };
