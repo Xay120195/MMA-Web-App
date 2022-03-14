@@ -360,14 +360,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   const textName = useRef("");
   const textDetails = useRef("");
 
-  const handleMatterChanged = async (
-    options,
-    id,
-    name,
-    details,
-    index,
-    order
-  ) => {
+  const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
     let createdLabel;
     var updated;
@@ -984,8 +977,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               data.id,
                                               data.name,
                                               data.details,
-                                              index,
-                                              data.order
+                                              index
                                             )
                                           }
                                           // onBlur={(options) =>
