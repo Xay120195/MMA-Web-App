@@ -5,6 +5,7 @@ const {
   DeleteItemCommand,
   QueryCommand,
   BatchWriteItemCommand,
+  BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
@@ -311,6 +312,88 @@ async function tagFileLabel(data) {
     const fileLabelResult = await client.send(fileLabelCommand);
 
     response = fileLabelResult ? { file: { id: data.file.id } } : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
+async function bulkDeleteBackground(data) {
+  let response = {};
+  try {
+    let backgroundId = data.id;
+    const arrBackgroundItems = [];
+    const arrCompanyBackgroundItems = [];
+    const arrBackgroundIds = [];
+
+    for (var a = 0; a < backgroundId.length; a++) {
+      var bId = { id: backgroundId[a] };
+
+      arrBackgroundIds.push(bId);
+
+      arrBackgroundItems.push({
+        DeleteRequest: {
+          Key: marshall(bId),
+        },
+      });
+
+      const companyBackgroundParams = {
+        TableName: "ClientMatterBackgroundTable",
+        IndexName: "byBackground",
+        KeyConditionExpression: "backgroundId = :backgroundId",
+        ExpressionAttributeValues: marshall({
+          ":backgroundId": backgroundId[a],
+        }),
+      };
+
+      const companyBackgroundCommand = new QueryCommand(
+        companyBackgroundParams
+      );
+      const companyBackgroundResult = await client.send(
+        companyBackgroundCommand
+      );
+
+      for (var a = 0; a < companyBackgroundResult.Items.length; a++) {
+        var companyBackgroundId = { id: companyBackgroundResult.Items[a].id };
+        arrCompanyBackgroundItems.push({
+          DeleteRequest: {
+            Key: companyBackgroundId,
+          },
+        });
+      }
+    }
+
+    const backgroundParams = {
+      RequestItems: {
+        BackgroundsTable: arrBackgroundItems,
+      },
+    };
+
+    const backgroundCommand = new BatchWriteItemCommand(backgroundParams);
+    const backgroundResult = await client.send(backgroundCommand);
+
+    if (backgroundResult) {
+      const deleteCompanyBackgroundParams = {
+        RequestItems: {
+          ClientMatterBackgroundTable: arrCompanyBackgroundItems,
+        },
+      };
+
+      const deleteCompanyBackgroundCommand = new BatchWriteItemCommand(
+        deleteCompanyBackgroundParams
+      );
+      const deleteCompanyBackgroundResult = await client.send(
+        deleteCompanyBackgroundCommand
+      );
+
+      response = deleteCompanyBackgroundResult ? arrBackgroundIds : {};
+    }
   } catch (e) {
     response = {
       error: e.message,
@@ -768,6 +851,9 @@ const resolvers = {
     backgroundDelete: async (ctx) => {
       const { id } = ctx.arguments;
       return await deleteBackground(id);
+    },
+    backgroundBulkDelete: async (ctx) => {
+      return await bulkDeleteBackground(ctx.arguments);
     },
   },
 };
