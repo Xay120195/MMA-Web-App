@@ -112,8 +112,8 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput], $order: Int) {
-        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels, order: $order) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels ) {
           id
           name
           details
@@ -121,7 +121,6 @@ export default function FileBucket() {
             id
             name
           }
-          order
         }
       }
   `;
@@ -326,7 +325,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             name: data.name,
             details: data.details,
             labels: data.labels,
-            order: data.order,
           },
         });
 
@@ -391,7 +389,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       name: name,
       details: details,
       labels: updated,
-      order: order,
     };
 
     console.log(updated);
