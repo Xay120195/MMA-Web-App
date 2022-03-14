@@ -574,18 +574,74 @@ export async function deleteBackground(id) {
 
     const filterClientMatterBackgroundId = clientMatterBackgroundId[0];
 
-    const deleateClientMatterBackgroundCommand = new DeleteItemCommand({
+    const deleteClientMatterBackgroundCommand = new DeleteItemCommand({
       TableName: "ClientMatterBackgroundTable",
       Key: { id: filterClientMatterBackgroundId },
     });
 
-    const deleateClientMatterBackgroundResult = await client.send(
-      deleateClientMatterBackgroundCommand
+    const deleteClientMatterBackgroundResult = await client.send(
+      deleteClientMatterBackgroundCommand
     );
 
-    if (deleateClientMatterBackgroundResult) {
+    if (deleteClientMatterBackgroundResult) {
       const command = new DeleteItemCommand({
         TableName: "BackgroundsTable",
+        Key: marshall({ id }),
+      });
+      const request = await client.send(command);
+
+      response = request ? { id: id } : {};
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
+export async function deleteClientMatter(id) {
+  let response = {};
+
+  try {
+    const companyClientMatterParams = {
+      TableName: "CompanyClientMatterTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": id,
+      }),
+    };
+
+    const companyClientMatterCommand = new QueryCommand(
+      companyClientMatterParams
+    );
+    const companyClientMatterResult = await client.send(
+      companyClientMatterCommand
+    );
+
+    const companyClientMatterId = companyClientMatterResult.Items.map(
+      (i) => i.id
+    );
+
+    const filterCompanyClientMatterId = companyClientMatterId[0];
+
+    const deleteCompanyClientMatterCommand = new DeleteItemCommand({
+      TableName: "CompanyClientMatterTable",
+      Key: { id: filterCompanyClientMatterId },
+    });
+
+    const deleteCompanyClientMatterResult = await client.send(
+      deleteCompanyClientMatterCommand
+    );
+
+    if (deleteCompanyClientMatterResult) {
+      const command = new DeleteItemCommand({
+        TableName: "ClientMatterTable",
         Key: marshall({ id }),
       });
       const request = await client.send(command);
@@ -689,6 +745,10 @@ const resolvers = {
     },
     clientMatterCreate: async (ctx) => {
       return await createClientMatter(ctx.arguments);
+    },
+    clientMatterDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      return await deleteClientMatter(id);
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
