@@ -7,7 +7,6 @@ import { ClientMatters } from "./matters-list";
 import { useForm } from "react-hook-form";
 import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
-import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
@@ -128,8 +127,8 @@ export default function Dashboard() {
         )
         .sort((a, b) => a.matter.name.localeCompare(b.matter.name))
     );
-    
-    if(v === ""){
+
+    if (v === "") {
       ClientMatterList();
     }
   };
@@ -332,15 +331,19 @@ query listMatter($companyId: String) {
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
-      var apdMn = apdPr.map((v) => ({
-        ...v,
-        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
-          -4
-        )}/${v.client.id.slice(-4)}}`,
-      })).sort((a,b) => {
-        return new Date(a.createdAt).getTime() - 
-            new Date(b.createdAt).getTime()
-      }).reverse();
+      var apdMn = apdPr
+        .map((v) => ({
+          ...v,
+          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+            -4
+          )}/${v.client.id.slice(-4)}}`,
+        }))
+        .sort((a, b) => {
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        })
+        .reverse();
 
       setClientMattersList(apdMn);
     }
