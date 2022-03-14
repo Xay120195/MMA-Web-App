@@ -34,6 +34,7 @@ export default function Dashboard() {
   const [mattersOptions, setMattersOptions] = useState();
   const [selectedClient, setSelectedClient] = useState();
   const [selectedMatter, setSelectedMatter] = useState();
+  const [selectedClientMatter, setSelectedClientMatter] = useState();
   const [clientMattersList, setClientMattersList] = useState([]);
   const [isLoaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
@@ -198,17 +199,28 @@ export default function Dashboard() {
     setShowToast(false);
   };
 
-  const handleShowDeleteModal = (value) => {
-    setshowDeleteModal(value);
+  const handleShowDeleteModal = (displayStatus, id) => {
+    setshowDeleteModal(displayStatus, id);
+    setSelectedClientMatter(id);
   };
 
-  const handleDeleteModal = () => {
-    setalertMessage(modalDeleteAlertMsg);
-    handleModalClose();
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
+  const handleDeleteModal = async () => {
+    if (selectedClientMatter !== null && selectedClientMatter !== undefined) {
+      await API.graphql({
+        query: deleteClientMatter,
+        variables: {
+          id: selectedClientMatter,
+        },
+      });
+
+      setalertMessage(modalDeleteAlertMsg);
+      handleModalClose();
+      ClientMatterList();
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
   };
 
   const listClient = `
@@ -346,6 +358,8 @@ query listMatter($companyId: String) {
         .reverse();
 
       setClientMattersList(apdMn);
+    } else {
+      setClientMattersList([]);
     }
   };
 
@@ -411,6 +425,14 @@ mutation addMatter($companyId: String, $name: String) {
   const createClientMatter = `
   mutation createClientMatter($companyId: String, $client: ClientInput, $matter:MatterInput) {
     clientMatterCreate(companyId: $companyId, client: $client, matter:$matter) {
+      id
+    }
+}
+`;
+
+  const deleteClientMatter = `
+  mutation deleteClientMatter($id: ID) {
+    clientMatterDelete(id: $id) {
       id
     }
 }
