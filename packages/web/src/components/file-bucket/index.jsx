@@ -404,7 +404,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const handleSaveDetails = async (e, name, details, id, labels, index) => {
     if (textDetails.length <= 0) {
-      setDesAlert("Details can't be empty");
+      setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
       setDesAlert("");
       setUpdateProgress(true);
@@ -996,8 +996,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           )}
                                           &nbsp;&nbsp;
                                           <span
-                                            className="w-40"
-                                            style={{ cursor: "auto" }}
+                                            className="w-40 p-2 font-poppins"
+                                            style={{ cursor: "auto",
+                                            outlineColor:
+                                              "rgb(204, 204, 204, 0.5)",
+                                            outlineWidth: "thin" }}
+
+                                            
                                             suppressContentEditableWarning
                                             onClick={(event) =>
                                               handleNameContent(
@@ -1046,11 +1051,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       >
                                         <div className="inline-flex">
                                           <span
-                                            style={{
-                                              border: "1px solid red",
-                                            }}
-                                            className="w-80"
-                                            style={{ cursor: "auto" }}
+                                            className="w-80 p-2 font-poppins"
+                                            style={{ cursor: "auto",
+                                            outlineColor:
+                                              "rgb(204, 204, 204, 0.5)",
+                                            outlineWidth: "thin",
+                                             }}
                                             suppressContentEditableWarning={
                                               true
                                             }
