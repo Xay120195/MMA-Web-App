@@ -168,6 +168,7 @@ type Background {
   id: ID
   date: String
   description: String
+  order: Int
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -238,7 +239,6 @@ type Mutation {
     type: String
     name: String
     details: String
-    order: Int
   ): File
   matterFileUpdate(
     id: ID
@@ -259,7 +259,7 @@ type Mutation {
   labelUpdate(id: ID, name: String, description: String): Label
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
   backgroundCreate(date: String, clientMatterId: String): Background
-  backgroundUpdate(id: ID, date: String, description: String): Background
+  backgroundUpdate(id: ID, date: String, description: String, order: Int): Background
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
 }

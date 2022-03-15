@@ -379,7 +379,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       labels: updated,
     };
 
-
     updateArr(data.labels, index);
     await updateMatterFile(id, data);
     await tagFileLabel(id, data.labels);
@@ -389,14 +388,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
-        
         setTimeout(() => {
           setShowToast(false);
           setUpdateProgress(false);
         }, 1000);
       }, 1000);
     }, 1000);
-    
   };
 
   function updateArr(data, index) {
@@ -907,14 +904,16 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-center w-20">
+                            <th className="px-2 py-4 text-center whitespace-nowrap">
                               Item No.
                             </th>
-                            <th className="px-6 py-4 text-center w-40">Name</th>
-                            <th className="px-6 py-4 text-center">
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              Name
+                            </th>
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-3/4">
                               Description
                             </th>
-                            <th className="px-6 py-4 text-center w-40">
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
                               Labels
                             </th>
                           </tr>
@@ -950,7 +949,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-6 inline-flex"
+                                        className="px-2 py-6 inline-flex"
                                       >
                                         <MdDragIndicator
                                           className="text-2xl"
@@ -972,7 +971,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       </td>
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center relative flex-wrap w-40"
+                                        className="px-2 py-4 align-top place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
                                           {data.type
@@ -1026,13 +1025,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           )}
                                           &nbsp;&nbsp;
                                           <span
-                                            className="w-40 p-2 font-poppins"
-                                            style={{ cursor: "auto",
-                                            outlineColor:
-                                              "rgb(204, 204, 204, 0.5)",
-                                            outlineWidth: "thin" }}
-
-                                            
+                                            className="p-2 w-60 font-poppins"
+                                            style={{
+                                              cursor: "auto",
+                                              outlineColor:
+                                                "rgb(204, 204, 204, 0.5)",
+                                              outlineWidth: "thin",
+                                            }}
                                             suppressContentEditableWarning
                                             onClick={(event) =>
                                               handleNameContent(
@@ -1060,9 +1059,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           >
                                             {data.name}
                                           </span>
-                                          <span>
+                                          <span >
                                             <AiOutlineDownload
-                                              className="text-blue-400 mx-1 text-2xl cursor-pointer"
+                                              className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
                                               onClick={() =>
                                                 previewAndDownloadFile(data.id)
                                               }
@@ -1077,16 +1076,17 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center w-80"
+                                        className="px-2 py-4 align-top place-items-center relative flex-wrap"
                                       >
-                                        <div className="inline-flex">
+                                        <div className="flex">
                                           <span
-                                            className="w-80 p-2 font-poppins"
-                                            style={{ cursor: "auto",
-                                            outlineColor:
-                                              "rgb(204, 204, 204, 0.5)",
-                                            outlineWidth: "thin",
-                                             }}
+                                            className="w-full p-2 font-poppins"
+                                            style={{
+                                              cursor: "auto",
+                                              outlineColor:
+                                                "rgb(204, 204, 204, 0.5)",
+                                              outlineWidth: "thin",
+                                            }}
                                             suppressContentEditableWarning={
                                               true
                                             }
@@ -1125,7 +1125,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 align-top place-items-center relative  flex-wrap"
+                                        className="px-2 py-4 align-top place-items-center relative flex-wrap"
                                       >
                                         <CreatableSelect
                                           defaultValue={extractArray(
