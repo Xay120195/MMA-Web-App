@@ -383,14 +383,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     await updateMatterFile(id, data);
     await tagFileLabel(id, data.labels);
     setUpdateProgress(true);
+    setResultMessage(`Updating labels..`);
+    setShowToast(true);
     setTimeout(() => {
       getMatterFiles();
       setTimeout(() => {
-        setResultMessage(`Updating labels..`);
-        setShowToast(true);
+        
         setTimeout(() => {
           setShowToast(false);
-          setUpdateProgress(false);
           setUpdateProgress(false);
         }, 1000);
       }, 1000);
