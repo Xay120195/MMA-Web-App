@@ -378,10 +378,24 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       labels: updated,
     };
 
-    console.log(updated);
+
     updateArr(data.labels, index);
     await updateMatterFile(id, data);
     await tagFileLabel(id, data.labels);
+    setUpdateProgress(true);
+    setResultMessage(`Updating labels..`);
+    setShowToast(true);
+    setTimeout(() => {
+      getMatterFiles();
+      setTimeout(() => {
+        
+        setTimeout(() => {
+          setShowToast(false);
+          setUpdateProgress(false);
+        }, 1000);
+      }, 1000);
+    }, 1000);
+    
   };
 
   function updateArr(data, index) {
