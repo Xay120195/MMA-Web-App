@@ -41,6 +41,9 @@ export default function FileBucket() {
   const [updateProgess, setUpdateProgress] = useState(false);
   const [active, setActive] = useState(false);
   const [selected, setSelected] = useState("");
+  const [fileAlert, setFileAlert] = useState("");
+  const [descAlert, setDesAlert] = useState("");
+  const [fileId, setFileId] = useState("");
   const { matter_id } = useParams();
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
@@ -109,8 +112,8 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput], $order: Int) {
-        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels, order: $order) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels ) {
           id
           name
           details
@@ -118,7 +121,6 @@ export default function FileBucket() {
             id
             name
           }
-          order
         }
       }
   `;
@@ -251,7 +253,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const addLabel = async (data) => {
     let result;
-  
+
     // console.log(data);
 
     const createLabel = await API.graphql({
@@ -323,7 +325,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             name: data.name,
             details: data.details,
             labels: data.labels,
-            order: data.order,
           },
         });
 
@@ -359,192 +360,148 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   const textName = useRef("");
   const textDetails = useRef("");
 
-  const handleChangeDesc = (evt) => {
-    textDetails.current = evt.target.value;
-  };
-
-  const handleMatterChanged = async (
-    options,
-    id,
-    name,
-    details,
-    index,
-    order
-  ) => {
+  const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
     let createdLabel;
     var updated;
 
-        options.map(async (o) => {
-          if (o.__isNew__) {
-            createdLabel = await addLabel(o.label);
-          }
-        });
+    options.map(async (o) => {
+      if (o.__isNew__) {
+        createdLabel = await addLabel(o.label);
+      }
+    });
 
-        newOptions = options.map(({ value: id, label: name }) => ({
-          id: id,
-          name: name,
-        }));
+    newOptions = options.map(({ value: id, label: name }) => ({
+      id: id,
+      name: name,
+    }));
 
-        updated = newOptions.map(d => (
-          d.name==d.id ? {...d, id: id}: d
-        ))
+    updated = newOptions.map((d) => (d.name == d.id ? { ...d, id: id } : d));
 
-        const data = {
-          name: name,
-          details: details,
-          labels: updated,
-          order: order,
-        };
+    const data = {
+      name: name,
+      details: details,
+      labels: updated,
+    };
 
-        console.log(updated);
-        updateArr(data.labels, index);
-        await updateMatterFile(id, data);
-        await tagFileLabel(id, data.labels);
-
+    console.log(updated);
+    updateArr(data.labels, index);
+    await updateMatterFile(id, data);
+    await tagFileLabel(id, data.labels);
   };
 
   function updateArr(data, index) {
     tempArr[index] = data;
   }
-
-  const pasteHandler = (event) => {
-    event.target.style.textDecoration = "none";
-    textDetails.current = event.target.value;
+  const handleChangeDesc = (evt) => {
+    textDetails.current = evt.target.value;
   };
 
-  const HandleChangeToTD = async (id, name, details, labels, index, order) => {
-    setResultMessage(`Saving in progress..`);
-    setShowToast(true);
-    setUpdateProgress(true);
-    var updatedLabels = [];
-    var updatedName = [];
+  const handleBlurDesc = async (id, name, details, labels, index, event) => {
+    setFileId(id);
+    const fdetails =
+      details === null ? "" : details.replace(/(<([^>]+)>)/gi, "").trim();
 
-    if (typeof tempArr[index] === "undefined") {
-      updatedLabels[0] = labels;
-    } else {
-      updatedLabels[0] = tempArr[index];
-    }
+    if (!textDetails.current) {
+      return setDesAlert("File details can't be blank");
+    } else if (textDetails.current === fdetails) {
+      return setDesAlert("You input the same file details");
+    } else if (textDetails.current) {
+      setDesAlert("");
+      setUpdateProgress(true);
+      setResultMessage(`Saving in progress..`);
+      setShowToast(true);
+      var updatedLabels = [];
+      var updatedName = [];
 
-    if (typeof nameArr[index] === "undefined") {
-      updatedName[0] = name;
-    } else {
-      updatedName[0] = nameArr[index];
-    }
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
 
-    const filterDetailsInitial = !details
-      ? ""
-      : details.replace(/(<([^>]+)>)/gi, "");
-    const filterDetails = filterDetailsInitial.replace(/(style=".+?")/gm, "");
+      if (typeof nameArr[index] === "undefined") {
+        updatedName[0] = name;
+      } else {
+        updatedName[0] = nameArr[index];
+      }
 
-    const ouputDetails = textDetails.current;
+      const data = {
+        details: !textDetails.current
+          ? fdetails
+          : !fdetails
+          ? textDetails.current
+          : textDetails.current,
+        name: !name ? "&nbsp;" : updatedName[0],
+        labels: updatedLabels[0],
+      };
 
-    const finaloutputInitial = ouputDetails.replace(/(<([^>]+)>)/gi, "");
-    const finaloutput = finaloutputInitial.replace(/(style=".+?")/gm, "");
-
-    let lbls = [];
-    const data = {
-      details:
-        !textDetails.current && !filterDetails ? filterDetails : finaloutput,
-      name: !name ? "&nbsp;" : updatedName[0],
-      labels: updatedLabels[0],
-      order: order,
-    };
-
-    descArr[index] = finaloutput;
-
-    await updateMatterFile(id, data);
-    textDetails.current = "";
-    setTimeout(() => {
-      getMatterFiles();
+      await updateMatterFile(id, data);
       setTimeout(() => {
-        setResultMessage(`Successfully updated `);
-        setShowToast(true);
+        getMatterFiles();
         setTimeout(() => {
-          setShowToast(false);
-          setUpdateProgress(false);
-        }, 1000);
-      }, 1000);
-    }, 1000);
-  };
-
-  const handleChangeName = (evt) => {
-    evt.currentTarget.parentNode.nextSibling.innerHTML = "";
-    var name = evt.target.value;
-
-    if (name === undefined || name.replace(/(<([^>]+)>)/gi, "").trim() === "") {
-      evt.currentTarget.parentNode.nextSibling.innerHTML =
-        "File name can't be blank.";
-    } else {
-      textName.current = name;
-    }
-  };
-
-  const HandleChangeToTDName = async (
-    id,
-    details,
-    name,
-    labels,
-    index,
-    order,
-    evt
-  ) => {
-    if (
-      evt.target.innerText === undefined ||
-      evt.target.innerText.replace(/(<([^>]+)>)/gi, "").trim() === ""
-    ) {
-      evt.currentTarget.parentNode.nextSibling.innerHTML =
-        "File name can't be blank.";
-    } else {
-      evt.currentTarget.parentNode.nextSibling.innerHTML = "";
-
-      if (textName.current !== "") {
-        setUpdateProgress(true);
-        setResultMessage(`Saving in progress..`);
-        setShowToast(true);
-        var updatedLabels = [];
-        var updatedDesc = [];
-
-        if (typeof tempArr[index] === "undefined") {
-          updatedLabels[0] = labels;
-        } else {
-          updatedLabels[0] = tempArr[index];
-        }
-
-        if (details == "") {
-          updatedDesc[0] = "";
-        } else if (typeof descArr[index] === "undefined") {
-          updatedDesc[0] = details;
-        } else {
-          updatedDesc[0] = descArr[index];
-        }
-        const filterName = name.replace(/(<([^>]+)>)/gi, "");
-        const ouputName = textName.current;
-        const finaloutput = ouputName.replace(/(<([^>]+)>)/gi, "");
-
-        const data = {
-          name: !textName.current ? filterName : finaloutput,
-          details: updatedDesc[0],
-          labels: updatedLabels[0],
-          order: order,
-        };
-
-        nameArr[index] = finaloutput;
-
-        await updateMatterFile(id, data);
-        textName.current = "";
-        setTimeout(() => {
-          getMatterFiles();
+          textDetails.current = "";
+          setResultMessage(`Successfully updated `);
+          setShowToast(true);
           setTimeout(() => {
-            setResultMessage(`Successfully updated `);
-            setShowToast(true);
-            setTimeout(() => {
-              setShowToast(false);
-              setUpdateProgress(false);
-            }, 1000);
+            setShowToast(false);
+            setUpdateProgress(false);
           }, 1000);
         }, 1000);
+      }, 1000);
+    }
+  };
+  const handleChangeName = (evt) => {
+    textName.current = evt.target.value;
+  };
+
+  const handleBlurName = async (id, details, name, labels, index) => {
+    setFileId(id);
+    const fname = name.replace(/(<([^>]+)>)/gi, "").trim();
+
+    if (!textName.current) {
+      return setFileAlert("File name can't be blank");
+    } else if (textName.current === fname) {
+      setFileAlert("You input the same file name");
+    } else if (fname) {
+      setFileAlert("");
+      setUpdateProgress(true);
+      setResultMessage(`Saving in progress..`);
+      setShowToast(true);
+      var updatedLabels = [];
+      var updatedDesc = [];
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
       }
+      if (details == "") {
+        updatedDesc[0] = "";
+      } else if (typeof descArr[index] === "undefined") {
+        updatedDesc[0] = details;
+      } else {
+        updatedDesc[0] = descArr[index];
+      }
+
+      const data = {
+        name: !textName.current ? fname : textName.current,
+        details: updatedDesc[0],
+        labels: updatedLabels[0],
+      };
+
+      await updateMatterFile(id, data);
+      setTimeout(() => {
+        getMatterFiles();
+        setTimeout(() => {
+          textName.current = "";
+          setResultMessage(`Successfully updated `);
+          setShowToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+            setUpdateProgress(false);
+          }, 1000);
+        }, 1000);
+      }, 1000);
     }
   };
 
@@ -561,7 +518,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   function sortByOrder(arr) {
-    const isAllZero = arr.every((item) => item.order === 0);
+    const isAllZero = arr.every((item) => item.order <= 0);
     let sort;
     if (isAllZero) {
       sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -759,7 +716,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         </div>
 
         <div className="p-5 left-0"></div>
-        <div className="p-5 py-1 left-0">
+        <div className="pl-2 py-1 grid grid-cols-2 gap-4">
           <div>
             <input
               type="checkbox"
@@ -774,9 +731,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>
+            </div>
+            <div className="grid justify-items-end">
             {showRemoveFileButton && (
               <button
-                className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setshowRemoveFileModal(true)}
               >
                 DELETE &nbsp;
@@ -786,7 +745,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           </div>
         </div>
 
-        <div className="p-5 px-5 py-0 left-0">
+        <div className="px-2 py-0 left-0">
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
@@ -810,12 +769,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-left w-20">
+                            <th className="px-6 py-4 text-center w-20">
                               Item No.
                             </th>
-                            <th className="px-6 py-4 text-left w-40">Name</th>
-                            <th className="px-6 py-4 text-left">Description</th>
-                            <th className="px-6 py-4 text-left w-40">Labels</th>
+                            <th className="px-6 py-4 text-center w-40">Name</th>
+                            <th className="px-6 py-4 text-center">Description</th>
+                            <th className="px-6 py-4 text-center w-40">Labels</th>
                           </tr>
                         </thead>
                         <Droppable droppableId="droppable-1">
@@ -926,30 +885,33 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           &nbsp;&nbsp;
                                           {/* <input defaultValue={data.type.split('.').pop()}/> */}
                                           <ContentEditable
-                                            style={{ cursor: "auto" }}
+                                            style={{
+                                              cursor: "auto",
+                                              outlineColor:
+                                                "rgb(204, 204, 204, 0.5)",
+                                              outlineWidth: "thin",
+                                            }}
                                             disabled={
                                               updateProgess ? true : false
                                             }
                                             html={
                                               !data.name
-                                                ? "<p> </p>"
-                                                : `<p>${data.name}</p>`
+                                                ? `<p>${textName.current}</p>`
+                                                : `${data.name}`
                                             }
                                             onChange={(evt) =>
-                                              handleChangeName(evt)
+                                              handleChangeName(evt, data.name)
                                             }
-                                            onBlur={(evt) =>
-                                              HandleChangeToTDName(
+                                            onBlur={() =>
+                                              handleBlurName(
                                                 data.id,
                                                 data.details,
                                                 data.name,
                                                 data.labels,
-                                                index,
-                                                data.order,
-                                                evt
+                                                index
                                               )
                                             }
-                                            className="w-40"
+                                            className="w-40 p-2 font-poppins"
                                           />
                                           <span>
                                             <AiOutlineDownload
@@ -960,7 +922,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             />
                                           </span>
                                         </div>
-                                        <p className="text-red-400 filename-validation"></p>{" "}
+                                        <p className="text-red-400 filename-validation">
+                                          {data.id === fileId && fileAlert}
+                                        </p>{" "}
                                         {/* do not change */}
                                       </td>
 
@@ -969,33 +933,40 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         className="px-6 py-4 place-items-center w-full"
                                       >
                                         <ContentEditable
-                                          style={{ cursor: "auto" }}
+                                          style={{
+                                            cursor: "auto",
+                                            outlineColor:
+                                              "rgb(204, 204, 204, 0.5)",
+                                            outlineWidth: "thin",
+                                          }}
                                           disabled={
                                             updateProgess ? true : false
                                           }
                                           html={
                                             !data.details
-                                              ? `<p> </p>`
+                                              ? `<p></p>`
                                               : `<p>${data.details}</p>`
                                           }
                                           onChange={(evt) =>
                                             handleChangeDesc(evt)
                                           }
-                                          onBlur={() =>
-                                            HandleChangeToTD(
+                                          onBlur={(event) =>
+                                            handleBlurDesc(
                                               data.id,
                                               data.name,
                                               data.details,
                                               data.labels,
                                               index,
-                                              data.order
+                                              event
                                             )
                                           }
-                                          onPaste={pasteHandler}
-                                          className="pt-2 pb-5 font-poppins"
+                                          className="pt-2 pb-5 px-2 font-poppins"
                                           options={labels}
                                           type="text"
                                         />
+                                        <p className="text-red-400 filename-validation">
+                                          {data.id === fileId && descAlert}
+                                        </p>
                                       </td>
 
                                       <td
@@ -1018,8 +989,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               data.id,
                                               data.name,
                                               data.details,
-                                              index,
-                                              data.order
+                                              index
                                             )
                                           }
                                           // onBlur={(options) =>

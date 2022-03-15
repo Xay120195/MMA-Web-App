@@ -416,6 +416,8 @@ Resources:
             AllowedOrigins:
               - "*"
             MaxAge: "3600"
+            ExposedHeaders:
+              - ETag
 
   BackgroundsTable:
     Type: AWS::DynamoDB::Table

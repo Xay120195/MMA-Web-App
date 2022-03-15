@@ -14,8 +14,8 @@ export function ClientMatters({
   allowOpenFileBucket,
   allowOpenBackground,
 }) {
-  const setshowDeleteModal = (value) => {
-    onShowDeleteModal(value);
+  const setshowDeleteModal = (displayStatus, id) => {
+    onShowDeleteModal(displayStatus, id);
   };
 
   console.log("clientMatter", clientMatter);
@@ -33,9 +33,8 @@ export function ClientMatters({
                   </button>
                   <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded z-50">
                   {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}`}>File Bucket</Link></li>) : null}
-                  {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>
-                   ) : null}
-                  {showDeleteMatter && (<li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Delete</a></li>)}
+                  {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>) : null}
+                  {showDeleteMatter && (<li className="p-2 cursor-pointer" onClick={() => setshowDeleteModal(true, clientMatter.id)} >Delete</li>)}
                   </ul>
               </div>
             </div>
@@ -89,9 +88,8 @@ export function ClientMatters({
                     </button>
                     <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
                     {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}`}>File Bucket</Link></li>) : null}
-                    {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>
-                    ) : null}
-                    {showDeleteMatter && (<li className="p-2" onClick={() => setshowDeleteModal(true)} ><a href="#">Delete</a></li>)}
+                    {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>) : null}
+                    {showDeleteMatter && (<li className="p-2 cursor-pointer" onClick={() => setshowDeleteModal(true, clientMatter.id)} >Delete</li>)}
                     </ul>
                 </div>
               </div>
