@@ -11,7 +11,6 @@ import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import AccessControl from "../../shared/accessControl";
-import ContentEditable from "react-contenteditable";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
@@ -24,7 +23,7 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
-import { BsConeStriped, BsFillTrashFill } from "react-icons/bs";
+import { BsArrowLeft, BsConeStriped, BsFillArrowDownLeftSquareFill, BsFillArrowLeftSquareFill, BsFillExclamationOctagonFill, BsFillPersonLinesFill, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 
 export var selectedRows = [];
@@ -44,10 +43,14 @@ export default function FileBucket() {
   const [fileAlert, setFileAlert] = useState("");
   const [descAlert, setDesAlert] = useState("");
   const [fileId, setFileId] = useState("");
+  const [detId, setDetId] = useState("");
+  const [textName, setTextName] = useState("");
+  const [textDetails, setTextDetails] = useState("");
   const { matter_id } = useParams();
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
+  const [showAttachBackgroundButton, setshowAttachBackgroundButton] = useState(false);
   var fileCount = 0;
 
   const hideToast = () => {
@@ -245,16 +248,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
     console.log(result);
 
-    // const newList = result.filter((item) => item.name !== data);
-    // console.log(newList);
-
     setLabels(result);
   };
 
   const addLabel = async (data) => {
     let result;
-
-    // console.log(data);
 
     const createLabel = await API.graphql({
       query: mCreateLabel,
@@ -357,9 +355,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     gridtemplatecolumn: "1fr auto",
   };
 
-  const textName = useRef("");
-  const textDetails = useRef("");
-
   const handleMatterChanged = async (options, id, name, details, index) => {
     let newOptions = [];
     let createdLabel;
@@ -384,33 +379,87 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       labels: updated,
     };
 
-    console.log(updated);
     updateArr(data.labels, index);
     await updateMatterFile(id, data);
     await tagFileLabel(id, data.labels);
+    setUpdateProgress(true);
+    setResultMessage(`Updating labels..`);
+    setShowToast(true);
+    setTimeout(() => {
+      getMatterFiles();
+      setTimeout(() => {
+        setTimeout(() => {
+          setShowToast(false);
+          setUpdateProgress(false);
+        }, 1000);
+      }, 1000);
+    }, 1000);
   };
 
   function updateArr(data, index) {
     tempArr[index] = data;
   }
-  const handleChangeDesc = (evt) => {
-    textDetails.current = evt.target.value;
+
+  const handleDetailsContent = (e, details, id) => {
+    if (!descAlert) {
+      setTextDetails(!details ? "" : details);
+      setDetId(id);
+      setDesAlert("");
+    } else {
+      setTextDetails("");
+    }
   };
 
-  const handleBlurDesc = async (id, name, details, labels, index, event) => {
-    setFileId(id);
-    const fdetails =
-      details === null ? "" : details.replace(/(<([^>]+)>)/gi, "").trim();
+  const handleOnChangeDetails = (event) => {
+    setTextDetails(event.currentTarget.textContent);
+  };
 
-    if (!textDetails.current) {
-      return setDesAlert("File details can't be blank");
-    } else if (textDetails.current === fdetails) {
-      return setDesAlert("You input the same file details");
-    } else if (textDetails.current) {
+  const handleSaveDetails = async (e, name, details, id, labels, index) => {
+    if (textDetails.length <= 0) {
+      setDesAlert("Description can't be empty");
+    } else if (textDetails === details) {
       setDesAlert("");
       setUpdateProgress(true);
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
+
+      var updatedLabels = [];
+      var updatedName = [];
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
+
+      if (typeof nameArr[index] === "undefined") {
+        updatedName[0] = name;
+      } else {
+        updatedName[0] = nameArr[index];
+      }
+      const data = {
+        name: updatedName[0],
+        details: details,
+        labels: updatedLabels[0],
+      };
+      await updateMatterFile(id, data);
+      setTimeout(() => {
+        getMatterFiles();
+        setTimeout(() => {
+          setTextName("");
+          setResultMessage(`Successfully updated `);
+          setShowToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+            setUpdateProgress(false);
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    } else {
+      setDesAlert("");
+      setUpdateProgress(true);
+      setResultMessage(`Saving in progress..`);
+      setShowToast(true);
+
       var updatedLabels = [];
       var updatedName = [];
 
@@ -427,20 +476,16 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }
 
       const data = {
-        details: !textDetails.current
-          ? fdetails
-          : !fdetails
-          ? textDetails.current
-          : textDetails.current,
-        name: !name ? "&nbsp;" : updatedName[0],
+        name: updatedName[0],
+        details: textDetails,
         labels: updatedLabels[0],
       };
-
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
         setTimeout(() => {
-          textDetails.current = "";
+          setTextName("");
+
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
@@ -451,23 +496,30 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }, 1000);
     }
   };
-  const handleChangeName = (evt) => {
-    textName.current = evt.target.value;
+
+  const handleNameContent = (e, name, id) => {
+    if (!fileAlert) {
+      setTextName(name);
+      setFileId(id);
+      setFileAlert("");
+    } else {
+      setTextName("");
+    }
   };
 
-  const handleBlurName = async (id, details, name, labels, index) => {
-    setFileId(id);
-    const fname = name.replace(/(<([^>]+)>)/gi, "").trim();
+  const handleOnChangeName = (event) => {
+    setTextName(event.currentTarget.textContent);
+  };
 
-    if (!textName.current) {
-      return setFileAlert("File name can't be blank");
-    } else if (textName.current === fname) {
-      setFileAlert("You input the same file name");
-    } else if (fname) {
+  const handleSaveName = async (e, name, details, id, labels, index) => {
+    if (textName.length <= 0) {
+      setFileAlert("File name can't be empty");
+    } else if (textName === name) {
       setFileAlert("");
       setUpdateProgress(true);
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
+
       var updatedLabels = [];
       var updatedDesc = [];
       if (typeof tempArr[index] === "undefined") {
@@ -482,18 +534,54 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       } else {
         updatedDesc[0] = descArr[index];
       }
-
       const data = {
-        name: !textName.current ? fname : textName.current,
+        name: name,
         details: updatedDesc[0],
         labels: updatedLabels[0],
       };
-
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
         setTimeout(() => {
-          textName.current = "";
+          setTextName("");
+          setResultMessage(`Successfully updated `);
+          setShowToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+            setUpdateProgress(false);
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    } else {
+      setFileAlert("");
+      setUpdateProgress(true);
+      setResultMessage(`Saving in progress..`);
+      setShowToast(true);
+
+      var updatedLabels = [];
+      var updatedDesc = [];
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
+      if (details == "") {
+        updatedDesc[0] = "";
+      } else if (typeof descArr[index] === "undefined") {
+        updatedDesc[0] = details;
+      } else {
+        updatedDesc[0] = descArr[index];
+      }
+      const data = {
+        name: textName,
+        details: updatedDesc[0],
+        labels: updatedLabels[0],
+      };
+      await updateMatterFile(id, data);
+      setTimeout(() => {
+        getMatterFiles();
+        setTimeout(() => {
+          setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
@@ -611,8 +699,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
+      setshowAttachBackgroundButton(false);
     }
   }
 
@@ -638,8 +728,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
+      setshowAttachBackgroundButton(false);
     }
   }
 
@@ -686,6 +778,38 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   };
 
+  function newOptions(data, oldOpt) {
+    var myArray = data;
+
+    if (Array.isArray(oldOpt) && oldOpt.length > 0) {
+      var newOptions = oldOpt.map(({ id: value, name: label }) => ({
+        value,
+        label,
+      }));
+
+      let isFounded = myArray.some((ai) => newOptions.includes(ai));
+
+      if (isFounded) {
+      } else {
+      }
+
+      return newOptions;
+    } else {
+      return data;
+    }
+  }
+
+  const [selectedOption, setSelect] = useState(null);
+  const handleChange = (selectedOption) => {
+    setSelect(selectedOption);
+  };
+  const removeOption = (e) => {
+    const newSelect = selectedOption.filter(
+      (item) => item.value !== e.target.name
+    );
+    setSelect(newSelect);
+  };
+
   return (
     <>
       <div
@@ -704,7 +828,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 </span>
               </h1>
             </div>
+
             <div className="absolute right-0">
+              {showAttachBackgroundButton && (
+              <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
+                <button
+                  className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
+                >
+                  Attach to Background &nbsp;|
+                  <BsArrowLeft />
+                </button>
+              </Link>
+              )}
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                   Back &nbsp;
@@ -731,8 +866,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>
-            </div>
-            <div className="grid justify-items-end">
+          </div>
+          <div className="grid justify-items-end">
             {showRemoveFileButton && (
               <button
                 className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
@@ -769,12 +904,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-center w-20">
+                            <th className="px-2 py-4 text-center whitespace-nowrap">
                               Item No.
                             </th>
-                            <th className="px-6 py-4 text-center w-40">Name</th>
-                            <th className="px-6 py-4 text-center">Description</th>
-                            <th className="px-6 py-4 text-center w-40">Labels</th>
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              Name
+                            </th>
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-3/4">
+                              Description
+                            </th>
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              Labels
+                            </th>
                           </tr>
                         </thead>
                         <Droppable droppableId="droppable-1">
@@ -808,7 +949,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-6 inline-flex"
+                                        className="px-2 py-6 inline-flex"
                                       >
                                         <MdDragIndicator
                                           className="text-2xl"
@@ -830,7 +971,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       </td>
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center relative flex-wrap w-40"
+                                        className="px-2 py-4 align-top place-items-center relative flex-wrap"
                                       >
                                         <div className="inline-flex">
                                           {data.type
@@ -883,39 +1024,44 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             <GrDocumentText className="text-2xl" />
                                           )}
                                           &nbsp;&nbsp;
-                                          {/* <input defaultValue={data.type.split('.').pop()}/> */}
-                                          <ContentEditable
+                                          <span
+                                            className="p-2 w-60 font-poppins"
                                             style={{
                                               cursor: "auto",
                                               outlineColor:
                                                 "rgb(204, 204, 204, 0.5)",
                                               outlineWidth: "thin",
                                             }}
-                                            disabled={
-                                              updateProgess ? true : false
-                                            }
-                                            html={
-                                              !data.name
-                                                ? `<p>${textName.current}</p>`
-                                                : `${data.name}`
-                                            }
-                                            onChange={(evt) =>
-                                              handleChangeName(evt, data.name)
-                                            }
-                                            onBlur={() =>
-                                              handleBlurName(
-                                                data.id,
-                                                data.details,
+                                            suppressContentEditableWarning
+                                            onClick={(event) =>
+                                              handleNameContent(
+                                                event,
                                                 data.name,
+                                                data.id
+                                              )
+                                            }
+                                            onInput={(event) =>
+                                              handleOnChangeName(event)
+                                            }
+                                            onBlur={(e) =>
+                                              handleSaveName(
+                                                e,
+                                                data.name,
+                                                data.details,
+                                                data.id,
                                                 data.labels,
                                                 index
                                               )
                                             }
-                                            className="w-40 p-2 font-poppins"
-                                          />
-                                          <span>
+                                            contentEditable={
+                                              updateProgess ? false : true
+                                            }
+                                          >
+                                            {data.name}
+                                          </span>
+                                          <span >
                                             <AiOutlineDownload
-                                              className="text-blue-400 mx-1 text-2xl cursor-pointer"
+                                              className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
                                               onClick={() =>
                                                 previewAndDownloadFile(data.id)
                                               }
@@ -930,48 +1076,56 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 place-items-center w-full"
+                                        className="px-2 py-4 align-top place-items-center relative flex-wrap"
                                       >
-                                        <ContentEditable
-                                          style={{
-                                            cursor: "auto",
-                                            outlineColor:
-                                              "rgb(204, 204, 204, 0.5)",
-                                            outlineWidth: "thin",
-                                          }}
-                                          disabled={
-                                            updateProgess ? true : false
-                                          }
-                                          html={
-                                            !data.details
-                                              ? `<p></p>`
-                                              : `<p>${data.details}</p>`
-                                          }
-                                          onChange={(evt) =>
-                                            handleChangeDesc(evt)
-                                          }
-                                          onBlur={(event) =>
-                                            handleBlurDesc(
-                                              data.id,
-                                              data.name,
-                                              data.details,
-                                              data.labels,
-                                              index,
-                                              event
-                                            )
-                                          }
-                                          className="pt-2 pb-5 px-2 font-poppins"
-                                          options={labels}
-                                          type="text"
-                                        />
-                                        <p className="text-red-400 filename-validation">
-                                          {data.id === fileId && descAlert}
-                                        </p>
+                                        <div className="flex">
+                                          <span
+                                            className="w-full p-2 font-poppins"
+                                            style={{
+                                              cursor: "auto",
+                                              outlineColor:
+                                                "rgb(204, 204, 204, 0.5)",
+                                              outlineWidth: "thin",
+                                            }}
+                                            suppressContentEditableWarning={
+                                              true
+                                            }
+                                            onClick={(event) =>
+                                              handleDetailsContent(
+                                                event,
+                                                data.details,
+                                                data.id
+                                              )
+                                            }
+                                            onInput={(event) =>
+                                              handleOnChangeDetails(event)
+                                            }
+                                            onBlur={(e) =>
+                                              handleSaveDetails(
+                                                e,
+                                                data.name,
+                                                data.details,
+                                                data.id,
+                                                data.labels,
+                                                index
+                                              )
+                                            }
+                                            contentEditable={
+                                              updateProgess ? false : true
+                                            }
+                                          >
+                                            {data.details}
+                                          </span>
+                                        </div>
+                                        <br />
+                                        <span className="text-red-400 filename-validation">
+                                          {data.id === detId && descAlert}
+                                        </span>
                                       </td>
 
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-6 py-4 align-top place-items-center relative  flex-wrap"
+                                        className="px-2 py-4 align-top place-items-center relative flex-wrap"
                                       >
                                         <CreatableSelect
                                           defaultValue={extractArray(
@@ -979,6 +1133,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               ? data.labels
                                               : { value: 0, label: "" }
                                           )}
+                                          // options={newOptions(labels, data.labels)}
                                           options={labels}
                                           isMulti
                                           isClearable
@@ -992,14 +1147,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               index
                                             )
                                           }
-                                          // onBlur={(options) =>
-                                          //   handleMatterChanged(
-                                          //     options,
-                                          //     data.id,
-                                          //     data.name,
-                                          //     data.details
-                                          //   )
-                                          // }
                                           placeholder="Labels"
                                           className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
