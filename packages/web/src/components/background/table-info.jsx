@@ -11,6 +11,7 @@ import { API } from "aws-amplify";
 
 const TableInfo = ({
   witness,
+  fileMatter,
   setIdList,
   setWitness,
   checkAllState,
@@ -244,8 +245,20 @@ const TableInfo = ({
                               className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                               to={`${AppRoutes.FILEBUCKET}/${matterId}`}
                             >
-                              File Bucket
+                              File Bucket +
                             </Link>
+
+                            {fileMatter.length === 0 ? (
+                              <>
+                              <br/>
+                              <p className="text-xs" ><b>No items yet</b></p>
+                              <p className="text-xs" >Select from the files bucket to start adding one row</p>
+                              </>
+                            ) : (
+                              <>
+                                {fileMatter}
+                              </>
+                            )}
                           </td>
                         </tr>
                       ))}
