@@ -21,7 +21,7 @@ export default function Background() {
   const [witness, setWitness] = useState([]);
   const [idList, setIdList] = useState([]);
   const [getId, setId] = useState([{}]);
-  const [matters, setMatters] = useState([]);
+  const [fileMatter, setFileMatter] = useState([]);
   const params = useParams();
   const { matter_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
@@ -169,6 +169,7 @@ export default function Background() {
       <TableInfo
         setIdList={setIdList}
         witness={witness}
+        fileMatter={fileMatter}
         setWitness={setWitness}
         checkAllState={checkAllState}
         setcheckAllState={setcheckAllState}
