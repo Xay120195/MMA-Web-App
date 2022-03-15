@@ -712,12 +712,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
-              <button
-                className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
-              >
-                Attach to Background &nbsp;|
-                <BsArrowLeft />
-              </button>
+              <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
+                <button
+                  className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
+                >
+                  Attach to Background &nbsp;|
+                  <BsArrowLeft />
+                </button>
+              </Link>
               )}
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
