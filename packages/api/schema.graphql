@@ -261,6 +261,7 @@ type Mutation {
   backgroundCreate(date: String, clientMatterId: String): Background
   backgroundUpdate(id: ID, date: String, description: String): Background
   backgroundDelete(id: ID): Background
+  backgroundBulkDelete(id: [ID]): [Background]
 }
 
 input ClientMatterInput {
