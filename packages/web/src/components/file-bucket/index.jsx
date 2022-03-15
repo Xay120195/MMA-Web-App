@@ -699,10 +699,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      setshowAttachBackgroundButton(true);
+      //setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
-      setshowAttachBackgroundButton(false);
+      //setshowAttachBackgroundButton(false);
     }
   }
 
@@ -728,10 +728,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      setshowAttachBackgroundButton(true);
+      //setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
-      setshowAttachBackgroundButton(false);
+      //setshowAttachBackgroundButton(false);
     }
   }
 
