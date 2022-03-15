@@ -6,6 +6,7 @@ import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import { witness_affidavits } from "./data-source";
 import { API } from "aws-amplify";
+import { RemoveFileModal } from "../file-bucket/remove-file-modal.jsx";
 
 const contentDiv = {
   margin: "0 0 0 65px",

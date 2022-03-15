@@ -9,6 +9,8 @@ import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import { API } from "aws-amplify";
 
+export let selectedRowsBG = [];
+
 const TableInfo = ({
   witness,
   fileMatter,
@@ -35,7 +37,7 @@ const TableInfo = ({
     setShowToast(false);
   };
 
-  const handleCheckboxChange = (position, event) => {
+  const handleCheckboxChange = (position, event, id) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
     );
@@ -58,8 +60,15 @@ const TableInfo = ({
       if (!witness.includes({ id: event.target.name })) {
         setId((item) => [...item, event.target.name]);
       }
+      //edited part
+      selectedRowsBG = [...selectedRowsBG, {id: id, fileName: position.toString()}];
+      console.log(selectedRowsBG);
     } else {
       setId((item) => [...item.filter((x) => x !== event.target.name)]);
+      if(selectedRowsBG.indexOf(selectedRowsBG.find((temp) => temp.id === id)) > -1){
+        selectedRowsBG.splice(selectedRowsBG.indexOf(selectedRowsBG.find((temp) => temp.id === id)), 1);
+      }
+      console.log(selectedRowsBG);
     }
   };
 
@@ -193,8 +202,9 @@ const TableInfo = ({
                                 className="cursor-pointer w-10"
                                 checked={checkedState[index]}
                                 onChange={(event) =>
-                                  handleCheckboxChange(index, event)
+                                  handleCheckboxChange(index, event, item.id)
                                 }
+
                               />
                               <label
                                 htmlFor="checkbox-1"

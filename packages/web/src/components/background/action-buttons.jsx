@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
+import RemoveFileModal from "../file-bucket/remove-file-modal";
+import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
   idList,
@@ -20,6 +22,8 @@ const ActionButtons = ({
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
+
+  const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
 
   const hideToast = () => {
     setShowToast(false);
@@ -97,6 +101,16 @@ const ActionButtons = ({
       setCheckedState(new Array(witness.length).fill(true));
       settotalChecked(witness.length);
       setId(witness.map((s) => s.id));
+      
+      // selectedRowsBG = [];
+      // witness.map(
+      //   (data) =>
+      //     (selectedRowsBG = [
+      //       ...selectedRowsBG,
+      //       { id: data.id, fileName: "x"},
+      //     ])
+      // );
+      console.log(selectedRowsBG);
     } else {
       setCheckedState(new Array(witness.length).fill(false));
       settotalChecked(0);
@@ -118,6 +132,14 @@ const ActionButtons = ({
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
+
+  function showModal(){
+    setshowRemoveFileModal(true);
+  }
+
+  const handleModalClose = () => {
+    setshowRemoveFileModal(false);
+  };
 
   return (
     <>
@@ -156,7 +178,8 @@ const ActionButtons = ({
           </button>
           <button
             type="button"
-            onClick={() => handleDelete(idList)}
+            // onClick={() => handleDelete(idList)}
+            onClick={() => setshowRemoveFileModal(true)}
             className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
           >
             Delete
@@ -177,6 +200,13 @@ const ActionButtons = ({
       </div>
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
+
+      {showRemoveFileModal && (
+        <RemoveFileModal
+          // handleSave={handleDeleteFile}
+          handleModalClose={handleModalClose}
+        />
       )}
     </>
   );
