@@ -716,7 +716,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         </div>
 
         <div className="p-5 left-0"></div>
-        <div className="p-5 py-1 left-0">
+        <div className="pl-2 py-1 grid grid-cols-2 gap-4">
           <div>
             <input
               type="checkbox"
@@ -731,9 +731,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>
+            </div>
+            <div className="grid justify-items-end">
             {showRemoveFileButton && (
               <button
-                className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setshowRemoveFileModal(true)}
               >
                 DELETE &nbsp;
@@ -743,7 +745,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           </div>
         </div>
 
-        <div className="p-5 px-5 py-0 left-0">
+        <div className="px-2 py-0 left-0">
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
@@ -767,12 +769,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-6 py-4 text-left w-20">
+                            <th className="px-6 py-4 text-center w-20">
                               Item No.
                             </th>
-                            <th className="px-6 py-4 text-left w-40">Name</th>
-                            <th className="px-6 py-4 text-left">Description</th>
-                            <th className="px-6 py-4 text-left w-40">Labels</th>
+                            <th className="px-6 py-4 text-center w-40">Name</th>
+                            <th className="px-6 py-4 text-center">Description</th>
+                            <th className="px-6 py-4 text-center w-40">Labels</th>
                           </tr>
                         </thead>
                         <Droppable droppableId="droppable-1">
@@ -883,7 +885,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           &nbsp;&nbsp;
                                           {/* <input defaultValue={data.type.split('.').pop()}/> */}
                                           <ContentEditable
-                                            style={{ cursor: "auto" }}
+                                            style={{
+                                              cursor: "auto",
+                                              outlineColor:
+                                                "rgb(204, 204, 204, 0.5)",
+                                              outlineWidth: "thin",
+                                            }}
                                             disabled={
                                               updateProgess ? true : false
                                             }
@@ -904,7 +911,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                 index
                                               )
                                             }
-                                            className="w-40"
+                                            className="w-40 p-2 font-poppins"
                                           />
                                           <span>
                                             <AiOutlineDownload
@@ -926,7 +933,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         className="px-6 py-4 place-items-center w-full"
                                       >
                                         <ContentEditable
-                                          style={{ cursor: "auto" }}
+                                          style={{
+                                            cursor: "auto",
+                                            outlineColor:
+                                              "rgb(204, 204, 204, 0.5)",
+                                            outlineWidth: "thin",
+                                          }}
                                           disabled={
                                             updateProgess ? true : false
                                           }
@@ -948,7 +960,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               event
                                             )
                                           }
-                                          className="pt-2 pb-5 font-poppins"
+                                          className="pt-2 pb-5 px-2 font-poppins"
                                           options={labels}
                                           type="text"
                                         />
