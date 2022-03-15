@@ -538,6 +538,7 @@ async function createBackground(data) {
       id: v4(),
       date: data.date,
       createdAt: new Date().toISOString(),
+      order: 0,
     };
 
     const params = marshall(rawParams);
@@ -837,7 +838,7 @@ const resolvers = {
       return await createBackground(ctx.arguments);
     },
     backgroundUpdate: async (ctx) => {
-      const { id, date, description } = ctx.arguments;
+      const { id, date, description, order } = ctx.arguments;
       const data = {
         updatedAt: new Date().toISOString(),
       };
@@ -845,6 +846,8 @@ const resolvers = {
       if (date !== undefined) data.date = date;
 
       if (description !== undefined) data.description = description;
+
+      if (order !== undefined) data.order = order;
 
       return await updateBackground(id, data);
     },
