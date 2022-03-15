@@ -23,7 +23,15 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
-import { BsArrowLeft, BsConeStriped, BsFillArrowDownLeftSquareFill, BsFillArrowLeftSquareFill, BsFillExclamationOctagonFill, BsFillPersonLinesFill, BsFillTrashFill } from "react-icons/bs";
+import {
+  BsArrowLeft,
+  BsConeStriped,
+  BsFillArrowDownLeftSquareFill,
+  BsFillArrowLeftSquareFill,
+  BsFillExclamationOctagonFill,
+  BsFillPersonLinesFill,
+  BsFillTrashFill,
+} from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 
 export var selectedRows = [];
@@ -50,7 +58,8 @@ export default function FileBucket() {
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
-  const [showAttachBackgroundButton, setshowAttachBackgroundButton] = useState(false);
+  const [showAttachBackgroundButton, setshowAttachBackgroundButton] =
+    useState(false);
   var fileCount = 0;
 
   const hideToast = () => {
@@ -606,12 +615,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   function sortByOrder(arr) {
-    const isAllZero = arr.every((item) => item.order <= 0);
+    const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
       sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else {
-      sort = arr.sort((a, b) => a.order - b.order);
+      sort = arr.sort(
+        (a, b) =>
+          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+      );
     }
     return sort;
   }
@@ -831,14 +843,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
-              <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
-                <button
-                  className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
-                >
-                  Attach to Background &nbsp;|
-                  <BsArrowLeft />
-                </button>
-              </Link>
+                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`}>
+                  <button className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5">
+                    Attach to Background &nbsp;|
+                    <BsArrowLeft />
+                  </button>
+                </Link>
               )}
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
@@ -1059,7 +1069,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           >
                                             {data.name}
                                           </span>
-                                          <span >
+                                          <span>
                                             <AiOutlineDownload
                                               className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
                                               onClick={() =>
