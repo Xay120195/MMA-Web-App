@@ -23,7 +23,7 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
-import { BsConeStriped, BsFillTrashFill } from "react-icons/bs";
+import { BsArrowLeft, BsConeStriped, BsFillArrowDownLeftSquareFill, BsFillArrowLeftSquareFill, BsFillExclamationOctagonFill, BsFillPersonLinesFill, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 
 export var selectedRows = [];
@@ -50,6 +50,7 @@ export default function FileBucket() {
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
+  const [showAttachBackgroundButton, setshowAttachBackgroundButton] = useState(false);
   var fileCount = 0;
 
   const hideToast = () => {
@@ -698,8 +699,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      showAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
+      showAttachBackgroundButton(false);
     }
   }
 
@@ -725,8 +728,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      showAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
+      showAttachBackgroundButton(false);
     }
   }
 
@@ -823,7 +828,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 </span>
               </h1>
             </div>
+
             <div className="absolute right-0">
+              {showAttachBackgroundButton && (
+              <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
+                <button
+                  className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
+                >
+                  Attach to Background &nbsp;|
+                  <BsArrowLeft />
+                </button>
+              </Link>
+              )}
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                   Back &nbsp;
