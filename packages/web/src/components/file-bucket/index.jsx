@@ -245,16 +245,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
     console.log(result);
 
-    // const newList = result.filter((item) => item.name !== data);
-    // console.log(newList);
-
     setLabels(result);
   };
 
   const addLabel = async (data) => {
     let result;
-
-    // console.log(data);
 
     const createLabel = await API.graphql({
       query: mCreateLabel,
@@ -686,6 +681,40 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   };
 
+  function newOptions(data, oldOpt){
+    var myArray = data;
+
+    if (Array.isArray(oldOpt) && oldOpt.length > 0) {
+      var newOptions = oldOpt.map(({ id: value, name: label }) => ({
+        value,
+        label,
+      }));
+     
+      let isFounded = myArray.some( ai => newOptions.includes(ai) );
+
+      if(isFounded){
+
+      }else{
+
+      }
+
+      return newOptions;
+    } else {
+      return data;
+    }
+  }
+
+  const [selectedOption, setSelect] = useState(null);
+  const handleChange = selectedOption => {
+    setSelect(selectedOption);
+  };
+  const removeOption = e => {
+    const newSelect = selectedOption.filter(
+      item => item.value !== e.target.name
+    );
+    setSelect(newSelect);
+  };
+
   return (
     <>
       <div
@@ -979,6 +1008,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               ? data.labels
                                               : { value: 0, label: "" }
                                           )}
+                                         
+                                          // options={newOptions(labels, data.labels)}
                                           options={labels}
                                           isMulti
                                           isClearable
@@ -992,14 +1023,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               index
                                             )
                                           }
-                                          // onBlur={(options) =>
-                                          //   handleMatterChanged(
-                                          //     options,
-                                          //     data.id,
-                                          //     data.name,
-                                          //     data.details
-                                          //   )
-                                          // }
                                           placeholder="Labels"
                                           className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
