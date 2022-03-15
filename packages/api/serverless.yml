@@ -186,6 +186,11 @@ custom:
         field: clientMatterCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterDelete
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: client
@@ -269,6 +274,11 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: backgroundDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: backgroundBulkDelete
         request: false
         response: false
       - dataSource: LambdaCompanyDS
