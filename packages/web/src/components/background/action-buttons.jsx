@@ -30,36 +30,46 @@ const ActionButtons = ({
   };
 
   const handleDelete = async (item) => {
-    if (item.length <= 1) {
+
+    console.log(item);
+    if (item.length === 0) {
       window.alert("Please select row.");
     } else {
-      var id = item.map(async function (x) {
+
+
+      const backgroundIds = item.map(
+        (i) => i.id
+      );
+
+      console.log("backgroundIds", backgroundIds);
+      
         const mDeleteBackground = `
-          mutation deleteBackground($id: ID) {
-            backgroundDelete(id: $id) {
-              id
-            }
+        mutation bulkDeleteBackground($id: [ID]) {
+          backgroundBulkDelete(id: $id) {
+            id
           }
+        }
         `;
 
         const deleteBackgroundRow = await API.graphql({
           query: mDeleteBackground,
           variables: {
-            id: String(x),
+            id: backgroundIds,
           },
         });
-        if (deleteBackgroundRow) {
-          getBackground();
-          setWitness([]);
-          setcheckAllState(false);
-        }
-      });
+
+        console.log(deleteBackgroundRow);
+        
+      
 
       setalertMessage(`Successfully deleted`);
       setCheckedState(new Array(witness.length).fill(false));
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
+        getBackground();
+          setWitness([]);
+          setcheckAllState(false);
       }, 3000);
     }
   };
@@ -204,7 +214,7 @@ const ActionButtons = ({
 
       {showRemoveFileModal && (
         <RemoveFileModal
-          // handleSave={handleDeleteFile}
+          handleSave={handleDelete}
           handleModalClose={handleModalClose}
         />
       )}
