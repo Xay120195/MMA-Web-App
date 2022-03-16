@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
-import { selectedRowsBG } from "./table-info";
+//import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
   idList,
@@ -14,10 +14,12 @@ const ActionButtons = ({
   setCheckedState,
   settotalChecked,
   setSearch,
-  search,
+  search, 
   setId,
   matterId,
   getBackground,
+  selectedRowsBG,
+  setSelectedRowsBG
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -35,7 +37,6 @@ const ActionButtons = ({
     if (item.length === 0) {
       window.alert("Please select row.");
     } else {
-
 
       const backgroundIds = item.map(
         (i) => i.id
@@ -60,11 +61,17 @@ const ActionButtons = ({
 
         console.log(deleteBackgroundRow);
         
-      
 
       setalertMessage(`Successfully deleted`);
-      setCheckedState(new Array(witness.length).fill(false));
+      console.log(setCheckedState);
+
+      const newArr = Array(witness.length).fill(false);
+      setCheckedState(newArr);
+
+     // setCheckedState = newArr;
+
       setShowToast(true);
+      setshowRemoveFileModal(false);
       setTimeout(() => {
         setShowToast(false);
         getBackground();
@@ -100,30 +107,44 @@ const ActionButtons = ({
     if (createBackgroundRow) {
       getBackground();
       setcheckAllState(false);
+
+      // const newArr = Array(witness.length).fill(false);
+      // setCheckedState = newArr;
       setCheckedState(new Array(witness.length).fill(false));
     }
   };
-
+  var temp = [];
   const handleCheckAllChange = (ischecked) => {
     setcheckAllState(!checkAllState);
 
     if (ischecked) {
+      // setSelectedRowsBG([]);
+      
       setCheckedState(new Array(witness.length).fill(true));
+      settotalChecked(0);
+
+       //insert row
+       witness.map(
+        (data) =>
+          (temp = [
+            ...temp,
+            { id: data.id, fileName: "x" },
+          ])
+      );
+      
+      setSelectedRowsBG(temp);
+      console.log(selectedRowsBG);
+      
+      console.log(selectedRowsBG);
+      
+    } else {
+      setCheckedState(new Array(witness.length).fill(false));
       settotalChecked(witness.length);
       setId(witness.map((s) => s.id));
       
-      // selectedRowsBG = [];
-      // witness.map(
-      //   (data) =>
-      //     (selectedRowsBG = [
-      //       ...selectedRowsBG,
-      //       { id: data.id, fileName: "x"},
-      //     ])
-      // );
-      console.log(selectedRowsBG);
-    } else {
-      setCheckedState(new Array(witness.length).fill(false));
-      settotalChecked(0);
+      setSelectedRowsBG([]);
+    
+     
     }
   };
 
@@ -188,7 +209,6 @@ const ActionButtons = ({
           </button>
           <button
             type="button"
-            // onClick={() => handleDelete(idList)}
             onClick={() => setshowRemoveFileModal(true)}
             className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
           >
@@ -216,6 +236,7 @@ const ActionButtons = ({
         <RemoveFileModal
           handleSave={handleDelete}
           handleModalClose={handleModalClose}
+          selectedRowsBG={selectedRowsBG}
         />
       )}
     </>

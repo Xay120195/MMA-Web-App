@@ -4,12 +4,14 @@ import { FaTimes } from "react-icons/fa";
 import { TiCancel } from "react-icons/ti";
 import { BsFillTrashFill } from "react-icons/bs";
 import { selectedRows } from "./index"; //contains [{id, filename}, ..] of files to be deleted
-import { selectedRowsBG } from "../background/table-info"; //contains [id] of files to be deleted
+
 
 export default function RemoveFileModal(props) {
   const handleModalClose = () => {
     props.handleModalClose();
   };
+
+  //console.log(props.selectedRowsBG);
 
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
@@ -18,19 +20,21 @@ export default function RemoveFileModal(props) {
   };
   var rowsToDelete;
 
-  if(selectedRowsBG.length > 0){
-    rowsToDelete = selectedRowsBG;
+  if(props.selectedRowsBG.length > 0){
+    rowsToDelete = props.selectedRowsBG;
   }else{
     rowsToDelete = selectedRows;
   }
 
-  console.log(rowsToDelete);
+  //console.log(rowsToDelete);
   //confirm deletion function
   const handleDelete = async () => {
     if (rowsToDelete.length !== 0) {
       props.handleSave(rowsToDelete);
     }
   };
+
+  
 
   return (
     <>
@@ -85,6 +89,7 @@ export default function RemoveFileModal(props) {
                     className="ml-2 bg-red-400 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                     type="button"
                     onClick={() => handleDelete()}
+                    disabled={rowsToDelete.length > 0 ? false : true}
                   >
                     Delete Permanently &nbsp; <FaTimes />
                   </button>

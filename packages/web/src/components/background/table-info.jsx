@@ -9,7 +9,8 @@ import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import { API } from "aws-amplify";
 
-export let selectedRowsBG = [];
+export let selectedRowsBGPass = [];
+
 
 const TableInfo = ({
   witness,
@@ -26,7 +27,11 @@ const TableInfo = ({
   setId,
   getBackground,
   matterId,
+  selectedRowsBG,
+  setSelectedRowsBG
 }) => {
+  let temp = selectedRowsBG;
+  console.log(selectedRowsBG);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [showUpload, setShowUpload] = useState(false);
@@ -37,11 +42,12 @@ const TableInfo = ({
     setShowToast(false);
   };
 
+  
+
   const handleCheckboxChange = (position, event, id) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
     );
-
     setCheckedState(updatedCheckedState);
 
     let tc = updatedCheckedState.filter((v) => v === true).length;
@@ -59,16 +65,26 @@ const TableInfo = ({
     if (event.target.checked) {
       if (!witness.includes({ id: event.target.name })) {
         setId((item) => [...item, event.target.name]);
+        if(temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1){
+          
+        }else{
+        //edited part
+          temp = [...temp, {id: id, fileName: position.toString()}];
+          selectedRowsBGPass = temp;
+          setSelectedRowsBG(temp);
+          console.log(selectedRowsBG);
+        }
       }
-      //edited part
-      selectedRowsBG = [...selectedRowsBG, {id: id, fileName: position.toString()}];
-      console.log(selectedRowsBG);
+      
     } else {
       setId((item) => [...item.filter((x) => x !== event.target.name)]);
-      if(selectedRowsBG.indexOf(selectedRowsBG.find((temp) => temp.id === id)) > -1){
-        selectedRowsBG.splice(selectedRowsBG.indexOf(selectedRowsBG.find((temp) => temp.id === id)), 1);
+      if(temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1){
+        temp.splice(temp.indexOf(temp.find((tempp) => tempp.id === id)), 1);
+        setSelectedRowsBG(temp);
+        selectedRowsBGPass = temp;
+        console.log(temp);
       }
-      console.log(selectedRowsBG);
+      
     }
   };
 

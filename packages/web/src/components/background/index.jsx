@@ -32,6 +32,9 @@ export default function Background() {
   );
 
   const [totalChecked, settotalChecked] = useState(0);
+  const [selectedRowsBG, setSelectedRowsBG] = useState([]);
+
+  // let selectedRowsBG = [];
 
   useEffect(() => {
     ClientMatterList();
@@ -162,6 +165,8 @@ export default function Background() {
                 getId={getId}
                 matterId={matter_id}
                 getBackground={getBackground}
+                selectedRowsBG={selectedRowsBG}
+                setSelectedRowsBG={setSelectedRowsBG}
               />
             </div>
           </div>
@@ -183,6 +188,8 @@ export default function Background() {
         search={search}
         matterId={matter_id}
         getBackground={getBackground}
+        selectedRowsBG={selectedRowsBG}
+        setSelectedRowsBG={setSelectedRowsBG}
       />
     </>
   );
