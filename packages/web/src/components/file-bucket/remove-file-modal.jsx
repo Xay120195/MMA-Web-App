@@ -10,9 +10,6 @@ export default function RemoveFileModal(props) {
   const handleModalClose = () => {
     props.handleModalClose();
   };
-
-  //console.log(props.selectedRowsBG);
-
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const hideToast = () => {
@@ -20,8 +17,12 @@ export default function RemoveFileModal(props) {
   };
   var rowsToDelete;
 
-  if(props.selectedRowsBG.length > 0){
-    rowsToDelete = props.selectedRowsBG;
+  if(typeof props.selectedRowsBG !== 'undefined'){
+    if(props.selectedRowsBG.length > 0){
+      rowsToDelete = props.selectedRowsBG;
+    }else{
+      rowsToDelete = selectedRows;
+    }
   }else{
     rowsToDelete = selectedRows;
   }
