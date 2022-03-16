@@ -5,23 +5,36 @@ import { TiCancel } from "react-icons/ti";
 import { BsFillTrashFill } from "react-icons/bs";
 import { selectedRows } from "./index"; //contains [{id, filename}, ..] of files to be deleted
 
+
 export default function RemoveFileModal(props) {
   const handleModalClose = () => {
     props.handleModalClose();
   };
+
+  //console.log(props.selectedRowsBG);
 
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const hideToast = () => {
     setShowToast(false);
   };
+  var rowsToDelete;
 
+  if(props.selectedRowsBG.length > 0){
+    rowsToDelete = props.selectedRowsBG;
+  }else{
+    rowsToDelete = selectedRows;
+  }
+
+  //console.log(rowsToDelete);
   //confirm deletion function
   const handleDelete = async () => {
-    if (selectedRows.length !== 0) {
-      props.handleSave(selectedRows);
+    if (rowsToDelete.length !== 0) {
+      props.handleSave(rowsToDelete);
     }
   };
+
+  
 
   return (
     <>
@@ -34,12 +47,12 @@ export default function RemoveFileModal(props) {
               </div>
               <div className="flex items-center justify-center py-1 rounded-b">
                 <p className="text-lg font-semibold">
-                  Delete {selectedRows.length}{" "}
-                  {selectedRows.length == 1 ? "File" : "Files"} Permanently?
+                  Delete {rowsToDelete.length}{" "}
+                  {rowsToDelete.length == 1 ? "File" : "Files"} Permanently?
                 </p>
               </div>
               <div className="flex-inline items-center justify-center py-3 font-semibold">
-                {selectedRows.map((data, index) => (
+                {rowsToDelete.map((data, index) => (
                   <div
                     key={data.id}
                     className="px-5 w-full flex items-center justify-center"
@@ -49,6 +62,8 @@ export default function RemoveFileModal(props) {
                         {" "}
                         {data.fileName.substring(0, 50)} ...
                       </p>
+                    ) : data.fileName.length < 5 ? (
+                      <p className="font-xs"></p>
                     ) : (
                       <p className="font-medium">{data.fileName}</p>
                     )}
@@ -57,8 +72,7 @@ export default function RemoveFileModal(props) {
               </div>
               <div className="flex items-center justify-center rounded-b mb-5">
                 <div className="px-5 w-full flex items-center justify-center text-md">
-                  Will be deleted permanently and you won't be able to restore
-                  it.
+                Selected files will be deleted permanently and you won't be able to restore it
                 </div>
               </div>
 
@@ -75,6 +89,7 @@ export default function RemoveFileModal(props) {
                     className="ml-2 bg-red-400 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                     type="button"
                     onClick={() => handleDelete()}
+                    disabled={rowsToDelete.length > 0 ? false : true}
                   >
                     Delete Permanently &nbsp; <FaTimes />
                   </button>
