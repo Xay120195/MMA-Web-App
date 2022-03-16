@@ -1221,9 +1221,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                   <div className="p-5 px-5 py-1 left-0">
                   <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">
                     <NoResultState
-                      title={"items"}
-                      txtLink={"file upload button"}
-                      handleClick={() => setShowUploadModal(true)}
+                      searchKey={searchFile}
+                      message={"Check the spelling, try a more general term or look up a specific File."}
                     />
                   </div>
                 </div>
