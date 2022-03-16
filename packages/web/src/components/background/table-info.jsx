@@ -8,9 +8,9 @@ import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import { API } from "aws-amplify";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export let selectedRowsBGPass = [];
-
 
 const TableInfo = ({
   witness,
@@ -28,7 +28,7 @@ const TableInfo = ({
   getBackground,
   matterId,
   selectedRowsBG,
-  setSelectedRowsBG
+  setSelectedRowsBG,
 }) => {
   let temp = selectedRowsBG;
   console.log(selectedRowsBG);
@@ -37,12 +37,12 @@ const TableInfo = ({
   const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sDate, setsDate] = useState(new Date());
+  const [active, setActive] = useState(false);
+  const [selected, setSelected] = useState("");
 
   const hideToast = () => {
     setShowToast(false);
   };
-
-  
 
   const handleCheckboxChange = (position, event, id) => {
     const updatedCheckedState = checkedState.map((item, index) =>
@@ -65,26 +65,23 @@ const TableInfo = ({
     if (event.target.checked) {
       if (!witness.includes({ id: event.target.name })) {
         setId((item) => [...item, event.target.name]);
-        if(temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1){
-          
-        }else{
-        //edited part
-          temp = [...temp, {id: id, fileName: position.toString()}];
+        if (temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1) {
+        } else {
+          //edited part
+          temp = [...temp, { id: id, fileName: position.toString() }];
           selectedRowsBGPass = temp;
           setSelectedRowsBG(temp);
           console.log(selectedRowsBG);
         }
       }
-      
     } else {
       setId((item) => [...item.filter((x) => x !== event.target.name)]);
-      if(temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1){
+      if (temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1) {
         temp.splice(temp.indexOf(temp.find((tempp) => tempp.id === id)), 1);
         setSelectedRowsBG(temp);
         selectedRowsBGPass = temp;
         console.log(temp);
       }
-      
     }
   };
 
@@ -112,7 +109,9 @@ const TableInfo = ({
   };
 
   const HandleChangeToTD = async (id, description, date) => {
-    const filterDescription = !description ? "" : description.replace(/(style=".+?")/gm, "");
+    const filterDescription = !description
+      ? ""
+      : description.replace(/(style=".+?")/gm, "");
     const outputDescription = textDescription.current;
     const finalDescription = outputDescription.replace(/(style=".+?")/gm, "");
     const data = {
@@ -161,7 +160,7 @@ const TableInfo = ({
   }
 
   function stripedTags(str) {
-    const stripedStr = str.replace(/<[^>]+>/g, '');
+    const stripedStr = str.replace(/<[^>]+>/g, "");
     return stripedStr;
   }
 
@@ -178,118 +177,173 @@ const TableInfo = ({
                 <EmptyRow search={search} />
               ) : (
                 <>
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          No
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Date
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Description of Background
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Document
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {sortByDate(witness).map((item, index) => (
-                        <tr key={item.id} className="h-full">
-                          <td className="px-3 py-3 w-10">
-                            <div className="flex items-center ">
-                              <input
-                                type="checkbox"
-                                name={item.id}
-                                className="cursor-pointer w-10"
-                                checked={checkedState[index]}
-                                onChange={(event) =>
-                                  handleCheckboxChange(index, event, item.id)
-                                }
-
-                              />
-                              <label
-                                htmlFor="checkbox-1"
-                                className="text-sm font-medium text-gray-900 dark:text-gray-300"
-                              >
-                                {index + 1}
-                              </label>
-                            </div>
-                          </td>
-
-                          <td className="px-3 py-3">
-                            <div>
-                              <DatePicker
-                                className="border w-28 rounded border-gray-300"
-                                selected={
-                                  !item.date ? sDate : new Date(item.date)
-                                }
-                                onChange={(selected) =>
-                                  handleChangeDate(
-                                    selected,
-                                    item.id,
-                                    item.description
-                                  )
-                                }
-                              />
-                            </div>
-                          </td>
-                          <td className="w-full px-6 py-4">
-                            <ContentEditable
-                              html={
-                                !item.description
-                                  ? `<p></p>`
-                                  : `<p>${item.description}</p>`
-                              }
-                              className="w-full p-2"
-                              onChange={(evt) => handleChangeDesc(evt)}
-                              onBlur={() =>
-                                HandleChangeToTD(
-                                  item.id,
-                                  item.description,
-                                  item.date
-                                )
-                              }
-                            />
-                          </td>
-                          <td className="py-2 px-3 w-80 text-sm text-gray-500">
-                            <Link
-                              className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                              to={`${AppRoutes.FILEBUCKET}/${matterId}`}
-                            >
-                              File Bucket +
-                            </Link>
-
-                            {fileMatter.length === 0 ? (
-                              <>
-                              <br/>
-                              <p className="text-xs" ><b>No items yet</b></p>
-                              <p className="text-xs" >Select from the files bucket to start adding one row</p>
-                              </>
-                            ) : (
-                              <>
-                                {fileMatter}
-                              </>
-                            )}
-                          </td>
+                  <DragDropContext>
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            No
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Date
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Description of Background
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Document
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <Droppable droppableId="droppable-1">
+                        {(provider) => (
+                          <tbody
+                            ref={provider.innerRef}
+                            {...provider.droppableProps}
+                            className="bg-white divide-y divide-gray-200"
+                          >
+                            {witness.map((item, index) => (
+                              <Draggable
+                                key={item.id}
+                                draggableId={item.id}
+                                index={index}
+                              >
+                                {(provider, snapshot) => (
+                                  <tr
+                                    key={item.id}
+                                    index={index}
+                                    className="h-full"
+                                    {...provider.draggableProps}
+                                    ref={provider.innerRef}
+                                    style={{
+                                      ...provider.draggableProps.style,
+                                      backgroundColor:
+                                        snapshot.isDragging ||
+                                        (active && item.id === selected)
+                                          ? "rgba(255, 255, 239, 0.767)"
+                                          : "white",
+                                    }}
+                                  >
+                                    <td
+                                      {...provider.dragHandleProps}
+                                      className="px-3 py-3 w-10"
+                                    >
+                                      <div className="flex items-center ">
+                                        <input
+                                          type="checkbox"
+                                          name={item.id}
+                                          className="cursor-pointer w-10"
+                                          checked={checkedState[index]}
+                                          onChange={(event) =>
+                                            handleCheckboxChange(
+                                              index,
+                                              event,
+                                              item.id
+                                            )
+                                          }
+                                        />
+                                        <label
+                                          htmlFor="checkbox-1"
+                                          className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                        >
+                                          {index + 1}
+                                        </label>
+                                      </div>
+                                    </td>
+
+                                    <td
+                                      {...provider.dragHandleProps}
+                                      className="px-3 py-3"
+                                    >
+                                      <div>
+                                        <DatePicker
+                                          className="border w-28 rounded border-gray-300"
+                                          selected={
+                                            !item.date
+                                              ? sDate
+                                              : new Date(item.date)
+                                          }
+                                          onChange={(selected) =>
+                                            handleChangeDate(
+                                              selected,
+                                              item.id,
+                                              item.description
+                                            )
+                                          }
+                                        />
+                                      </div>
+                                    </td>
+                                    <td
+                                      {...provider.dragHandleProps}
+                                      className="w-full px-6 py-4"
+                                    >
+                                      <ContentEditable
+                                        html={
+                                          !item.description
+                                            ? `<p></p>`
+                                            : `<p>${item.description}</p>`
+                                        }
+                                        className="w-full p-2"
+                                        onChange={(evt) =>
+                                          handleChangeDesc(evt)
+                                        }
+                                        onBlur={() =>
+                                          HandleChangeToTD(
+                                            item.id,
+                                            item.description,
+                                            item.date
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td
+                                      {...provider.dragHandleProps}
+                                      className="py-2 px-3 w-80 text-sm text-gray-500"
+                                    >
+                                      <Link
+                                        className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        to={`${AppRoutes.FILEBUCKET}/${matterId}`}
+                                      >
+                                        File Bucket +
+                                      </Link>
+
+                                      {fileMatter.length === 0 ? (
+                                        <>
+                                          <br />
+                                          <p className="text-xs">
+                                            <b>No items yet</b>
+                                          </p>
+                                          <p className="text-xs">
+                                            Select from the files bucket to
+                                            start adding one row
+                                          </p>
+                                        </>
+                                      ) : (
+                                        <>{fileMatter}</>
+                                      )}
+                                    </td>
+                                  </tr>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provider.placeholder}
+                          </tbody>
+                        )}
+                      </Droppable>
+                    </table>
+                  </DragDropContext>
                 </>
               )}
             </div>
