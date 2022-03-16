@@ -8,10 +8,11 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
-import { AiOutlineDownload } from "react-icons/ai";
+import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
+import FilterLabels from "./filter-labels-modal";
 import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -67,6 +68,8 @@ export default function FileBucket() {
     useState(false);
   var fileCount = 0;
 
+  const [filterLabels, setFilterLabels] = useState(false);
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -108,6 +111,7 @@ export default function FileBucket() {
   const handleModalClose = () => {
     setShowUploadModal(false);
     setshowRemoveFileModal(false);
+    setFilterLabels(false);
   };
 
   const contentDiv = {
@@ -933,6 +937,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 <BsFillTrashFill />
               </button>
             )}
+           
+              <button
+                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                onClick={() => setFilterLabels(true)}
+              >
+                <AiFillTags />
+              </button>
+            
           </div>
         </div>
 
@@ -1246,6 +1258,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           title={""}
           handleSave={handleUploadLink}
           bucketName={matter_id}
+          handleModalClose={handleModalClose}
+        />
+      )}
+
+      {filterLabels && (
+        <FilterLabels
+          handleSave={handleUploadLink}
           handleModalClose={handleModalClose}
         />
       )}
