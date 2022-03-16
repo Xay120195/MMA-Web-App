@@ -9,6 +9,7 @@ import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import { API } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { MdDragIndicator } from "react-icons/md";
 
 export let selectedRowsBGPass = [];
 
@@ -164,6 +165,51 @@ const TableInfo = ({
     return stripedStr;
   }
 
+  const handleDragEnd = async (e) => {
+    let tempWitness = [...witness];
+
+    let [selectedRow] = tempWitness.splice(e.source.index, 1);
+
+    tempWitness.splice(e.destination.index, 0, selectedRow);
+    setWitness(tempWitness);
+
+    const res = tempWitness.map(myFunction);
+
+    function myFunction(item, index) {
+      let data;
+      return (data = {
+        id: item.id,
+        order: index + 1,
+      });
+    }
+
+    res.map(async function (x) {
+      const mUpdateBackgroundOrder = `
+  mutation updateBackground($id: ID, $order: Int) {
+    backgroundUpdate(id: $id, order: $order) {
+      id
+      order
+    }
+  }`;
+      await API.graphql({
+        query: mUpdateBackgroundOrder,
+        variables: {
+          id: x.id,
+          order: x.order,
+        },
+      });
+    });
+  };
+
+  const handleChageBackground = (id) => {
+    setSelected(id);
+    if (active) {
+      setActive(false);
+    } else {
+      setActive(true);
+    }
+  };
+
   return (
     <>
       <div
@@ -177,7 +223,7 @@ const TableInfo = ({
                 <EmptyRow search={search} />
               ) : (
                 <>
-                  <DragDropContext>
+                  <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
@@ -241,6 +287,12 @@ const TableInfo = ({
                                       className="px-3 py-3 w-10"
                                     >
                                       <div className="flex items-center ">
+                                        <MdDragIndicator
+                                          className="text-2xl"
+                                          onClick={() =>
+                                            handleChageBackground(item.id)
+                                          }
+                                        />
                                         <input
                                           type="checkbox"
                                           name={item.id}
