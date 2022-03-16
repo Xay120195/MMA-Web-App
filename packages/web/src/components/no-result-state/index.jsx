@@ -8,11 +8,8 @@ const NoResultState = (props) => {
         <img src={Illustration} alt="" />
       </div>
       <div className="details-txt top-0">
-        <h1>No result for{props.key}.</h1>
-        <p>
-          Check the spelling, try a more general term or look up a specific
-          File.
-        </p>
+        <h1>No result for &ldquo;{props.searchKey}&rdquo;.</h1>
+        <p>{props.message}</p>
       </div>
     </div>
   );

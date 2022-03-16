@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 body {
   --mysteryGrey: #8A8A8A;
   --darkGrey: #454545;
@@ -10,16 +9,10 @@ body {
   --xSmallFont: 14px;
   --fontFamily: 'Poppins', sans-serif;
 }
-
 * {
   font-family: var(--fontFamily);
   margin: 0;
 }
-
-span {
-    margin-left: 0;
-}
-
 .main-content {
   display: grid;
   grid-gap: 2rem;
@@ -33,20 +26,12 @@ span {
   }
 }
 
-
-
-@media screen and (min-width: 1000px) {
-  .account-settings-content {
-    justify-items: center;
-  }
-}
-
 .img-content {
   padding: 1rem;
 }
 
 .img-content img {
-  height: 200px;
+  height: 160px;
   width: 100%;
 }
 
