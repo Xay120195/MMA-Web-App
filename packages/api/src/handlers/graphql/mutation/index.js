@@ -359,8 +359,8 @@ async function bulkDeleteBackground(data) {
         companyBackgroundCommand
       );
 
-      for (var a = 0; a < companyBackgroundResult.Items.length; a++) {
-        var companyBackgroundId = { id: companyBackgroundResult.Items[a].id };
+      for (var b = 0; b < companyBackgroundResult.Items.length; b++) {
+        var companyBackgroundId = { id: companyBackgroundResult.Items[b].id };
         arrCompanyBackgroundItems.push({
           DeleteRequest: {
             Key: companyBackgroundId,
