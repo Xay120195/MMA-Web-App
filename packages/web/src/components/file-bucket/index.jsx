@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API, toast } from "aws-amplify";
 import BlankState from "../blank-state";
+import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
@@ -1217,7 +1218,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                     </DragDropContext>
                   </div>
                 ):(
-                  <p>No Result Found.</p>
+                  <div className="p-5 px-5 py-1 left-0">
+                  <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">
+                    <NoResultState
+                      title={"items"}
+                      txtLink={"file upload button"}
+                      handleClick={() => setShowUploadModal(true)}
+                    />
+                  </div>
+                </div>
                 )}
               </>
             )}
