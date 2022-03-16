@@ -9,6 +9,9 @@ import EmptyRow from "./empty-row";
 import Modal from "./modal";
 import { API } from "aws-amplify";
 
+export let selectedRowsBGPass = [];
+
+
 const TableInfo = ({
   witness,
   fileMatter,
@@ -24,7 +27,11 @@ const TableInfo = ({
   setId,
   getBackground,
   matterId,
+  selectedRowsBG,
+  setSelectedRowsBG
 }) => {
+  let temp = selectedRowsBG;
+  console.log(selectedRowsBG);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [showUpload, setShowUpload] = useState(false);
@@ -35,11 +42,12 @@ const TableInfo = ({
     setShowToast(false);
   };
 
-  const handleCheckboxChange = (position, event) => {
+  
+
+  const handleCheckboxChange = (position, event, id) => {
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
     );
-
     setCheckedState(updatedCheckedState);
 
     let tc = updatedCheckedState.filter((v) => v === true).length;
@@ -57,9 +65,26 @@ const TableInfo = ({
     if (event.target.checked) {
       if (!witness.includes({ id: event.target.name })) {
         setId((item) => [...item, event.target.name]);
+        if(temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1){
+          
+        }else{
+        //edited part
+          temp = [...temp, {id: id, fileName: position.toString()}];
+          selectedRowsBGPass = temp;
+          setSelectedRowsBG(temp);
+          console.log(selectedRowsBG);
+        }
       }
+      
     } else {
       setId((item) => [...item.filter((x) => x !== event.target.name)]);
+      if(temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1){
+        temp.splice(temp.indexOf(temp.find((tempp) => tempp.id === id)), 1);
+        setSelectedRowsBG(temp);
+        selectedRowsBGPass = temp;
+        console.log(temp);
+      }
+      
     }
   };
 
@@ -193,8 +218,9 @@ const TableInfo = ({
                                 className="cursor-pointer w-10"
                                 checked={checkedState[index]}
                                 onChange={(event) =>
-                                  handleCheckboxChange(index, event)
+                                  handleCheckboxChange(index, event, item.id)
                                 }
+
                               />
                               <label
                                 htmlFor="checkbox-1"

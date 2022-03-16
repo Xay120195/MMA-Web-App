@@ -6,6 +6,7 @@ import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import { witness_affidavits } from "./data-source";
 import { API } from "aws-amplify";
+import { RemoveFileModal } from "../file-bucket/remove-file-modal.jsx";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -31,6 +32,9 @@ export default function Background() {
   );
 
   const [totalChecked, settotalChecked] = useState(0);
+  const [selectedRowsBG, setSelectedRowsBG] = useState([]);
+
+  // let selectedRowsBG = [];
 
   useEffect(() => {
     ClientMatterList();
@@ -161,6 +165,8 @@ export default function Background() {
                 getId={getId}
                 matterId={matter_id}
                 getBackground={getBackground}
+                selectedRowsBG={selectedRowsBG}
+                setSelectedRowsBG={setSelectedRowsBG}
               />
             </div>
           </div>
@@ -182,6 +188,8 @@ export default function Background() {
         search={search}
         matterId={matter_id}
         getBackground={getBackground}
+        selectedRowsBG={selectedRowsBG}
+        setSelectedRowsBG={setSelectedRowsBG}
       />
     </>
   );
