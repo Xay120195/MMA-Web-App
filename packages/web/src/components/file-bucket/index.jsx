@@ -894,11 +894,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         </div>
 
         <div className="p-5 left-0"></div>
-<<<<<<< Updated upstream
+
         {matterFiles !== null && matterFiles.length !== 0 && (
-=======
-        {files !== null && files.length !== 0 && (
->>>>>>> Stashed changes
           <div className="w-full mb-3 pb-2">
             <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
               <IoIcons.IoIosSearch />
