@@ -6,6 +6,7 @@ import BlankState from "../blank-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
+import * as IoIcons from "react-icons/io";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
@@ -14,6 +15,7 @@ import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
+
 import {
   GrDocumentPdf,
   GrDocumentText,
@@ -42,7 +44,8 @@ export default function FileBucket() {
   let descArr = [];
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
-  const [matterFiles, setMatterFiles] = useState(null);
+  const [files, setFiles] = useState(null);
+  const [matterFiles, setMatterFiles] = useState(files);
   const [labels, setLabels] = useState(null);
   const [clientMatterName, setClientMatterName] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
@@ -55,6 +58,7 @@ export default function FileBucket() {
   const [textName, setTextName] = useState("");
   const [textDetails, setTextDetails] = useState("");
   const { matter_id } = useParams();
+  const [searchFile, setSearchFile] = useState();
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
@@ -255,7 +259,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
     }
-    console.log(result);
+    console.log("Labels", result);
 
     setLabels(result);
   };
@@ -279,13 +283,21 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   useEffect(() => {
     if (matterFiles === null) {
+      console.log("matterFiles is null");
       getMatterFiles();
     }
 
     if (labels === null) {
       getLabels();
     }
-  }, [matterFiles]);
+
+    if (searchFile !== undefined) {
+      filterRecord(searchFile);
+    }
+
+    console.log("searchFile", searchFile);
+    console.log("matterFiles", matterFiles);
+  }, [searchFile]);
 
   let getMatterFiles = async () => {
     const params = {
@@ -299,7 +311,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     await API.graphql(params).then((files) => {
       const matterFilesList = files.data.matterFile;
       fileCount = matterFilesList.length;
-
+      setFiles(matterFilesList);
       setMatterFiles(sortByOrder(matterFilesList));
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
@@ -822,6 +834,24 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setSelect(newSelect);
   };
 
+  const handleSearchFileChange = (e) => {
+    console.log("handleSearchFileChange()", e.target.value);
+    setSearchFile(e.target.value);
+  };
+
+  const filterRecord = (v) => {
+    console.log("filter", v);
+
+    if (v === "") {
+      getMatterFiles();
+    } else {
+      const filterRecord = files.filter((x) => x.name.toLowerCase().includes(v.toLowerCase()));
+
+      console.log("filterRecord:", filterRecord);
+      setMatterFiles(filterRecord);
+    }
+  };
+
   return (
     <>
       <div
@@ -861,14 +891,27 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         </div>
 
         <div className="p-5 left-0"></div>
+        <div className="w-full mb-3 pb-2">
+          <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+            <IoIcons.IoIosSearch />
+          </span>
+          <input
+            type="search"
+            placeholder="Type to search files in the File Bucket ..."
+            onChange={handleSearchFileChange}
+            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+          />
+        </div>
         <div className="pl-2 py-1 grid grid-cols-2 gap-4">
-          <div>
+          <div className="">
+          {(matterFiles !== null && matterFiles.length !== 0) && (
             <input
               type="checkbox"
               className="mt-1 mr-3 px-2"
               onChange={() => checkAll(matterFiles)}
               checked={isAllChecked}
             />
+            )}
             <button
               className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
               onClick={() => setShowUploadModal(true)}
@@ -878,7 +921,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             </button>
           </div>
           <div className="grid justify-items-end">
-            {showRemoveFileButton && (
+            {(matterFiles !== null && matterFiles.length !== 0) && showRemoveFileButton && (
               <button
                 className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setshowRemoveFileModal(true)}
@@ -896,7 +939,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
         {matterFiles !== null && (
           <>
-            {matterFiles.length === 0 ? (
+            {matterFiles.length === 0 &&
+            (searchFile === undefined || searchFile === "") ? (
               <div className="p-5 px-5 py-1 left-0">
                 <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
                   <BlankState
@@ -908,7 +952,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               </div>
             ) : (
               <>
-                {matterFiles !== null && matterFiles.length !== 0 && (
+                {matterFiles !== null && matterFiles.length !== 0 ? (
                   <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                     <DragDropContext onDragEnd={handleDragEnd}>
                       <table className=" table-fixed min-w-full divide-y divide-gray-200">
@@ -1172,6 +1216,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       </table>
                     </DragDropContext>
                   </div>
+                ):(
+                  <p>No Result Found.</p>
                 )}
               </>
             )}
