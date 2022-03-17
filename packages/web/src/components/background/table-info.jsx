@@ -262,7 +262,7 @@ const TableInfo = ({
       window.open(downloadURL);
   };
 
-  console.log(files);
+  console.log(files.backgroundId);
 
   return (
     <>
