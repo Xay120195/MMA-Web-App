@@ -6,6 +6,7 @@ import { BsFillTrashFill } from "react-icons/bs";
 import { GrClose } from "react-icons/gr";
 import { AiOutlineTags } from  "react-icons/ai";
 import CreatableSelect from "react-select/creatable";
+import { pageSelectedLabels } from "./index"
 
 export default function FilterLabels(props) {
   const handleModalClose = () => {
@@ -13,6 +14,7 @@ export default function FilterLabels(props) {
   };
 
   //console.log(props.selectedRowsBG);
+  console.log(pageSelectedLabels);
 
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
@@ -48,6 +50,7 @@ export default function FilterLabels(props) {
                             <p className="input-name">Contains Labels</p>
                             <div className="relative my-2">
                                 <CreatableSelect
+                                    options={pageSelectedLabels}
                                     isMulti
                                     isClearable
                                     isSearchable

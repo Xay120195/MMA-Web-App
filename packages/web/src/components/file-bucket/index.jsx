@@ -39,6 +39,7 @@ import {
 import RemoveFileModal from "./remove-file-modal";
 
 export var selectedRows = [];
+export var pageSelectedLabels;
 
 export default function FileBucket() {
   let tempArr = [];
@@ -61,6 +62,10 @@ export default function FileBucket() {
   const [textDetails, setTextDetails] = useState("");
   const { matter_id } = useParams();
   const [searchFile, setSearchFile] = useState();
+
+  const [filterLabelsData, setFilterLabelsData] = useState([]);
+
+  let filterOptionsArray = [];
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
@@ -619,12 +624,28 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   };
 
+ 
+  
+
   const extractArray = (ar) => {
     if (Array.isArray(ar) && ar.length) {
       const newOptions = ar.map(({ id: value, name: label }) => ({
         value,
         label,
       }));
+
+      // setFilterOptions([...filterOptions, newOptions]);
+      newOptions.map(
+        (data) => 
+          (filterOptionsArray = [
+            ...filterOptionsArray,
+            data,
+          ])
+      );
+
+      //filter duplicates
+      pageSelectedLabels = [...new Map(filterOptionsArray.map(item => [JSON.stringify(item.label), item])).values()];
+      // setFilterLabelsData(pageSelectedLabels);
       return newOptions;
     } else {
       return null;
