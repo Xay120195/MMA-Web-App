@@ -30,6 +30,8 @@ const TableInfo = ({
   matterId,
   selectedRowsBG,
   setSelectedRowsBG,
+  showDeleteButton,
+  setShowDeleteButton
 }) => {
   let temp = selectedRowsBG;
   console.log(selectedRowsBG);
@@ -73,6 +75,12 @@ const TableInfo = ({
           selectedRowsBGPass = temp;
           setSelectedRowsBG(temp);
           console.log(selectedRowsBG);
+
+          if(temp.length > 0){
+            setShowDeleteButton(true);
+          }else{
+            setShowDeleteButton(false);
+          }
         }
       }
     } else {
@@ -82,6 +90,12 @@ const TableInfo = ({
         setSelectedRowsBG(temp);
         selectedRowsBGPass = temp;
         console.log(temp);
+      }
+
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
       }
     }
   };

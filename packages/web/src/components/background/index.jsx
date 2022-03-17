@@ -34,6 +34,8 @@ export default function Background() {
   const [totalChecked, settotalChecked] = useState(0);
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
 
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
+
   // let selectedRowsBG = [];
 
   useEffect(() => {
@@ -167,6 +169,8 @@ export default function Background() {
                 getBackground={getBackground}
                 selectedRowsBG={selectedRowsBG}
                 setSelectedRowsBG={setSelectedRowsBG}
+                showDeleteButton={showDeleteButton}
+                setShowDeleteButton={setShowDeleteButton}
               />
             </div>
           </div>
@@ -190,6 +194,8 @@ export default function Background() {
         getBackground={getBackground}
         selectedRowsBG={selectedRowsBG}
         setSelectedRowsBG={setSelectedRowsBG}
+        showDeleteButton={showDeleteButton}
+        setShowDeleteButton={setShowDeleteButton}
       />
     </>
   );
