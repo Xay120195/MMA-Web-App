@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
+import { AiOutlineDownload } from "react-icons/ai";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
@@ -15,6 +16,7 @@ export let selectedRowsBGPass = [];
 const TableInfo = ({
   witness,
   fileMatter,
+  files,
   setIdList,
   setWitness,
   checkAllState,
@@ -264,6 +266,16 @@ const TableInfo = ({
     }
   };
 
+  const previewAndDownloadFile = async (downloadURL) => {
+      window.open(downloadURL);
+  };
+
+  let taggedFiles = witness.map(function(item) {
+    return item.id;
+  }, this);
+
+  console.log(taggedFiles);
+
   return (
     <>
       <div
@@ -439,12 +451,12 @@ const TableInfo = ({
                                     >
                                       <Link
                                         className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        to={`${AppRoutes.FILEBUCKET}/${matterId}`}
+                                        to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
                                       >
                                         File Bucket +
                                       </Link>
 
-                                      {fileMatter.length === 0 ? (
+                                      {files.length === 0 ? (
                                         <>
                                           <br />
                                           <p className="text-xs">
@@ -456,7 +468,21 @@ const TableInfo = ({
                                           </p>
                                         </>
                                       ) : (
-                                        <>{fileMatter}</>
+                                        <>
+                                        <br />
+                                          {files.map((item, index) => (
+                                            <p className="break-normal" >{item.name}
+                                            &nbsp;
+                                            <AiOutlineDownload
+                                              className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
+                                              onClick={() =>
+                                                previewAndDownloadFile(item.downloadURL)
+                                              }
+                                            />
+                                            </p>
+                                            
+                                          ))}
+                                        </>
                                       )}
                                     </td>
                                   </tr>

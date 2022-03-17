@@ -20,6 +20,7 @@ const mainGrid = {
 export default function Background() {
   const [matterList, setClientMattersList] = useState([]);
   const [witness, setWitness] = useState([]);
+  const [files, setFiles] = useState([]);
   const [idList, setIdList] = useState([]);
   const [getId, setId] = useState([{}]);
   const [fileMatter, setFileMatter] = useState([]);
@@ -131,13 +132,6 @@ export default function Background() {
       },
     });
 
-    const backgroundFilesOpt = await API.graphql({
-      query: qlistBackgroundFiles,
-      variables: {
-        id: "cee6c43b-3afe-488b-a475-dd310f4ba81c",
-      },
-    });
-
     if (backgroundOpt.data.clientMatter.backgrounds !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
         ({ id, description, date, createdAt, order }) => ({
@@ -145,21 +139,38 @@ export default function Background() {
           id: id,
           description: description,
           date: date,
-          files: backgroundFilesOpt,
           order: order,
         })
       );
 
-      console.log(backgroundFilesOpt);
+      let arrBackgroundId = result.map((n) => n.id);
+      let arrFileResult = [];
 
-      /*let new_array = result.map((n) => n.id);
-      for (let i = 0; i < new_array.length; i++) {
-        console.log(new_array[i]);
-      }*/
+      for (let i = 0; i < arrBackgroundId.length; i++) {
+        const backgroundFilesOpt = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: arrBackgroundId[i],
+          },
+        });
+
+        arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+          ({ id, downloadURL, name }) => ({
+            backgroundId: arrBackgroundId[i],
+            id: id,
+            downloadURL: downloadURL,
+            name: name,
+          })
+        );
+
+        setFiles(arrFileResult);
+      }
 
       setWitness(sortByOrder(result));
     }
   };
+
+  console.log(files);
 
   const matt = matterList.find((i) => i.id === matter_id);
   const obj = { ...matt };
@@ -228,6 +239,7 @@ export default function Background() {
         ShowModalParagraph={ShowModalParagraph}
         setShowModalParagraph={setShowModalParagraph}
         fileMatter={fileMatter}
+        files={files}
         setWitness={setWitness}
         checkAllState={checkAllState}
         setcheckAllState={setcheckAllState}
