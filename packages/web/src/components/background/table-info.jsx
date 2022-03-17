@@ -243,7 +243,7 @@ const TableInfo = ({
                           <td className="py-2 px-3 w-80 text-sm text-gray-500">
                             <Link
                               className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                              to={`${AppRoutes.FILEBUCKET}/${matterId}`}
+                              to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
                             >
                               File Bucket +
                             </Link>

@@ -58,7 +58,7 @@ export default function FileBucket() {
   const [detId, setDetId] = useState("");
   const [textName, setTextName] = useState("");
   const [textDetails, setTextDetails] = useState("");
-  const { matter_id } = useParams();
+  const { matter_id, background_id } = useParams();
   const [searchFile, setSearchFile] = useState();
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
@@ -215,14 +215,46 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 }
 `;
 
-  const mUpdateMatterFileOrder = `
-      mutation updateMatterFile ($id: ID, $order: Int) {
-        matterFileUpdate(id: $id, order: $order) {
-          id
-          order
-        }
+const mUpdateMatterFileOrder = `
+    mutation updateMatterFile ($id: ID, $order: Int) {
+      matterFileUpdate(id: $id, order: $order) {
+        id
+        order
       }
-  `;
+    }
+`;
+
+const mUpdateBackgroundFile = `
+  mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+    backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+      id
+    }
+  }
+`;
+
+  async function tagBackgroundFile() {
+    let arrFiles = [];
+    arrFiles = selectedRows.map(
+      ({ id }) => ({
+        id: id,
+      })
+    );
+
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: background_id,
+            files: arrFiles,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
 
   async function updateMatterFileOrder(id, data) {
     return new Promise((resolve, reject) => {
@@ -724,10 +756,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      //setshowAttachBackgroundButton(true);
+      setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
-      //setshowAttachBackgroundButton(false);
+      setshowAttachBackgroundButton(false);
     }
   }
 
@@ -753,10 +785,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      //setshowAttachBackgroundButton(true);
+      setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
-      //setshowAttachBackgroundButton(false);
+      setshowAttachBackgroundButton(false);
     }
   }
 
@@ -874,8 +906,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
-                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`}>
-                  <button className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5">
+                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
+                  <button className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
+                  onClick={() => tagBackgroundFile()}>
                     Attach to Background &nbsp;|
                     <BsArrowLeft />
                   </button>

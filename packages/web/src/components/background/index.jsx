@@ -98,6 +98,21 @@ export default function Background() {
     }
   `;
 
+  const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
   const getBackground = async () => {
     let result = [];
     const matterId = matter_id;
@@ -109,6 +124,13 @@ export default function Background() {
       },
     });
 
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: "cee6c43b-3afe-488b-a475-dd310f4ba81c",
+      },
+    });
+
     if (backgroundOpt.data.clientMatter.backgrounds !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
         ({ id, description, date, createdAt }) => ({
@@ -116,9 +138,17 @@ export default function Background() {
           id: id,
           description: description,
           date: date,
+          files: backgroundFilesOpt,
         })
       );
-      console.log(result);
+
+      console.log(backgroundFilesOpt);
+
+      /*let new_array = result.map((n) => n.id);
+      for (let i = 0; i < new_array.length; i++) {
+        console.log(new_array[i]);
+      }*/
+      
       setWitness(result);
     }
   };
