@@ -3,10 +3,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
-import ContentEditable from "react-contenteditable";
 import ToastNotification from "../toast-notification";
 import EmptyRow from "./empty-row";
-import Modal from "./modal";
+import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
@@ -30,18 +29,23 @@ const TableInfo = ({
   matterId,
   selectedRowsBG,
   setSelectedRowsBG,
-  showDeleteButton,
-  setShowDeleteButton
+  ShowModalParagraph,
+  setShowModalParagraph,
+  paragraph,
+  setParagraph,
 }) => {
   let temp = selectedRowsBG;
   console.log(selectedRowsBG);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-  const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sDate, setsDate] = useState(new Date());
   const [active, setActive] = useState(false);
   const [selected, setSelected] = useState("");
+  const [descId, setDescId] = useState("");
+  const [textDesc, setTextDesc] = useState("");
+  const [descAlert, setDescAlert] = useState("");
+  const [updateProgess, setUpdateProgress] = useState(false);
 
   const hideToast = () => {
     setShowToast(false);
@@ -75,12 +79,6 @@ const TableInfo = ({
           selectedRowsBGPass = temp;
           setSelectedRowsBG(temp);
           console.log(selectedRowsBG);
-
-          if(temp.length > 0){
-            setShowDeleteButton(true);
-          }else{
-            setShowDeleteButton(false);
-          }
         }
       }
     } else {
@@ -90,12 +88,6 @@ const TableInfo = ({
         setSelectedRowsBG(temp);
         selectedRowsBGPass = temp;
         console.log(temp);
-      }
-
-      if(temp.length > 0){
-        setShowDeleteButton(true);
-      }else{
-        setShowDeleteButton(false);
       }
     }
   };
@@ -108,32 +100,79 @@ const TableInfo = ({
     setIdList(getId);
   }, [getId]);
 
-  const textDescription = useRef("");
+  const handleDescContent = (e, description, id) => {
+    if (!descAlert) {
+      setTextDesc(description);
+      setDescId(id);
+      setDescAlert("");
+    } else {
+      setDescAlert("");
+    }
+  };
 
-  const handleChangeDesc = (evt) => {
-    textDescription.current = evt.target.value;
+  const handleChangeDesc = (event) => {
+    setTextDesc(event.currentTarget.textContent);
+  };
+
+  const handleSaveDesc = async (e, description, date, id) => {
+    if (textDesc.length <= 0) {
+      setDescAlert("description can't be empty");
+      setUpdateProgress(false);
+    } else if (textDesc === description) {
+      setDescAlert("");
+      setUpdateProgress(true);
+      setalertMessage(`Saving in progress..`);
+      setShowToast(true);
+
+      const data = {
+        description: description,
+        date: date,
+      };
+      await updateBackgroundDetails(id, data);
+      setTimeout(() => {
+        getBackground();
+        setTimeout(() => {
+          setTextDesc("");
+          setalertMessage(`Successfully updated `);
+          setShowToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+            setUpdateProgress(false);
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    } else {
+      {
+        setDescAlert("");
+        setUpdateProgress(true);
+        setalertMessage(`Saving in progress..`);
+        setShowToast(true);
+
+        const data = {
+          description: textDesc,
+          date: date,
+        };
+        await updateBackgroundDetails(id, data);
+        setTimeout(() => {
+          getBackground();
+          setTimeout(() => {
+            setTextDesc("");
+            setalertMessage(`Successfully updated `);
+            setShowToast(true);
+            setTimeout(() => {
+              setShowToast(false);
+              setUpdateProgress(false);
+            }, 1000);
+          }, 1000);
+        }, 1000);
+      }
+    }
   };
 
   const handleChangeDate = async (selected, id, description) => {
     const data = {
       description: !description ? "" : description,
       date: String(selected),
-    };
-    await updateBackgroundDetails(id, data);
-    getBackground();
-  };
-
-  const HandleChangeToTD = async (id, description, date) => {
-    const filterDescription = !description
-      ? ""
-      : description.replace(/(style=".+?")/gm, "");
-    const outputDescription = textDescription.current;
-    const finalDescription = outputDescription.replace(/(style=".+?")/gm, "");
-    const data = {
-      description: !textDescription.current
-        ? filterDescription
-        : finalDescription,
-      date: !date ? "" : date,
     };
     await updateBackgroundDetails(id, data);
     getBackground();
@@ -150,6 +189,7 @@ const TableInfo = ({
   `;
 
   async function updateBackgroundDetails(id, data) {
+    console.log(data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -355,24 +395,43 @@ const TableInfo = ({
                                       {...provider.dragHandleProps}
                                       className="w-full px-6 py-4"
                                     >
-                                      <ContentEditable
-                                        html={
-                                          !item.description
-                                            ? `<p></p>`
-                                            : `<p>${item.description}</p>`
-                                        }
-                                        className="w-full p-2"
-                                        onChange={(evt) =>
-                                          handleChangeDesc(evt)
-                                        }
-                                        onBlur={() =>
-                                          HandleChangeToTD(
-                                            item.id,
+                                      <p
+                                        className="p-2 w-full font-poppins"
+                                        style={{
+                                          cursor: "auto",
+                                          outlineColor:
+                                            "rgb(204, 204, 204, 0.5)",
+                                          outlineWidth: "thin",
+                                        }}
+                                        suppressContentEditableWarning
+                                        onClick={(event) =>
+                                          handleDescContent(
+                                            event,
                                             item.description,
-                                            item.date
+                                            item.id
                                           )
                                         }
-                                      />
+                                        onInput={(event) =>
+                                          handleChangeDesc(event)
+                                        }
+                                        onBlur={(e) =>
+                                          handleSaveDesc(
+                                            e,
+                                            item.description,
+                                            item.date,
+                                            item.id
+                                          )
+                                        }
+                                        contentEditable={
+                                          updateProgess ? false : true
+                                        }
+                                      >
+                                        {item.description}
+                                      </p>
+
+                                      <span className="text-red-400 filename-validation">
+                                        {item.id === descId && descAlert}
+                                      </span>
                                     </td>
                                     <td
                                       {...provider.dragHandleProps}
@@ -416,7 +475,14 @@ const TableInfo = ({
           </div>
         </div>
       </div>
-      {showUpload && <Modal setShowUpload={setShowUpload} />}
+      {ShowModalParagraph && (
+        <ModalParagraph
+          setShowModalParagraph={setShowModalParagraph}
+          getBackground={getBackground}
+          paragraph={paragraph}
+          setParagraph={setParagraph}
+        />
+      )}
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
