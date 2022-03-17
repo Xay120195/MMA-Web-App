@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
+import RemoveFileModal from "../file-bucket/remove-file-modal";
+//import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
   idList,
@@ -16,46 +18,62 @@ const ActionButtons = ({
   setId,
   matterId,
   getBackground,
+  selectedRowsBG,
+  setSelectedRowsBG,
+  setShowModalParagraph,
+  paragraph,
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
+
+  const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
 
   const hideToast = () => {
     setShowToast(false);
   };
 
   const handleDelete = async (item) => {
-    if (item.length <= 1) {
+    console.log(item);
+    if (item.length === 0) {
       window.alert("Please select row.");
     } else {
-      var id = item.map(async function (x) {
-        const mDeleteBackground = `
-          mutation deleteBackground($id: ID) {
-            backgroundDelete(id: $id) {
-              id
-            }
+      const backgroundIds = item.map((i) => i.id);
+
+      console.log("backgroundIds", backgroundIds);
+
+      const mDeleteBackground = `
+        mutation bulkDeleteBackground($id: [ID]) {
+          backgroundBulkDelete(id: $id) {
+            id
           }
+        }
         `;
 
-        const deleteBackgroundRow = await API.graphql({
-          query: mDeleteBackground,
-          variables: {
-            id: String(x),
-          },
-        });
-        if (deleteBackgroundRow) {
-          getBackground();
-          setWitness([]);
-          setcheckAllState(false);
-        }
+      const deleteBackgroundRow = await API.graphql({
+        query: mDeleteBackground,
+        variables: {
+          id: backgroundIds,
+        },
       });
 
+      console.log(deleteBackgroundRow);
+
       setalertMessage(`Successfully deleted`);
-      setCheckedState(new Array(witness.length).fill(false));
+      console.log(setCheckedState);
+
+      const newArr = Array(witness.length).fill(false);
+      setCheckedState(newArr);
+
+      // setCheckedState = newArr;
+
       setShowToast(true);
+      setshowRemoveFileModal(false);
       setTimeout(() => {
         setShowToast(false);
+        getBackground();
+        setWitness([]);
+        setcheckAllState(false);
       }, 3000);
     }
   };
@@ -86,20 +104,35 @@ const ActionButtons = ({
     if (createBackgroundRow) {
       getBackground();
       setcheckAllState(false);
+
+      // const newArr = Array(witness.length).fill(false);
+      // setCheckedState = newArr;
       setCheckedState(new Array(witness.length).fill(false));
     }
   };
-
+  var temp = [];
   const handleCheckAllChange = (ischecked) => {
     setcheckAllState(!checkAllState);
 
     if (ischecked) {
+      // setSelectedRowsBG([]);
+
       setCheckedState(new Array(witness.length).fill(true));
-      settotalChecked(witness.length);
-      setId(witness.map((s) => s.id));
+      settotalChecked(0);
+
+      //insert row
+      witness.map((data) => (temp = [...temp, { id: data.id, fileName: "x" }]));
+
+      setSelectedRowsBG(temp);
+      console.log(selectedRowsBG);
+
+      console.log(selectedRowsBG);
     } else {
       setCheckedState(new Array(witness.length).fill(false));
-      settotalChecked(0);
+      settotalChecked(witness.length);
+      setId(witness.map((s) => s.id));
+
+      setSelectedRowsBG([]);
     }
   };
 
@@ -118,6 +151,14 @@ const ActionButtons = ({
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
+
+  function showModal() {
+    setshowRemoveFileModal(true);
+  }
+
+  const handleModalClose = () => {
+    setshowRemoveFileModal(false);
+  };
 
   return (
     <>
@@ -155,8 +196,29 @@ const ActionButtons = ({
             </svg>
           </button>
           <button
+            onClick={() => setShowModalParagraph(true)}
             type="button"
-            onClick={() => handleDelete(idList)}
+            className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+          >
+            Add Paragraph
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mx-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => setshowRemoveFileModal(true)}
             className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
           >
             Delete
@@ -177,6 +239,14 @@ const ActionButtons = ({
       </div>
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
+
+      {showRemoveFileModal && (
+        <RemoveFileModal
+          handleSave={handleDelete}
+          handleModalClose={handleModalClose}
+          selectedRowsBG={selectedRowsBG}
+        />
       )}
     </>
   );
