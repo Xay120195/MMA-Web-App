@@ -871,7 +871,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     if (v === "") {
       getMatterFiles();
     } else {
-      const filterRecord = files.filter((x) => x.name.toLowerCase().includes(v.toLowerCase()));
+      const filterRecord = files.filter((x) =>
+        x.name.toLowerCase().includes(v.toLowerCase())
+      );
 
       console.log("filterRecord:", filterRecord);
       setMatterFiles(filterRecord);
@@ -932,13 +934,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         )}
         <div className="pl-2 py-1 grid grid-cols-2 gap-4">
           <div className="">
-          {(matterFiles !== null && matterFiles.length !== 0) && (
-            <input
-              type="checkbox"
-              className="mt-1 mr-3 px-2"
-              onChange={() => checkAll(matterFiles)}
-              checked={isAllChecked}
-            />
+            {matterFiles !== null && matterFiles.length !== 0 && (
+              <input
+                type="checkbox"
+                className="mt-1 mr-3 px-2"
+                onChange={() => checkAll(matterFiles)}
+                checked={isAllChecked}
+              />
             )}
             <button
               className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
@@ -949,23 +951,24 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             </button>
           </div>
           <div className="grid justify-items-end">
-            {(matterFiles !== null && matterFiles.length !== 0) && showRemoveFileButton && (
-              <button
-                className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                onClick={() => setshowRemoveFileModal(true)}
-              >
-                DELETE &nbsp;
-                <BsFillTrashFill />
-              </button>
-            )}
-           
+            {matterFiles !== null &&
+              matterFiles.length !== 0 &&
+              showRemoveFileButton && (
+                <button
+                  className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                  onClick={() => setshowRemoveFileModal(true)}
+                >
+                  DELETE &nbsp;
+                  <BsFillTrashFill />
+                </button>
+              )}
+
               <button
                 className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setFilterLabels(true)}
               >
                 <AiFillTags />
               </button>
-            
           </div>
         </div>
 
@@ -1252,15 +1255,17 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                       </table>
                     </DragDropContext>
                   </div>
-                ):(
+                ) : (
                   <div className="p-5 px-5 py-1 left-0">
-                  <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">
-                    <NoResultState
-                      searchKey={searchFile}
-                      message={"Check the spelling, try a more general term or look up a specific File."}
-                    />
+                    <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">
+                      <NoResultState
+                        searchKey={searchFile}
+                        message={
+                          "Check the spelling, try a more general term or look up a specific File."
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
                 )}
               </>
             )}
