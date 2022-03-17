@@ -41,9 +41,7 @@ export default function Background() {
 
   useEffect(() => {
     ClientMatterList();
-    //if (witness === null) {
     getBackground();
-    //}
   }, []);
 
   const listClientMatters = `
@@ -143,20 +141,20 @@ export default function Background() {
         })
       );
 
-      let arrBackgroundId = result.map((n) => n.id);
-      let arrFileResult = [];
+      setWitness(sortByOrder(result));
 
-      for (let i = 0; i < arrBackgroundId.length; i++) {
+      let arrFileResult = [];
+      for (let i = 0; i < sortByOrder(result).length; i++) {
         const backgroundFilesOpt = await API.graphql({
           query: qlistBackgroundFiles,
           variables: {
-            id: arrBackgroundId[i],
+            id: result[i].id,
           },
         });
 
         arrFileResult = backgroundFilesOpt.data.background.files.items.map(
           ({ id, downloadURL, name }) => ({
-            backgroundId: arrBackgroundId[i],
+            backgroundId: result[i].id,
             id: id,
             downloadURL: downloadURL,
             name: name,
@@ -165,12 +163,9 @@ export default function Background() {
 
         setFiles(arrFileResult);
       }
-
-      setWitness(sortByOrder(result));
+      
     }
   };
-
-  console.log(files);
 
   const matt = matterList.find((i) => i.id === matter_id);
   const obj = { ...matt };

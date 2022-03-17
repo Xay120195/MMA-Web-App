@@ -15,7 +15,6 @@ export let selectedRowsBGPass = [];
 
 const TableInfo = ({
   witness,
-  fileMatter,
   files,
   setIdList,
   setWitness,
@@ -37,7 +36,6 @@ const TableInfo = ({
   setParagraph,
 }) => {
   let temp = selectedRowsBG;
-  console.log(selectedRowsBG);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [loading, setLoading] = useState(true);
@@ -80,7 +78,6 @@ const TableInfo = ({
           temp = [...temp, { id: id, fileName: position.toString() }];
           selectedRowsBGPass = temp;
           setSelectedRowsBG(temp);
-          console.log(selectedRowsBG);
         }
       }
     } else {
@@ -89,7 +86,6 @@ const TableInfo = ({
         temp.splice(temp.indexOf(temp.find((tempp) => tempp.id === id)), 1);
         setSelectedRowsBG(temp);
         selectedRowsBGPass = temp;
-        console.log(temp);
       }
     }
   };
@@ -98,7 +94,6 @@ const TableInfo = ({
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-
     setIdList(getId);
   }, [getId]);
 
@@ -191,7 +186,6 @@ const TableInfo = ({
   `;
 
   async function updateBackgroundDetails(id, data) {
-    console.log(data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -202,8 +196,6 @@ const TableInfo = ({
             description: data.description,
           },
         });
-
-        console.log(request);
         resolve(request);
       } catch (e) {
         reject(e.errors[0].message);
@@ -270,11 +262,7 @@ const TableInfo = ({
       window.open(downloadURL);
   };
 
-  let taggedFiles = witness.map(function(item) {
-    return item.id;
-  }, this);
-
-  console.log(taggedFiles);
+  console.log(files);
 
   return (
     <>
@@ -470,7 +458,7 @@ const TableInfo = ({
                                       ) : (
                                         <>
                                         <br />
-                                          {files.map((item, index) => (
+                                          {files.map((item) => (
                                             <p className="break-normal" >{item.name}
                                             &nbsp;
                                             <AiOutlineDownload
@@ -480,7 +468,6 @@ const TableInfo = ({
                                               }
                                             />
                                             </p>
-                                            
                                           ))}
                                         </>
                                       )}
