@@ -305,7 +305,53 @@ async function getBackground(data) {
 
     const command = new GetItemCommand(params);
     const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+
+    const backgrounds = unmarshall(Item);
+
+    const backgroundFileParams = {
+      TableName: "BackgroundFileTable",
+      IndexName: "byBackground",
+      KeyConditionExpression: "backgroundId = :backgroundId",
+      ExpressionAttributeValues: marshall({
+        ":backgroundId": backgrounds.id,
+      }),
+    };
+
+    const backgroundFileCommand = new QueryCommand(backgroundFileParams);
+    const backgroundFileResult = await client.send(backgroundFileCommand);
+
+    const fileIds = backgroundFileResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.fileId })
+    );
+
+    if (fileIds.length != 0) {
+      const fileParams = {
+        RequestItems: {
+          MatterFileTable: {
+            Keys: fileIds,
+          },
+        },
+      };
+
+      const filesCommand = new BatchGetItemCommand(fileParams);
+      const filesResult = await client.send(filesCommand);
+
+      const objFiles = filesResult.Responses.MatterFileTable.map((i) =>
+        unmarshall(i)
+      );
+      const objBackgroundFiles = backgroundFileResult.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      const extractFiles = objBackgroundFiles.map((item) => {
+        const filterFile = objFiles.find((u) => u.id === item.fileId);
+        return { ...filterFile };
+      });
+
+      backgrounds.files = { items: extractFiles };
+    }
+
+    response = backgrounds ? backgrounds : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -367,18 +413,20 @@ async function getClientMatter(data) {
       const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
         (i) => unmarshall(i)
       );
+
       const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map(
         (i) => unmarshall(i)
       );
 
-      const extractLabels = objClientMatterBackgrounds.map((item) => {
+      const extractBackgrounds = objClientMatterBackgrounds.map((item) => {
         const filterBackground = objBackgrounds.find(
           (u) => u.id === item.backgroundId
         );
-        return { ...item, ...filterBackground };
+
+        return { ...filterBackground };
       });
 
-      res.backgrounds = { items: extractLabels };
+      res.backgrounds = { items: extractBackgrounds };
     }
 
     const clientMatterLabelParams = {
@@ -418,7 +466,7 @@ async function getClientMatter(data) {
 
       const extractLabels = objClientMatterLabels.map((item) => {
         const filterLabel = objLabels.find((u) => u.id === item.labelId);
-        return { ...item, ...filterLabel };
+        return { ...filterLabel };
       });
 
       res.labels = { items: extractLabels };

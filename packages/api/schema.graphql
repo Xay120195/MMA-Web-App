@@ -169,8 +169,14 @@ type Background {
   date: String
   description: String
   order: Int
+  files: BackgroundFileConnection
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+type BackgroundFileConnection {
+  items: [File]
+  # nextToken: String
 }
 
 schema {
@@ -262,6 +268,7 @@ type Mutation {
   backgroundUpdate(id: ID, date: String, description: String, order: Int): Background
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
+  backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
 }
 
 input ClientMatterInput {
