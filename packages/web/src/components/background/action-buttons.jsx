@@ -19,13 +19,15 @@ const ActionButtons = ({
   matterId,
   getBackground,
   selectedRowsBG,
-  setSelectedRowsBG
+  setSelectedRowsBG,
+  showDeleteButton,
+  setShowDeleteButton
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
+
 
   const hideToast = () => {
     setShowToast(false);
@@ -118,8 +120,6 @@ const ActionButtons = ({
     setcheckAllState(!checkAllState);
 
     if (ischecked) {
-      // setSelectedRowsBG([]);
-      
       setCheckedState(new Array(witness.length).fill(true));
       settotalChecked(0);
 
@@ -134,8 +134,12 @@ const ActionButtons = ({
       
       setSelectedRowsBG(temp);
       console.log(selectedRowsBG);
-      
-      console.log(selectedRowsBG);
+
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
+      }
       
     } else {
       setCheckedState(new Array(witness.length).fill(false));
@@ -143,8 +147,7 @@ const ActionButtons = ({
       setId(witness.map((s) => s.id));
       
       setSelectedRowsBG([]);
-    
-     
+      setShowDeleteButton(false);
     }
   };
 
@@ -163,10 +166,6 @@ const ActionButtons = ({
   useEffect(() => {
     setWitness(newWitness);
   }, [newWitness]);
-
-  function showModal(){
-    setshowRemoveFileModal(true);
-  }
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
@@ -207,6 +206,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
+          {showDeleteButton &&
           <button
             type="button"
             onClick={() => setshowRemoveFileModal(true)}
@@ -226,6 +226,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
+          }
         </div>
       </div>
       {showToast && (
