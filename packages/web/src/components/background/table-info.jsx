@@ -262,8 +262,6 @@ const TableInfo = ({
       window.open(downloadURL);
   };
 
-  console.log(files.backgroundId);
-
   return (
     <>
       <div
