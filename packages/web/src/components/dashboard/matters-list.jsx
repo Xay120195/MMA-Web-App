@@ -32,7 +32,7 @@ export function ClientMatters({
                   <FaIcons.FaEllipsisV />
                   </button>
                   <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded z-50">
-                  {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}`}>File Bucket</Link></li>) : null}
+                  {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}/000`}>File Bucket</Link></li>) : null}
                   {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>) : null}
                   {showDeleteMatter && (<li className="p-2 cursor-pointer" onClick={() => setshowDeleteModal(true, clientMatter.id)} >Delete</li>)}
                   </ul>
@@ -87,7 +87,7 @@ export function ClientMatters({
                     <FaIcons.FaEllipsisV />
                     </button>
                     <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
-                    {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}`}>File Bucket</Link></li>) : null}
+                    {allowOpenFileBucket ? (<li className="p-2"><Link to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}/000`}>File Bucket</Link></li>) : null}
                     {allowOpenBackground ? (<li className="p-2"><Link to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}>Background</Link></li>) : null}
                     {showDeleteMatter && (<li className="p-2 cursor-pointer" onClick={() => setshowDeleteModal(true, clientMatter.id)} >Delete</li>)}
                     </ul>

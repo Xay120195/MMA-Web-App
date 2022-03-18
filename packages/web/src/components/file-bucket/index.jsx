@@ -233,13 +233,13 @@ const mUpdateMatterFileOrder = `
     }
 `;
 
-const mUpdateBackgroundFile = `
-  mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
-    backgroundFileTag(backgroundId: $backgroundId, files: $files) {
-      id
+  const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
     }
-  }
-`;
+  `;
 
   async function tagBackgroundFile() {
     let arrFiles = [];
@@ -248,21 +248,22 @@ const mUpdateBackgroundFile = `
         id: id,
       })
     );
-
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mUpdateBackgroundFile,
-          variables: {
-            backgroundId: background_id,
-            files: arrFiles,
-          },
-        });
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
+    if(background_id !== null) {
+      return new Promise((resolve, reject) => {
+        try {
+          const request = API.graphql({
+            query: mUpdateBackgroundFile,
+            variables: {
+              backgroundId: background_id,
+              files: arrFiles,
+            },
+          });
+          resolve(request);
+        } catch (e) {
+          reject(e.errors[0].message);
+        }
+      });
+    }
   }
 
   async function updateMatterFileOrder(id, data) {
