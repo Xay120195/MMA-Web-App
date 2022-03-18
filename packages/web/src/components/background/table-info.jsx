@@ -472,7 +472,7 @@ const TableInfo = ({
                                         <>
                                         <br />
                                           {files.filter(x => x.backgroundId === item.id).map((items) => (
-                                            <p className="break-normal" >{items.name}
+                                            <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100" >{items.name}
                                             &nbsp;
                                             <AiOutlineDownload
                                               className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
