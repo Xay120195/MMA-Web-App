@@ -913,12 +913,30 @@ const mUpdateMatterFileOrder = `
     }
   };
 
-  const handleFilter = (files) => {
-    alert("connected");
-    console.log(files);
+  const handleFilter = (fileFilter) => {
+    //alert("connected");
     setFilterLabels(false);
     
 
+      // const filterRecord = files.filter((x) =>
+      //     x.labels.includes(x.labels.map(y => y === fileFilter.map(z => z)))
+          
+      // );
+
+      var filterRecord = [];
+      if(fileFilter == null || fileFilter == undefined){
+        setMatterFiles(files);
+      }else{
+        for (var i=0; i<fileFilter.length; i++){
+          files.map(x=> (x.labels !== null) ? x.labels.map(y=>
+            y.name === fileFilter[i] ? filterRecord = [...filterRecord, x] : filterRecord = filterRecord
+          ) : x.labels)
+        }
+
+        var listFilter = [...new Map(filterRecord.map(x => [JSON.stringify(x), x])).values()];
+        console.log(listFilter);
+        setMatterFiles(listFilter);
+      }
   }
 
   return (

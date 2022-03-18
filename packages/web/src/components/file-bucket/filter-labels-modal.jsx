@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import ToastNotification from "../toast-notification";
-import { FaTimes } from "react-icons/fa";
-import { TiCancel } from "react-icons/ti";
 import { BsFillTrashFill } from "react-icons/bs";
 import { GrClose } from "react-icons/gr";
 import { AiOutlineTags } from  "react-icons/ai";
 import CreatableSelect from "react-select/creatable";
 import { pageSelectedLabels } from "./index"
+let tempp = [];
 
 export default function FilterLabels(props) {
   const handleModalClose = () => {
     props.handleModalClose();
   };
 
-  //console.log(props.selectedRowsBG);
+  var filesToDisplay = [];
+  var filesToSend;
+  const [filterTempOptions, setFilterTempOptions] = useState(filesToSend);
   console.log(pageSelectedLabels);
 
   const [showToast, setShowToast] = useState(false);
@@ -22,11 +23,9 @@ export default function FilterLabels(props) {
     setShowToast(false);
   };
 
-  var filesToDisplay = [];
-  var filesToSend;
-
   const handleFilter= async () => {
       props.handleSave(filesToSend);
+      // setFilterTempOptions(tempp);
   };
 
   const handleFilterChange = (options) => {
@@ -34,9 +33,9 @@ export default function FilterLabels(props) {
     options.map(x => filesToDisplay = [...filesToDisplay, x.label]);
     //filter duplicates
     filesToSend = [...new Map(filesToDisplay.map(x => [JSON.stringify(x), x])).values()];
-
-    
   }
+
+
 
   return (
     <>
@@ -68,6 +67,7 @@ export default function FilterLabels(props) {
                                     isSearchable
                                     className="w-full placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                     onChange={(options) => handleFilterChange(options)}
+                                    // defaultValue={filterTempOptions}
                                 />
                             </div>
                         </div>
