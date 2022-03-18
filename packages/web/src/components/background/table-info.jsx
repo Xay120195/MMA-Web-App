@@ -34,6 +34,8 @@ const TableInfo = ({
   setShowModalParagraph,
   paragraph,
   setParagraph,
+  showDeleteButton,
+  setShowDeleteButton
 }) => {
   let temp = selectedRowsBG;
   const [showToast, setShowToast] = useState(false);
@@ -78,6 +80,12 @@ const TableInfo = ({
           temp = [...temp, { id: id, fileName: position.toString() }];
           selectedRowsBGPass = temp;
           setSelectedRowsBG(temp);
+
+          if(temp.length > 0){
+            setShowDeleteButton(true);
+          }else{
+            setShowDeleteButton(false);
+          }
         }
       }
     } else {
@@ -86,6 +94,13 @@ const TableInfo = ({
         temp.splice(temp.indexOf(temp.find((tempp) => tempp.id === id)), 1);
         setSelectedRowsBG(temp);
         selectedRowsBGPass = temp;
+
+      }
+      
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
       }
     }
   };

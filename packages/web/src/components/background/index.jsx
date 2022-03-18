@@ -32,10 +32,10 @@ export default function Background() {
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
-
   const [totalChecked, settotalChecked] = useState(0);
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
 
   // let selectedRowsBG = [];
 
@@ -223,6 +223,8 @@ export default function Background() {
                 setSelectedRowsBG={setSelectedRowsBG}
                 setShowModalParagraph={setShowModalParagraph}
                 paragraph={paragraph}
+                showDeleteButton={showDeleteButton}
+                setShowDeleteButton={setShowDeleteButton}
               />
             </div>
           </div>
@@ -251,6 +253,8 @@ export default function Background() {
         setSelectedRowsBG={setSelectedRowsBG}
         paragraph={paragraph}
         setParagraph={setParagraph}
+        showDeleteButton={showDeleteButton}
+        setShowDeleteButton={setShowDeleteButton}
       />
     </>
   );

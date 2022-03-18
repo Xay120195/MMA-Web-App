@@ -22,6 +22,8 @@ const ActionButtons = ({
   setSelectedRowsBG,
   setShowModalParagraph,
   paragraph,
+  showDeleteButton,
+  setShowDeleteButton
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -115,23 +117,21 @@ const ActionButtons = ({
     setcheckAllState(!checkAllState);
 
     if (ischecked) {
-      // setSelectedRowsBG([]);
-
       setCheckedState(new Array(witness.length).fill(true));
       settotalChecked(0);
-
       //insert row
       witness.map((data) => (temp = [...temp, { id: data.id, fileName: "x" }]));
-
       setSelectedRowsBG(temp);
-      console.log(selectedRowsBG);
-
-      console.log(selectedRowsBG);
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
+      }
     } else {
       setCheckedState(new Array(witness.length).fill(false));
       settotalChecked(witness.length);
       setId(witness.map((s) => s.id));
-
+      setShowDeleteButton(false);
       setSelectedRowsBG([]);
     }
   };
@@ -173,7 +173,7 @@ const ActionButtons = ({
             onChange={(e) => handleCheckAllChange(e.target.checked)}
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
-
+          
           <button
             onClick={handleAddRow}
             type="button"
@@ -216,6 +216,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
+          {showDeleteButton &&
           <button
             type="button"
             onClick={() => setshowRemoveFileModal(true)}
@@ -235,6 +236,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
+          }
         </div>
       </div>
       {showToast && (
