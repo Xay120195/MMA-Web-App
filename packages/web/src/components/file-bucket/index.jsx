@@ -913,6 +913,14 @@ const mUpdateMatterFileOrder = `
     }
   };
 
+  const handleFilter = (files) => {
+    alert("connected");
+    console.log(files);
+    setFilterLabels(false);
+    
+
+  }
+
   return (
     <>
       <div
@@ -1324,7 +1332,7 @@ const mUpdateMatterFileOrder = `
 
       {filterLabels && (
         <FilterLabels
-          handleSave={handleUploadLink}
+          handleSave={handleFilter}
           handleModalClose={handleModalClose}
         />
       )}

@@ -22,9 +22,21 @@ export default function FilterLabels(props) {
     setShowToast(false);
   };
 
-  const handleDelete = async () => {
-      props.handleSave();
+  var filesToDisplay = [];
+  var filesToSend;
+
+  const handleFilter= async () => {
+      props.handleSave(filesToSend);
   };
+
+  const handleFilterChange = (options) => {
+    console.log(options);
+    options.map(x => filesToDisplay = [...filesToDisplay, x.label]);
+    //filter duplicates
+    filesToSend = [...new Map(filesToDisplay.map(x => [JSON.stringify(x), x])).values()];
+
+    
+  }
 
   return (
     <>
@@ -55,6 +67,7 @@ export default function FilterLabels(props) {
                                     isClearable
                                     isSearchable
                                     className="w-full placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                    onChange={(options) => handleFilterChange(options)}
                                 />
                             </div>
                         </div>
@@ -64,8 +77,10 @@ export default function FilterLabels(props) {
                 </div>
 
                 <div className="flex items-center justify-end p-6 rounded-b">
-                        <button className="justify-center w-full bg-green-400 hover:bg-green-400 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
-                        type="submit">
+                        <button 
+                          className="justify-center w-full bg-green-400 hover:bg-green-400 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
+                          onClick={(options) => handleFilter(options)}
+                        >
                             Apply Filter &nbsp; <AiOutlineTags/>
                         </button>
                 </div>
