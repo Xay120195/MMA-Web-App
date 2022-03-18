@@ -14,12 +14,16 @@ const ActionButtons = ({
   setCheckedState,
   settotalChecked,
   setSearch,
-  search, 
+  search,
   setId,
   matterId,
   getBackground,
   selectedRowsBG,
-  setSelectedRowsBG
+  setSelectedRowsBG,
+  setShowModalParagraph,
+  paragraph,
+  showDeleteButton,
+  setShowDeleteButton
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -32,19 +36,15 @@ const ActionButtons = ({
   };
 
   const handleDelete = async (item) => {
-
     console.log(item);
     if (item.length === 0) {
       window.alert("Please select row.");
     } else {
-
-      const backgroundIds = item.map(
-        (i) => i.id
-      );
+      const backgroundIds = item.map((i) => i.id);
 
       console.log("backgroundIds", backgroundIds);
-      
-        const mDeleteBackground = `
+
+      const mDeleteBackground = `
         mutation bulkDeleteBackground($id: [ID]) {
           backgroundBulkDelete(id: $id) {
             id
@@ -52,15 +52,14 @@ const ActionButtons = ({
         }
         `;
 
-        const deleteBackgroundRow = await API.graphql({
-          query: mDeleteBackground,
-          variables: {
-            id: backgroundIds,
-          },
-        });
+      const deleteBackgroundRow = await API.graphql({
+        query: mDeleteBackground,
+        variables: {
+          id: backgroundIds,
+        },
+      });
 
-        console.log(deleteBackgroundRow);
-        
+      console.log(deleteBackgroundRow);
 
       setalertMessage(`Successfully deleted`);
       console.log(setCheckedState);
@@ -68,15 +67,21 @@ const ActionButtons = ({
       const newArr = Array(witness.length).fill(false);
       setCheckedState(newArr);
 
-     // setCheckedState = newArr;
+      setSelectedRowsBG([]);
+
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
+      }
 
       setShowToast(true);
       setshowRemoveFileModal(false);
       setTimeout(() => {
         setShowToast(false);
         getBackground();
-          setWitness([]);
-          setcheckAllState(false);
+        setWitness([]);
+        setcheckAllState(false);
       }, 3000);
     }
   };
@@ -90,8 +95,8 @@ const ActionButtons = ({
       new Date().getDate();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, date: $date) {
+        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
           }
         }
@@ -102,6 +107,7 @@ const ActionButtons = ({
       variables: {
         clientMatterId: matterId,
         date: dateToday,
+        description: "",
       },
     });
     if (createBackgroundRow) {
@@ -111,6 +117,8 @@ const ActionButtons = ({
       // const newArr = Array(witness.length).fill(false);
       // setCheckedState = newArr;
       setCheckedState(new Array(witness.length).fill(false));
+      setSelectedRowsBG([]);
+      setShowDeleteButton(false);
     }
   };
   var temp = [];
@@ -118,33 +126,22 @@ const ActionButtons = ({
     setcheckAllState(!checkAllState);
 
     if (ischecked) {
-      // setSelectedRowsBG([]);
-      
       setCheckedState(new Array(witness.length).fill(true));
       settotalChecked(0);
-
-       //insert row
-       witness.map(
-        (data) =>
-          (temp = [
-            ...temp,
-            { id: data.id, fileName: "x" },
-          ])
-      );
-      
+      //insert row
+      witness.map((data) => (temp = [...temp, { id: data.id, fileName: "x" }]));
       setSelectedRowsBG(temp);
-      console.log(selectedRowsBG);
-      
-      console.log(selectedRowsBG);
-      
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
+      }
     } else {
       setCheckedState(new Array(witness.length).fill(false));
       settotalChecked(witness.length);
       setId(witness.map((s) => s.id));
-      
+      setShowDeleteButton(false);
       setSelectedRowsBG([]);
-    
-     
     }
   };
 
@@ -164,7 +161,7 @@ const ActionButtons = ({
     setWitness(newWitness);
   }, [newWitness]);
 
-  function showModal(){
+  function showModal() {
     setshowRemoveFileModal(true);
   }
 
@@ -185,7 +182,7 @@ const ActionButtons = ({
             onChange={(e) => handleCheckAllChange(e.target.checked)}
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
-
+          
           <button
             onClick={handleAddRow}
             type="button"
@@ -208,6 +205,28 @@ const ActionButtons = ({
             </svg>
           </button>
           <button
+            onClick={() => setShowModalParagraph(true)}
+            type="button"
+            className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+          >
+            Add Paragraph
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mx-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </button>
+          {showDeleteButton &&
+          <button
             type="button"
             onClick={() => setshowRemoveFileModal(true)}
             className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
@@ -226,6 +245,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
+          }
         </div>
       </div>
       {showToast && (

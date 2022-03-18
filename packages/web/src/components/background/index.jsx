@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { client, matters } from "../dashboard/data-source";
+
 import { useParams } from "react-router-dom";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
-import { witness_affidavits } from "./data-source";
+
 import { API } from "aws-amplify";
 import { RemoveFileModal } from "../file-bucket/remove-file-modal.jsx";
 
@@ -20,6 +20,7 @@ const mainGrid = {
 export default function Background() {
   const [matterList, setClientMattersList] = useState([]);
   const [witness, setWitness] = useState([]);
+  const [files, setFiles] = useState([]);
   const [idList, setIdList] = useState([]);
   const [getId, setId] = useState([{}]);
   const [fileMatter, setFileMatter] = useState([]);
@@ -27,20 +28,20 @@ export default function Background() {
   const { matter_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
+  const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
-
   const [totalChecked, settotalChecked] = useState(0);
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
+  const [paragraph, setParagraph] = useState("");
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
 
   // let selectedRowsBG = [];
 
   useEffect(() => {
     ClientMatterList();
-    //if (witness === null) {
     getBackground();
-    //}
   }, []);
 
   const listClientMatters = `
@@ -96,12 +97,28 @@ export default function Background() {
             description
             date
             createdAt
+            order
           }
         }
       }
     }
   `;
 
+  const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+  
   const getBackground = async () => {
     let result = [];
     const matterId = matter_id;
@@ -115,15 +132,41 @@ export default function Background() {
 
     if (backgroundOpt.data.clientMatter.backgrounds !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-        ({ id, description, date, createdAt }) => ({
+        ({ id, description, date, createdAt, order }) => ({
           createdAt: createdAt,
           id: id,
           description: description,
           date: date,
+          order: order,
         })
       );
-      console.log(result);
-      setWitness(result);
+      setWitness(sortByOrder(result));
+
+      let mergeArrFiles = [];
+      let arrFileResult = [];
+      for (let i = 0; i < sortByOrder(result).length; i++) {
+        const backgroundFilesOpt = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: result[i].id,
+          },
+        });
+        if (backgroundFilesOpt.data.background.files !== null) {
+          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+            ({ id, downloadURL, name }) => ({
+              backgroundId: result[i].id,
+              id: id,
+              downloadURL: downloadURL,
+              name: name,
+            })
+          );
+
+          mergeArrFiles.push(...arrFileResult);
+          setFiles(arrFileResult);
+        }
+      }
+
+      setFiles(mergeArrFiles);
     }
   };
 
@@ -133,6 +176,20 @@ export default function Background() {
   const cname = Object.values(client).map((o) => o.name);
   const clientName = cname[2];
   const matterName = cname[3];
+
+  function sortByOrder(arr) {
+    const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
+    let sort;
+    if (isAllZero) {
+      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else {
+      sort = arr.sort(
+        (a, b) =>
+          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    }
+    return sort;
+  }
 
   return (
     <>
@@ -167,6 +224,10 @@ export default function Background() {
                 getBackground={getBackground}
                 selectedRowsBG={selectedRowsBG}
                 setSelectedRowsBG={setSelectedRowsBG}
+                setShowModalParagraph={setShowModalParagraph}
+                paragraph={paragraph}
+                showDeleteButton={showDeleteButton}
+                setShowDeleteButton={setShowDeleteButton}
               />
             </div>
           </div>
@@ -175,7 +236,10 @@ export default function Background() {
       <TableInfo
         setIdList={setIdList}
         witness={witness}
+        ShowModalParagraph={ShowModalParagraph}
+        setShowModalParagraph={setShowModalParagraph}
         fileMatter={fileMatter}
+        files={files}
         setWitness={setWitness}
         checkAllState={checkAllState}
         setcheckAllState={setcheckAllState}
@@ -190,6 +254,10 @@ export default function Background() {
         getBackground={getBackground}
         selectedRowsBG={selectedRowsBG}
         setSelectedRowsBG={setSelectedRowsBG}
+        paragraph={paragraph}
+        setParagraph={setParagraph}
+        showDeleteButton={showDeleteButton}
+        setShowDeleteButton={setShowDeleteButton}
       />
     </>
   );

@@ -49,6 +49,7 @@
 .details-txt p {
   font-size: var(--xSmallFont);
   color: var(--mysteryGrey);
+  text-align: center;
 }
 
 @media screen and (min-width: 580px) {

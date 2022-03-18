@@ -324,6 +324,72 @@ async function tagFileLabel(data) {
   return response;
 }
 
+async function tagBackgroundFile(data) {
+  let response = {};
+
+  console.log(data);
+  try {
+    const arrItems = [];
+
+    const backgroundFileIdParams = {
+      TableName: "BackgroundFileTable",
+      IndexName: "byBackground",
+      KeyConditionExpression: "backgroundId = :backgroundId",
+      ExpressionAttributeValues: marshall({
+        ":backgroundId": data.backgroundId,
+      }),
+    };
+
+    const backgroundFileIdCommand = new QueryCommand(backgroundFileIdParams);
+    const backgroundFileIdResult = await client.send(backgroundFileIdCommand);
+
+    for (var a = 0; a < backgroundFileIdResult.Items.length; a++) {
+      var backgroundFileId = { id: backgroundFileIdResult.Items[a].id };
+      arrItems.push({
+        DeleteRequest: {
+          Key: backgroundFileId,
+        },
+      });
+    }
+
+    console.log(arrItems);
+
+    for (var i = 0; i < data.files.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            backgroundId: data.backgroundId,
+            fileId: data.files[i].id,
+          }),
+        },
+      });
+    }
+
+    const backgroundFileParams = {
+      RequestItems: {
+        BackgroundFileTable: arrItems,
+      },
+    };
+
+    const backgroundFileCommand = new BatchWriteItemCommand(
+      backgroundFileParams
+    );
+    const backgroundFileResult = await client.send(backgroundFileCommand);
+
+    response = backgroundFileResult ? { id: data.backgroundId } : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
 async function bulkDeleteBackground(data) {
   let response = {};
   try {
@@ -536,6 +602,7 @@ async function createBackground(data) {
   try {
     const rawParams = {
       id: v4(),
+      description: data.description,
       date: data.date,
       createdAt: new Date().toISOString(),
       order: 0,
@@ -857,6 +924,10 @@ const resolvers = {
     },
     backgroundBulkDelete: async (ctx) => {
       return await bulkDeleteBackground(ctx.arguments);
+    },
+
+    backgroundFileTag: async (ctx) => {
+      return await tagBackgroundFile(ctx.arguments);
     },
   },
 };
