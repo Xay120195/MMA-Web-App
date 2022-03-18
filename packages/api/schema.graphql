@@ -20,7 +20,7 @@ type Company {
   id: ID!
   name: String
   address: Address
-  users(limit:Int, nextToken: String): CompanyUserConnection
+  users: CompanyUserConnection
   clients: CompanyClientConnection
   matters: CompanyMatterConnection
   clientMatters: CompanyClientMatterConnection
@@ -34,8 +34,7 @@ type Company {
 
 type CompanyUserConnection {
   items: [User]
-  limit: Int
-  nextToken: String
+  # nextToken: String
 }
 
 type CompanyClientConnection {
