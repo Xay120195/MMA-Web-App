@@ -151,17 +151,17 @@ export default function Background() {
             id: result[i].id,
           },
         });
-
-        arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-          ({ id, downloadURL, name }) => ({
-            backgroundId: result[i].id,
-            id: id,
-            downloadURL: downloadURL,
-            name: name,
-          })
-        );
-
-        setFiles(arrFileResult);
+        if (backgroundFilesOpt.data.background.files !== null) {
+          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+            ({ id, downloadURL, name }) => ({
+              backgroundId: result[i].id,
+              id: id,
+              downloadURL: downloadURL,
+              name: name,
+            })
+          );
+          setFiles(arrFileResult);
+        }
       }
       
     }
