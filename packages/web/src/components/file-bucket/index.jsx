@@ -782,10 +782,14 @@ const mUpdateMatterFileOrder = `
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      setshowAttachBackgroundButton(true);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(true);
+      }
     } else {
       setshowRemoveFileButton(false);
-      setshowAttachBackgroundButton(false);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(false);
+      }
     }
   }
 
@@ -811,10 +815,14 @@ const mUpdateMatterFileOrder = `
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      setshowAttachBackgroundButton(true);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(true);
+      }
     } else {
       setshowRemoveFileButton(false);
-      setshowAttachBackgroundButton(false);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(false);
+      }
     }
   }
 
