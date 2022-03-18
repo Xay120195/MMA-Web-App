@@ -53,7 +53,7 @@ const BreadCrumb = ({
           <li className="text-sm">
             <Link
                aria-current="page" className="font-medium text-gray-900"
-              to={`${AppRoutes.FILEBUCKET}/${matterId}`}
+              to={`${AppRoutes.FILEBUCKET}/${matterId}/000`}
             >
               File Bucket
             </Link>
