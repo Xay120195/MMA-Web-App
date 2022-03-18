@@ -64,6 +64,7 @@ export default function FileBucket() {
   const [searchFile, setSearchFile] = useState();
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
+  
 
   let filterOptionsArray = [];
 
@@ -340,6 +341,7 @@ const mUpdateMatterFileOrder = `
 
     console.log("searchFile", searchFile);
     console.log("matterFiles", matterFiles);
+    
   }, [searchFile]);
 
   let getMatterFiles = async () => {
@@ -920,6 +922,10 @@ const mUpdateMatterFileOrder = `
       setMatterFiles(filterRecord);
     }
   };
+
+  function refreshPage() {
+    window.location.reload(false);
+  }
 
   return (
     <>
