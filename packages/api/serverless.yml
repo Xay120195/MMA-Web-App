@@ -281,6 +281,11 @@ custom:
         field: backgroundBulkDelete
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: backgroundFileTag
+        request: false
+        response: false
       - dataSource: LambdaCompanyDS
         type: Company
         field: users

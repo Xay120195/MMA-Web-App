@@ -488,3 +488,33 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
+
+
+  BackgroundFileTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BackgroundFileTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: backgroundId
+          AttributeType: S
+        - AttributeName: fileId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byBackground
+          KeySchema:
+            - AttributeName: backgroundId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byFile
+          KeySchema:
+            - AttributeName: fileId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST

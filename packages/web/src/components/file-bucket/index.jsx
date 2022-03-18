@@ -8,10 +8,11 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
-import { AiOutlineDownload } from "react-icons/ai";
+import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
+import FilterLabels from "./filter-labels-modal";
 import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -38,6 +39,7 @@ import {
 import RemoveFileModal from "./remove-file-modal";
 
 export var selectedRows = [];
+export var pageSelectedLabels;
 
 export default function FileBucket() {
   let tempArr = [];
@@ -58,14 +60,20 @@ export default function FileBucket() {
   const [detId, setDetId] = useState("");
   const [textName, setTextName] = useState("");
   const [textDetails, setTextDetails] = useState("");
-  const { matter_id } = useParams();
+  const { matter_id, background_id } = useParams();
   const [searchFile, setSearchFile] = useState();
+
+  const [filterLabelsData, setFilterLabelsData] = useState([]);
+
+  let filterOptionsArray = [];
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
   const [showAttachBackgroundButton, setshowAttachBackgroundButton] =
     useState(false);
   var fileCount = 0;
+
+  const [filterLabels, setFilterLabels] = useState(false);
 
   const hideToast = () => {
     setShowToast(false);
@@ -108,6 +116,7 @@ export default function FileBucket() {
   const handleModalClose = () => {
     setShowUploadModal(false);
     setshowRemoveFileModal(false);
+    setFilterLabels(false);
   };
 
   const contentDiv = {
@@ -215,14 +224,46 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 }
 `;
 
-  const mUpdateMatterFileOrder = `
-      mutation updateMatterFile ($id: ID, $order: Int) {
-        matterFileUpdate(id: $id, order: $order) {
-          id
-          order
-        }
+const mUpdateMatterFileOrder = `
+    mutation updateMatterFile ($id: ID, $order: Int) {
+      matterFileUpdate(id: $id, order: $order) {
+        id
+        order
       }
-  `;
+    }
+`;
+
+const mUpdateBackgroundFile = `
+  mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+    backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+      id
+    }
+  }
+`;
+
+  async function tagBackgroundFile() {
+    let arrFiles = [];
+    arrFiles = selectedRows.map(
+      ({ id }) => ({
+        id: id,
+      })
+    );
+
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: background_id,
+            files: arrFiles,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
 
   async function updateMatterFileOrder(id, data) {
     return new Promise((resolve, reject) => {
@@ -615,12 +656,28 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   };
 
+ 
+  
+
   const extractArray = (ar) => {
     if (Array.isArray(ar) && ar.length) {
       const newOptions = ar.map(({ id: value, name: label }) => ({
         value,
         label,
       }));
+
+      // setFilterOptions([...filterOptions, newOptions]);
+      newOptions.map(
+        (data) => 
+          (filterOptionsArray = [
+            ...filterOptionsArray,
+            data,
+          ])
+      );
+
+      //filter duplicates
+      pageSelectedLabels = [...new Map(filterOptionsArray.map(item => [JSON.stringify(item.label), item])).values()];
+      // setFilterLabelsData(pageSelectedLabels);
       return newOptions;
     } else {
       return null;
@@ -724,10 +781,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      //setshowAttachBackgroundButton(true);
+      setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
-      //setshowAttachBackgroundButton(false);
+      setshowAttachBackgroundButton(false);
     }
   }
 
@@ -753,10 +810,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      //setshowAttachBackgroundButton(true);
+      setshowAttachBackgroundButton(true);
     } else {
       setshowRemoveFileButton(false);
-      //setshowAttachBackgroundButton(false);
+      setshowAttachBackgroundButton(false);
     }
   }
 
@@ -876,8 +933,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
-                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`}>
-                  <button className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5">
+                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
+                  <button className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
+                  onClick={() => tagBackgroundFile()}>
                     Attach to Background &nbsp;|
                     <BsArrowLeft />
                   </button>
@@ -937,6 +995,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                   <BsFillTrashFill />
                 </button>
               )}
+
+              <button
+                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                onClick={() => setFilterLabels(true)}
+              >
+                <AiFillTags />
+              </button>
           </div>
         </div>
 
@@ -1252,6 +1317,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           title={""}
           handleSave={handleUploadLink}
           bucketName={matter_id}
+          handleModalClose={handleModalClose}
+        />
+      )}
+
+      {filterLabels && (
+        <FilterLabels
+          handleSave={handleUploadLink}
           handleModalClose={handleModalClose}
         />
       )}
