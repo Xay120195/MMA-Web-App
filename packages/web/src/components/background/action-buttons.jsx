@@ -117,6 +117,8 @@ const ActionButtons = ({
       // const newArr = Array(witness.length).fill(false);
       // setCheckedState = newArr;
       setCheckedState(new Array(witness.length).fill(false));
+      setSelectedRowsBG([]);
+      setShowDeleteButton(false);
     }
   };
   var temp = [];
