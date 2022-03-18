@@ -67,7 +67,13 @@ const ActionButtons = ({
       const newArr = Array(witness.length).fill(false);
       setCheckedState(newArr);
 
-      // setCheckedState = newArr;
+      setSelectedRowsBG([]);
+
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
+      }
 
       setShowToast(true);
       setshowRemoveFileModal(false);
