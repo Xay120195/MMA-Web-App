@@ -6,9 +6,8 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listCompanyUsers(ctx) {
-  //console.log(ctx.source);
   const { id } = ctx.source;
-  const { limit = 100, nextToken } = ctx.args;
+  // const { limit = 100, nextToken } = ctx.args;
   try {
     const companyUsersParams = {
       TableName: "CompanyUserTable",
@@ -17,10 +16,10 @@ async function listCompanyUsers(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ExclusiveStartKey: nextToken
-        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
-      Limit: limit,
+      // ExclusiveStartKey: nextToken
+      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+      //   : undefined,
+      // Limit: limit,
     };
 
     const companyUsersCommand = new QueryCommand(companyUsersParams);
@@ -51,11 +50,11 @@ async function listCompanyUsers(ctx) {
 
     return {
       items: response,
-      nextToken: companyUsersResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(companyUsersResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
+      // nextToken: companyUsersResult.LastEvaluatedKey
+      //   ? Buffer.from(
+      //       JSON.stringify(companyUsersResult.LastEvaluatedKey)
+      //     ).toString("base64")
+      //   : null,
     };
   } catch (e) {
     console.log(e);
