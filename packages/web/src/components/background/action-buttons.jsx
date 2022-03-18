@@ -95,8 +95,8 @@ const ActionButtons = ({
       new Date().getDate();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, date: $date) {
+        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
           }
         }
@@ -107,6 +107,7 @@ const ActionButtons = ({
       variables: {
         clientMatterId: matterId,
         date: dateToday,
+        description: "",
       },
     });
     if (createBackgroundRow) {
