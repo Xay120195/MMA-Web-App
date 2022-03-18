@@ -207,7 +207,7 @@ const ActionButtons = ({
           <button
             onClick={() => setShowModalParagraph(true)}
             type="button"
-            className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded hidden items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
           >
             Add Paragraph
             <svg
