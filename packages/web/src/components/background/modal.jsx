@@ -1,93 +1,82 @@
 import React from "react";
+import { useState } from "react";
 
-const Modal = ({ setShowUpload }) => {
+export const ModalParagraph = ({
+  setShowModalParagraph,
+  getBackground,
+  setParagraph,
+  paragraph,
+}) => {
+  let buttonBg = "bg-green-500";
+
   return (
-    <div
-      id="defaultModal"
-      aria-hidden="true"
-      style={{ marginLeft: "25rem", marginTop: "8rem" }}
-      className=" overflow-y-auto overflow-x-hidden fixed bg-gray right-0 left-0 top-4 z-50 justify-center items-center h-modal md:h-full md:inset-0"
-    >
-      <div className="relative px-4 w-full max-w-2xl h-full md:h-auto">
-        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <div className="flex justify-between items-start p-5 rounded-t border-b dark:border-gray-600">
-            <h3 className="text-xl font-semibold text-gray-900 lg:text-2xl dark:text-white">
-              Upload your file
-            </h3>
-            <button
-              type="button"
-              onClick={() => setShowUpload(false)}
-              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-              data-modal-toggle="defaultModal"
-            >
+    <>
+      <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+        <div className="relative w-auto my-6 mx-auto max-w-lg">
+          <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+            <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
+              <h3 className="text-3xl font-semibold">Add Paragaph</h3>
+
               <svg
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 cursor-pointer"
+                onClick={() => setShowModalParagraph(false)}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
               >
                 <path
-                  fill-rule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                ></path>
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
-            </button>
-          </div>
-
-          <div className="p-6 space-y-6">
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-              <div className="space-y-1 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    for="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                  >
-                    <span>Upload a file</span>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                    />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
-                </div>
-                <p className="text-xs text-gray-500">
-                  pdf file and size up to 10MB
-                </p>
-              </div>
             </div>
-          </div>
 
-          <div className="flex items-center p-6 space-x-2 rounded-b border-t border-gray-200 dark:border-gray-600">
-            <button
-              onClick={() => setShowUpload(false)}
-              data-modal-toggle="defaultModal"
-              type="button"
-              className="text-red-500 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-gray-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600"
-            >
-              Cancel
-            </button>
+            <div className="relative p-6 flex-auto">
+              <span>Insert Paragraph will be pasted in the table as rows</span>
+              <textarea
+                value={paragraph}
+                onChange={(e) => setParagraph(e.target.value)}
+                className="form-control block w-96 px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-grey-600 focus:outline-none"
+                rows="10"
+                placeholder="Copy or paste Paragraphs here"
+              ></textarea>
+            </div>
+
+            <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
+              <button
+                className={`w-full ${
+                  paragraph.length <= 0 ? "bg-green-300" : buttonBg
+                } text-white active:bg-green-600 font-bold  text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150`}
+                type="button"
+                disabled={paragraph.length <= 0}
+                onClick={() => setShowModalParagraph(false)}
+              >
+                <div className="inline-flex">
+                  <span className="flex items-center"> Add</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 mx-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
+    </>
   );
 };
-
-export default Modal;

@@ -34,7 +34,7 @@ const Routes = () => {
           <Route exact path={`${AppRoutes.MATTERSRFI}/:id`} component={MattersRFI} />
           <Route exact path={AppRoutes.CONTACTS} component={Contacts} />
           <Route exact path={AppRoutes.ACCOUNTSETTINGS} component={AccountSettings} />
-          <Route exact path={`${AppRoutes.FILEBUCKET}/:matter_id`} component={FileBucket} />
+          <Route exact path={`${AppRoutes.FILEBUCKET}/:matter_id/:background_id`} component={FileBucket} />
           <Route exact path={`${AppRoutes.BACKGROUND}/:matter_id`} component={Background} />
           <Route exact path={AppRoutes.LABELS} component={Labels} />
           <Route exact path={`${AppRoutes.INBOX}`} component={Inbox} />
