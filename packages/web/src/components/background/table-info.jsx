@@ -471,13 +471,13 @@ const TableInfo = ({
                                       ) : (
                                         <>
                                         <br />
-                                          {files.map((item) => (
-                                            <p className="break-normal" >{item.name}
+                                          {files.map((items) => (
+                                            <p className="break-normal" >{items.name}
                                             &nbsp;
                                             <AiOutlineDownload
                                               className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
                                               onClick={() =>
-                                                previewAndDownloadFile(item.downloadURL)
+                                                previewAndDownloadFile(items.downloadURL)
                                               }
                                             />
                                             </p>
