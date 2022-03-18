@@ -118,7 +118,7 @@ export default function Background() {
       }
     }
   }`;
-
+  
   const getBackground = async () => {
     let result = [];
     const matterId = matter_id;
