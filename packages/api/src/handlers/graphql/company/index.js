@@ -7,7 +7,7 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
-  // const { limit = 100, nextToken } = ctx.args;
+  const { limit = 100, nextToken } = ctx.arguments;
   try {
     const companyUsersParams = {
       TableName: "CompanyUserTable",
@@ -16,10 +16,10 @@ async function listCompanyUsers(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      // ExclusiveStartKey: nextToken
-      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-      //   : undefined,
-      // Limit: limit,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+      Limit: limit,
     };
 
     const companyUsersCommand = new QueryCommand(companyUsersParams);
@@ -50,11 +50,11 @@ async function listCompanyUsers(ctx) {
 
     return {
       items: response,
-      // nextToken: companyUsersResult.LastEvaluatedKey
-      //   ? Buffer.from(
-      //       JSON.stringify(companyUsersResult.LastEvaluatedKey)
-      //     ).toString("base64")
-      //   : null,
+      nextToken: companyUsersResult.LastEvaluatedKey
+        ? Buffer.from(
+            JSON.stringify(companyUsersResult.LastEvaluatedKey)
+          ).toString("base64")
+        : null,
     };
   } catch (e) {
     console.log(e);
@@ -69,7 +69,7 @@ async function listCompanyUsers(ctx) {
 
 async function listCompanyMatters(ctx) {
   const { id } = ctx.source;
-  // const { limit = 100, nextToken } = ctx.args;
+  const { limit = 100, nextToken } = ctx.arguments;
   try {
     const companyMatterParams = {
       TableName: "CompanyMatterTable",
@@ -78,10 +78,10 @@ async function listCompanyMatters(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      // ExclusiveStartKey: nextToken
-      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-      //   : undefined,
-      // Limit: limit,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+      Limit: limit,
     };
 
     const companyMatterCommand = new QueryCommand(companyMatterParams);
@@ -102,8 +102,12 @@ async function listCompanyMatters(ctx) {
     const mattersCommand = new BatchGetItemCommand(matterParams);
     const mattersResult = await client.send(mattersCommand);
 
-    const objMatters = mattersResult.Responses.MatterTable.map((i) => unmarshall(i));
-    const objCompanyMatters = companyMatterResult.Items.map((i) => unmarshall(i));
+    const objMatters = mattersResult.Responses.MatterTable.map((i) =>
+      unmarshall(i)
+    );
+    const objCompanyMatters = companyMatterResult.Items.map((i) =>
+      unmarshall(i)
+    );
 
     const response = objCompanyMatters.map((item) => {
       const filterMatter = objMatters.find((u) => u.id === item.matterId);
@@ -112,11 +116,11 @@ async function listCompanyMatters(ctx) {
 
     return {
       items: response,
-      // nextToken: companyMatterResult.LastEvaluatedKey
-      //   ? Buffer.from(
-      //       JSON.stringify(companyMatterResult.LastEvaluatedKey)
-      //     ).toString("base64")
-      //   : null,
+      nextToken: companyMatterResult.LastEvaluatedKey
+        ? Buffer.from(
+            JSON.stringify(companyMatterResult.LastEvaluatedKey)
+          ).toString("base64")
+        : null,
     };
   } catch (e) {
     console.log(e);
@@ -131,7 +135,7 @@ async function listCompanyMatters(ctx) {
 
 async function listCompanyClients(ctx) {
   const { id } = ctx.source;
-  // const { limit = 100, nextToken } = ctx.args;
+  const { limit = 100, nextToken } = ctx.arguments;
 
   try {
     const companyClientParams = {
@@ -141,10 +145,10 @@ async function listCompanyClients(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      // ExclusiveStartKey: nextToken
-      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-      //   : undefined,
-      // Limit: limit,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+      Limit: limit,
     };
 
     const companyClientCommand = new QueryCommand(companyClientParams);
@@ -164,23 +168,25 @@ async function listCompanyClients(ctx) {
     const clientsCommand = new BatchGetItemCommand(clientParams);
     const clientsResult = await client.send(clientsCommand);
 
-    const objClients = clientsResult.Responses.ClientsTable.map((i) => unmarshall(i));
-    const objCompanyClients = companyClientResult.Items.map((i) => unmarshall(i));
+    const objClients = clientsResult.Responses.ClientsTable.map((i) =>
+      unmarshall(i)
+    );
+    const objCompanyClients = companyClientResult.Items.map((i) =>
+      unmarshall(i)
+    );
 
     const response = objCompanyClients.map((item) => {
       const filterClient = objClients.find((u) => u.id === item.clientId);
       return { ...item, ...filterClient };
-
-      
     });
 
     return {
       items: response,
-      // nextToken: companyClientResult.LastEvaluatedKey
-      //   ? Buffer.from(
-      //       JSON.stringify(companyClientResult.LastEvaluatedKey)
-      //     ).toString("base64")
-      //   : null,
+      nextToken: companyClientResult.LastEvaluatedKey
+        ? Buffer.from(
+            JSON.stringify(companyClientResult.LastEvaluatedKey)
+          ).toString("base64")
+        : null,
     };
   } catch (e) {
     console.log(e);
@@ -195,7 +201,7 @@ async function listCompanyClients(ctx) {
 
 async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
-  // const { limit = 100, nextToken } = ctx.args;
+  const { limit = 100, nextToken } = ctx.arguments;
   try {
     const companyClientMatterParams = {
       TableName: "CompanyClientMatterTable",
@@ -204,18 +210,22 @@ async function listCompanyClientMatters(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      // ExclusiveStartKey: nextToken
-      //   ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-      //   : undefined,
-      // Limit: limit,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+      Limit: limit,
     };
 
-    const companyClientMatterCommand = new QueryCommand(companyClientMatterParams);
-    const companyClientMatterResult = await client.send(companyClientMatterCommand);
-
-    const clientMatterIds = companyClientMatterResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.clientMatterId })
+    const companyClientMatterCommand = new QueryCommand(
+      companyClientMatterParams
     );
+    const companyClientMatterResult = await client.send(
+      companyClientMatterCommand
+    );
+
+    const clientMatterIds = companyClientMatterResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.clientMatterId }));
 
     const clientMatterParams = {
       RequestItems: {
@@ -224,25 +234,30 @@ async function listCompanyClientMatters(ctx) {
         },
       },
     };
-    
+
     const clientMattersCommand = new BatchGetItemCommand(clientMatterParams);
     const clientMattersResult = await client.send(clientMattersCommand);
 
-    const objClientMatters = clientMattersResult.Responses.ClientMatterTable.map((i) => unmarshall(i));
-    const objCompanyClientMatters = companyClientMatterResult.Items.map((i) => unmarshall(i));
+    const objClientMatters =
+      clientMattersResult.Responses.ClientMatterTable.map((i) => unmarshall(i));
+    const objCompanyClientMatters = companyClientMatterResult.Items.map((i) =>
+      unmarshall(i)
+    );
 
     const response = objCompanyClientMatters.map((item) => {
-      const filterClientMatter = objClientMatters.find((u) => u.id === item.clientMatterId);
+      const filterClientMatter = objClientMatters.find(
+        (u) => u.id === item.clientMatterId
+      );
       return { ...item, ...filterClientMatter };
     });
 
     return {
       items: response,
-      // nextToken: companyClientMatterResult.LastEvaluatedKey
-      //   ? Buffer.from(
-      //       JSON.stringify(companyClientMatterResult.LastEvaluatedKey)
-      //     ).toString("base64")
-      //   : null,
+      nextToken: companyClientMatterResult.LastEvaluatedKey
+        ? Buffer.from(
+            JSON.stringify(companyClientMatterResult.LastEvaluatedKey)
+          ).toString("base64")
+        : null,
     };
   } catch (e) {
     console.log(e);
@@ -257,7 +272,7 @@ async function listCompanyClientMatters(ctx) {
 
 // async function listCompanyLabels(ctx) {
 //   const { id } = ctx.source;
-//   // const { limit = 100, nextToken } = ctx.args;
+//   // const { limit = 100, nextToken } = ctx.arguments;
 //   try {
 //     const companyLabelParams = {
 //       TableName: "CompanyLabelTable",
@@ -329,7 +344,7 @@ const resolvers = {
     clients: async (ctx) => {
       return listCompanyClients(ctx);
     },
-    clientMatters:async (ctx) => {
+    clientMatters: async (ctx) => {
       return listCompanyClientMatters(ctx);
     },
     // labels: async (ctx) => {
