@@ -878,15 +878,15 @@ const mUpdateMatterFileOrder = `
       var newOptions = oldOpt.map(({ id: value, name: label }) => ({
         value,
         label,
-      }));
+      })); 
+      //{value: 0, label: "test"}
+      //data - oldOpt
 
-      let isFounded = myArray.some((ai) => newOptions.includes(ai));
+      
 
-      if (isFounded) {
-      } else {
-      }
+      
 
-      return newOptions;
+      return data;
     } else {
       return data;
     }
@@ -926,7 +926,7 @@ const mUpdateMatterFileOrder = `
   const handleFilter = (fileFilter) => {
     setFilterLabels(false);
       var filterRecord = [];
-      if(fileFilter == null || fileFilter == undefined){
+      if(fileFilter == null || fileFilter == undefined || fileFilter.length == 0){
         setMatterFiles(files);
       }else{
         for (var i=0; i<fileFilter.length; i++){
@@ -1030,7 +1030,7 @@ const mUpdateMatterFileOrder = `
               )}
 
               <button
-                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                className="bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setFilterLabels(true)}
               >
                 <AiFillTags />
@@ -1292,8 +1292,8 @@ const mUpdateMatterFileOrder = `
                                               ? data.labels
                                               : { value: 0, label: "" }
                                           )}
-                                          // options={newOptions(labels, data.labels)}
-                                          options={labels}
+                                          options={newOptions(labels, data.labels)}
+                                          // options={labels}
                                           isMulti
                                           isClearable
                                           isSearchable
