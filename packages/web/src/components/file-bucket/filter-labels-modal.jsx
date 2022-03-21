@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import ToastNotification from "../toast-notification";
-import { FaTimes } from "react-icons/fa";
-import { TiCancel } from "react-icons/ti";
 import { BsFillTrashFill } from "react-icons/bs";
 import { GrClose } from "react-icons/gr";
 import { AiOutlineTags } from  "react-icons/ai";
 import CreatableSelect from "react-select/creatable";
 import { pageSelectedLabels } from "./index"
+let tempp = [];
 
 export default function FilterLabels(props) {
   const handleModalClose = () => {
     props.handleModalClose();
   };
 
-  //console.log(props.selectedRowsBG);
+  var filesToDisplay = [];
+  var filesToSend;
+  const [filterTempOptions, setFilterTempOptions] = useState([]);
   console.log(pageSelectedLabels);
 
   const [showToast, setShowToast] = useState(false);
@@ -22,9 +23,20 @@ export default function FilterLabels(props) {
     setShowToast(false);
   };
 
-  const handleDelete = async () => {
-      props.handleSave();
+  const handleFilter= async () => {
+      props.handleSave(filesToSend);
+      setFilterTempOptions(tempp);
   };
+
+  const handleFilterChange = (options) => {
+    console.log(options);
+    options.map(x => filesToDisplay = [...filesToDisplay, x.label]);
+    //filter duplicates
+    filesToSend = [...new Map(filesToDisplay.map(x => [JSON.stringify(x), x])).values()];
+    tempp = options;
+  }
+
+
 
   return (
     <>
@@ -55,6 +67,8 @@ export default function FilterLabels(props) {
                                     isClearable
                                     isSearchable
                                     className="w-full placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                    onChange={(options) => handleFilterChange(options)}
+                                    defaultValue={filterTempOptions ? filterTempOptions : {value: 0, label: ""}}
                                 />
                             </div>
                         </div>
@@ -64,8 +78,10 @@ export default function FilterLabels(props) {
                 </div>
 
                 <div className="flex items-center justify-end p-6 rounded-b">
-                        <button className="justify-center w-full bg-green-400 hover:bg-green-400 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
-                        type="submit">
+                        <button 
+                          className="justify-center w-full bg-green-400 hover:bg-green-400 text-white text-sm py-3 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring" 
+                          onClick={(options) => handleFilter(options)}
+                        >
                             Apply Filter &nbsp; <AiOutlineTags/>
                         </button>
                 </div>

@@ -923,6 +923,24 @@ const mUpdateMatterFileOrder = `
     }
   };
 
+  const handleFilter = (fileFilter) => {
+    setFilterLabels(false);
+      var filterRecord = [];
+      if(fileFilter == null || fileFilter == undefined){
+        setMatterFiles(files);
+      }else{
+        for (var i=0; i<fileFilter.length; i++){
+          files.map(x=> (x.labels !== null) ? x.labels.map(y=>
+            y.name === fileFilter[i] ? filterRecord = [...filterRecord, x] : filterRecord = filterRecord
+          ) : x.labels)
+        }
+
+        var listFilter = [...new Map(filterRecord.map(x => [JSON.stringify(x), x])).values()];
+        console.log(listFilter);
+        setMatterFiles(listFilter);
+      }
+  }
+
   function refreshPage() {
     window.location.reload(false);
   }
@@ -1012,7 +1030,7 @@ const mUpdateMatterFileOrder = `
               )}
 
               <button
-                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded hidden items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setFilterLabels(true)}
               >
                 <AiFillTags />
@@ -1338,7 +1356,7 @@ const mUpdateMatterFileOrder = `
 
       {filterLabels && (
         <FilterLabels
-          handleSave={handleUploadLink}
+          handleSave={handleFilter}
           handleModalClose={handleModalClose}
         />
       )}
