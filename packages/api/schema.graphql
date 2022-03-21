@@ -20,10 +20,10 @@ type Company {
   id: ID!
   name: String
   address: Address
-  users: CompanyUserConnection
-  clients: CompanyClientConnection
-  matters: CompanyMatterConnection
-  clientMatters: CompanyClientMatterConnection
+  users(limit:Int, nextToken: String): CompanyUserConnection
+  clients(limit:Int, nextToken: String): CompanyClientConnection
+  matters(limit:Int, nextToken: String): CompanyMatterConnection
+  clientMatters(limit:Int, nextToken: String): CompanyClientMatterConnection
   phone: String
   email: AWSEmail
   representative: User
@@ -34,22 +34,26 @@ type Company {
 
 type CompanyUserConnection {
   items: [User]
-  # nextToken: String
+  limit: Int
+  nextToken: String
 }
 
 type CompanyClientConnection {
   items: [Client]
-  # nextToken: String
+  limit: Int
+  nextToken: String
 }
 
 type CompanyMatterConnection {
   items: [Matter]
-  # nextToken: String
+  limit: Int
+  nextToken: String
 }
 
 type CompanyClientMatterConnection {
   items: [ClientMatter]
-  # nextToken: String
+  limit: Int
+  nextToken: String
 }
 
 type CompanyAccessType {
