@@ -2,24 +2,24 @@
 
 .option .highlightOption .highlight  {
     background: none !important;
-    color: #8a8a8a;
+    color: #8a8a8a !important;
  }
 
  .highlightOption{
     background: none !important;
-    color: #8a8a8a;
+    color: #8a8a8a !important;
  }
  
  .multiSelectContainer li:hover {
      background: rgb(230, 230, 230) !important;
-     cursor: pointer;
-     color: #8a8a8a;
+     cursor: pointer !important;
+     color: #8a8a8a !important;
  }
 
  .multiSelectContainer{
     background: none !important;
-    cursor: pointer;
-    color: #8a8a8a;
+    cursor: pointer !important;
+    color: #8a8a8a !important;
 }
 
 .chip{
@@ -27,6 +27,6 @@
 }
 
 .selected{
-    font-weight: bold;
+    font-weight: bold !important;
 }
  
