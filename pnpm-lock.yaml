@@ -54,7 +54,6 @@ importers:
       aws-amplify: ^4.3.3
       dateformat: ^5.0.2
       moment: ^2.29.1
-      multiselect-react-dropdown: ^2.0.21
       postcss: ^8.3.11
       postcss-cli: ^9.0.1
       react: ^17.0.2
@@ -86,7 +85,6 @@ importers:
       aws-amplify: 4.3.13
       dateformat: 5.0.2
       moment: 2.29.1
-      multiselect-react-dropdown: 2.0.21_react@17.0.2
       react: 17.0.2
       react-beautiful-dnd: 13.1.0_react-dom@17.0.2+react@17.0.2
       react-contenteditable: 3.3.6_react@17.0.2
@@ -104,9 +102,6 @@ importers:
       postcss: 8.4.5
       postcss-cli: 9.1.0_postcss@8.4.5
       tailwindcss: 2.2.19_ef48b3b8837f8a23677bffe8f9cd866d
-
-  packages/web/amplify/backend/function/S3Trigger1de25018/src:
-    specifiers: {}
 
 packages:
 
@@ -15105,14 +15100,6 @@ packages:
     dependencies:
       dns-packet: 1.3.4
       thunky: 1.1.0
-    dev: false
-
-  /multiselect-react-dropdown/2.0.21_react@17.0.2:
-    resolution: {integrity: sha512-HvyM1rdpwlBylxORbxjY0XADYOyIfAebhOuLJOfjZFBnp8OA8kc07QbqVN5yVYue01aJF1svB55qAFngZavU5A==}
-    peerDependencies:
-      react: ^16.7.0 || ^17.0.0-0
-    dependencies:
-      react: 17.0.2
     dev: false
 
   /mute-stream/0.0.7:
