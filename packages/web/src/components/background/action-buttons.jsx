@@ -67,7 +67,13 @@ const ActionButtons = ({
       const newArr = Array(witness.length).fill(false);
       setCheckedState(newArr);
 
-      // setCheckedState = newArr;
+      setSelectedRowsBG([]);
+
+      if(temp.length > 0){
+        setShowDeleteButton(true);
+      }else{
+        setShowDeleteButton(false);
+      }
 
       setShowToast(true);
       setshowRemoveFileModal(false);
@@ -89,8 +95,8 @@ const ActionButtons = ({
       new Date().getDate();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, date: $date) {
+        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
           }
         }
@@ -101,6 +107,7 @@ const ActionButtons = ({
       variables: {
         clientMatterId: matterId,
         date: dateToday,
+        description: "",
       },
     });
     if (createBackgroundRow) {
@@ -110,6 +117,8 @@ const ActionButtons = ({
       // const newArr = Array(witness.length).fill(false);
       // setCheckedState = newArr;
       setCheckedState(new Array(witness.length).fill(false));
+      setSelectedRowsBG([]);
+      setShowDeleteButton(false);
     }
   };
   var temp = [];
@@ -198,7 +207,7 @@ const ActionButtons = ({
           <button
             onClick={() => setShowModalParagraph(true)}
             type="button"
-            className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded hidden items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
           >
             Add Paragraph
             <svg

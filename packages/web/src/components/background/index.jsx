@@ -118,7 +118,7 @@ export default function Background() {
       }
     }
   }`;
-
+  
   const getBackground = async () => {
     let result = [];
     const matterId = matter_id;
@@ -140,9 +140,9 @@ export default function Background() {
           order: order,
         })
       );
-
       setWitness(sortByOrder(result));
 
+      let mergeArrFiles = [];
       let arrFileResult = [];
       for (let i = 0; i < sortByOrder(result).length; i++) {
         const backgroundFilesOpt = await API.graphql({
@@ -160,10 +160,13 @@ export default function Background() {
               name: name,
             })
           );
+
+          mergeArrFiles.push(...arrFileResult);
           setFiles(arrFileResult);
         }
       }
-      
+
+      setFiles(mergeArrFiles);
     }
   };
 

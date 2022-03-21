@@ -64,6 +64,7 @@ export default function FileBucket() {
   const [searchFile, setSearchFile] = useState();
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
+  
 
   let filterOptionsArray = [];
 
@@ -340,6 +341,7 @@ const mUpdateMatterFileOrder = `
 
     console.log("searchFile", searchFile);
     console.log("matterFiles", matterFiles);
+    
   }, [searchFile]);
 
   let getMatterFiles = async () => {
@@ -782,10 +784,14 @@ const mUpdateMatterFileOrder = `
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      setshowAttachBackgroundButton(true);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(true);
+      }
     } else {
       setshowRemoveFileButton(false);
-      setshowAttachBackgroundButton(false);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(false);
+      }
     }
   }
 
@@ -811,10 +817,14 @@ const mUpdateMatterFileOrder = `
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
-      setshowAttachBackgroundButton(true);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(true);
+      }
     } else {
       setshowRemoveFileButton(false);
-      setshowAttachBackgroundButton(false);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(false);
+      }
     }
   }
 
@@ -914,15 +924,7 @@ const mUpdateMatterFileOrder = `
   };
 
   const handleFilter = (fileFilter) => {
-    //alert("connected");
     setFilterLabels(false);
-    
-
-      // const filterRecord = files.filter((x) =>
-      //     x.labels.includes(x.labels.map(y => y === fileFilter.map(z => z)))
-          
-      // );
-
       var filterRecord = [];
       if(fileFilter == null || fileFilter == undefined){
         setMatterFiles(files);
@@ -937,6 +939,10 @@ const mUpdateMatterFileOrder = `
         console.log(listFilter);
         setMatterFiles(listFilter);
       }
+  }
+
+  function refreshPage() {
+    window.location.reload(false);
   }
 
   return (
@@ -1024,7 +1030,7 @@ const mUpdateMatterFileOrder = `
               )}
 
               <button
-                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded hidden items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setFilterLabels(true)}
               >
                 <AiFillTags />
