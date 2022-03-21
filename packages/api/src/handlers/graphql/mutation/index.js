@@ -814,13 +814,39 @@ export async function deleteClientMatter(id) {
 export async function deleteBackgroundFiles(id) {
   let response = {};
   try {
-    const command = new DeleteItemCommand({
-        TableName: "BackgroundFileTable",
-        Key: marshall({ id }),
-      });
-      const request = await client.send(command);
+    const backgroundFilesParams = {
+      TableName: "BackgroundsTable",
+      IndexName: "byBackground",
+      KeyConditionExpression: "backgroundId = :backgroundId",
+      ExpressionAttributeValues: marshall({
+        ":backgroundId": id,
+      }),
+    };
 
-      response = request ? { id: id } : {};
+    const backgroundFilesCommand = new QueryCommand(
+      backgroundFilesParams
+    );
+    const backgroundFilesResult = await client.send(
+      backgroundFilesCommand
+    );
+
+    const backgroundFilesId = backgroundFilesResult.Items.map(
+      (i) => i.id
+    );
+
+    const filterBackgroundFilesId = backgroundFilesId[0];
+
+    const deleteBackgroundFilesCommand = new DeleteItemCommand({
+      TableName: "BackgroundsTable",
+      Key: { id: filterBackgroundFilesId },
+    });
+
+    const deleteBackgroundFilesResult = await client.send(
+      deleteBackgroundFilesCommand
+    );
+
+    const request = await client.send(deleteBackgroundFilesResult);
+    response = request ? { id: id } : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -829,6 +855,7 @@ export async function deleteBackgroundFiles(id) {
     };
     console.log(response);
   }
+
   return response;
 }
 
