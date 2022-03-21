@@ -71,16 +71,7 @@ custom:
     mappingTemplatesLocation: src/mapping-templates
 
     mappingTemplates:
-      - dataSource: DynamoDBColorTableDS
-        type: Query
-        field: colors
-        request: Query.colors.request.vtl
-        response: Query.colors.response.vtl
-      - dataSource: DynamoDBColorTableDS
-        type: Mutation
-        field: addColor
-        request: Mutation.addColor.request.vtl
-        response: Mutation.addColor.response.vtl
+      
       - dataSource: LambdaQueryDS
         type: Query
         field: company
@@ -313,10 +304,6 @@ custom:
       #   response: false
 
     dataSources:
-      - type: AMAZON_DYNAMODB
-        name: DynamoDBColorTableDS
-        config:
-          tableName: !Ref ColorTable
       - type: AWS_LAMBDA
         name: LambdaQueryDS
         config:
