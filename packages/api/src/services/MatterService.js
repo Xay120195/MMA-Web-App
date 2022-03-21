@@ -76,8 +76,6 @@ export async function getFile(data) {
   return response;
 }
 
-
-
 export async function createMatterFile(data) {
   let response = {};
   try {
