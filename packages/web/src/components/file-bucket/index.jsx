@@ -845,6 +845,10 @@ const mUpdateMatterFileOrder = `
       descArr = [];
       selectedRows = [];
     }, 3000);
+    setIsAllChecked(false);
+    const newArr = Array(files.length).fill(false);
+    setCheckedState(newArr);
+    setshowRemoveFileButton(false);
   };
 
   const deleteMatterFile = (fileID) => {
