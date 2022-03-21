@@ -14,7 +14,7 @@ export default function FilterLabels(props) {
 
   var filesToDisplay = [];
   var filesToSend;
-  const [filterTempOptions, setFilterTempOptions] = useState(filesToSend);
+  const [filterTempOptions, setFilterTempOptions] = useState([]);
   console.log(pageSelectedLabels);
 
   const [showToast, setShowToast] = useState(false);
@@ -25,7 +25,7 @@ export default function FilterLabels(props) {
 
   const handleFilter= async () => {
       props.handleSave(filesToSend);
-      // setFilterTempOptions(tempp);
+      setFilterTempOptions(tempp);
   };
 
   const handleFilterChange = (options) => {
@@ -33,6 +33,7 @@ export default function FilterLabels(props) {
     options.map(x => filesToDisplay = [...filesToDisplay, x.label]);
     //filter duplicates
     filesToSend = [...new Map(filesToDisplay.map(x => [JSON.stringify(x), x])).values()];
+    tempp = options;
   }
 
 
@@ -67,7 +68,7 @@ export default function FilterLabels(props) {
                                     isSearchable
                                     className="w-full placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                     onChange={(options) => handleFilterChange(options)}
-                                    // defaultValue={filterTempOptions}
+                                    defaultValue={filterTempOptions ? filterTempOptions : {value: 0, label: ""}}
                                 />
                             </div>
                         </div>
