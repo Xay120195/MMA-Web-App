@@ -845,15 +845,8 @@ export async function deleteBackgroundFiles(id) {
       deleteBackgroundFilesCommand
     );
 
-    if (deleteBackgroundFilesResult) {
-      const command = new DeleteItemCommand({
-        TableName: "BackgroundFileTable",
-        Key: marshall({ id }),
-      });
-      const request = await client.send(command);
-
-      response = request ? { id: id } : {};
-    }
+    const request = await client.send(deleteBackgroundFilesResult);
+    response = request ? { id: id } : {};
   } catch (e) {
     response = {
       error: e.message,
