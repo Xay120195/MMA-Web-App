@@ -35,7 +35,7 @@ const TableInfo = ({
   paragraph,
   setParagraph,
   showDeleteButton,
-  setShowDeleteButton
+  setShowDeleteButton,
 }) => {
   let temp = selectedRowsBG;
   const [showToast, setShowToast] = useState(false);
@@ -81,9 +81,9 @@ const TableInfo = ({
           selectedRowsBGPass = temp;
           setSelectedRowsBG(temp);
 
-          if(temp.length > 0){
+          if (temp.length > 0) {
             setShowDeleteButton(true);
-          }else{
+          } else {
             setShowDeleteButton(false);
           }
         }
@@ -94,12 +94,11 @@ const TableInfo = ({
         temp.splice(temp.indexOf(temp.find((tempp) => tempp.id === id)), 1);
         setSelectedRowsBG(temp);
         selectedRowsBGPass = temp;
-
       }
-      
-      if(temp.length > 0){
+
+      if (temp.length > 0) {
         setShowDeleteButton(true);
-      }else{
+      } else {
         setShowDeleteButton(false);
       }
     }
@@ -274,7 +273,7 @@ const TableInfo = ({
   };
 
   const previewAndDownloadFile = async (downloadURL) => {
-      window.open(downloadURL);
+    window.open(downloadURL);
   };
 
   return (
@@ -452,7 +451,9 @@ const TableInfo = ({
                                     >
                                       <Link
                                         className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        onClick={() => {window.location.href=`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}}
+                                        onClick={() => {
+                                          window.location.href = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`;
+                                        }}
                                       >
                                         File Bucket +
                                       </Link>
@@ -470,18 +471,25 @@ const TableInfo = ({
                                         </>
                                       ) : (
                                         <>
-                                        <br />
-                                          {files.filter(x => x.backgroundId === item.id).map((items) => (
-                                            <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100" >{items.name}
-                                            &nbsp;
-                                            <AiOutlineDownload
-                                              className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
-                                              onClick={() =>
-                                                previewAndDownloadFile(items.downloadURL)
-                                              }
-                                            />
-                                            </p>
-                                          ))}
+                                          <br />
+                                          {files
+                                            .filter(
+                                              (x) => x.backgroundId === item.id
+                                            )
+                                            .map((items) => (
+                                              <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                {items.name}
+                                                &nbsp;
+                                                <AiOutlineDownload
+                                                  className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
+                                                  onClick={() =>
+                                                    previewAndDownloadFile(
+                                                      items.downloadURL
+                                                    )
+                                                  }
+                                                />
+                                              </p>
+                                            ))}
                                         </>
                                       )}
                                     </td>
@@ -507,6 +515,13 @@ const TableInfo = ({
           getBackground={getBackground}
           paragraph={paragraph}
           setParagraph={setParagraph}
+          setCheckedState={setCheckedState}
+          witness={witness}
+          setSelectedRowsBG={setSelectedRowsBG}
+          setShowDeleteButton={setShowDeleteButton}
+          API={API}
+          matterId={matterId}
+          setcheckAllState={setcheckAllState}
         />
       )}
       {showToast && (
