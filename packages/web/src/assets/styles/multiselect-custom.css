@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+.option .highlightOption .highlight  {
+    background: none !important;
+    color: #8a8a8a;
+ }
+
+ .highlightOption{
+    background: none !important;
+    color: #8a8a8a;
+ }
+ 
+ .multiSelectContainer li:hover {
+     background: rgb(230, 230, 230) !important;
+     cursor: pointer;
+     color: #8a8a8a;
+ }
+
+ .multiSelectContainer{
+    background: none !important;
+    cursor: pointer;
+    color: #8a8a8a;
+}
+
+.chip{
+    background: rgb(92, 172, 238);
+}
+
+.selected{
+    font-weight: bold;
+}
+ 
