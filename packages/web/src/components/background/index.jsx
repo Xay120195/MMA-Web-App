@@ -163,6 +163,7 @@ export default function Background() {
 
           mergeArrFiles.push(...arrFileResult);
           setFiles(arrFileResult);
+          console.log(arrFileResult);
         }
       }
 
