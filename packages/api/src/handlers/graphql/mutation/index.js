@@ -814,7 +814,7 @@ export async function deleteClientMatter(id) {
 export async function deleteBackgroundFiles(id) {
   let response = {};
   try {
-    const BackgroundFilesParams = {
+    const backgroundFilesParams = {
       TableName: "BackgroundsTable",
       IndexName: "byBackground",
       KeyConditionExpression: "backgroundId = :backgroundId",
@@ -823,18 +823,18 @@ export async function deleteBackgroundFiles(id) {
       }),
     };
 
-    const BackgroundFilesCommand = new QueryCommand(
-      BackgroundFilesParams
+    const backgroundFilesCommand = new QueryCommand(
+      backgroundFilesParams
     );
-    const BackgroundFilesResult = await client.send(
-      BackgroundFilesCommand
+    const backgroundFilesResult = await client.send(
+      backgroundFilesCommand
     );
 
-    const BackgroundFilesId = BackgroundFilesResult.Items.map(
+    const backgroundFilesId = backgroundFilesResult.Items.map(
       (i) => i.id
     );
 
-    const filterBackgroundFilesId = BackgroundFilesId[0];
+    const filterBackgroundFilesId = backgroundFilesId[0];
 
     const deleteBackgroundFilesCommand = new DeleteItemCommand({
       TableName: "BackgroundsTable",
