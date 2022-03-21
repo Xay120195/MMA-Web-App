@@ -815,7 +815,7 @@ export async function deleteBackgroundFiles(id) {
   let response = {};
   try {
     const backgroundFilesParams = {
-      TableName: "BackgroundsTable",
+      TableName: "BackgroundFileTable",
       IndexName: "byBackground",
       KeyConditionExpression: "backgroundId = :backgroundId",
       ExpressionAttributeValues: marshall({
@@ -837,7 +837,7 @@ export async function deleteBackgroundFiles(id) {
     const filterBackgroundFilesId = backgroundFilesId[0];
 
     const deleteBackgroundFilesCommand = new DeleteItemCommand({
-      TableName: "BackgroundsTable",
+      TableName: "BackgroundFileTable",
       Key: { id: filterBackgroundFilesId },
     });
 
