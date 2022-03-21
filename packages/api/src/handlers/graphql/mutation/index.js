@@ -811,6 +811,27 @@ export async function deleteClientMatter(id) {
   return response;
 }
 
+export async function deleteBackgroundFiles(id) {
+  let response = {};
+  try {
+    const command = new DeleteItemCommand({
+        TableName: "BackgroundFileTable",
+        Key: marshall({ id }),
+      });
+      const request = await client.send(command);
+
+      response = request ? { id: id } : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -925,9 +946,11 @@ const resolvers = {
     backgroundBulkDelete: async (ctx) => {
       return await bulkDeleteBackground(ctx.arguments);
     },
-
     backgroundFileTag: async (ctx) => {
       return await tagBackgroundFile(ctx.arguments);
+    },
+    backgroundFileDelete: async (ctx) => {
+      return await deleteBackgroundFiles(ctx.arguments);
     },
   },
 };
