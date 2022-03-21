@@ -5,17 +5,22 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
+import {
+  BsFillTrashFill,
+} from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
+import RemoveFileModal from "../file-bucket/remove-file-modal";
 
 export let selectedRowsBGPass = [];
 
 const TableInfo = ({
   witness,
   files,
+  setFiles,
   setIdList,
   setWitness,
   checkAllState,
@@ -48,9 +53,22 @@ const TableInfo = ({
   const [textDesc, setTextDesc] = useState("");
   const [descAlert, setDescAlert] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
+  const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
+  const [selectedFileBG, setselectedFileBG] = useState([]);
 
   const hideToast = () => {
     setShowToast(false);
+  };
+
+  const showModal = (id, backgroundId) => {
+    var tempIndex = [];
+    tempIndex = [...tempIndex, { id: id, backgroundId: backgroundId, fileName: "x" }];
+    setselectedFileBG(tempIndex);
+    setshowRemoveFileModal(true);
+  };
+
+  const handleModalClose = () => {
+    setshowRemoveFileModal(false);
   };
 
   const handleCheckboxChange = (position, event, id) => {
@@ -276,6 +294,41 @@ const TableInfo = ({
     window.open(downloadURL);
   };
 
+  const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+  const handleDelete = async (item) => {
+    const filteredArrFiles = files.filter(i => i.uniqueId !== item[0].id);
+    let arrFiles = [];
+    for (let i = 0; i < witness.length; i++) {
+      arrFiles = filteredArrFiles.filter(element => element.backgroundId === witness[i].id).map(({ id }) => ({
+        id: id
+      }));
+      console.log(arrFiles);
+      if (witness[i].id !== null) {
+        const request = API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: witness[i].id,
+            files: arrFiles,
+          },
+        });
+      }
+    }
+    setFiles(filteredArrFiles);
+    setshowRemoveFileModal(false);
+    setalertMessage(`File successfully deleted!`);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
   return (
     <>
       <div
@@ -488,6 +541,12 @@ const TableInfo = ({
                                                     )
                                                   }
                                                 />
+                                                <BsFillTrashFill
+                                                  className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                  onClick={() =>
+                                                    showModal(items.uniqueId, items.backgroundId)
+                                                  }
+                                                />
                                               </p>
                                             ))}
                                         </>
@@ -522,6 +581,13 @@ const TableInfo = ({
           API={API}
           matterId={matterId}
           setcheckAllState={setcheckAllState}
+        />
+      )}
+      {showRemoveFileModal && (
+        <RemoveFileModal
+          handleSave={handleDelete}
+          handleModalClose={handleModalClose}
+          selectedRowsBG={selectedFileBG}
         />
       )}
       {showToast && (
