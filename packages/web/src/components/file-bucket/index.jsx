@@ -62,9 +62,9 @@ export default function FileBucket() {
   const [textDetails, setTextDetails] = useState("");
   const { matter_id, background_id } = useParams();
   const [searchFile, setSearchFile] = useState();
+  const [labelAlert, setLabelAlert] = useState("");
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
-  
 
   let filterOptionsArray = [];
 
@@ -225,7 +225,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 }
 `;
 
-const mUpdateMatterFileOrder = `
+  const mUpdateMatterFileOrder = `
     mutation updateMatterFile ($id: ID, $order: Int) {
       matterFileUpdate(id: $id, order: $order) {
         id
@@ -244,12 +244,10 @@ const mUpdateMatterFileOrder = `
 
   async function tagBackgroundFile() {
     let arrFiles = [];
-    arrFiles = selectedRows.map(
-      ({ id }) => ({
-        id: id,
-      })
-    );
-    if(background_id !== null) {
+    arrFiles = selectedRows.map(({ id }) => ({
+      id: id,
+    }));
+    if (background_id !== null) {
       return new Promise((resolve, reject) => {
         try {
           const request = API.graphql({
@@ -311,15 +309,21 @@ const mUpdateMatterFileOrder = `
   const addLabel = async (data) => {
     let result;
 
-    const createLabel = await API.graphql({
-      query: mCreateLabel,
-      variables: {
-        clientMatterId: matter_id,
-        name: data,
-      },
-    });
-    result = createLabel.data.labelCreate;
-    console.log(result.name);
+    if (labels.some((x) => x.label === data.trim())) {
+      setLabelAlert(
+        "can't create new label, because label is already exist, system inserted the existing label"
+      );
+    } else {
+      const createLabel = await API.graphql({
+        query: mCreateLabel,
+        variables: {
+          clientMatterId: matter_id,
+          name: data,
+        },
+      });
+      result = createLabel.data.labelCreate;
+      console.log(result.name);
+    }
 
     getLabels(data);
     return result;
@@ -341,7 +345,6 @@ const mUpdateMatterFileOrder = `
 
     console.log("searchFile", searchFile);
     console.log("matterFiles", matterFiles);
-    
   }, [searchFile]);
 
   let getMatterFiles = async () => {
@@ -422,6 +425,7 @@ const mUpdateMatterFileOrder = `
   };
 
   const handleMatterChanged = async (options, id, name, details, index) => {
+    setFileId(id);
     let newOptions = [];
     let createdLabel;
     var updated;
@@ -659,9 +663,6 @@ const mUpdateMatterFileOrder = `
     }
   };
 
- 
-  
-
   const extractArray = (ar) => {
     if (Array.isArray(ar) && ar.length) {
       const newOptions = ar.map(({ id: value, name: label }) => ({
@@ -671,15 +672,15 @@ const mUpdateMatterFileOrder = `
 
       // setFilterOptions([...filterOptions, newOptions]);
       newOptions.map(
-        (data) => 
-          (filterOptionsArray = [
-            ...filterOptionsArray,
-            data,
-          ])
+        (data) => (filterOptionsArray = [...filterOptionsArray, data])
       );
 
       //filter duplicates
-      pageSelectedLabels = [...new Map(filterOptionsArray.map(item => [JSON.stringify(item.label), item])).values()];
+      pageSelectedLabels = [
+        ...new Map(
+          filterOptionsArray.map((item) => [JSON.stringify(item.label), item])
+        ).values(),
+      ];
       // setFilterLabelsData(pageSelectedLabels);
       return newOptions;
     } else {
@@ -878,13 +879,9 @@ const mUpdateMatterFileOrder = `
       var newOptions = oldOpt.map(({ id: value, name: label }) => ({
         value,
         label,
-      })); 
+      }));
       //{value: 0, label: "test"}
       //data - oldOpt
-
-      
-
-      
 
       return data;
     } else {
@@ -925,21 +922,33 @@ const mUpdateMatterFileOrder = `
 
   const handleFilter = (fileFilter) => {
     setFilterLabels(false);
-      var filterRecord = [];
-      if(fileFilter == null || fileFilter == undefined || fileFilter.length == 0){
-        setMatterFiles(files);
-      }else{
-        for (var i=0; i<fileFilter.length; i++){
-          files.map(x=> (x.labels !== null) ? x.labels.map(y=>
-            y.name === fileFilter[i] ? filterRecord = [...filterRecord, x] : filterRecord = filterRecord
-          ) : x.labels)
-        }
-
-        var listFilter = [...new Map(filterRecord.map(x => [JSON.stringify(x), x])).values()];
-        console.log(listFilter);
-        setMatterFiles(listFilter);
+    var filterRecord = [];
+    if (
+      fileFilter == null ||
+      fileFilter == undefined ||
+      fileFilter.length == 0
+    ) {
+      setMatterFiles(files);
+    } else {
+      for (var i = 0; i < fileFilter.length; i++) {
+        files.map((x) =>
+          x.labels !== null
+            ? x.labels.map((y) =>
+                y.name === fileFilter[i]
+                  ? (filterRecord = [...filterRecord, x])
+                  : (filterRecord = filterRecord)
+              )
+            : x.labels
+        );
       }
-  }
+
+      var listFilter = [
+        ...new Map(filterRecord.map((x) => [JSON.stringify(x), x])).values(),
+      ];
+      console.log(listFilter);
+      setMatterFiles(listFilter);
+    }
+  };
 
   function refreshPage() {
     window.location.reload(false);
@@ -966,9 +975,11 @@ const mUpdateMatterFileOrder = `
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
-                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
-                  <button className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
-                  onClick={() => tagBackgroundFile()}>
+                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`}>
+                  <button
+                    className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
+                    onClick={() => tagBackgroundFile()}
+                  >
                     Attach to Background &nbsp;|
                     <BsArrowLeft />
                   </button>
@@ -986,17 +997,17 @@ const mUpdateMatterFileOrder = `
 
         <div className="p-5 left-0"></div>
         {files !== null && files.length !== 0 && (
-        <div className="w-full mb-3 pb-2">
-          <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
-            <IoIcons.IoIosSearch />
-          </span>
-          <input
-            type="search"
-            placeholder="Type to search files in the File Bucket ..."
-            onChange={handleSearchFileChange}
-            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-          />
-        </div>
+          <div className="w-full mb-3 pb-2">
+            <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+              <IoIcons.IoIosSearch />
+            </span>
+            <input
+              type="search"
+              placeholder="Type to search files in the File Bucket ..."
+              onChange={handleSearchFileChange}
+              className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+            />
+          </div>
         )}
         <div className="pl-2 py-1 grid grid-cols-2 gap-4">
           <div className="">
@@ -1029,12 +1040,12 @@ const mUpdateMatterFileOrder = `
                 </button>
               )}
 
-              <button
-                className="bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                onClick={() => setFilterLabels(true)}
-              >
-                <AiFillTags />
-              </button>
+            <button
+              className="bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+              onClick={() => setFilterLabels(true)}
+            >
+              <AiFillTags />
+            </button>
           </div>
         </div>
 
@@ -1292,7 +1303,10 @@ const mUpdateMatterFileOrder = `
                                               ? data.labels
                                               : { value: 0, label: "" }
                                           )}
-                                          options={newOptions(labels, data.labels)}
+                                          options={newOptions(
+                                            labels,
+                                            data.labels
+                                          )}
                                           // options={labels}
                                           isMulti
                                           isClearable
@@ -1309,6 +1323,9 @@ const mUpdateMatterFileOrder = `
                                           placeholder="Labels"
                                           className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
+                                        <p className="text-red-400 filename-validation">
+                                          {data.id === fileId && labelAlert}
+                                        </p>
                                       </td>
                                     </tr>
                                   )}
