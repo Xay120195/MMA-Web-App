@@ -321,15 +321,18 @@ type CompanyClientMatterConnection {
 
 type ClientMatterBackgroundConnection {
   items: [Background]
+  # limit: Int
   # nextToken: String
 }
 
 type ClientMatterLabelConnection {
   items: [Label]
+  # limit: Int
   # nextToken: String
 }
 
 type BackgroundFileConnection {
   items: [File]
+  # limit: Int
   # nextToken: String
 }
