@@ -1,13 +1,58 @@
 import React from "react";
-import { useState } from "react";
+
+import { API } from "aws-amplify";
 
 export const ModalParagraph = ({
   setShowModalParagraph,
   getBackground,
   setParagraph,
   paragraph,
+  setCheckedState,
+  witness,
+  setSelectedRowsBG,
+  setShowDeleteButton,
+  matterId,
+  setcheckAllState,
 }) => {
   let buttonBg = "bg-green-500";
+
+  const handleNewParagraph = async () => {
+    const dateToday =
+      new Date().getFullYear() +
+      "/" +
+      (new Date().getMonth() + 1) +
+      "/" +
+      new Date().getDate();
+
+    const mCreateBackground = `
+        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+            id
+          }
+        }
+    `;
+
+    const createBackgroundRow = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        clientMatterId: matterId,
+        date: dateToday,
+        description: paragraph,
+      },
+    });
+    if (createBackgroundRow) {
+      getBackground();
+      setcheckAllState(false);
+
+      // const newArr = Array(witness.length).fill(false);
+      // setCheckedState = newArr;
+      setCheckedState(new Array(witness.length).fill(false));
+      setSelectedRowsBG([]);
+      setShowDeleteButton(false);
+    }
+    setShowModalParagraph(false);
+    setParagraph("");
+  };
 
   return (
     <>
@@ -52,7 +97,7 @@ export const ModalParagraph = ({
                 } text-white active:bg-green-600 font-bold  text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150`}
                 type="button"
                 disabled={paragraph.length <= 0}
-                onClick={() => setShowModalParagraph(false)}
+                onClick={handleNewParagraph}
               >
                 <div className="inline-flex">
                   <span className="flex items-center"> Add</span>
