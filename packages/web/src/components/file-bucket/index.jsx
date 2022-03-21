@@ -1030,7 +1030,7 @@ const mUpdateMatterFileOrder = `
               )}
 
               <button
-                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded hidden items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                className="bg-gray-800 hover:bg-blue-700 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 onClick={() => setFilterLabels(true)}
               >
                 <AiFillTags />
