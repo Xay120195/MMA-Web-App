@@ -978,6 +978,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       (new Date().getMonth() + 1) +
       "/" +
       new Date().getDate();
+    var counter=0;
     for (let i = 0; i < arrFiles.length; i++) {
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
@@ -997,11 +998,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           },
         });
       }
+      counter++;
     }
+
+    console.log(counter);
 
     setTimeout(() => {
       setShowToast(false);
-      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
+      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/?count=${counter}`;
     }, 1500);
   }
 
@@ -1077,8 +1081,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>
-            &nbsp;
-            {/* {showRemoveFileButton && (
+              
+            {showRemoveFileButton && (
               <button
                 className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                 onClick={() => addFileBucketToBackground()}
@@ -1086,7 +1090,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 COPY TO BACKGROUND PAGE &nbsp;
                 <FiCopy />
               </button>
-            )} */}
+            )}
           </div>
           <div className=" grid justify-items-end mr-0">
             <div className="flex inline-flex mr-0">

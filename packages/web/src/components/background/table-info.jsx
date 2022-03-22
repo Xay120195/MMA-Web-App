@@ -14,6 +14,7 @@ import { API } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
+import {useHistory, useLocation} from "react-router-dom";
 
 export let selectedRowsBGPass = [];
 
@@ -55,7 +56,15 @@ const TableInfo = ({
   const [updateProgess, setUpdateProgress] = useState(false);
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
-  const [highlightRows, setHighlightRows] = useState('bg-white');
+  const [highlightRows, setHighlightRows] = useState('bg-green-200');
+
+  const location = useLocation()
+  const history = useHistory()
+
+  const searchItem = location.search;
+  const counter = new URLSearchParams(searchItem).get('count');
+
+  const queryParams = new URLSearchParams(location.search);
 
   const hideToast = () => {
     setShowToast(false);
@@ -127,6 +136,7 @@ const TableInfo = ({
     setTimeout(() => {
       setLoading(false);
     }, 1000);
+
     setIdList(getId);
   }, [getId]);
 
@@ -330,7 +340,20 @@ const TableInfo = ({
     }, 3000);
   };
 
-  console.log(witness);
+  setTimeout(() => {
+    setHighlightRows("bg-white");
+
+    if (queryParams.has('count')) {
+      queryParams.delete('count')
+      history.replace({
+        search: queryParams.toString(),
+      })
+    }
+  }, 10000);
+
+  function refreshQueryStrings() {
+    window.location.href = `${AppRoutes.BACKGROUND}/${matterId}`;
+  }
 
   return (
     <>
@@ -392,7 +415,9 @@ const TableInfo = ({
                                   <tr
                                     key={item.id}
                                     index={index}
-                                    className={highlightRows}
+                                    className={
+                                      index+1 <= counter ? highlightRows : ""
+                                      }
                                     {...provider.draggableProps}
                                     ref={provider.innerRef}
                                     style={{
@@ -494,19 +519,8 @@ const TableInfo = ({
                                           updateProgess ? false : true
                                         }
                                       >
-                                        {item.description}
+                                        {item.description} 
                                       </p>
-
-                                      {/* {item.createdAt <= Date() ? (
-                                        <>
-                                          true
-                                        </>
-                                      ) : (
-                                        <>
-                                          false
-                                        </>
-                                      )} */}
-
                                       <span className="text-red-400 filename-validation">
                                         {item.id === descId && descAlert}
                                       </span>
@@ -537,6 +551,9 @@ const TableInfo = ({
                                         </>
                                       ) : (
                                         <>
+                                          <br />
+                                          <span className="font-bold" >Files Selected</span>
+                                          <br />
                                           <br />
                                           {files
                                             .filter(
