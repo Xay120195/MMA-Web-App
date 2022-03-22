@@ -46,6 +46,8 @@ functions:
     handler: src/handlers/graphql/file/index.handler
   company-fn:
     handler: src/handlers/graphql/company/index.handler
+  clientmatter-fn:
+    handler: src/handlers/graphql/clientMatter/index.handler
 
 custom:
   dynamodb:
@@ -71,7 +73,6 @@ custom:
     mappingTemplatesLocation: src/mapping-templates
 
     mappingTemplates:
-      
       - dataSource: LambdaQueryDS
         type: Query
         field: company
@@ -297,11 +298,16 @@ custom:
         field: clientMatters
         request: false
         response: false
-      # - dataSource: LambdaCompanyDS
-      #   type: Company
-      #   field: labels
-      #   request: false
-      #   response: false
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: labels
+        request: false
+        response: false
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: backgrounds
+        request: false
+        response: false
 
     dataSources:
       - type: AWS_LAMBDA
@@ -316,6 +322,10 @@ custom:
         name: LambdaCompanyDS
         config:
           functionName: company-fn
+      - type: AWS_LAMBDA
+        name: LambdaClientMatterDS
+        config:
+          functionName: clientmatter-fn
       - type: AWS_LAMBDA
         name: LambdaFileDS
         config:
