@@ -204,7 +204,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
-          <button
+          {/* <button
             onClick={() => setShowModalParagraph(true)}
             type="button"
             className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
@@ -224,7 +224,7 @@ const ActionButtons = ({
                 d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button>
+          </button> */}
           {showDeleteButton && (
             <button
               type="button"
