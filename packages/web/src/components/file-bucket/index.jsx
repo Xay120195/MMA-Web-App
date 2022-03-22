@@ -293,12 +293,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     });
 
     if (labelsOpt.data.clientMatter.labels !== null) {
+      if (labelsOpt.data.clientMatter.labels.items !== null) {
       result = labelsOpt.data.clientMatter.labels.items
         .map(({ id, name }) => ({
           value: id,
           label: name,
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
+      }
     }
     console.log("Labels", result);
 
