@@ -11,6 +11,8 @@ let filesToSend = [];
 let filterOptions = [];
 
 export default function FilterLabels (props) {
+
+  
   const handleModalClose = () => {
     props.handleModalClose();
   };
@@ -29,8 +31,8 @@ export default function FilterLabels (props) {
     }
   };
 
-  pageSelectedLabels.map(x=> filterOptions = [...filterOptions, x.label]);
-  filterOptions = [...new Map(filterOptions.map(x => [JSON.stringify(x), x])).values()];
+    pageSelectedLabels.map(x=> filterOptions = [...filterOptions, x.label]);
+    filterOptions = [...new Map(filterOptions.map(x => [JSON.stringify(x), x])).values()];
 
   const handleFilterChange = (evt) => {
     filesToSend = evt; //filter Labels, send data to index
