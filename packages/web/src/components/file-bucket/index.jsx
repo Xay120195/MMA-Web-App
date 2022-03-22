@@ -932,7 +932,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       fileFilter == undefined ||
       fileFilter.length == 0
     ) {
-      setMatterFiles(files);
+      setMatterFiles(sortByOrder(files));
     } else {
       for (var i = 0; i < fileFilter.length; i++) {
         files.map((x) =>
@@ -950,7 +950,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         ...new Map(filterRecord.map((x) => [JSON.stringify(x), x])).values(),
       ];
       console.log(listFilter);
-      setMatterFiles(listFilter);
+      setMatterFiles(sortByOrder(listFilter));
     }
   };
 
