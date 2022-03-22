@@ -62,7 +62,6 @@ export default function FileBucket() {
   const [textDetails, setTextDetails] = useState("");
   const { matter_id, background_id } = useParams();
   const [searchFile, setSearchFile] = useState();
-  const [labelAlert, setLabelAlert] = useState("");
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
 
@@ -310,9 +309,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     let result;
 
     if (labels.some((x) => x.label === data.trim())) {
-      setLabelAlert(
-        "can't create new label, because label is already exist, system inserted the existing label"
-      );
+      return;
     } else {
       const createLabel = await API.graphql({
         query: mCreateLabel,
@@ -774,7 +771,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         );
         setCheckedState(updatedCheckedState);
       } else {
-        selectedRows = [...selectedRows, { id: id, fileName: fileName, details: details }];
+        selectedRows = [
+          ...selectedRows,
+          { id: id, fileName: fileName, details: details },
+        ];
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
           index === idx ? !item : item
@@ -978,6 +978,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       (new Date().getMonth() + 1) +
       "/" +
       new Date().getDate();
+    var counter=0;
     for (let i = 0; i < arrFiles.length; i++) {
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
@@ -993,15 +994,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           query: mUpdateBackgroundFile,
           variables: {
             backgroundId: createBackgroundRow.data.backgroundCreate.id,
-            files: [{id: arrFiles[i].id}],
+            files: [{ id: arrFiles[i].id }],
           },
         });
       }
+      counter++;
     }
+
+    console.log(counter);
 
     setTimeout(() => {
       setShowToast(false);
-      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
+      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/?count=${counter}`;
     }, 1500);
   }
 
@@ -1076,8 +1080,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             >
               FILE UPLOAD &nbsp;
               <FiUpload />
-            </button>&nbsp;
-            {/* {showRemoveFileButton && (
+            </button>
+              
+            {showRemoveFileButton && (
               <button
                 className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                 onClick={() => addFileBucketToBackground()}
@@ -1085,7 +1090,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 COPY TO BACKGROUND PAGE &nbsp;
                 <FiCopy />
               </button>
-            )} */}
+            )}
           </div>
           <div className=" grid justify-items-end mr-0">
             <div className="flex inline-flex mr-0">
@@ -1102,11 +1107,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 )}
 
               <button
-                
                 className={
-                pageSelectedLabels 
-                ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                  pageSelectedLabels
+                    ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                    : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 }
                 onClick={() => setFilterLabels(true)}
                 disabled={pageSelectedLabels ? false : true}
@@ -1202,7 +1206,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           className="cursor-pointer w-10 mt-1"
                                           checked={checkedState[index]}
                                           onChange={() =>
-                                            checked(data.id, data.name, data.details, index)
+                                            checked(
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              index
+                                            )
                                           }
                                         />
                                         <span>{index + 1}</span>
@@ -1391,9 +1400,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           placeholder="Labels"
                                           className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
-                                        <p className="text-red-400 filename-validation">
-                                          {data.id === fileId && labelAlert}
-                                        </p>
                                       </td>
                                     </tr>
                                   )}
