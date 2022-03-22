@@ -1031,25 +1031,33 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               <FiUpload />
             </button>
           </div>
-          <div className="grid justify-items-end">
-            {matterFiles !== null &&
-              matterFiles.length !== 0 &&
-              showRemoveFileButton && (
-                <button
-                  className="bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                  onClick={() => setshowRemoveFileModal(true)}
-                >
-                  DELETE &nbsp;
-                  <BsFillTrashFill />
-                </button>
-              )}
+          <div className=" grid justify-items-end mr-0">
+            <div className="flex inline-flex mr-0">
+              {matterFiles !== null &&
+                matterFiles.length !== 0 &&
+                showRemoveFileButton && (
+                  <button
+                    className="float-right mr-5 bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                    onClick={() => setshowRemoveFileModal(true)}
+                  >
+                    DELETE &nbsp;
+                    <BsFillTrashFill />
+                  </button>
+                )}
 
-            <button
-              className="bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-              onClick={() => setFilterLabels(true)}
-            >
-              <AiFillTags />
-            </button>
+              <button
+                
+                className={
+                pageSelectedLabels 
+                ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                }
+                onClick={() => setFilterLabels(true)}
+                disabled={pageSelectedLabels ? false : true}
+              >
+                <AiFillTags />
+              </button>
+            </div>
           </div>
         </div>
 
