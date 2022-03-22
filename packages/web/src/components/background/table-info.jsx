@@ -497,7 +497,7 @@ const TableInfo = ({
                                         {item.description}
                                       </p>
 
-                                      {item.createdAt <= Date() ? (
+                                      {/* {item.createdAt <= Date() ? (
                                         <>
                                           true
                                         </>
@@ -505,7 +505,7 @@ const TableInfo = ({
                                         <>
                                           false
                                         </>
-                                      )}
+                                      )} */}
 
                                       <span className="text-red-400 filename-validation">
                                         {item.id === descId && descAlert}
