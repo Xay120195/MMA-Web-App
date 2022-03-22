@@ -964,8 +964,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   async function addFileBucketToBackground() {
     let arrFiles = [];
-    setShowToast(true);
-    setResultMessage(`Copying details to background..`);
 
     arrFiles = selectedRows.map(({ id, details }) => ({
       id: id,
@@ -998,11 +996,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         });
       }
     }
-
-    setTimeout(() => {
-      setShowToast(false);
-      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
-    }, 1500);
   }
 
   return (
@@ -1077,7 +1070,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
               FILE UPLOAD &nbsp;
               <FiUpload />
             </button>&nbsp;
-            {/* {showRemoveFileButton && (
+            {showRemoveFileButton && (
               <button
                 className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                 onClick={() => addFileBucketToBackground()}
@@ -1085,7 +1078,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 COPY TO BACKGROUND PAGE &nbsp;
                 <FiCopy />
               </button>
-            )} */}
+            )}
           </div>
           <div className=" grid justify-items-end mr-0">
             <div className="flex inline-flex mr-0">

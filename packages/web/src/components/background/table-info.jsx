@@ -55,7 +55,6 @@ const TableInfo = ({
   const [updateProgess, setUpdateProgress] = useState(false);
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
-  const [highlightRows, setHighlightRows] = useState('bg-white');
 
   const hideToast = () => {
     setShowToast(false);
@@ -330,8 +329,6 @@ const TableInfo = ({
     }, 3000);
   };
 
-  console.log(witness);
-
   return (
     <>
       <div
@@ -392,7 +389,7 @@ const TableInfo = ({
                                   <tr
                                     key={item.id}
                                     index={index}
-                                    className={highlightRows}
+                                    className="h-full"
                                     {...provider.draggableProps}
                                     ref={provider.innerRef}
                                     style={{
@@ -401,7 +398,7 @@ const TableInfo = ({
                                         snapshot.isDragging ||
                                         (active && item.id === selected)
                                           ? "rgba(255, 255, 239, 0.767)"
-                                          : "",
+                                          : "white",
                                     }}
                                   >
                                     <td
@@ -496,16 +493,6 @@ const TableInfo = ({
                                       >
                                         {item.description}
                                       </p>
-
-                                      {item.createdAt <= Date() ? (
-                                        <>
-                                          true
-                                        </>
-                                      ) : (
-                                        <>
-                                          false
-                                        </>
-                                      )}
 
                                       <span className="text-red-400 filename-validation">
                                         {item.id === descId && descAlert}
