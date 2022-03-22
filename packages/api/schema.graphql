@@ -226,7 +226,6 @@ type Mutation {
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
-  backgroundFileDelete(id: ID): Background
 }
 
 enum UserType {
