@@ -4,3 +4,4 @@ yarn-error.log
 packages/web/.vscode/settings.json
 packages/web/.env
 packages/api/AWSCLIV2.pkg
+pnpm-lock.yaml

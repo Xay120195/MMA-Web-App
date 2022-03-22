@@ -925,7 +925,6 @@ const resolvers = {
     backgroundBulkDelete: async (ctx) => {
       return await bulkDeleteBackground(ctx.arguments);
     },
-
     backgroundFileTag: async (ctx) => {
       return await tagBackgroundFile(ctx.arguments);
     },

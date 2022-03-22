@@ -5,17 +5,22 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
+import {
+  BsFillTrashFill,
+} from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
+import RemoveModal from "../delete-prompt-modal";
 
 export let selectedRowsBGPass = [];
 
 const TableInfo = ({
   witness,
   files,
+  setFiles,
   setIdList,
   setWitness,
   checkAllState,
@@ -35,7 +40,7 @@ const TableInfo = ({
   paragraph,
   setParagraph,
   showDeleteButton,
-  setShowDeleteButton
+  setShowDeleteButton,
 }) => {
   let temp = selectedRowsBG;
   const [showToast, setShowToast] = useState(false);
@@ -48,9 +53,23 @@ const TableInfo = ({
   const [textDesc, setTextDesc] = useState("");
   const [descAlert, setDescAlert] = useState("");
   const [updateProgess, setUpdateProgress] = useState(false);
+  const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
+  const [selectedFileBG, setselectedFileBG] = useState([]);
+  const [highlightRows, setHighlightRows] = useState('bg-white');
 
   const hideToast = () => {
     setShowToast(false);
+  };
+
+  const showModal = (id, backgroundId) => {
+    var tempIndex = [];
+    tempIndex = [...tempIndex, { id: id, backgroundId: backgroundId, fileName: "x" }];
+    setselectedFileBG(tempIndex);
+    setshowRemoveFileModal(true);
+  };
+
+  const handleModalClose = () => {
+    setshowRemoveFileModal(false);
   };
 
   const handleCheckboxChange = (position, event, id) => {
@@ -81,9 +100,9 @@ const TableInfo = ({
           selectedRowsBGPass = temp;
           setSelectedRowsBG(temp);
 
-          if(temp.length > 0){
+          if (temp.length > 0) {
             setShowDeleteButton(true);
-          }else{
+          } else {
             setShowDeleteButton(false);
           }
         }
@@ -94,12 +113,11 @@ const TableInfo = ({
         temp.splice(temp.indexOf(temp.find((tempp) => tempp.id === id)), 1);
         setSelectedRowsBG(temp);
         selectedRowsBGPass = temp;
-
       }
-      
-      if(temp.length > 0){
+
+      if (temp.length > 0) {
         setShowDeleteButton(true);
-      }else{
+      } else {
         setShowDeleteButton(false);
       }
     }
@@ -274,8 +292,45 @@ const TableInfo = ({
   };
 
   const previewAndDownloadFile = async (downloadURL) => {
-      window.open(downloadURL);
+    window.open(downloadURL);
   };
+
+  const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+  const handleDelete = async (item) => {
+    const filteredArrFiles = files.filter(i => i.uniqueId !== item[0].id);
+    let arrFiles = [];
+    for (let i = 0; i < witness.length; i++) {
+      arrFiles = filteredArrFiles.filter(element => element.backgroundId === witness[i].id).map(({ id }) => ({
+        id: id
+      }));
+      console.log(arrFiles);
+      if (witness[i].id !== null) {
+        const request = API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: witness[i].id,
+            files: arrFiles,
+          },
+        });
+      }
+    }
+    setFiles(filteredArrFiles);
+    setshowRemoveFileModal(false);
+    setalertMessage(`File successfully deleted!`);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
+  console.log(witness);
 
   return (
     <>
@@ -337,7 +392,7 @@ const TableInfo = ({
                                   <tr
                                     key={item.id}
                                     index={index}
-                                    className="h-full"
+                                    className={highlightRows}
                                     {...provider.draggableProps}
                                     ref={provider.innerRef}
                                     style={{
@@ -346,7 +401,7 @@ const TableInfo = ({
                                         snapshot.isDragging ||
                                         (active && item.id === selected)
                                           ? "rgba(255, 255, 239, 0.767)"
-                                          : "white",
+                                          : "",
                                     }}
                                   >
                                     <td
@@ -442,6 +497,16 @@ const TableInfo = ({
                                         {item.description}
                                       </p>
 
+                                      {/* {item.createdAt <= Date() ? (
+                                        <>
+                                          true
+                                        </>
+                                      ) : (
+                                        <>
+                                          false
+                                        </>
+                                      )} */}
+
                                       <span className="text-red-400 filename-validation">
                                         {item.id === descId && descAlert}
                                       </span>
@@ -452,7 +517,9 @@ const TableInfo = ({
                                     >
                                       <Link
                                         className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        onClick={() => {window.location.href=`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}}
+                                        onClick={() => {
+                                          window.location.href = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`;
+                                        }}
                                       >
                                         File Bucket +
                                       </Link>
@@ -470,18 +537,31 @@ const TableInfo = ({
                                         </>
                                       ) : (
                                         <>
-                                        <br />
-                                          {files.filter(x => x.backgroundId === item.id).map((items) => (
-                                            <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100" >{items.name}
-                                            &nbsp;
-                                            <AiOutlineDownload
-                                              className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
-                                              onClick={() =>
-                                                previewAndDownloadFile(items.downloadURL)
-                                              }
-                                            />
-                                            </p>
-                                          ))}
+                                          <br />
+                                          {files
+                                            .filter(
+                                              (x) => x.backgroundId === item.id
+                                            )
+                                            .map((items) => (
+                                              <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                {items.name}
+                                                &nbsp;
+                                                <AiOutlineDownload
+                                                  className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
+                                                  onClick={() =>
+                                                    previewAndDownloadFile(
+                                                      items.downloadURL
+                                                    )
+                                                  }
+                                                />
+                                                <BsFillTrashFill
+                                                  className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                  onClick={() =>
+                                                    showModal(items.uniqueId, items.backgroundId)
+                                                  }
+                                                />
+                                              </p>
+                                            ))}
                                         </>
                                       )}
                                     </td>
@@ -507,6 +587,20 @@ const TableInfo = ({
           getBackground={getBackground}
           paragraph={paragraph}
           setParagraph={setParagraph}
+          setCheckedState={setCheckedState}
+          witness={witness}
+          setSelectedRowsBG={setSelectedRowsBG}
+          setShowDeleteButton={setShowDeleteButton}
+          API={API}
+          matterId={matterId}
+          setcheckAllState={setcheckAllState}
+        />
+      )}
+      {showRemoveFileModal && (
+        <RemoveModal
+          handleSave={handleDelete}
+          handleModalClose={handleModalClose}
+          selectedRowsBG={selectedFileBG}
         />
       )}
       {showToast && (
