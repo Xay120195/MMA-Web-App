@@ -154,6 +154,7 @@ export default function Background() {
         if (backgroundFilesOpt.data.background.files !== null) {
           arrFileResult = backgroundFilesOpt.data.background.files.items.map(
             ({ id, downloadURL, name }) => ({
+              uniqueId: result[i].id+id,
               backgroundId: result[i].id,
               id: id,
               downloadURL: downloadURL,
@@ -162,10 +163,8 @@ export default function Background() {
           );
 
           mergeArrFiles.push(...arrFileResult);
-          setFiles(arrFileResult);
         }
       }
-
       setFiles(mergeArrFiles);
     }
   };
@@ -240,6 +239,7 @@ export default function Background() {
         setShowModalParagraph={setShowModalParagraph}
         fileMatter={fileMatter}
         files={files}
+        setFiles={setFiles}
         setWitness={setWitness}
         checkAllState={checkAllState}
         setcheckAllState={setcheckAllState}
