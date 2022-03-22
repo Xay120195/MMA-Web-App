@@ -48,8 +48,7 @@ export default function RemoveModal(props) {
               </div>
               <div className="flex items-center justify-center py-1 rounded-b">
                 <p className="text-lg font-semibold">
-                  Remove {rowsToDelete.length}{" "}
-                  {rowsToDelete.length == 1 ? "File" : "Files"} File?
+                  Remove {rowsToDelete.length}{" "} File
                 </p>
               </div>
               <div className="flex-inline items-center justify-center py-3 font-semibold">
