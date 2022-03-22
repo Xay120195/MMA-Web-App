@@ -376,103 +376,7 @@ async function getClientMatter(data) {
 
     const { Item } = await client.send(command);
 
-    const res = unmarshall(Item);
-
-    const clientMatterBackgroundParams = {
-      TableName: "ClientMatterBackgroundTable",
-      IndexName: "byClientMatter",
-      KeyConditionExpression: "clientMatterId = :clientMatterId",
-      ExpressionAttributeValues: marshall({
-        ":clientMatterId": clientMatterId,
-      }),
-    };
-
-    const clientMatterBackgroundCommand = new QueryCommand(
-      clientMatterBackgroundParams
-    );
-    const clientMatterBackgroundResult = await client.send(
-      clientMatterBackgroundCommand
-    );
-
-    const backgroundIds = clientMatterBackgroundResult.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.backgroundId }));
-
-    if (backgroundIds.length != 0) {
-      const backgroundParams = {
-        RequestItems: {
-          BackgroundsTable: {
-            Keys: backgroundIds,
-          },
-        },
-      };
-
-      const backgroundsCommand = new BatchGetItemCommand(backgroundParams);
-      const backgroundsResult = await client.send(backgroundsCommand);
-
-      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
-        (i) => unmarshall(i)
-      );
-
-      const objClientMatterBackgrounds = clientMatterBackgroundResult.Items.map(
-        (i) => unmarshall(i)
-      );
-
-      const extractBackgrounds = objClientMatterBackgrounds.map((item) => {
-        const filterBackground = objBackgrounds.find(
-          (u) => u.id === item.backgroundId
-        );
-
-        return { ...filterBackground };
-      });
-
-      res.backgrounds = { items: extractBackgrounds };
-    }
-
-    const clientMatterLabelParams = {
-      TableName: "ClientMatterLabelTable",
-      IndexName: "byClientMatter",
-      KeyConditionExpression: "clientMatterId = :clientMatterId",
-      ExpressionAttributeValues: marshall({
-        ":clientMatterId": clientMatterId,
-      }),
-    };
-
-    const clientMatterLabelCommand = new QueryCommand(clientMatterLabelParams);
-    const clientMatterLabelResult = await client.send(clientMatterLabelCommand);
-
-    const labelIds = clientMatterLabelResult.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.labelId }));
-
-    if (labelIds.length != 0) {
-      const labelParams = {
-        RequestItems: {
-          LabelsTable: {
-            Keys: labelIds,
-          },
-        },
-      };
-
-      const labelsCommand = new BatchGetItemCommand(labelParams);
-      const labelsResult = await client.send(labelsCommand);
-
-      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
-        unmarshall(i)
-      );
-      const objClientMatterLabels = clientMatterLabelResult.Items.map((i) =>
-        unmarshall(i)
-      );
-
-      const extractLabels = objClientMatterLabels.map((item) => {
-        const filterLabel = objLabels.find((u) => u.id === item.labelId);
-        return { ...filterLabel };
-      });
-
-      res.labels = { items: extractLabels };
-    }
-
-    response = res ? res : {};
+    response = Item ? unmarshall(Item) : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -488,7 +392,7 @@ const resolvers = {
     company: async (ctx) => {
       return getCompany(ctx.arguments);
     },
-    companies: async (ctx) => {
+    companies: async () => {
       return listCompanies();
     },
     page: async () => {

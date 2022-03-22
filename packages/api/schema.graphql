@@ -113,8 +113,8 @@ type ClientMatter {
   id: ID!
   matter: Matter
   client: Client
-  backgrounds: ClientMatterBackgroundConnection
-  labels: ClientMatterLabelConnection
+  backgrounds(limit: Int, nextToken: String): ClientMatterBackgroundConnection
+  labels(limit: Int, nextToken: String): ClientMatterLabelConnection
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -321,14 +321,14 @@ type CompanyClientMatterConnection {
 
 type ClientMatterBackgroundConnection {
   items: [Background]
-  # limit: Int
-  # nextToken: String
+  limit: Int
+  nextToken: String
 }
 
 type ClientMatterLabelConnection {
   items: [Label]
-  # limit: Int
-  # nextToken: String
+  limit: Int
+  nextToken: String
 }
 
 type BackgroundFileConnection {
