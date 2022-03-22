@@ -11,8 +11,6 @@ let filesToSend = [];
 let filterOptions = [];
 
 export default function FilterLabels (props) {
-
-  
   const handleModalClose = () => {
     props.handleModalClose();
   };
@@ -33,6 +31,8 @@ export default function FilterLabels (props) {
 
     pageSelectedLabels.map(x=> filterOptions = [...filterOptions, x.label]);
     filterOptions = [...new Map(filterOptions.map(x => [JSON.stringify(x), x])).values()];
+    // selectedFilters = [...selectedFilters, pageSelectedLabels[0].label];
+    // selectedFilters = [...new Map(selectedFilters.map(x => [JSON.stringify(x), x])).values()];
 
   const handleFilterChange = (evt) => {
     filesToSend = evt; //filter Labels, send data to index
@@ -44,6 +44,15 @@ export default function FilterLabels (props) {
     filesToSend = evt; //filter Labels, send data to index
     selectedFilters = evt; //save for UI display of selected labels
     console.log(filesToSend);
+  }
+
+  function setDefault (data) {
+    selectedFilters = [...selectedFilters, data[0]];
+    filesToSend =   [...selectedFilters, data[0]];
+
+    console.log("selectedFilters");
+    console.log(selectedFilters);
+    return data;
   }
  
   return (
@@ -85,8 +94,9 @@ export default function FilterLabels (props) {
                                       onRemove={(event) => handleRemoveChange(event)}
                                       onSelect={(event) => handleFilterChange(event)}
                                       options={filterOptions}
-                                      selectedValues={selectedFilters ? selectedFilters : []}
+                                      selectedValues={selectedFilters.length>0 ? selectedFilters : setDefault([filterOptions[0]])}
                                       showCheckbox
+                                     
                                     />
                             </div>
                         </div>

@@ -13,7 +13,7 @@ import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
-import RemoveFileModal from "../file-bucket/remove-file-modal";
+import RemoveModal from "../delete-prompt-modal";
 
 export let selectedRowsBGPass = [];
 
@@ -584,7 +584,7 @@ const TableInfo = ({
         />
       )}
       {showRemoveFileModal && (
-        <RemoveFileModal
+        <RemoveModal
           handleSave={handleDelete}
           handleModalClose={handleModalClose}
           selectedRowsBG={selectedFileBG}

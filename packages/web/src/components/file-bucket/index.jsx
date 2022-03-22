@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
-import { FiUpload } from "react-icons/fi";
+import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
@@ -748,7 +748,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   const [isAllChecked, setIsAllChecked] = useState(false);
 
   //function for selecting rows
-  function checked(id, fileName, idx) {
+  function checked(id, fileName, details, idx) {
     if (isAllChecked) {
       selectedRows.splice(
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
@@ -774,7 +774,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         );
         setCheckedState(updatedCheckedState);
       } else {
-        selectedRows = [...selectedRows, { id: id, fileName: fileName }];
+        selectedRows = [...selectedRows, { id: id, fileName: fileName, details: details }];
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
           index === idx ? !item : item
@@ -932,7 +932,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       fileFilter == undefined ||
       fileFilter.length == 0
     ) {
-      setMatterFiles(files);
+      setMatterFiles(sortByOrder(files));
     } else {
       for (var i = 0; i < fileFilter.length; i++) {
         files.map((x) =>
@@ -950,12 +950,52 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         ...new Map(filterRecord.map((x) => [JSON.stringify(x), x])).values(),
       ];
       console.log(listFilter);
-      setMatterFiles(listFilter);
+      setMatterFiles(sortByOrder(listFilter));
     }
   };
 
-  function refreshPage() {
-    window.location.reload(false);
+  const mCreateBackground = `
+      mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+        backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+          id
+        }
+      }
+  `;
+
+  async function addFileBucketToBackground() {
+    let arrFiles = [];
+
+    arrFiles = selectedRows.map(({ id, details }) => ({
+      id: id,
+      details: details,
+    }));
+
+    const dateToday =
+      new Date().getFullYear() +
+      "/" +
+      (new Date().getMonth() + 1) +
+      "/" +
+      new Date().getDate();
+    for (let i = 0; i < arrFiles.length; i++) {
+      const createBackgroundRow = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          clientMatterId: matter_id,
+          date: dateToday,
+          description: arrFiles[i].details,
+        },
+      });
+
+      if (createBackgroundRow.data.backgroundCreate.id !== null) {
+        const request = await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackgroundRow.data.backgroundCreate.id,
+            files: [{id: arrFiles[i].id}],
+          },
+        });
+      }
+    }
   }
 
   return (
@@ -1029,7 +1069,16 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             >
               FILE UPLOAD &nbsp;
               <FiUpload />
-            </button>
+            </button>&nbsp;
+            {showRemoveFileButton && (
+              <button
+                className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                onClick={() => addFileBucketToBackground()}
+              >
+                COPY TO BACKGROUND PAGE &nbsp;
+                <FiCopy />
+              </button>
+            )}
           </div>
           <div className=" grid justify-items-end mr-0">
             <div className="flex inline-flex mr-0">
@@ -1146,7 +1195,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           className="cursor-pointer w-10 mt-1"
                                           checked={checkedState[index]}
                                           onChange={() =>
-                                            checked(data.id, data.name, index)
+                                            checked(data.id, data.name, data.details, index)
                                           }
                                         />
                                         <span>{index + 1}</span>

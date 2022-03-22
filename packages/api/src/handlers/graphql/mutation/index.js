@@ -811,54 +811,6 @@ export async function deleteClientMatter(id) {
   return response;
 }
 
-export async function deleteBackgroundFiles(id) {
-  let response = {};
-  try {
-    const backgroundFilesParams = {
-      TableName: "BackgroundFileTable",
-      IndexName: "byBackground",
-      KeyConditionExpression: "backgroundId = :backgroundId",
-      ExpressionAttributeValues: marshall({
-        ":backgroundId": id,
-      }),
-    };
-
-    const backgroundFilesCommand = new QueryCommand(
-      backgroundFilesParams
-    );
-    const backgroundFilesResult = await client.send(
-      backgroundFilesCommand
-    );
-
-    const backgroundFilesId = backgroundFilesResult.Items.map(
-      (i) => i.id
-    );
-
-    const filterBackgroundFilesId = backgroundFilesId[0];
-
-    const deleteBackgroundFilesCommand = new DeleteItemCommand({
-      TableName: "BackgroundFileTable",
-      Key: { id: filterBackgroundFilesId },
-    });
-
-    const deleteBackgroundFilesResult = await client.send(
-      deleteBackgroundFilesCommand
-    );
-
-    const request = await client.send(deleteBackgroundFilesResult);
-    response = request ? { id: id } : {};
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-      statusCode: 500,
-    };
-    console.log(response);
-  }
-
-  return response;
-}
-
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -975,9 +927,6 @@ const resolvers = {
     },
     backgroundFileTag: async (ctx) => {
       return await tagBackgroundFile(ctx.arguments);
-    },
-    backgroundFileDelete: async (ctx) => {
-      return await deleteBackgroundFiles(ctx.arguments);
     },
   },
 };
