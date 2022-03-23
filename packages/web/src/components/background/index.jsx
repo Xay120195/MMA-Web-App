@@ -36,7 +36,7 @@ export default function Background() {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-
+  const [ascDesc, setAscDesc] = useState(false);
   // let selectedRowsBG = [];
 
   useEffect(() => {
@@ -182,10 +182,17 @@ export default function Background() {
     if (isAllZero) {
       sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else {
-      sort = arr.sort(
-        (a, b) =>
-          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      if (ascDesc === true) {
+        sort = arr.sort(
+          (a, b) =>
+            b.order - a.order || new Date(a.createdAt) - new Date(b.createdAt)
+        );
+      } else {
+        sort = arr.sort(
+          (a, b) =>
+            a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      }
     }
     return sort;
   }
@@ -258,6 +265,8 @@ export default function Background() {
         setParagraph={setParagraph}
         showDeleteButton={showDeleteButton}
         setShowDeleteButton={setShowDeleteButton}
+        setAscDesc={setAscDesc}
+        ascDesc={ascDesc}
       />
     </>
   );
