@@ -26,7 +26,7 @@ export async function generatePresignedUrl(Key) {
 }
 
 export async function getMatterFile(data) {
-  const { matterId, isDeleted = false, limit = 100, nextToken } = data;
+  const { matterId, isDeleted = false, limit, nextToken } = data;
 
   let response = {};
   try {
@@ -42,8 +42,11 @@ export async function getMatterFile(data) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
-      Limit: limit,
     };
+
+    if (limit !== undefined) {
+      params.Limit = limit;
+    }
 
     const command = new QueryCommand(params);
     const request = await ddbClient.send(command);
