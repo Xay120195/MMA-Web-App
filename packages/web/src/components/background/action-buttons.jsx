@@ -24,6 +24,8 @@ const ActionButtons = ({
 
   showDeleteButton,
   setShowDeleteButton,
+  activateButton,
+  handleManageFiles
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -228,7 +230,11 @@ const ActionButtons = ({
 
           <button
             type="button"
-            className="bg-white-400 hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            className=
+            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            }
+            onClick={() => handleManageFiles()}
           >
             MANAGE FILES &nbsp; <AiFillFile />
           </button>

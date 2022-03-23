@@ -17,6 +17,7 @@ export async function generatePresignedUrl(Key) {
   const command = new GetObjectCommand({
     Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
     Key,
+    // ResponseContentDisposition: "attachment",
   });
 
   /**
@@ -53,9 +54,13 @@ export async function getMatterFile(data) {
 
     const result = request.Items.map((d) => unmarshall(d));
 
-    result[0].nextToken = request.LastEvaluatedKey
-      ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString("base64")
-      : null;
+    if (request && result.length !== 0) {
+      result[0].nextToken = request.LastEvaluatedKey
+        ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
+            "base64"
+          )
+        : null;
+    }
 
     response = request ? result : {};
   } catch (e) {
