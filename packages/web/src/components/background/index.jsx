@@ -182,15 +182,15 @@ export default function Background() {
     if (isAllZero) {
       sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else {
-      if (ascDesc === true) {
+      if (!ascDesc === true) {
         sort = arr.sort(
           (a, b) =>
-            b.order - a.order || new Date(a.createdAt) - new Date(b.createdAt)
+            a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
         );
       } else {
         sort = arr.sort(
           (a, b) =>
-            a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+            b.order - a.order || new Date(a.createdAt) - new Date(b.createdAt)
         );
       }
     }

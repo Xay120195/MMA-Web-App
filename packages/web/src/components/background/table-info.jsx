@@ -357,14 +357,18 @@ const TableInfo = ({
     window.location.href = `${AppRoutes.BACKGROUND}/${matterId}`;
   }
 
-  const SortBydate = useCallback(() => {
-    if (ascDesc) {
-      setAscDesc(false);
-    } else {
-      setAscDesc(true);
-    }
-    getBackground();
-  }, [ascDesc]);
+  const SortBydate = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!ascDesc) {
+        setAscDesc(true);
+      } else {
+        setAscDesc(false);
+      }
+      getBackground();
+    },
+    [ascDesc]
+  );
 
   return (
     <>
