@@ -74,7 +74,7 @@ export default function FileBucket() {
   var fileCount = 0;
 
   const [filterLabels, setFilterLabels] = useState(false);
-
+  const [deletingState, setDeletingState] = useState(false);
   const [descHeight, setDescHeight] = useState("w-full p-2 font-poppins h-10");
 
   const hideToast = () => {
@@ -837,25 +837,32 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   //delete function
   const handleDeleteFile = async (fileID) => {
+    setDeletingState(true);
     fileID.map(async (id) => {
       await deleteMatterFile(id);
     });
 
-    setResultMessage(`File successfully deleted!`);
+    tempArr = [];
+    nameArr = [];
+    descArr = [];
+    selectedRows = [];
+    setshowRemoveFileButton(false);
+    setResultMessage(`Deleting File`);
     setShowToast(true);
     handleModalClose();
     setTimeout(() => {
-      setShowToast(false);
-      getMatterFiles();
-      tempArr = [];
-      nameArr = [];
-      descArr = [];
-      selectedRows = [];
-    }, 3000);
-    setIsAllChecked(false);
-    const newArr = Array(files.length).fill(false);
-    setCheckedState(newArr);
-    setshowRemoveFileButton(false);
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+      setResultMessage(`Successfully Deleted!`);
+      setShowToast(true);
+      setTimeout(() => {
+        getMatterFiles();
+        setShowToast(false);
+        setDeletingState(false);
+      }, 3000);
+    }, 1000);
+    
   };
 
   const deleteMatterFile = (fileID) => {
@@ -1219,6 +1226,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               index
                                             )
                                           }
+                                          disabled={deletingState ? true : false}
                                         />
                                         <span>{index + 1}</span>
                                       </td>
