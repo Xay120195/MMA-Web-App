@@ -64,6 +64,7 @@ export default function FileBucket() {
   const [searchFile, setSearchFile] = useState();
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
+  const [deletingState, setDeletingState] = useState(false);
 
   let filterOptionsArray = [];
 
@@ -293,12 +294,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     });
 
     if (labelsOpt.data.clientMatter.labels !== null) {
+      if (labelsOpt.data.clientMatter.labels.items !== null) {
       result = labelsOpt.data.clientMatter.labels.items
         .map(({ id, name }) => ({
           value: id,
           label: name,
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
+      }
     }
     console.log("Labels", result);
 
@@ -831,25 +834,33 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   //delete function
   const handleDeleteFile = async (fileID) => {
+    setDeletingState(true);
     fileID.map(async (id) => {
       await deleteMatterFile(id);
     });
 
-    setResultMessage(`File successfully deleted!`);
+    tempArr = [];
+    nameArr = [];
+    descArr = [];
+    selectedRows = [];
+    setshowRemoveFileButton(false);
+    setResultMessage(`Deleting File`);
     setShowToast(true);
     handleModalClose();
+
     setTimeout(() => {
-      setShowToast(false);
-      getMatterFiles();
-      tempArr = [];
-      nameArr = [];
-      descArr = [];
-      selectedRows = [];
-    }, 3000);
-    setIsAllChecked(false);
-    const newArr = Array(files.length).fill(false);
-    setCheckedState(newArr);
-    setshowRemoveFileButton(false);
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+      setResultMessage(`Successfully Deleted!`);
+      setShowToast(true);
+      setTimeout(() => {
+        getMatterFiles();
+        setShowToast(false);
+        setDeletingState(false);
+      }, 3000);
+    }, 1000);
+    
   };
 
   const deleteMatterFile = (fileID) => {
@@ -1213,6 +1224,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               index
                                             )
                                           }
+                                          disabled={deletingState ? true : false}
                                         />
                                         <span>{index + 1}</span>
                                       </td>

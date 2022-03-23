@@ -529,14 +529,14 @@ const TableInfo = ({
                                       {...provider.dragHandleProps}
                                       className="py-2 px-3 w-80 text-sm text-gray-500"
                                     >
-                                      <Link
+                                      <span
                                         className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         onClick={() => {
                                           window.location.href = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`;
                                         }}
                                       >
                                         File Bucket +
-                                      </Link>
+                                      </span>
 
                                       {files.length === 0 ? (
                                         <>
@@ -560,8 +560,14 @@ const TableInfo = ({
                                               (x) => x.backgroundId === item.id
                                             )
                                             .map((items) => (
+                                              <>
                                               <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
-                                                {items.name}
+                                                <input
+                                                  type="checkbox"
+                                                  name={item.id}
+                                                  className="cursor-pointer w-10 inline-block"
+                                                />
+                                                {items.name.substring(0, 15)}
                                                 &nbsp;
                                                 <AiOutlineDownload
                                                   className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
@@ -578,6 +584,7 @@ const TableInfo = ({
                                                   }
                                                 />
                                               </p>
+                                              </>
                                             ))}
                                         </>
                                       )}
