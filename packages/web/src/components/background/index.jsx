@@ -180,7 +180,15 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (!ascDesc) {
+        sort = arr.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      } else {
+        sort = arr.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+      }
     } else {
       if (!ascDesc === true) {
         sort = arr.sort(
