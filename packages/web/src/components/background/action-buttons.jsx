@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
+import { AiFillFile } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
@@ -225,6 +226,14 @@ const ActionButtons = ({
               />
             </svg>
           </button> */}
+          
+          <button
+            type="button"
+            className="bg-white-400 hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+          >
+            MANAGE FILES &nbsp; <AiFillFile/>
+          </button>
+
           {showDeleteButton && (
             <button
               type="button"
