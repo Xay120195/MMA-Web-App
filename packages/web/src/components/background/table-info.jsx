@@ -560,8 +560,14 @@ const TableInfo = ({
                                               (x) => x.backgroundId === item.id
                                             )
                                             .map((items) => (
+                                              <>
                                               <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
-                                                {items.name}
+                                                <input
+                                                  type="checkbox"
+                                                  name={item.id}
+                                                  className="cursor-pointer w-10 inline-block"
+                                                />
+                                                {items.name.substring(0, 15)}
                                                 &nbsp;
                                                 <AiOutlineDownload
                                                   className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
@@ -578,6 +584,7 @@ const TableInfo = ({
                                                   }
                                                 />
                                               </p>
+                                              </>
                                             ))}
                                         </>
                                       )}
