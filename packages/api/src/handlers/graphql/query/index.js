@@ -27,6 +27,7 @@ async function getCompany(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -47,6 +48,7 @@ async function listPages() {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -68,6 +70,7 @@ async function listClients() {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -89,6 +92,7 @@ async function listCompanies() {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -110,6 +114,7 @@ async function listMatters() {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -131,6 +136,7 @@ async function listLabels() {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -151,6 +157,7 @@ async function listClientMatters() {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -171,6 +178,7 @@ async function listBackgrounds() {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -202,6 +210,7 @@ async function getCompanyAccessType(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -224,6 +233,7 @@ async function getFeature(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -246,6 +256,7 @@ async function getClient(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -268,6 +279,7 @@ async function getMatter(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -290,6 +302,7 @@ async function getLabel(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -358,6 +371,7 @@ async function getBackground(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -383,6 +397,7 @@ async function getClientMatter(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
