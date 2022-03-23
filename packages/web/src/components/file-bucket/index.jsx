@@ -1345,7 +1345,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               outlineColor:
                                                 "rgb(204, 204, 204, 0.5)",
                                               outlineWidth: "thin",
-                                              background: "blue",
                                             }}
                                             suppressContentEditableWarning={
                                               true
