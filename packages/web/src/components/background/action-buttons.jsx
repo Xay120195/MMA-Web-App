@@ -15,14 +15,13 @@ const ActionButtons = ({
   setCheckedState,
   settotalChecked,
   setSearch,
-  search,
   setId,
   matterId,
   getBackground,
   selectedRowsBG,
   setSelectedRowsBG,
   setShowModalParagraph,
-  paragraph,
+
   showDeleteButton,
   setShowDeleteButton,
 }) => {
