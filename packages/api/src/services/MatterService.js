@@ -13,12 +13,20 @@ const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
-export async function generatePresignedUrl(Key) {
-  const command = new GetObjectCommand({
+export async function generatePresignedUrl(Key, src) {
+  const request = {
     Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
     Key,
-    // ResponseContentDisposition: "attachment",
-  });
+  };
+
+  if (
+    src.type.split("/").slice(0, -1).join("/") !== "image" &&
+    src.type !== "application/pdf"
+  ) {
+    request.ResponseContentDisposition = "attachment";
+  }
+
+  const command = new GetObjectCommand(request);
 
   /**
    * Generate Pre-signed url using getSignedUrl expires after 1 hour
