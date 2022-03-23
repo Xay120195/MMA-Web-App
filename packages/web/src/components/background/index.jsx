@@ -36,6 +36,7 @@ export default function Background() {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
+  const [activateButton, setActivateButton] = useState(false);
 
   // let selectedRowsBG = [];
 
@@ -190,6 +191,15 @@ export default function Background() {
     return sort;
   }
 
+  const handleManageFiles = () => {
+    setActivateButton(!activateButton);
+    if(!activateButton) {
+      console.log("Highlight");
+    } else {
+      console.log("Not Highlight");
+    }
+  }
+
   return (
     <>
       <div
@@ -227,6 +237,9 @@ export default function Background() {
                 paragraph={paragraph}
                 showDeleteButton={showDeleteButton}
                 setShowDeleteButton={setShowDeleteButton}
+                activateButton={activateButton}
+                setactivateButton={setActivateButton}
+                handleManageFiles={handleManageFiles}
               />
             </div>
           </div>
@@ -258,6 +271,9 @@ export default function Background() {
         setParagraph={setParagraph}
         showDeleteButton={showDeleteButton}
         setShowDeleteButton={setShowDeleteButton}
+        handleManageFiles={handleManageFiles}
+        setActivateButton={setActivateButton}
+        activateButton={activateButton}
       />
     </>
   );
