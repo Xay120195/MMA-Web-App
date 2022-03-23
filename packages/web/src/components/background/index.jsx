@@ -118,7 +118,7 @@ export default function Background() {
       }
     }
   }`;
-  
+
   const getBackground = async () => {
     let result = [];
     const matterId = matter_id;
@@ -130,7 +130,7 @@ export default function Background() {
       },
     });
 
-    if (backgroundOpt.data.clientMatter.backgrounds !== null) {
+    if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
         ({ id, description, date, createdAt, order }) => ({
           createdAt: createdAt,
@@ -154,7 +154,7 @@ export default function Background() {
         if (backgroundFilesOpt.data.background.files !== null) {
           arrFileResult = backgroundFilesOpt.data.background.files.items.map(
             ({ id, downloadURL, name }) => ({
-              uniqueId: result[i].id+id,
+              uniqueId: result[i].id + id,
               backgroundId: result[i].id,
               id: id,
               downloadURL: downloadURL,
