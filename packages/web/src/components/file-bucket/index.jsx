@@ -488,6 +488,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const handleSaveDetails = async (e, name, details, id, labels, index) => {
     if (textDetails.length <= 0) {
+      setDescHeight("w-full p-2 font-poppins h-10");
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
       setDesAlert("");
@@ -1336,9 +1337,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             //   "w-full p-2 font-poppins"
                                             // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
                                             className={
-                                              data.details !=null || data.details!=undefined ?
-                                              "w-full p-2 font-poppins h-full"
-                                              : descHeight
+                                              data.details == null || data.details == undefined || data.details.length <= 0 ?
+                                                descHeight
+                                              : "w-full p-2 font-poppins h-full"
                                             }
                                             style={{
                                               cursor: "auto",
