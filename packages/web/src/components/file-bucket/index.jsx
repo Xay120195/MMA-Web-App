@@ -75,7 +75,7 @@ export default function FileBucket() {
 
   const [filterLabels, setFilterLabels] = useState(false);
 
-  const [descHeight, setDescHeight] = useState("w-full p-2 font-poppins h-10 bg-blue-400 test");
+  const [descHeight, setDescHeight] = useState("w-full p-2 font-poppins h-10");
 
   const hideToast = () => {
     setShowToast(false);
@@ -472,7 +472,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   const handleDetailsContent = (e, details, id) => {
-    setDescHeight("w-full p-2 font-poppins h-full bg-blue-400 test");
+    setDescHeight("w-full p-2 font-poppins h-full");
     if (!descAlert) {
       setTextDetails(!details ? "" : details);
       setDetId(id);
@@ -1337,7 +1337,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
                                             className={
                                               data.details !=null || data.details!=undefined ?
-                                              "w-full p-2 font-poppins h-full bg-blue-400 test"
+                                              "w-full p-2 font-poppins h-full"
                                               : descHeight
                                             }
                                             style={{
