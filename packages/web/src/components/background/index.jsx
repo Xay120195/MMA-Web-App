@@ -36,8 +36,8 @@ export default function Background() {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
+  const [ascDesc, setAscDesc] = useState(false);
   const [activateButton, setActivateButton] = useState(false);
-
   // let selectedRowsBG = [];
 
   useEffect(() => {
@@ -181,12 +181,27 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (!ascDesc) {
+        sort = arr.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      } else {
+        sort = arr.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+      }
     } else {
-      sort = arr.sort(
-        (a, b) =>
-          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      if (!ascDesc === true) {
+        sort = arr.sort(
+          (a, b) =>
+            a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      } else {
+        sort = arr.sort(
+          (a, b) =>
+            b.order - a.order || new Date(a.createdAt) - new Date(b.createdAt)
+        );
+      }
     }
     return sort;
   }
@@ -274,6 +289,8 @@ export default function Background() {
         handleManageFiles={handleManageFiles}
         setActivateButton={setActivateButton}
         activateButton={activateButton}
+        setAscDesc={setAscDesc}
+        ascDesc={ascDesc}
       />
     </>
   );

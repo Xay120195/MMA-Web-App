@@ -26,6 +26,8 @@ export async function generatePresignedUrl(Key) {
 }
 
 export async function getMatterFile(data) {
+  const { matterId, isDeleted = false, limit, nextToken } = data;
+
   let response = {};
   try {
     const params = {
@@ -34,20 +36,35 @@ export async function getMatterFile(data) {
       KeyConditionExpression: "matterId = :matterId",
       FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
-        ":matterId": data.matterId,
-        ":isDeleted": data.isDeleted,
+        ":matterId": matterId,
+        ":isDeleted": isDeleted,
       }),
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
     };
+
+    if (limit !== undefined) {
+      params.Limit = limit;
+    }
 
     const command = new QueryCommand(params);
     const request = await ddbClient.send(command);
-    response = request.Items.map((data) => unmarshall(data));
+
+    const result = request.Items.map((d) => unmarshall(d));
+
+    result[0].nextToken = request.LastEvaluatedKey
+      ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString("base64")
+      : null;
+
+    response = request ? result : {};
   } catch (e) {
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
 
   return response;
@@ -72,6 +89,7 @@ export async function getFile(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -105,7 +123,9 @@ export async function createMatterFile(data) {
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
+
   return response;
 }
 

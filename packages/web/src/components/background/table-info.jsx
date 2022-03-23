@@ -15,7 +15,10 @@ import { API } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
-import {useHistory, useLocation} from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
+import barsFilter from "../../assets/images/bars-filter.svg";
+import { useMemo } from "react";
+import { useCallback } from "react";
 
 export let selectedRowsBGPass = [];
 
@@ -41,7 +44,8 @@ const TableInfo = ({
   setShowModalParagraph,
   paragraph,
   setParagraph,
-  showDeleteButton,
+  setAscDesc,
+  ascDesc,
   setShowDeleteButton,
   activateButton,
   setActivateButton
@@ -59,13 +63,13 @@ const TableInfo = ({
   const [updateProgess, setUpdateProgress] = useState(false);
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
-  const [highlightRows, setHighlightRows] = useState('bg-green-200');
+  const [highlightRows, setHighlightRows] = useState("bg-green-200");
 
-  const location = useLocation()
-  const history = useHistory()
+  const location = useLocation();
+  const history = useHistory();
 
   const searchItem = location.search;
-  const counter = new URLSearchParams(searchItem).get('count');
+  const counter = new URLSearchParams(searchItem).get("count");
 
   const queryParams = new URLSearchParams(location.search);
 
@@ -75,7 +79,10 @@ const TableInfo = ({
 
   const showModal = (id, backgroundId) => {
     var tempIndex = [];
-    tempIndex = [...tempIndex, { id: id, backgroundId: backgroundId, fileName: "x" }];
+    tempIndex = [
+      ...tempIndex,
+      { id: id, backgroundId: backgroundId, fileName: "x" },
+    ];
     setselectedFileBG(tempIndex);
     setshowRemoveFileModal(true);
   };
@@ -249,11 +256,6 @@ const TableInfo = ({
     });
   }
 
-  function sortByDate(arr) {
-    arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    return arr;
-  }
-
   function stripedTags(str) {
     const stripedStr = str.replace(/<[^>]+>/g, "");
     return stripedStr;
@@ -317,12 +319,14 @@ const TableInfo = ({
   `;
 
   const handleDelete = async (item) => {
-    const filteredArrFiles = files.filter(i => i.uniqueId !== item[0].id);
+    const filteredArrFiles = files.filter((i) => i.uniqueId !== item[0].id);
     let arrFiles = [];
     for (let i = 0; i < witness.length; i++) {
-      arrFiles = filteredArrFiles.filter(element => element.backgroundId === witness[i].id).map(({ id }) => ({
-        id: id
-      }));
+      arrFiles = filteredArrFiles
+        .filter((element) => element.backgroundId === witness[i].id)
+        .map(({ id }) => ({
+          id: id,
+        }));
       console.log(arrFiles);
       if (witness[i].id !== null) {
         const request = API.graphql({
@@ -346,13 +350,26 @@ const TableInfo = ({
   setTimeout(() => {
     setHighlightRows("bg-white");
 
-    if (queryParams.has('count')) {
-      queryParams.delete('count')
+    if (queryParams.has("count")) {
+      queryParams.delete("count");
       history.replace({
         search: queryParams.toString(),
-      })
+      });
     }
   }, 10000);
+
+  const SortBydate = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!ascDesc) {
+        setAscDesc(true);
+      } else {
+        setAscDesc(false);
+      }
+      getBackground();
+    },
+    [ascDesc]
+  );
 
   return (
     <>
@@ -379,9 +396,16 @@ const TableInfo = ({
                           </th>
                           <th
                             scope="col"
-                            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Date
+                            <img
+                              src={barsFilter}
+                              className="mx-auto"
+                              alt="filter"
+                              onClick={SortBydate}
+                              style={{ cursor: "pointer" }}
+                            />
                           </th>
                           <th
                             scope="col"
@@ -415,8 +439,8 @@ const TableInfo = ({
                                     key={item.id}
                                     index={index}
                                     className={
-                                      index+1 <= counter ? highlightRows : ""
-                                      }
+                                      index + 1 <= counter ? highlightRows : ""
+                                    }
                                     {...provider.draggableProps}
                                     ref={provider.innerRef}
                                     style={{
@@ -518,7 +542,7 @@ const TableInfo = ({
                                           updateProgess ? false : true
                                         }
                                       >
-                                        {item.description} 
+                                        {item.description}
                                       </p>
                                       <span className="text-red-400 filename-validation">
                                         {item.id === descId && descAlert}
@@ -556,7 +580,9 @@ const TableInfo = ({
                                       ) : (
                                         <>
                                           <br />
-                                          <span className="font-bold" >Files Selected</span>
+                                          <span className="font-bold">
+                                            Files Selected
+                                          </span>
                                           <br />
                                           <br />
                                           {files
@@ -565,29 +591,32 @@ const TableInfo = ({
                                             )
                                             .map((items) => (
                                               <>
-                                              <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
-                                                <input
-                                                  type="checkbox"
-                                                  name={item.id}
-                                                  className="cursor-pointer w-10 inline-block"
-                                                />
-                                                {items.name.substring(0, 15)}
-                                                &nbsp;
-                                                <AiOutlineDownload
-                                                  className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
-                                                  onClick={() =>
-                                                    previewAndDownloadFile(
-                                                      items.downloadURL
-                                                    )
-                                                  }
-                                                />
-                                                <BsFillTrashFill
-                                                  className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
-                                                  onClick={() =>
-                                                    showModal(items.uniqueId, items.backgroundId)
-                                                  }
-                                                />
-                                              </p>
+                                                <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                  <input
+                                                    type="checkbox"
+                                                    name={item.id}
+                                                    className="cursor-pointer w-10 inline-block"
+                                                  />
+                                                  {items.name.substring(0, 15)}
+                                                  &nbsp;
+                                                  <AiOutlineDownload
+                                                    className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
+                                                    onClick={() =>
+                                                      previewAndDownloadFile(
+                                                        items.downloadURL
+                                                      )
+                                                    }
+                                                  />
+                                                  <BsFillTrashFill
+                                                    className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                    onClick={() =>
+                                                      showModal(
+                                                        items.uniqueId,
+                                                        items.backgroundId
+                                                      )
+                                                    }
+                                                  />
+                                                </p>
                                               </>
                                             ))}
                                         </>
