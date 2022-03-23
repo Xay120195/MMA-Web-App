@@ -13,11 +13,20 @@ const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
-export async function generatePresignedUrl(Key) {
-  const command = new GetObjectCommand({
+export async function generatePresignedUrl(Key, src) {
+  const request = {
     Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
     Key,
-  });
+  };
+
+  if (
+    src.type.split("/").slice(0, -1).join("/") !== "image" &&
+    src.type !== "application/pdf"
+  ) {
+    request.ResponseContentDisposition = "attachment";
+  }
+
+  const command = new GetObjectCommand(request);
 
   /**
    * Generate Pre-signed url using getSignedUrl expires after 1 hour
@@ -26,7 +35,7 @@ export async function generatePresignedUrl(Key) {
 }
 
 export async function getMatterFile(data) {
-  const { matterId, isDeleted = false, limit = 100, nextToken } = data;
+  const { matterId, isDeleted = false, limit, nextToken } = data;
 
   let response = {};
   try {
@@ -42,17 +51,24 @@ export async function getMatterFile(data) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
-      Limit: limit,
     };
+
+    if (limit !== undefined) {
+      params.Limit = limit;
+    }
 
     const command = new QueryCommand(params);
     const request = await ddbClient.send(command);
 
     const result = request.Items.map((d) => unmarshall(d));
 
-    result[0].nextToken = request.LastEvaluatedKey
-      ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString("base64")
-      : null;
+    if (request && result.length !== 0) {
+      result[0].nextToken = request.LastEvaluatedKey
+        ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
+            "base64"
+          )
+        : null;
+    }
 
     response = request ? result : {};
   } catch (e) {

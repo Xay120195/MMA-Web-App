@@ -8,7 +8,7 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 async function listClientMatterLabels(ctx) {
   const { id } = ctx.source;
 
-  const { limit = 100, nextToken } = ctx.arguments;
+  const { limit, nextToken } = ctx.arguments;
   try {
     const clientMatterLabelsParams = {
       TableName: "ClientMatterLabelTable",
@@ -20,8 +20,11 @@ async function listClientMatterLabels(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
-      Limit: limit,
     };
+
+    if (limit !== undefined) {
+      clientMatterLabelsParams.Limit = limit;
+    }
 
     const clientMatterLabelsCommand = new QueryCommand(
       clientMatterLabelsParams
@@ -79,7 +82,7 @@ async function listClientMatterLabels(ctx) {
 async function listCompanyMatterBackgrounds(ctx) {
   const { id } = ctx.source;
 
-  const { limit = 100, nextToken } = ctx.arguments;
+  const { limit, nextToken } = ctx.arguments;
   try {
     const clientMatterBackgroundsParams = {
       TableName: "ClientMatterBackgroundTable",
@@ -91,8 +94,12 @@ async function listCompanyMatterBackgrounds(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
-      Limit: limit,
+      
     };
+
+    if (limit !== undefined) {
+      clientMatterBackgroundsParams.Limit = limit;
+    }
 
     const clientMatterBackgroundsCommand = new QueryCommand(
       clientMatterBackgroundsParams
