@@ -57,12 +57,12 @@ async function listCompanyUsers(ctx) {
         : null,
     };
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -123,12 +123,12 @@ async function listCompanyMatters(ctx) {
         : null,
     };
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -189,12 +189,12 @@ async function listCompanyClients(ctx) {
         : null,
     };
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }
@@ -260,12 +260,12 @@ async function listCompanyClientMatters(ctx) {
         : null,
     };
   } catch (e) {
-    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
+    console.log(response);
   }
   return response;
 }

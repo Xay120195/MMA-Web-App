@@ -79,6 +79,7 @@ type File {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   isDeleted: Boolean
+  nextToken: String
 }
 
 type FileLabel {
@@ -147,7 +148,12 @@ type Query {
   clientMatter(id: ID): ClientMatter
   matters: [Matter]
   matter(id: ID): Matter
-  matterFile(matterId: ID, isDeleted: Boolean): [File]
+  matterFile(
+    matterId: ID
+    isDeleted: Boolean
+    limit: Int
+    nextToken: String
+  ): [File]
   file(id: ID): File
   labels: [Label]
   label(id: ID): Label
@@ -297,42 +303,35 @@ input RepresentativeInput {
 
 type CompanyUserConnection {
   items: [User]
-  limit: Int
   nextToken: String
 }
 
 type CompanyClientConnection {
   items: [Client]
-  limit: Int
   nextToken: String
 }
 
 type CompanyMatterConnection {
   items: [Matter]
-  limit: Int
   nextToken: String
 }
 
 type CompanyClientMatterConnection {
   items: [ClientMatter]
-  limit: Int
   nextToken: String
 }
 
 type ClientMatterBackgroundConnection {
   items: [Background]
-  limit: Int
   nextToken: String
 }
 
 type ClientMatterLabelConnection {
   items: [Label]
-  limit: Int
   nextToken: String
 }
 
 type BackgroundFileConnection {
   items: [File]
-  # limit: Int
   # nextToken: String
 }
