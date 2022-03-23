@@ -64,7 +64,6 @@ export default function FileBucket() {
   const [searchFile, setSearchFile] = useState();
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
-  const [deletingState, setDeletingState] = useState(false);
 
   let filterOptionsArray = [];
 
@@ -75,6 +74,8 @@ export default function FileBucket() {
   var fileCount = 0;
 
   const [filterLabels, setFilterLabels] = useState(false);
+
+  const [descHeight, setDescHeight] = useState("w-full p-2 font-poppins h-10 bg-blue-400 test");
 
   const hideToast = () => {
     setShowToast(false);
@@ -471,6 +472,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   const handleDetailsContent = (e, details, id) => {
+    setDescHeight("w-full p-2 font-poppins h-full bg-blue-400 test");
     if (!descAlert) {
       setTextDetails(!details ? "" : details);
       setDetId(id);
@@ -834,33 +836,25 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   //delete function
   const handleDeleteFile = async (fileID) => {
-    setDeletingState(true);
     fileID.map(async (id) => {
       await deleteMatterFile(id);
     });
 
-    tempArr = [];
-    nameArr = [];
-    descArr = [];
-    selectedRows = [];
-    setshowRemoveFileButton(false);
-    setResultMessage(`Deleting File`);
+    setResultMessage(`File successfully deleted!`);
     setShowToast(true);
     handleModalClose();
-
     setTimeout(() => {
-      setIsAllChecked(false);
-      const newArr = Array(files.length).fill(false);
-      setCheckedState(newArr);
-      setResultMessage(`Successfully Deleted!`);
-      setShowToast(true);
-      setTimeout(() => {
-        getMatterFiles();
-        setShowToast(false);
-        setDeletingState(false);
-      }, 3000);
-    }, 1000);
-    
+      setShowToast(false);
+      getMatterFiles();
+      tempArr = [];
+      nameArr = [];
+      descArr = [];
+      selectedRows = [];
+    }, 3000);
+    setIsAllChecked(false);
+    const newArr = Array(files.length).fill(false);
+    setCheckedState(newArr);
+    setshowRemoveFileButton(false);
   };
 
   const deleteMatterFile = (fileID) => {
@@ -1224,7 +1218,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               index
                                             )
                                           }
-                                          disabled={deletingState ? true : false}
                                         />
                                         <span>{index + 1}</span>
                                       </td>
@@ -1339,12 +1332,20 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       >
                                         <div className="flex">
                                           <span
-                                            className="w-full p-2 font-poppins"
+                                            // className={data.details!=null || data.details!=undefined ?
+                                            //   "w-full p-2 font-poppins"
+                                            // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
+                                            className={
+                                              data.details !=null || data.details!=undefined ?
+                                              "w-full p-2 font-poppins h-full bg-blue-400 test"
+                                              : descHeight
+                                            }
                                             style={{
                                               cursor: "auto",
                                               outlineColor:
                                                 "rgb(204, 204, 204, 0.5)",
                                               outlineWidth: "thin",
+                                              background: "blue",
                                             }}
                                             suppressContentEditableWarning={
                                               true
