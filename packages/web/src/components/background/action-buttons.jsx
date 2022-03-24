@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
+import { AiFillFile } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
@@ -14,16 +15,17 @@ const ActionButtons = ({
   setCheckedState,
   settotalChecked,
   setSearch,
-  search,
   setId,
   matterId,
   getBackground,
   selectedRowsBG,
   setSelectedRowsBG,
   setShowModalParagraph,
-  paragraph,
+
   showDeleteButton,
   setShowDeleteButton,
+  activateButton,
+  handleManageFiles
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -204,7 +206,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
-          {/* <button
+          <button
             onClick={() => setShowModalParagraph(true)}
             type="button"
             className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
@@ -224,7 +226,19 @@ const ActionButtons = ({
                 d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button> */}
+          </button>
+
+          <button
+            type="button"
+            className=
+            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            }
+            onClick={() => handleManageFiles()}
+          >
+            MANAGE FILES &nbsp; <AiFillFile />
+          </button>
+
           {showDeleteButton && (
             <button
               type="button"
