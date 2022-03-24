@@ -410,7 +410,7 @@ const resolvers = {
     companies: async () => {
       return listCompanies();
     },
-    page: async () => {
+    pages: async () => {
       return listPages();
     },
     user: async (ctx) => {
