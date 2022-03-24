@@ -52,6 +52,11 @@ const TableInfo = ({
   selectedId,
   setpasteButton,
   pasteButton,
+  setActivateButton,
+  checkNo,
+  checkDate,
+  checkDesc,
+  checkDocu
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -476,12 +481,15 @@ const TableInfo = ({
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
+                        {checkNo &&
                           <th
                             scope="col"
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             No
                           </th>
+                        }
+                        {checkDate &&
                           <th
                             scope="col"
                             className="px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -495,18 +503,23 @@ const TableInfo = ({
                               style={{ cursor: "pointer" }}
                             />
                           </th>
+                        }
+                        {checkDesc &&
                           <th
                             scope="col"
                             className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Description of Background
                           </th>
+                        }
+                        {checkDocu &&
                           <th
                             scope="col"
                             className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             Document
                           </th>
+                        }
                         </tr>
                       </thead>
                       <Droppable droppableId="droppable-1">
@@ -540,6 +553,7 @@ const TableInfo = ({
                                           : "",
                                     }}
                                   >
+                                  {checkNo &&
                                     <td
                                       {...provider.dragHandleProps}
                                       className="px-3 py-3 w-10"
@@ -572,7 +586,8 @@ const TableInfo = ({
                                         </label>
                                       </div>
                                     </td>
-
+                                  }
+                                  {checkDate &&
                                     <td
                                       {...provider.dragHandleProps}
                                       className="px-3 py-3"
@@ -595,6 +610,8 @@ const TableInfo = ({
                                         />
                                       </div>
                                     </td>
+                                  }
+                                  {checkDesc &&
                                     <td
                                       {...provider.dragHandleProps}
                                       className="w-full px-6 py-4"
@@ -636,6 +653,8 @@ const TableInfo = ({
                                         {item.id === descId && descAlert}
                                       </span>
                                     </td>
+                                    }
+                                    {checkDocu &&
                                     <td
                                       {...provider.dragHandleProps}
                                       className="py-2 px-3 w-80 text-sm text-gray-500"
@@ -736,6 +755,7 @@ const TableInfo = ({
                                         </>
                                       )}
                                     </td>
+                                  }
                                   </tr>
                                 )}
                               </Draggable>

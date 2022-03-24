@@ -43,6 +43,11 @@ export default function Background() {
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
   // let selectedRowsBG = [];
 
+  const [checkNo, setCheckNo] = useState(true);
+  const [checkDate, setCheckDate] = useState(true);
+  const [checkDesc, setCheckDesc] = useState(true);
+  const [checkDocu, setCheckDocu] = useState(true);
+
   useEffect(() => {
     ClientMatterList();
     getBackground();
@@ -241,6 +246,14 @@ export default function Background() {
                 activateButton={activateButton}
                 setactivateButton={setActivateButton}
                 handleManageFiles={handleManageFiles}
+                checkNo={checkNo}
+                setCheckNo={setCheckNo}
+                checkDate={checkDate}
+                setCheckDate={setCheckDate}
+                checkDesc={checkDesc}
+                setCheckDesc={setCheckDesc}
+                checkDocu={checkDocu}
+                setCheckDocu={setCheckDocu}
               />
             </div>
           </div>
@@ -283,6 +296,10 @@ export default function Background() {
         selectedId={selectedId}
         setPasteButton={setPasteButton}
         pasteButton={pasteButton}
+        checkNo={checkNo}
+        checkDate={checkDate}
+        checkDesc={checkDesc}
+        checkDocu={checkDocu}
       />
     </>
   );
