@@ -32,15 +32,14 @@ export default function Background() {
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
-  const [checkedFilesState, setCheckedFilesState] = useState(
-    new Array(files.length).fill(false)
-  );
+  const [selectedId, setSelectedId] = useState(0);
   const [totalChecked, settotalChecked] = useState(0);
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [ascDesc, setAscDesc] = useState(false);
   const [activateButton, setActivateButton] = useState(false);
+  const [pasteButton, setPasteButton] = useState(false);
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
   // let selectedRowsBG = [];
 
@@ -200,11 +199,6 @@ export default function Background() {
 
   const handleManageFiles = () => {
     setActivateButton(!activateButton);
-    if (!activateButton) {
-      console.log("Highlight");
-    } else {
-      console.log("Not Highlight");
-    }
   };
 
   return (
@@ -285,8 +279,10 @@ export default function Background() {
         ascDesc={ascDesc}
         setSelectedRowsBGFiles={setSelectedRowsBGFiles}
         selectedRowsBGFiles={selectedRowsBGFiles}
-        checkedFilesState={checkedFilesState}
-        setCheckedFilesState={setCheckedFilesState}
+        setSelectedId={setSelectedId}
+        selectedId={selectedId}
+        setPasteButton={setPasteButton}
+        pasteButton={pasteButton}
       />
     </>
   );

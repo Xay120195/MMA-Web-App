@@ -48,8 +48,10 @@ const TableInfo = ({
   activateButton,
   setSelectedRowsBGFiles,
   selectedRowsBGFiles,
-  checkedFilesState,
-  setCheckedFilesState
+  setSelectedId,
+  selectedId,
+  setpasteButton,
+  pasteButton,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -397,8 +399,64 @@ const TableInfo = ({
     }
   };
 
-  const pasteFilestoBackground = (id) => {
-    console.log(id);
+  const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
+  const pasteFilestoBackground = async (background_id) => {
+    let arrCopyFiles = [];
+    let arrFileResult = [];
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: background_id,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id
+        })
+      );
+    }
+
+    arrCopyFiles = selectedRowsBGFiles.map(({ files }) => ({
+      id: files,
+    }));
+
+    arrCopyFiles.push(...arrFileResult);
+
+    console.log(arrCopyFiles);
+
+    if (background_id !== null) {
+      const request = await API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: background_id,
+          files: arrCopyFiles,
+        },
+      });
+      getBackground();
+    }
+
+    setSelectedId(background_id);
+    setTimeout(() => {
+      setSelectedId(0);
+    }, 2000);
+    
   }
 
   return (
@@ -592,11 +650,11 @@ const TableInfo = ({
                                       > File Bucket +
                                       </span>) : 
                                       (<span
-                                        className="w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        className={selectedId === item.id ? "bg-gray-400 hover:bg-white-500 text-black w-60 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" }
                                         onClick={() => {
                                           pasteFilestoBackground(item.id)
                                         }}
-                                      > Paste &nbsp;<FaPaste/>
+                                      > {selectedId === item.id ? "Pasted" : "Paste" } &nbsp;<FaPaste/>
                                       </span>) 
                                       }
 
@@ -626,6 +684,7 @@ const TableInfo = ({
                                             .map((items, index) => (
                                               <>
                                                 <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                {activateButton ?
                                                   <input
                                                     type="checkbox"
                                                     name={items.uniqueId}
@@ -639,6 +698,7 @@ const TableInfo = ({
                                                       )
                                                     }
                                                   />
+                                                  : ""}
                                                   {items.name.substring(0, 15)}
                                                   &nbsp;
                                                   <AiOutlineDownload
@@ -649,6 +709,17 @@ const TableInfo = ({
                                                       )
                                                     }
                                                   />
+                                                {activateButton ?
+                                                  <BsFillTrashFill
+                                                    className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                    onClick={() =>
+                                                      showModal(
+                                                        items.uniqueId,
+                                                        items.backgroundId
+                                                      )
+                                                    }
+                                                  />
+                                                  :
                                                   <BsFillTrashFill
                                                     className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                     onClick={() =>
@@ -658,6 +729,7 @@ const TableInfo = ({
                                                       )
                                                     }
                                                   />
+                                                }
                                                 </p>
                                               </>
                                             ))}
