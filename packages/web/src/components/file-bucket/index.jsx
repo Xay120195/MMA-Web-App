@@ -972,7 +972,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+      mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
         backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
           id
         }
@@ -989,12 +989,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       details: details,
     }));
 
-    const dateToday =
-      new Date().getFullYear() +
-      "/" +
-      (new Date().getMonth() + 1) +
-      "/" +
-      new Date().getDate();
+    const dateToday =new Date().toISOString();
     var counter=0;
     for (let i = 0; i < arrFiles.length; i++) {
       const createBackgroundRow = await API.graphql({
