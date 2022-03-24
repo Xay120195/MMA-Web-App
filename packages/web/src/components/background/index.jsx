@@ -189,14 +189,17 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      ascDesc
-        ? (sort = arr.sort((a, b) => new Date(b.date) - new Date(a.date)))
-        : (sort = arr.sort((a, b) => new Date(a.date) - new Date(b.date)));
+      sort = arr.sort(
+        (a, b) =>
+          new Date(b.date) - new Date(a.date) ||
+          new Date(b.createdAt) - new Date(a.createdAt)
+      );
     } else {
-      sort = arr.sort((a, b) =>
-        a.order - b.order || ascDesc
-          ? new Date(b.date) - new Date(a.date)
-          : new Date(a.date) - new Date(b.date)
+      sort = arr.sort(
+        (a, b) =>
+          a.order - b.order ||
+          new Date(b.date) - new Date(a.date) ||
+          new Date(b.createdAt) - new Date(a.createdAt)
       );
     }
     return sort;
