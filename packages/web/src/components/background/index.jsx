@@ -177,24 +177,22 @@ export default function Background() {
   const clientName = cname[2];
   const matterName = cname[3];
 
-  const sortByOrder = (arr) => {
+  function sortByOrder(arr) {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) =>
-        ascDesc
-          ? new Date(b.createdAt) - new Date(a.createdAt)
-          : new Date(a.createdAt) - new Date(b.createdAt)
-      );
+      ascDesc
+        ? (sort = arr.sort((a, b) => new Date(b.date) - new Date(a.date)))
+        : (sort = arr.sort((a, b) => new Date(a.date) - new Date(b.date)));
     } else {
       sort = arr.sort((a, b) =>
-        b.order - a.order || ascDesc
-          ? new Date(b.createdAt) - new Date(a.createdAt)
-          : new Date(a.createdAt) - new Date(b.createdAt)
+        a.order - b.order || ascDesc
+          ? new Date(b.date) - new Date(a.date)
+          : new Date(a.date) - new Date(b.date)
       );
     }
     return sort;
-  };
+  }
 
   const handleManageFiles = () => {
     setActivateButton(!activateButton);
