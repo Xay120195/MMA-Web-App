@@ -140,7 +140,7 @@ type Query {
   company(id: String): Company
   companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
   user(id: String): User
-  page: [Page]
+  pages: [Page]
   feature(id: String): Feature
   clients: [Client]
   client(id: ID): Client
