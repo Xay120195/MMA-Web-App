@@ -273,10 +273,7 @@ const ActionButtons = ({
           <div className="inline-flex">
           <button
             type="button"
-            className=
-            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-            }
+            className={"hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"}
             onClick={() => handleShowHide()}
           >
             SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
