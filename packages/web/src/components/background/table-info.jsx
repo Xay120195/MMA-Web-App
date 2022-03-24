@@ -707,7 +707,7 @@ const TableInfo = ({
                                                   <input
                                                     type="checkbox"
                                                     name={items.uniqueId}
-                                                    className="cursor-pointer w-10 inline-block"
+                                                    className="cursor-pointer w-10 inline-block align-middle"
                                                     onChange={(event) =>
                                                       handleFilesCheckboxChange(
                                                         event,
