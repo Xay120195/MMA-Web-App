@@ -64,7 +64,6 @@ export default function FileBucket() {
   const [searchFile, setSearchFile] = useState();
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
-  const [deletingState, setDeletingState] = useState(false);
 
   let filterOptionsArray = [];
 
@@ -75,6 +74,8 @@ export default function FileBucket() {
   var fileCount = 0;
 
   const [filterLabels, setFilterLabels] = useState(false);
+  const [deletingState, setDeletingState] = useState(false);
+  const [descHeight, setDescHeight] = useState("w-full p-2 font-poppins h-10");
 
   const hideToast = () => {
     setShowToast(false);
@@ -471,6 +472,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   const handleDetailsContent = (e, details, id) => {
+    setDescHeight("w-full p-2 font-poppins h-full");
     if (!descAlert) {
       setTextDetails(!details ? "" : details);
       setDetId(id);
@@ -486,6 +488,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const handleSaveDetails = async (e, name, details, id, labels, index) => {
     if (textDetails.length <= 0) {
+      setDescHeight("w-full p-2 font-poppins h-10");
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
       setDesAlert("");
@@ -847,7 +850,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setResultMessage(`Deleting File`);
     setShowToast(true);
     handleModalClose();
-
     setTimeout(() => {
       setIsAllChecked(false);
       const newArr = Array(files.length).fill(false);
@@ -1339,7 +1341,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       >
                                         <div className="flex">
                                           <span
-                                            className="w-full p-2 font-poppins"
+                                            // className={data.details!=null || data.details!=undefined ?
+                                            //   "w-full p-2 font-poppins"
+                                            // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
+                                            className={
+                                              data.details == null || data.details == undefined || data.details.length <= 0 ?
+                                                descHeight
+                                              : "w-full p-2 font-poppins h-full"
+                                            }
                                             style={{
                                               cursor: "auto",
                                               outlineColor:
