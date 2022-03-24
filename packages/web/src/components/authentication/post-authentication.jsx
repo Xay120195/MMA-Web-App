@@ -71,9 +71,17 @@ export default function PostRegistration() {
               };
 
               API.graphql(params).then((ua) => {
-                const userAccess = ua.data.companyAccessType[0].access;
-                localStorage.setItem("access", JSON.stringify(userAccess));
-                history.push(AppRoutes.DASHBOARD);
+                if(ua.data.companyAccessType.length !== 0){
+                  const userAccess = ua.data.companyAccessType[0].access;
+                  localStorage.setItem("access", JSON.stringify(userAccess));
+                  history.push(AppRoutes.DASHBOARD);
+                } else {
+                  console.log("companyAccessType is empty");
+                  console.log(ua);
+                  history.push("/signout");
+                }
+                
+                
               });
             } else {
               history.push("/signout");
