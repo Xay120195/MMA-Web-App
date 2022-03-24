@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
-import { AiFillFile } from "react-icons/ai";
+import { AiFillFile, AiFillEye } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
@@ -228,6 +228,8 @@ const ActionButtons = ({
             </svg>
           </button>
 
+
+
           <button
             type="button"
             className=
@@ -238,6 +240,23 @@ const ActionButtons = ({
           >
             MANAGE FILES &nbsp; <AiFillFile />
           </button>
+
+          <div className="inline-flex">
+          <button
+            type="button"
+            className=
+            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            }
+            // onClick={() => handleManageFiles()}
+          >
+            SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
+          </button>
+          <div className="w-52 h-20 z-100 bg-gray-200 absolute mt-10 ml-3 rounded border-0 shadow outline-none">
+            <p className="px-2 py-2 text-xs font-semibold">TABLE COLUMN OPTIONS</p>
+
+          </div>
+          </div>
 
           {showDeleteButton && (
             <button
