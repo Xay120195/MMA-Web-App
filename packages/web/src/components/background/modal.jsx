@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 
 import { API } from "aws-amplify";
 
@@ -15,7 +15,7 @@ export const ModalParagraph = ({
   setcheckAllState,
 }) => {
   let buttonBg = "bg-green-500";
-  const inputRef = useRef();
+
   const handleNewParagraph = async (e) => {
     const arrParagraph = paragraph.split("\n\n");
 
