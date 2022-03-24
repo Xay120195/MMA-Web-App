@@ -18,7 +18,7 @@ import barsFilter from "../../assets/images/bars-filter.svg";
 import { useMemo } from "react";
 import { useCallback } from "react";
 
-export let selectedRowsBGPass = [];
+export let selectedRowsBGPass = [], selectedRowsBGFilesPass = [];
 
 const TableInfo = ({
   witness,
@@ -46,6 +46,12 @@ const TableInfo = ({
   ascDesc,
   setShowDeleteButton,
   activateButton,
+  setSelectedRowsBGFiles,
+  selectedRowsBGFiles,
+  setSelectedId,
+  selectedId,
+  setpasteButton,
+  pasteButton,
   setActivateButton,
   checkNo,
   checkDate,
@@ -53,6 +59,7 @@ const TableInfo = ({
   checkDocu
 }) => {
   let temp = selectedRowsBG;
+  let tempFiles = selectedRowsBGFiles;
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
   const [loading, setLoading] = useState(true);
@@ -142,6 +149,8 @@ const TableInfo = ({
         setShowDeleteButton(false);
       }
     }
+
+    console.log(selectedRowsBGFiles);
   };
 
   useEffect(() => {
@@ -376,6 +385,85 @@ const TableInfo = ({
     SortBydate();
   }, []);
 
+  const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
+    if (event.target.checked) {
+      if (!files.includes({ uniqueId: event.target.name })) {
+        if (tempFiles.indexOf(tempFiles.find((temppFiles) => temppFiles.id === id)) > -1) {
+        } else {
+          tempFiles = [...tempFiles, { id: id, files: files_id, backgroundId: background_id }];
+          selectedRowsBGFilesPass = tempFiles;
+          setSelectedRowsBGFiles(tempFiles);
+        }
+      }
+    } else {
+      if (tempFiles.indexOf(tempFiles.find((temppFiles) => temppFiles.id === id)) > -1) {
+        tempFiles.splice(tempFiles.indexOf(tempFiles.find((temppFiles) => temppFiles.id === id)), 1);
+        setSelectedRowsBGFiles(tempFiles);
+        selectedRowsBGFilesPass = tempFiles;
+      }
+    }
+  };
+
+  const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
+  const pasteFilestoBackground = async (background_id) => {
+    let arrCopyFiles = [];
+    let arrFileResult = [];
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: background_id,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id
+        })
+      );
+    }
+
+    arrCopyFiles = selectedRowsBGFiles.map(({ files }) => ({
+      id: files,
+    }));
+
+    arrCopyFiles.push(...arrFileResult);
+
+    console.log(arrCopyFiles);
+
+    if (background_id !== null) {
+      const request = await API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: background_id,
+          files: arrCopyFiles,
+        },
+      });
+      getBackground();
+    }
+
+    setSelectedId(background_id);
+    setTimeout(() => {
+      setSelectedId(0);
+    }, 2000);
+    
+  }
+
   return (
     <>
       <div
@@ -571,23 +659,23 @@ const TableInfo = ({
                                       {...provider.dragHandleProps}
                                       className="py-2 px-3 w-80 text-sm text-gray-500"
                                     >
-                                      {!activateButton ? (
-                                        <span
-                                          className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                          onClick={() => {
-                                            window.location.href = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`;
-                                          }}
-                                        >
-                                          {" "}
-                                          File Bucket +
-                                        </span>
-                                      ) : (
-                                        <span className="w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                          {" "}
-                                          Paste &nbsp;
-                                          <FaPaste />
-                                        </span>
-                                      )}
+
+                                      {!activateButton ? 
+                                      (<span
+                                        className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        onClick={() => {
+                                          window.location.href = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`;
+                                        }}
+                                      > File Bucket +
+                                      </span>) : 
+                                      (<span
+                                        className={selectedId === item.id ? "bg-gray-400 hover:bg-white-500 text-black w-60 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" }
+                                        onClick={() => {
+                                          pasteFilestoBackground(item.id)
+                                        }}
+                                      > {selectedId === item.id ? "Pasted" : "Paste" } &nbsp;<FaPaste/>
+                                      </span>) 
+                                      }
 
                                       {files.length === 0 ? (
                                         <>
@@ -612,14 +700,24 @@ const TableInfo = ({
                                             .filter(
                                               (x) => x.backgroundId === item.id
                                             )
-                                            .map((items) => (
+                                            .map((items, index) => (
                                               <>
                                                 <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                {activateButton ?
                                                   <input
                                                     type="checkbox"
-                                                    name={item.id}
+                                                    name={items.uniqueId}
                                                     className="cursor-pointer w-10 inline-block"
+                                                    onChange={(event) =>
+                                                      handleFilesCheckboxChange(
+                                                        event,
+                                                        items.uniqueId,
+                                                        items.id,
+                                                        items.backgroundId
+                                                      )
+                                                    }
                                                   />
+                                                  : ""}
                                                   {items.name.substring(0, 15)}
                                                   &nbsp;
                                                   <AiOutlineDownload
@@ -630,6 +728,17 @@ const TableInfo = ({
                                                       )
                                                     }
                                                   />
+                                                {activateButton ?
+                                                  <BsFillTrashFill
+                                                    className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                    onClick={() =>
+                                                      showModal(
+                                                        items.uniqueId,
+                                                        items.backgroundId
+                                                      )
+                                                    }
+                                                  />
+                                                  :
                                                   <BsFillTrashFill
                                                     className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                     onClick={() =>
@@ -639,6 +748,7 @@ const TableInfo = ({
                                                       )
                                                     }
                                                   />
+                                                }
                                                 </p>
                                               </>
                                             ))}
