@@ -2,7 +2,7 @@ import { API } from "aws-amplify";
 
 const getAllPages = `
     query getAllPages($companyId: String, $userType: UserType) {
-      page {
+      pages {
         id
         name
         features {
@@ -37,7 +37,7 @@ const AccessControl = async (pagename) => {
     },
   });
   //console.log(page_access);
-  const page = page_access.data.page.filter((f) => f.name === pagename);
+  const page = page_access.data.pages.filter((f) => f.name === pagename);
 
   var userAccess = page_access.data.companyAccessType[0].access;
   userAccess = userAccess.find((p) => p.id === page[0].id);

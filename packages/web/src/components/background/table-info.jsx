@@ -5,10 +5,8 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste } from 'react-icons/fa';
-import {
-  BsFillTrashFill,
-} from "react-icons/bs";
+import { FaPaste } from "react-icons/fa";
+import { BsFillTrashFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
@@ -51,7 +49,7 @@ const TableInfo = ({
   setSelectedRowsBGFiles,
   selectedRowsBGFiles,
   checkedFilesState,
-  setCheckedFilesState,
+  setCheckedFilesState
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -168,6 +166,8 @@ const TableInfo = ({
 
   const handleChangeDesc = (event) => {
     setTextDesc(event.currentTarget.textContent);
+    const countspace = textDesc.split("\n\n");
+    console.log(countspace);
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
@@ -364,18 +364,19 @@ const TableInfo = ({
     }
   }, 10000);
 
-  const SortBydate = useCallback(
-    (e) => {
-      e.preventDefault();
-      if (!ascDesc) {
-        setAscDesc(true);
-      } else {
-        setAscDesc(false);
-      }
+  const SortBydate = () => {
+    if (!ascDesc) {
+      setAscDesc(true);
       getBackground();
-    },
-    [ascDesc]
-  );
+    } else {
+      setAscDesc(false);
+      getBackground();
+    }
+  };
+
+  useEffect(() => {
+    SortBydate();
+  }, []);
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
     if (event.target.checked) {
@@ -581,6 +582,7 @@ const TableInfo = ({
                                       {...provider.dragHandleProps}
                                       className="py-2 px-3 w-80 text-sm text-gray-500"
                                     >
+
                                       {!activateButton ? 
                                       (<span
                                         className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
