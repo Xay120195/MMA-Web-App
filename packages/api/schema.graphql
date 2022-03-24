@@ -122,7 +122,7 @@ type ClientMatter {
 
 type Background {
   id: ID
-  date: String
+  date: AWSDateTime
   description: String
   order: Int
   files: BackgroundFileConnection
@@ -220,12 +220,12 @@ type Mutation {
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
   backgroundCreate(
     description: String
-    date: String
+    date: AWSDateTime
     clientMatterId: String
   ): Background
   backgroundUpdate(
     id: ID
-    date: String
+    date: AWSDateTime
     description: String
     order: Int
   ): Background
