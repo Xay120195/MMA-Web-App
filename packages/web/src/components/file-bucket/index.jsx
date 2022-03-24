@@ -472,13 +472,17 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   const handleDetailsContent = (e, details, id) => {
-    setDescHeight("w-full p-2 font-poppins h-full");
+    
     if (!descAlert) {
+      // setDescHeight("w-full p-2 font-poppins h-full");
       setTextDetails(!details ? "" : details);
       setDetId(id);
       setDesAlert("");
+      
     } else {
       setTextDetails("");
+      // setDescHeight("w-full p-2 font-poppins h-10");
+      
     }
   };
 
@@ -488,7 +492,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const handleSaveDetails = async (e, name, details, id, labels, index) => {
     if (textDetails.length <= 0) {
-      setDescHeight("w-full p-2 font-poppins h-10");
+      // setDescHeight("w-full p-2 font-poppins h-10");
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
       setDesAlert("");
@@ -1345,15 +1349,15 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             //   "w-full p-2 font-poppins"
                                             // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
                                             className={
-                                              data.details == null || data.details == undefined || data.details.length <= 0 ?
-                                                descHeight
-                                              : "w-full p-2 font-poppins h-full"
+                                              data.details ?
+                                                "w-full p-2 font-poppins h-full"
+                                              : "w-full p-2 font-poppins h-9" 
                                             }
                                             style={{
                                               cursor: "auto",
                                               outlineColor:
                                                 "rgb(204, 204, 204, 0.5)",
-                                              outlineWidth: "thin",
+                                              outlineWidth: "thin"
                                             }}
                                             suppressContentEditableWarning={
                                               true
