@@ -698,7 +698,7 @@ const TableInfo = ({
                                           <span
                                             className={
                                               selectedId === item.id
-                                                ? "bg-gray-400 hover:bg-white-500 text-black w-60 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                             }
                                             onClick={() => {
