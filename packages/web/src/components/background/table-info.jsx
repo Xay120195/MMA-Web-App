@@ -449,6 +449,7 @@ const TableInfo = ({
   const pasteFilestoBackground = async (background_id) => {
     let arrCopyFiles = [];
     let arrFileResult = [];
+    const seen = new Set();
 
     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
@@ -471,14 +472,18 @@ const TableInfo = ({
 
     arrCopyFiles.push(...arrFileResult);
 
-    console.log(arrCopyFiles);
+    const filteredArr = arrCopyFiles.filter(el => {
+      const duplicate = seen.has(el.id);
+      seen.add(el.id);
+      return !duplicate;
+    });
 
     if (background_id !== null) {
       const request = await API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
           backgroundId: background_id,
-          files: arrCopyFiles,
+          files: filteredArr,
         },
       });
       getBackground();
