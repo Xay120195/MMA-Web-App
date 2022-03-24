@@ -26,7 +26,7 @@ export default function PostRegistration() {
   const setAccountDetails = async (cognitoUserInfo) => {
     const getAllPages = `
     query getAllPages {
-      page {
+      pages {
         id
         name
         features {
@@ -57,10 +57,10 @@ export default function PostRegistration() {
       email: cognitoUserInfo.attributes["email"],
       company: company,
       userType: "OWNER",
-      access: access.data.page,
+      access: access.data.pages,
     };
 
-    createAccount(company, access.data.page, user);
+    createAccount(company, access.data.pages, user);
   };
 
   async function createAccount(company, pageAcess, user) {
