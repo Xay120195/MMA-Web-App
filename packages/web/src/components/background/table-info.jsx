@@ -242,7 +242,7 @@ const TableInfo = ({
   };
 
   const mUpdateBackground = `
-    mutation updateBackground($id: ID, $description: String, $date: String) {
+    mutation updateBackground($id: ID, $description: String, $date: AWSDateTime) {
       backgroundUpdate(id: $id, description: $description, date: $date) {
         id
         description
@@ -258,7 +258,7 @@ const TableInfo = ({
           query: mUpdateBackground,
           variables: {
             id: id,
-            date: data.date,
+            date: new Date(data.date).toISOString(),
             description: data.description,
           },
         });

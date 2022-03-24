@@ -95,15 +95,10 @@ const ActionButtons = ({
   };
 
   const handleAddRow = async () => {
-    const dateToday =
-      new Date().getFullYear() +
-      "/" +
-      (new Date().getMonth() + 1) +
-      "/" +
-      new Date().getDate();
+    const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+        mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
           backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
           }
