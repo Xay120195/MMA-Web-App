@@ -177,43 +177,33 @@ export default function Background() {
   const clientName = cname[2];
   const matterName = cname[3];
 
-  function sortByOrder(arr) {
+  const sortByOrder = (arr) => {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      if (!ascDesc) {
-        sort = arr.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-      } else {
-        sort = arr.sort(
-          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-        );
-      }
+      sort = arr.sort((a, b) =>
+        ascDesc
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : new Date(a.createdAt) - new Date(b.createdAt)
+      );
     } else {
-      if (!ascDesc === true) {
-        sort = arr.sort(
-          (a, b) =>
-            a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-        );
-      } else {
-        sort = arr.sort(
-          (a, b) =>
-            b.order - a.order || new Date(a.createdAt) - new Date(b.createdAt)
-        );
-      }
+      sort = arr.sort((a, b) =>
+        b.order - a.order || ascDesc
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : new Date(a.createdAt) - new Date(b.createdAt)
+      );
     }
     return sort;
-  }
+  };
 
   const handleManageFiles = () => {
     setActivateButton(!activateButton);
-    if(!activateButton) {
+    if (!activateButton) {
       console.log("Highlight");
     } else {
       console.log("Not Highlight");
     }
-  }
+  };
 
   return (
     <>
