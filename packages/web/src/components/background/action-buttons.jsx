@@ -21,17 +21,23 @@ const ActionButtons = ({
   selectedRowsBG,
   setSelectedRowsBG,
   setShowModalParagraph,
-
   showDeleteButton,
   setShowDeleteButton,
   activateButton,
-  handleManageFiles
+  handleManageFiles,
+  checkNo, setCheckNo,
+  checkDate, setCheckDate,
+  checkDesc, setCheckDesc,
+  checkDocu, setCheckDocu
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
+  const [showhideState, setShowHideState] = useState(false);
+
+
 
   const hideToast = () => {
     setShowToast(false);
@@ -171,6 +177,46 @@ const ActionButtons = ({
     setshowRemoveFileModal(false);
   };
 
+  const handleCheckNo = () => {
+    if(checkNo){
+      setCheckNo(false);
+    }else{
+      setCheckNo(true);
+    }
+  };
+
+  const handleCheckDate = () => {
+    if(checkDate){
+      setCheckDate(false);
+    }else{
+      setCheckDate(true);
+    }
+  };
+
+  const handleCheckDesc = () => {
+    if(checkDesc){
+      setCheckDesc(false);
+    }else{
+      setCheckDesc(true);
+    }
+  };
+
+  const handleCheckDocu = () => {
+    if(checkDocu){
+      setCheckDocu(false);
+    }else{
+      setCheckDocu(true);
+    }
+  };
+
+  const handleShowHide = () => {
+    if(showhideState){
+      setShowHideState(false);
+    }else{
+      setShowHideState(true);
+    }
+  }
+
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5">
@@ -229,7 +275,61 @@ const ActionButtons = ({
           </button>
 
 
-
+          <div className="inline-flex">
+          <button
+            type="button"
+            className=
+            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            }
+            onClick={() => handleShowHide()}
+          >
+            SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
+          </button>
+          {showhideState &&
+          <div className="w-64 h-48 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+            <p className="px-2 py-2 text-gray-400 text-xs font-semibold">TABLE COLUMN OPTIONS</p>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                name="checkNo"
+                className="cursor-pointer"
+                checked={checkNo}
+                onChange={(event) => handleCheckNo()}
+              />
+              &nbsp; No.
+            </div>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                  name="checkDate"
+                  className="cursor-pointer"
+                  checked={checkDate}
+                  onChange={(event) => handleCheckDate()}
+              />
+              &nbsp; Date
+            </div>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                name="checkDesc"
+                className="cursor-pointer"
+                checked={checkDesc}
+                onChange={(event) => handleCheckDesc()}
+              />
+              &nbsp; Description of Background and Category
+            </div>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                name="checkDocu"
+                className="cursor-pointer"
+                checked={checkDocu}
+                onChange={(event) => handleCheckDocu()}
+              />
+              &nbsp; Document
+            </div>
+          </div>
+          }
+          </div>
+       
+          
           <button
             type="button"
             className=
@@ -240,23 +340,6 @@ const ActionButtons = ({
           >
             MANAGE FILES &nbsp; <AiFillFile />
           </button>
-
-          <div className="inline-flex">
-          <button
-            type="button"
-            className=
-            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-            }
-            // onClick={() => handleManageFiles()}
-          >
-            SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
-          </button>
-          <div className="w-52 h-20 z-100 bg-gray-200 absolute mt-10 ml-3 rounded border-0 shadow outline-none">
-            <p className="px-2 py-2 text-xs font-semibold">TABLE COLUMN OPTIONS</p>
-
-          </div>
-          </div>
 
           {showDeleteButton && (
             <button
