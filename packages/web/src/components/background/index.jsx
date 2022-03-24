@@ -32,12 +32,16 @@ export default function Background() {
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
+  const [checkedFilesState, setCheckedFilesState] = useState(
+    new Array(files.length).fill(false)
+  );
   const [totalChecked, settotalChecked] = useState(0);
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [ascDesc, setAscDesc] = useState(false);
   const [activateButton, setActivateButton] = useState(false);
+  const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
   // let selectedRowsBG = [];
 
   useEffect(() => {
@@ -291,6 +295,10 @@ export default function Background() {
         activateButton={activateButton}
         setAscDesc={setAscDesc}
         ascDesc={ascDesc}
+        setSelectedRowsBGFiles={setSelectedRowsBGFiles}
+        selectedRowsBGFiles={selectedRowsBGFiles}
+        checkedFilesState={checkedFilesState}
+        setCheckedFilesState={setCheckedFilesState}
       />
     </>
   );
