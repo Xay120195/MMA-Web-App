@@ -745,7 +745,7 @@ const TableInfo = ({
                                                       <input
                                                         type="checkbox"
                                                         name={items.uniqueId}
-                                                        className="cursor-pointer w-10 inline-block"
+                                                        className="cursor-pointer w-10 inline-block align-middle"
                                                         onChange={(event) =>
                                                           handleFilesCheckboxChange(
                                                             event,
@@ -758,10 +758,7 @@ const TableInfo = ({
                                                     ) : (
                                                       ""
                                                     )}
-                                                    {items.name.substring(
-                                                      0,
-                                                      15
-                                                    )}
+                                                    <span className="align-middle">{items.name.substring(0, 15)}</span>
                                                     &nbsp;
                                                     <AiOutlineDownload
                                                       className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
