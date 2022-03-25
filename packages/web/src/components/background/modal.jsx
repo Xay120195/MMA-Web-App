@@ -19,16 +19,11 @@ export const ModalParagraph = ({
   const handleNewParagraph = async (e) => {
     const arrParagraph = paragraph.split("\n\n");
 
-    const dateToday =
-      new Date().getFullYear() +
-      "/" +
-      (new Date().getMonth() + 1) +
-      "/" +
-      new Date().getDate();
+    const dateToday = new Date().toISOString();
 
     arrParagraph.map(async function (x) {
       const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+        mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
           backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
           }
@@ -40,9 +35,10 @@ export const ModalParagraph = ({
         variables: {
           clientMatterId: matterId,
           date: dateToday,
-          description: x,
+          description: "",
         },
       });
+
       if (createBackgroundRow) {
         getBackground();
         setcheckAllState(false);
