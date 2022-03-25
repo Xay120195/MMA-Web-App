@@ -106,7 +106,7 @@ const UserTypeAccess = (props) => {
 
   const getAllPages = `
   query getPagesAndAccess($companyId: String) {
-    pages {
+    page {
       id
       name
       label
@@ -137,9 +137,9 @@ const UserTypeAccess = (props) => {
       },
     };
 
-    await API.graphql(params).then((p) => {
-      const { pages, companyAccessType } = p.data;
-      setDefaultPages(pages);
+    await API.graphql(params).then((pages) => {
+      const { page, companyAccessType } = pages.data;
+      setDefaultPages(page);
 
       var userAccess = companyAccessType.sort((a, b) =>
         a.userType.localeCompare(b.userType)

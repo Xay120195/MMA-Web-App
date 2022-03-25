@@ -32,21 +32,12 @@ export default function Background() {
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
-  const [selectedId, setSelectedId] = useState(0);
   const [totalChecked, settotalChecked] = useState(0);
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
-  const [activateButton, setActivateButton] = useState(false);
-  const [pasteButton, setPasteButton] = useState(false);
-  const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
-  // let selectedRowsBG = [];
 
-  const [checkNo, setCheckNo] = useState(true);
-  const [checkDate, setCheckDate] = useState(true);
-  const [checkDesc, setCheckDesc] = useState(true);
-  const [checkDocu, setCheckDocu] = useState(true);
+  // let selectedRowsBG = [];
 
   useEffect(() => {
     ClientMatterList();
@@ -127,7 +118,7 @@ export default function Background() {
       }
     }
   }`;
-
+  
   const getBackground = async () => {
     let result = [];
     const matterId = matter_id;
@@ -139,7 +130,7 @@ export default function Background() {
       },
     });
 
-    if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+    if (backgroundOpt.data.clientMatter.backgrounds !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
         ({ id, description, date, createdAt, order }) => ({
           createdAt: createdAt,
@@ -163,7 +154,7 @@ export default function Background() {
         if (backgroundFilesOpt.data.background.files !== null) {
           arrFileResult = backgroundFilesOpt.data.background.files.items.map(
             ({ id, downloadURL, name }) => ({
-              uniqueId: result[i].id + id,
+              uniqueId: result[i].id+id,
               backgroundId: result[i].id,
               id: id,
               downloadURL: downloadURL,
@@ -189,25 +180,15 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort(
-        (a, b) =>
-          new Date(b.date) - new Date(a.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else {
       sort = arr.sort(
         (a, b) =>
-          a.order - b.order ||
-          new Date(b.date) - new Date(a.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
+          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
       );
     }
     return sort;
   }
-
-  const handleManageFiles = () => {
-    setActivateButton(!activateButton);
-  };
 
   return (
     <>
@@ -246,17 +227,6 @@ export default function Background() {
                 paragraph={paragraph}
                 showDeleteButton={showDeleteButton}
                 setShowDeleteButton={setShowDeleteButton}
-                activateButton={activateButton}
-                setactivateButton={setActivateButton}
-                handleManageFiles={handleManageFiles}
-                checkNo={checkNo}
-                setCheckNo={setCheckNo}
-                checkDate={checkDate}
-                setCheckDate={setCheckDate}
-                checkDesc={checkDesc}
-                setCheckDesc={setCheckDesc}
-                checkDocu={checkDocu}
-                setCheckDocu={setCheckDocu}
               />
             </div>
           </div>
@@ -288,21 +258,6 @@ export default function Background() {
         setParagraph={setParagraph}
         showDeleteButton={showDeleteButton}
         setShowDeleteButton={setShowDeleteButton}
-        handleManageFiles={handleManageFiles}
-        setActivateButton={setActivateButton}
-        activateButton={activateButton}
-        setAscDesc={setAscDesc}
-        ascDesc={ascDesc}
-        setSelectedRowsBGFiles={setSelectedRowsBGFiles}
-        selectedRowsBGFiles={selectedRowsBGFiles}
-        setSelectedId={setSelectedId}
-        selectedId={selectedId}
-        setPasteButton={setPasteButton}
-        pasteButton={pasteButton}
-        checkNo={checkNo}
-        checkDate={checkDate}
-        checkDesc={checkDesc}
-        checkDocu={checkDocu}
       />
     </>
   );

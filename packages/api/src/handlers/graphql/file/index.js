@@ -3,7 +3,7 @@ const { generatePresignedUrl } = require("../../../services/MatterService");
 const resolvers = {
   File: {
     downloadURL: async (ctx) => {
-      return generatePresignedUrl("public/" + ctx.source.s3ObjectKey, ctx.source);
+      return generatePresignedUrl("public/" + ctx.source.s3ObjectKey);
     },
   },
 };

@@ -79,7 +79,6 @@ type File {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   isDeleted: Boolean
-  nextToken: String
 }
 
 type FileLabel {
@@ -114,15 +113,15 @@ type ClientMatter {
   id: ID!
   matter: Matter
   client: Client
-  backgrounds(limit: Int, nextToken: String): ClientMatterBackgroundConnection
-  labels(limit: Int, nextToken: String): ClientMatterLabelConnection
+  backgrounds: ClientMatterBackgroundConnection
+  labels: ClientMatterLabelConnection
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
 
 type Background {
   id: ID
-  date: AWSDateTime
+  date: String
   description: String
   order: Int
   files: BackgroundFileConnection
@@ -140,7 +139,7 @@ type Query {
   company(id: String): Company
   companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
   user(id: String): User
-  pages: [Page]
+  page: [Page]
   feature(id: String): Feature
   clients: [Client]
   client(id: ID): Client
@@ -148,12 +147,7 @@ type Query {
   clientMatter(id: ID): ClientMatter
   matters: [Matter]
   matter(id: ID): Matter
-  matterFile(
-    matterId: ID
-    isDeleted: Boolean
-    limit: Int
-    nextToken: String
-  ): [File]
+  matterFile(matterId: ID, isDeleted: Boolean): [File]
   file(id: ID): File
   labels: [Label]
   label(id: ID): Label
@@ -220,12 +214,12 @@ type Mutation {
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
   backgroundCreate(
     description: String
-    date: AWSDateTime
+    date: String
     clientMatterId: String
   ): Background
   backgroundUpdate(
     id: ID
-    date: AWSDateTime
+    date: String
     description: String
     order: Int
   ): Background
@@ -303,35 +297,42 @@ input RepresentativeInput {
 
 type CompanyUserConnection {
   items: [User]
+  limit: Int
   nextToken: String
 }
 
 type CompanyClientConnection {
   items: [Client]
+  limit: Int
   nextToken: String
 }
 
 type CompanyMatterConnection {
   items: [Matter]
+  limit: Int
   nextToken: String
 }
 
 type CompanyClientMatterConnection {
   items: [ClientMatter]
+  limit: Int
   nextToken: String
 }
 
 type ClientMatterBackgroundConnection {
   items: [Background]
-  nextToken: String
+  # limit: Int
+  # nextToken: String
 }
 
 type ClientMatterLabelConnection {
   items: [Label]
-  nextToken: String
+  # limit: Int
+  # nextToken: String
 }
 
 type BackgroundFileConnection {
   items: [File]
+  # limit: Int
   # nextToken: String
 }

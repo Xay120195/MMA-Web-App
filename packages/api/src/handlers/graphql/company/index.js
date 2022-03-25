@@ -7,7 +7,7 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { limit = 100, nextToken } = ctx.arguments;
   try {
     const companyUsersParams = {
       TableName: "CompanyUserTable",
@@ -19,11 +19,8 @@ async function listCompanyUsers(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
+      Limit: limit,
     };
-
-    if (limit !== undefined) {
-      companyUsersParams.Limit = limit;
-    }
 
     const companyUsersCommand = new QueryCommand(companyUsersParams);
     const companyUsersResult = await client.send(companyUsersCommand);
@@ -60,19 +57,19 @@ async function listCompanyUsers(ctx) {
         : null,
     };
   } catch (e) {
+    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
-    console.log(response);
   }
   return response;
 }
 
 async function listCompanyMatters(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { limit = 100, nextToken } = ctx.arguments;
   try {
     const companyMatterParams = {
       TableName: "CompanyMatterTable",
@@ -84,11 +81,8 @@ async function listCompanyMatters(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
+      Limit: limit,
     };
-
-    if (limit !== undefined) {
-      companyMatterParams.Limit = limit;
-    }
 
     const companyMatterCommand = new QueryCommand(companyMatterParams);
     const companyMatterResult = await client.send(companyMatterCommand);
@@ -129,19 +123,19 @@ async function listCompanyMatters(ctx) {
         : null,
     };
   } catch (e) {
+    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
-    console.log(response);
   }
   return response;
 }
 
 async function listCompanyClients(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { limit = 100, nextToken } = ctx.arguments;
 
   try {
     const companyClientParams = {
@@ -154,11 +148,8 @@ async function listCompanyClients(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
+      Limit: limit,
     };
-
-    if (limit !== undefined) {
-      companyClientParams.Limit = limit;
-    }
 
     const companyClientCommand = new QueryCommand(companyClientParams);
     const companyClientResult = await client.send(companyClientCommand);
@@ -198,19 +189,19 @@ async function listCompanyClients(ctx) {
         : null,
     };
   } catch (e) {
+    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
-    console.log(response);
   }
   return response;
 }
 
 async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { limit = 100, nextToken } = ctx.arguments;
   try {
     const companyClientMatterParams = {
       TableName: "CompanyClientMatterTable",
@@ -222,11 +213,8 @@ async function listCompanyClientMatters(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
+      Limit: limit,
     };
-
-    if (limit !== undefined) {
-      companyClientMatterParams.Limit = limit;
-    }
 
     const companyClientMatterCommand = new QueryCommand(
       companyClientMatterParams
@@ -272,12 +260,12 @@ async function listCompanyClientMatters(ctx) {
         : null,
     };
   } catch (e) {
+    console.log(e);
     response = {
       error: e.message,
       errorStack: e.stack,
       statusCode: 500,
     };
-    console.log(response);
   }
   return response;
 }
