@@ -191,7 +191,6 @@ export default function Background() {
     if (isAllZero) {
       sort = arr.sort(
         (a, b) =>
-          new Date(b.date) - new Date(a.date) ||
           new Date(b.createdAt) - new Date(a.createdAt)
       );
     } else {
