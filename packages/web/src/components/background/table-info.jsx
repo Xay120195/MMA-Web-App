@@ -174,11 +174,10 @@ const TableInfo = ({
 
   const handleChangeDesc = (event) => {
     setTextDesc(event.currentTarget.textContent);
-    const countspace = textDesc.split("\n\n");
-    console.log(countspace);
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
+    console.log(e.target.innerHTML);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
       setUpdateProgress(false);
@@ -189,7 +188,7 @@ const TableInfo = ({
       setShowToast(true);
 
       const data = {
-        description: description,
+        description: e.target.innerHTML,
         date: date,
       };
 
@@ -213,7 +212,7 @@ const TableInfo = ({
         setShowToast(true);
 
         const data = {
-          description: textDesc,
+          description: e.target.innerHTML,
           date: date,
         };
         await updateBackgroundDetails(id, data);
@@ -449,6 +448,7 @@ const TableInfo = ({
   const pasteFilestoBackground = async (background_id) => {
     let arrCopyFiles = [];
     let arrFileResult = [];
+    const seen = new Set();
 
     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
@@ -471,14 +471,18 @@ const TableInfo = ({
 
     arrCopyFiles.push(...arrFileResult);
 
-    console.log(arrCopyFiles);
+    const filteredArr = arrCopyFiles.filter((el) => {
+      const duplicate = seen.has(el.id);
+      seen.add(el.id);
+      return !duplicate;
+    });
 
     if (background_id !== null) {
       const request = await API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
           backgroundId: background_id,
-          files: arrCopyFiles,
+          files: filteredArr,
         },
       });
       getBackground();
@@ -641,7 +645,7 @@ const TableInfo = ({
                                         {...provider.dragHandleProps}
                                         className="w-full px-6 py-4"
                                       >
-                                        <p
+                                        <div
                                           className="p-2 w-full font-poppins"
                                           style={{
                                             cursor: "auto",
@@ -657,6 +661,9 @@ const TableInfo = ({
                                               item.id
                                             )
                                           }
+                                          dangerouslySetInnerHTML={{
+                                            __html: item.description,
+                                          }}
                                           onInput={(event) =>
                                             handleChangeDesc(event)
                                           }
@@ -671,9 +678,7 @@ const TableInfo = ({
                                           contentEditable={
                                             updateProgess ? false : true
                                           }
-                                        >
-                                          {item.description}
-                                        </p>
+                                        ></div>
                                         <span className="text-red-400 filename-validation">
                                           {item.id === descId && descAlert}
                                         </span>
@@ -685,20 +690,17 @@ const TableInfo = ({
                                         className="py-2 px-3 w-80 text-sm text-gray-500"
                                       >
                                         {!activateButton ? (
-                                          <span
+                                          <Link
                                             className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                            onClick={() => {
-                                              window.location.href = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`;
-                                            }}
+                                            to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
                                           >
-                                            {" "}
                                             File Bucket +
-                                          </span>
+                                          </Link>
                                         ) : (
                                           <span
                                             className={
                                               selectedId === item.id
-                                                ? "bg-gray-400 hover:bg-white-500 text-black w-60 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                             }
                                             onClick={() => {
@@ -745,7 +747,7 @@ const TableInfo = ({
                                                       <input
                                                         type="checkbox"
                                                         name={items.uniqueId}
-                                                        className="cursor-pointer w-10 inline-block"
+                                                        className="cursor-pointer w-10 inline-block align-middle"
                                                         onChange={(event) =>
                                                           handleFilesCheckboxChange(
                                                             event,
@@ -758,10 +760,12 @@ const TableInfo = ({
                                                     ) : (
                                                       ""
                                                     )}
-                                                    {items.name.substring(
-                                                      0,
-                                                      15
-                                                    )}
+                                                    <span className="align-middle">
+                                                      {items.name.substring(
+                                                        0,
+                                                        15
+                                                      )}
+                                                    </span>
                                                     &nbsp;
                                                     <AiOutlineDownload
                                                       className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"

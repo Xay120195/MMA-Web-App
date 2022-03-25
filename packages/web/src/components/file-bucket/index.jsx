@@ -819,7 +819,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         (data) =>
           (selectedRows = [
             ...selectedRows,
-            { id: data.id, fileName: data.name },
+            { id: data.id, fileName: data.name, details: data.details },
           ])
       );
       const newArr = Array(files.length).fill(true);
@@ -989,9 +989,12 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       details: details,
     }));
 
+    console.log(selectedRows);
+
     const dateToday =new Date().toISOString();
     var counter=0;
     for (let i = 0; i < arrFiles.length; i++) {
+      counter++;
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
@@ -1010,7 +1013,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           },
         });
       }
-      counter++;
     }
 
     console.log(counter);
