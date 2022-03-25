@@ -819,7 +819,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         (data) =>
           (selectedRows = [
             ...selectedRows,
-            { id: data.id, fileName: data.name },
+            { id: data.id, fileName: data.name, details: data.details },
           ])
       );
       const newArr = Array(files.length).fill(true);
@@ -988,6 +988,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       id: id,
       details: details,
     }));
+
+    console.log(selectedRows);
 
     const dateToday =new Date().toISOString();
     var counter=0;
