@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
+import { AiFillFile, AiFillEye } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
@@ -14,22 +15,29 @@ const ActionButtons = ({
   setCheckedState,
   settotalChecked,
   setSearch,
-  search,
   setId,
   matterId,
   getBackground,
   selectedRowsBG,
   setSelectedRowsBG,
   setShowModalParagraph,
-  paragraph,
   showDeleteButton,
   setShowDeleteButton,
+  activateButton,
+  handleManageFiles,
+  checkNo, setCheckNo,
+  checkDate, setCheckDate,
+  checkDesc, setCheckDesc,
+  checkDocu, setCheckDocu
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
+  const [showhideState, setShowHideState] = useState(false);
+
+
 
   const hideToast = () => {
     setShowToast(false);
@@ -87,15 +95,10 @@ const ActionButtons = ({
   };
 
   const handleAddRow = async () => {
-    const dateToday =
-      new Date().getFullYear() +
-      "/" +
-      (new Date().getMonth() + 1) +
-      "/" +
-      new Date().getDate();
+    const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+        mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
           backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
           }
@@ -169,6 +172,46 @@ const ActionButtons = ({
     setshowRemoveFileModal(false);
   };
 
+  const handleCheckNo = () => {
+    if(checkNo){
+      setCheckNo(false);
+    }else{
+      setCheckNo(true);
+    }
+  };
+
+  const handleCheckDate = () => {
+    if(checkDate){
+      setCheckDate(false);
+    }else{
+      setCheckDate(true);
+    }
+  };
+
+  const handleCheckDesc = () => {
+    if(checkDesc){
+      setCheckDesc(false);
+    }else{
+      setCheckDesc(true);
+    }
+  };
+
+  const handleCheckDocu = () => {
+    if(checkDocu){
+      setCheckDocu(false);
+    }else{
+      setCheckDocu(true);
+    }
+  };
+
+  const handleShowHide = () => {
+    if(showhideState){
+      setShowHideState(false);
+    }else{
+      setShowHideState(true);
+    }
+  }
+
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5">
@@ -204,7 +247,7 @@ const ActionButtons = ({
               />
             </svg>
           </button>
-          {/* <button
+          <button
             onClick={() => setShowModalParagraph(true)}
             type="button"
             className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
@@ -224,7 +267,72 @@ const ActionButtons = ({
                 d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button> */}
+          </button>
+
+
+          <div className="inline-flex">
+          <button
+            type="button"
+            className={"hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"}
+            onClick={() => handleShowHide()}
+          >
+            SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
+          </button>
+          {showhideState &&
+          <div className="w-64 h-48 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+            <p className="px-2 py-2 text-gray-400 text-xs font-semibold">TABLE COLUMN OPTIONS</p>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                name="checkNo"
+                className="cursor-pointer"
+                checked={checkNo}
+                onChange={(event) => handleCheckNo()}
+              />
+              &nbsp; No.
+            </div>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                  name="checkDate"
+                  className="cursor-pointer"
+                  checked={checkDate}
+                  onChange={(event) => handleCheckDate()}
+              />
+              &nbsp; Date
+            </div>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                name="checkDesc"
+                className="cursor-pointer"
+                checked={checkDesc}
+                onChange={(event) => handleCheckDesc()}
+              />
+              &nbsp; Description of Background and Category
+            </div>
+            <div className="px-2 py-1">
+              <input type="checkbox" 
+                name="checkDocu"
+                className="cursor-pointer"
+                checked={checkDocu}
+                onChange={(event) => handleCheckDocu()}
+              />
+              &nbsp; Document
+            </div>
+          </div>
+          }
+          </div>
+       
+          
+          <button
+            type="button"
+            className=
+            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            }
+            onClick={() => handleManageFiles()}
+          >
+            MANAGE FILES &nbsp; <AiFillFile />
+          </button>
+
           {showDeleteButton && (
             <button
               type="button"

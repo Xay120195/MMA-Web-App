@@ -62,7 +62,6 @@ export default function FileBucket() {
   const [textDetails, setTextDetails] = useState("");
   const { matter_id, background_id } = useParams();
   const [searchFile, setSearchFile] = useState();
-  const [labelAlert, setLabelAlert] = useState("");
 
   const [filterLabelsData, setFilterLabelsData] = useState([]);
 
@@ -75,6 +74,8 @@ export default function FileBucket() {
   var fileCount = 0;
 
   const [filterLabels, setFilterLabels] = useState(false);
+  const [deletingState, setDeletingState] = useState(false);
+  const [descHeight, setDescHeight] = useState("w-full p-2 font-poppins h-10");
 
   const hideToast = () => {
     setShowToast(false);
@@ -294,12 +295,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     });
 
     if (labelsOpt.data.clientMatter.labels !== null) {
+      if (labelsOpt.data.clientMatter.labels.items !== null) {
       result = labelsOpt.data.clientMatter.labels.items
         .map(({ id, name }) => ({
           value: id,
           label: name,
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
+      }
     }
     console.log("Labels", result);
 
@@ -310,9 +313,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     let result;
 
     if (labels.some((x) => x.label === data.trim())) {
-      setLabelAlert(
-        "can't create new label, because label is already exist, system inserted the existing label"
-      );
+      return;
     } else {
       const createLabel = await API.graphql({
         query: mCreateLabel,
@@ -471,12 +472,17 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   const handleDetailsContent = (e, details, id) => {
+    
     if (!descAlert) {
+      // setDescHeight("w-full p-2 font-poppins h-full");
       setTextDetails(!details ? "" : details);
       setDetId(id);
       setDesAlert("");
+      
     } else {
       setTextDetails("");
+      // setDescHeight("w-full p-2 font-poppins h-10");
+      
     }
   };
 
@@ -486,6 +492,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const handleSaveDetails = async (e, name, details, id, labels, index) => {
     if (textDetails.length <= 0) {
+      // setDescHeight("w-full p-2 font-poppins h-10");
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
       setDesAlert("");
@@ -774,7 +781,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         );
         setCheckedState(updatedCheckedState);
       } else {
-        selectedRows = [...selectedRows, { id: id, fileName: fileName, details: details }];
+        selectedRows = [
+          ...selectedRows,
+          { id: id, fileName: fileName, details: details },
+        ];
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
           index === idx ? !item : item
@@ -831,25 +841,32 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   //delete function
   const handleDeleteFile = async (fileID) => {
+    setDeletingState(true);
     fileID.map(async (id) => {
       await deleteMatterFile(id);
     });
 
-    setResultMessage(`File successfully deleted!`);
+    tempArr = [];
+    nameArr = [];
+    descArr = [];
+    selectedRows = [];
+    setshowRemoveFileButton(false);
+    setResultMessage(`Deleting File`);
     setShowToast(true);
     handleModalClose();
     setTimeout(() => {
-      setShowToast(false);
-      getMatterFiles();
-      tempArr = [];
-      nameArr = [];
-      descArr = [];
-      selectedRows = [];
-    }, 3000);
-    setIsAllChecked(false);
-    const newArr = Array(files.length).fill(false);
-    setCheckedState(newArr);
-    setshowRemoveFileButton(false);
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+      setResultMessage(`Successfully Deleted!`);
+      setShowToast(true);
+      setTimeout(() => {
+        getMatterFiles();
+        setShowToast(false);
+        setDeletingState(false);
+      }, 3000);
+    }, 1000);
+    
   };
 
   const deleteMatterFile = (fileID) => {
@@ -955,7 +972,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+      mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
         backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
           id
         }
@@ -972,12 +989,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       details: details,
     }));
 
-    const dateToday =
-      new Date().getFullYear() +
-      "/" +
-      (new Date().getMonth() + 1) +
-      "/" +
-      new Date().getDate();
+    const dateToday =new Date().toISOString();
+    var counter=0;
     for (let i = 0; i < arrFiles.length; i++) {
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
@@ -993,15 +1006,18 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           query: mUpdateBackgroundFile,
           variables: {
             backgroundId: createBackgroundRow.data.backgroundCreate.id,
-            files: [{id: arrFiles[i].id}],
+            files: [{ id: arrFiles[i].id }],
           },
         });
       }
+      counter++;
     }
+
+    console.log(counter);
 
     setTimeout(() => {
       setShowToast(false);
-      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
+      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/?count=${counter}`;
     }, 1500);
   }
 
@@ -1076,8 +1092,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             >
               FILE UPLOAD &nbsp;
               <FiUpload />
-            </button>&nbsp;
-            {/* {showRemoveFileButton && (
+            </button>
+              
+            {showRemoveFileButton && (
               <button
                 className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                 onClick={() => addFileBucketToBackground()}
@@ -1085,7 +1102,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 COPY TO BACKGROUND PAGE &nbsp;
                 <FiCopy />
               </button>
-            )} */}
+            )}
           </div>
           <div className=" grid justify-items-end mr-0">
             <div className="flex inline-flex mr-0">
@@ -1102,11 +1119,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                 )}
 
               <button
-                
                 className={
-                pageSelectedLabels 
-                ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                  pageSelectedLabels
+                    ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                    : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                 }
                 onClick={() => setFilterLabels(true)}
                 disabled={pageSelectedLabels ? false : true}
@@ -1202,8 +1218,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           className="cursor-pointer w-10 mt-1"
                                           checked={checkedState[index]}
                                           onChange={() =>
-                                            checked(data.id, data.name, data.details, index)
+                                            checked(
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              index
+                                            )
                                           }
+                                          disabled={deletingState ? true : false}
                                         />
                                         <span>{index + 1}</span>
                                       </td>
@@ -1318,12 +1340,19 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                       >
                                         <div className="flex">
                                           <span
-                                            className="w-full p-2 font-poppins"
+                                            // className={data.details!=null || data.details!=undefined ?
+                                            //   "w-full p-2 font-poppins"
+                                            // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
+                                            className={
+                                              data.details ?
+                                                "w-full p-2 font-poppins h-full"
+                                              : "w-full p-2 font-poppins h-9" 
+                                            }
                                             style={{
                                               cursor: "auto",
                                               outlineColor:
                                                 "rgb(204, 204, 204, 0.5)",
-                                              outlineWidth: "thin",
+                                              outlineWidth: "thin"
                                             }}
                                             suppressContentEditableWarning={
                                               true
@@ -1391,9 +1420,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                           placeholder="Labels"
                                           className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                         />
-                                        <p className="text-red-400 filename-validation">
-                                          {data.id === fileId && labelAlert}
-                                        </p>
                                       </td>
                                     </tr>
                                   )}

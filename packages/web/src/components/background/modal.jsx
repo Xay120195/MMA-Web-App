@@ -16,43 +16,42 @@ export const ModalParagraph = ({
 }) => {
   let buttonBg = "bg-green-500";
 
-  const handleNewParagraph = async () => {
-    const dateToday =
-      new Date().getFullYear() +
-      "/" +
-      (new Date().getMonth() + 1) +
-      "/" +
-      new Date().getDate();
+  const handleNewParagraph = async (e) => {
+    const arrParagraph = paragraph.split("\n\n");
 
-    const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: String, $description: String) {
+    const dateToday = new Date().toISOString();
+    arrParagraph.map(async function (x) {
+      const mCreateBackground = `
+        mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
           backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
           }
         }
     `;
 
-    const createBackgroundRow = await API.graphql({
-      query: mCreateBackground,
-      variables: {
-        clientMatterId: matterId,
-        date: dateToday,
-        description: paragraph,
-      },
-    });
-    if (createBackgroundRow) {
-      getBackground();
-      setcheckAllState(false);
+      const createBackgroundRow = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          clientMatterId: matterId,
+          date: dateToday,
+          description: x,
+        },
+      });
+      if (createBackgroundRow) {
+        getBackground();
+        setcheckAllState(false);
 
-      // const newArr = Array(witness.length).fill(false);
-      // setCheckedState = newArr;
-      setCheckedState(new Array(witness.length).fill(false));
-      setSelectedRowsBG([]);
-      setShowDeleteButton(false);
-    }
-    setShowModalParagraph(false);
-    setParagraph("");
+        // const newArr = Array(witness.length).fill(false);
+        // setCheckedState = newArr;
+        setCheckedState(new Array(witness.length).fill(false));
+        setSelectedRowsBG([]);
+        setShowDeleteButton(false);
+      }
+      setShowModalParagraph(false);
+      setParagraph("");
+    });
   };
+  const countRow = paragraph.split("\n\n");
 
   return (
     <>
@@ -100,7 +99,12 @@ export const ModalParagraph = ({
                 onClick={handleNewParagraph}
               >
                 <div className="inline-flex">
-                  <span className="flex items-center"> Add</span>
+                  <span className="flex items-center">
+                    {" "}
+                    {paragraph.length >= 1
+                      ? `Add ${countRow.length} rows`
+                      : "Add row"}
+                  </span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6 mx-1"
