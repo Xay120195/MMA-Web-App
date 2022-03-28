@@ -280,9 +280,9 @@ const ActionButtons = ({
             SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
           </button>
           {showhideState &&
-          <div className="w-64 h-48 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+          <div className="w-64 h-38 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
             <p className="px-2 py-2 text-gray-400 text-xs font-semibold">TABLE COLUMN OPTIONS</p>
-            <div className="px-2 py-1">
+            {/* <div className="px-2 py-1">
               <input type="checkbox" 
                 name="checkNo"
                 className="cursor-pointer"
@@ -290,7 +290,7 @@ const ActionButtons = ({
                 onChange={(event) => handleCheckNo()}
               />
               &nbsp; No.
-            </div>
+            </div> */}
             <div className="px-2 py-1">
               <input type="checkbox" 
                   name="checkDate"
