@@ -1,4 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  createContext,
+  useReducer,
+  useMemo,
+} from "react";
 import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";
 import imgDocs from "../../assets/images/docs.svg";
@@ -11,8 +19,15 @@ import "../../assets/styles/Dashboard.css";
 import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { API } from "aws-amplify";
+import { initialState } from "./initialState";
+import { allMatterListReducer } from "./reducers";
+import { getMatterList } from "./actions";
+
+export const MatterContext = createContext();
 
 export default function Dashboard() {
+  const [matterlist, dispatch] = useReducer(allMatterListReducer, initialState);
+
   const [userInfo, setuserInfo] = useState(null);
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
@@ -35,9 +50,13 @@ export default function Dashboard() {
   const [selectedClient, setSelectedClient] = useState();
   const [selectedMatter, setSelectedMatter] = useState();
   const [selectedClientMatter, setSelectedClientMatter] = useState();
-  const [clientMattersList, setClientMattersList] = useState([]);
+
   const [isLoaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+
+  //restructure data from matterlist
+  const { listmatters, loading, errorMatter } = matterlist;
+  const companyId = localStorage.getItem("companyId");
 
   const {
     register,
@@ -59,17 +78,17 @@ export default function Dashboard() {
       setuserInfo(ls);
     }
 
-    if (searchMatter !== undefined) {
-      filter(searchMatter);
-    }
+    // if (searchMatter !== undefined) {
+    //   filter(searchMatter);
+    // }
 
     if (userInfo) {
       featureAccessFilters();
     }
 
     if (!isLoaded) {
-      if (clientMattersList !== undefined) {
-        ClientMatterList();
+      if (listmatters !== undefined) {
+        getMatterList(dispatch, companyId);
       }
 
       Clients();
@@ -118,21 +137,21 @@ export default function Dashboard() {
     }
   };
 
-  const filter = (v) => {
-    setClientMattersList(
-      clientMattersList
-        .filter(
-          (x) =>
-            x.matter.name.toLowerCase().includes(v.toLowerCase()) ||
-            x.client.name.toLowerCase().includes(v.toLowerCase())
-        )
-        .sort((a, b) => a.matter.name.localeCompare(b.matter.name))
-    );
+  // const filter = (v) => {
+  //   setClientMattersList(
+  //     clientMattersList
+  //       .filter(
+  //         (x) =>
+  //           x.matter.name.toLowerCase().includes(v.toLowerCase()) ||
+  //           x.client.name.toLowerCase().includes(v.toLowerCase())
+  //       )
+  //       .sort((a, b) => a.matter.name.localeCompare(b.matter.name))
+  //   );
 
-    if (v === "") {
-      ClientMatterList();
-    }
-  };
+  //   if (v === "") {
+  //     getMatterList(companyId, dispatch);
+  //   }
+  // };
 
   const handleClientChanged = (newValue) => {
     if (newValue?.__isNew__) {
@@ -215,7 +234,7 @@ export default function Dashboard() {
 
       setalertMessage(modalDeleteAlertMsg);
       handleModalClose();
-      ClientMatterList();
+      getMatterList(dispatch, companyId);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
@@ -239,7 +258,6 @@ query listClient($companyId: String) {
   const Clients = async () => {
     let result;
 
-    const companyId = localStorage.getItem("companyId");
     const clientsOpt = await API.graphql({
       query: listClient,
       variables: {
@@ -275,8 +293,6 @@ query listMatter($companyId: String) {
   const Matters = async () => {
     let result;
 
-    const companyId = localStorage.getItem("companyId");
-
     const mattersOpt = await API.graphql({
       query: listMatter,
       variables: {
@@ -294,73 +310,6 @@ query listMatter($companyId: String) {
     }
 
     setMattersOptions(result);
-  };
-
-  const listClientMatters = `
-  query listClientMatters($companyId: String) {
-    company(id: $companyId) {
-      clientMatters {
-        items {
-          id
-          createdAt
-          client {
-            id
-            name
-          }
-          matter {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-  `;
-
-  const ClientMatterList = async () => {
-    let result = [];
-
-    const companyId = localStorage.getItem("companyId");
-    const clientMattersOpt = await API.graphql({
-      query: listClientMatters,
-      variables: {
-        companyId: companyId,
-      },
-    });
-
-    if (clientMattersOpt.data.company.clientMatters.items !== null) {
-      result = clientMattersOpt.data.company.clientMatters.items;
-
-      const dummyPersonResponsible = {
-        id: 2,
-        name: "Adrian Silva",
-        email: "adrian.silva@lophils.com",
-        profile_picture:
-          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
-      };
-
-      var apdPr = result.map((v) => ({
-        ...v,
-        substantially_responsible: dummyPersonResponsible,
-      }));
-      var apdMn = apdPr
-        .map((v) => ({
-          ...v,
-          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
-            -4
-          )}/${v.client.id.slice(-4)}}`,
-        }))
-        .sort((a, b) => {
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        })
-        .reverse();
-
-      setClientMattersList(apdMn);
-    } else {
-      setClientMattersList([]);
-    }
   };
 
   const addClient = `
@@ -454,12 +403,14 @@ mutation addMatter($companyId: String, $name: String) {
     setShowToast(true);
     setSelectedClient([]);
     setSelectedMatter([]);
-    ClientMatterList();
+
     setTimeout(() => {
       setShowToast(false);
       setmatterName("");
     }, 3000);
   };
+
+  console.log(listmatters);
 
   return userInfo ? (
     <>
@@ -467,7 +418,7 @@ mutation addMatter($companyId: String, $name: String) {
         <div className="relative bg-gray-100 px-12 py-8 sm:px-12 sm:py-8 rounded-sm mb-8">
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">
-              <Welcome user={userInfo} clientmatters={clientMattersList} />
+              <Welcome user={userInfo} clientmatters={listmatters} />
 
               {showCreateMatter && (
                 <>
@@ -567,10 +518,8 @@ mutation addMatter($companyId: String, $name: String) {
               : "grid-flow-row auto-rows-max"
           }
         >
-          {clientMattersList.length === 0 ? (
-            <p className="text-red-500">No result found.</p>
-          ) : (
-            clientMattersList.map((matter, index) => (
+          {/* <MatterContext.Provider value={listmatters}>
+            {listmatters.map((matter, index) => (
               <ClientMatters
                 key={index}
                 index={index}
@@ -582,8 +531,23 @@ mutation addMatter($companyId: String, $name: String) {
                 allowOpenFileBucket={allowOpenFileBucket}
                 allowOpenBackground={allowOpenBackground}
               />
-            ))
-          )}
+            ))}
+          </MatterContext.Provider> */}
+
+          <MatterContext.Provider
+            value={{
+              listmatters: listmatters,
+              loading: loading,
+              error: errorMatter,
+              onShowDeleteModal: handleShowDeleteModal,
+              showDeleteMatter: showDeleteMatter,
+              allowOpenMatter: allowOpenMatter,
+              allowOpenFileBucket: allowOpenFileBucket,
+              allowOpenBackground: allowOpenBackground,
+            }}
+          >
+            <ClientMatters />
+          </MatterContext.Provider>
 
           {showDeleteModal && (
             <DeleteMatterModal

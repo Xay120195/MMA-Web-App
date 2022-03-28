@@ -1,0 +1,3 @@
+export const MATTER_REQUEST = "MATTER_REQUEST";
+export const MATTER_SUCCESS = "MATTER_SUCCESS";
+export const MATTER_ERROR = "MATTER_ERROR";
