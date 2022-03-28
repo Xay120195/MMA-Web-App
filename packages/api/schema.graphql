@@ -58,6 +58,15 @@ type Page {
   updatedAt: AWSDateTime
 }
 
+type ColumnSettings {
+  id: ID!
+  name: String
+  label: String
+  tableName: ViewTable
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 type Feature {
   id: ID!
   name: String
@@ -130,6 +139,15 @@ type Background {
   updatedAt: AWSDateTime
 }
 
+type UserColumnSettings {
+  id: ID
+  userId: ID
+  columnSettings: ColumnSettings
+  isVisible: Boolean
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 schema {
   query: Query
   mutation: Mutation
@@ -159,6 +177,8 @@ type Query {
   label(id: ID): Label
   backgrounds: [Background]
   background(id: ID): Background
+  columnSettings(tableName: ViewTable): [ColumnSettings]
+  userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
 }
 
 type Mutation {
@@ -218,6 +238,8 @@ type Mutation {
   labelCreate(name: String, clientMatterId: String): Label
   labelUpdate(id: ID, name: String, description: String): Label
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
+  
+  
   backgroundCreate(
     description: String
     date: AWSDateTime
@@ -232,6 +254,14 @@ type Mutation {
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
+  columnSettingsCreate(
+    name: String
+    label: String
+    tableName: ViewTable!
+  ): ColumnSettings
+  userColumnSettingsCreate(userId: ID, columnSettings: [ColumnSettingsInput]): UserColumnSettings
+  userColumnSettingsUpdate(id: ID, isVisible: Boolean): UserColumnSettings
+
 }
 
 enum UserType {
@@ -241,6 +271,11 @@ enum UserType {
   EXPERT
   CLIENT
   WITNESS
+}
+
+enum ViewTable {
+  FILEBUCKET
+  BACKGROUNDS
 }
 
 # Inputs
@@ -297,6 +332,11 @@ input RepresentativeInput {
   firstName: String
   lastName: String
   email: AWSEmail
+}
+
+input ColumnSettingsInput{
+  id: ID
+  tableName: ViewTable
 }
 
 # Relationships / Connections
