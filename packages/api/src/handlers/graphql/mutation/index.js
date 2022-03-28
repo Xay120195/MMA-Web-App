@@ -138,8 +138,6 @@ async function createUserColumnSettings(data) {
     const command = new BatchWriteItemCommand(params);
     const result = await client.send(command);
 
-    console.log("Result:", result);
-
     response = result ? data : {};
   } catch (e) {
     response = {
@@ -370,7 +368,6 @@ async function tagFileLabel(data) {
 async function tagBackgroundFile(data) {
   let response = {};
 
-  console.log(data);
   try {
     const arrItems = [];
 
@@ -394,8 +391,6 @@ async function tagBackgroundFile(data) {
         },
       });
     }
-
-    console.log(arrItems);
 
     for (var i = 0; i < data.files.length; i++) {
       arrItems.push({
@@ -733,8 +728,6 @@ async function createColumnSettings(data) {
       createdAt: new Date().toISOString(),
     };
 
-    console.log(rawParams);
-
     const params = marshall(rawParams);
     const command = new PutItemCommand({
       TableName: "ColumnSettingsTable",
@@ -768,8 +761,6 @@ async function updateUserColumnSettings(id, data) {
       id,
       ...data,
     };
-
-    console.log(params);
 
     const command = new UpdateItemCommand({
       TableName: "UserColumnSettingsTable",

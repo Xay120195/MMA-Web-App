@@ -490,7 +490,7 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    response = userColumnSettingsRequest ? result : {};
+    response = Object.keys(result).length !== 0 ? result : [];
   } catch (e) {
     response = {
       error: e.message,

@@ -25,10 +25,14 @@ const ActionButtons = ({
   setShowDeleteButton,
   activateButton,
   handleManageFiles,
-  checkNo, setCheckNo,
-  checkDate, setCheckDate,
-  checkDesc, setCheckDesc,
-  checkDocu, setCheckDocu
+  checkNo,
+  setCheckNo,
+  checkDate,
+  setCheckDate,
+  checkDesc,
+  setCheckDesc,
+  checkDocu,
+  setCheckDocu,
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -36,21 +40,17 @@ const ActionButtons = ({
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showhideState, setShowHideState] = useState(false);
-
-
+  const [tableColumnList, setTableColumnList] = useState(null);
 
   const hideToast = () => {
     setShowToast(false);
   };
 
   const handleDelete = async (item) => {
-    console.log(item);
     if (item.length === 0) {
       window.alert("Please select row.");
     } else {
       const backgroundIds = item.map((i) => i.id);
-
-      console.log("backgroundIds", backgroundIds);
 
       const mDeleteBackground = `
         mutation bulkDeleteBackground($id: [ID]) {
@@ -67,10 +67,7 @@ const ActionButtons = ({
         },
       });
 
-      console.log(deleteBackgroundRow);
-
       setalertMessage(`Successfully deleted`);
-      console.log(setCheckedState);
 
       const newArr = Array(witness.length).fill(false);
       setCheckedState(newArr);
@@ -163,7 +160,11 @@ const ActionButtons = ({
   };
   useEffect(() => {
     setWitness(newWitness);
-  }, [newWitness]);
+
+    if (tableColumnList === null) {
+      getColumnSettings();
+    }
+  }, [tableColumnList, newWitness]);
 
   function showModal() {
     setshowRemoveFileModal(true);
@@ -173,44 +174,119 @@ const ActionButtons = ({
     setshowRemoveFileModal(false);
   };
 
-  const handleCheckNo = () => {
-    if(checkNo){
-      setCheckNo(false);
-    }else{
-      setCheckNo(true);
-    }
-  };
+  const handleColumnCheckChanged = (event, data) => {
+    const params = {
+      isVisible: event.target.checked,
+    };
 
-  const handleCheckDate = () => {
-    if(checkDate){
-      setCheckDate(false);
-    }else{
-      setCheckDate(true);
-    }
-  };
-
-  const handleCheckDesc = () => {
-    if(checkDesc){
-      setCheckDesc(false);
-    }else{
-      setCheckDesc(true);
-    }
-  };
-
-  const handleCheckDocu = () => {
-    if(checkDocu){
-      setCheckDocu(false);
-    }else{
-      setCheckDocu(true);
-    }
+    updateUserColumnSettings(data.id, params);
   };
 
   const handleShowHide = () => {
-    if(showhideState){
+    if (showhideState) {
       setShowHideState(false);
-    }else{
+    } else {
       setShowHideState(true);
     }
+  };
+
+  const qGetDefaultColumnSettings = `
+  query getColumnSettings($tableName: ViewTable) {
+    columnSettings(tableName: $tableName) {
+      id
+      label
+      name
+      createdAt
+    }
+  }`;
+  const qGetUserColumnSettings = `
+  query getUserColumnSettings($tableName: ViewTable, $userId: ID) {
+    userColumnSettings(userId: $userId, tableName: $tableName) {
+      id
+      isVisible
+      userId
+      columnSettings {
+        id
+        label
+        name
+        tableName
+      }
+    }
+  }`;
+
+  const mCreateDefaultUserColumnSettings = `
+  mutation createDefaultColumnSettings($columnSettings: [ColumnSettingsInput], $userId: ID) {
+    userColumnSettingsCreate(userId: $userId, columnSettings: $columnSettings) {
+      userId
+    }
+  }`;
+
+  const getColumnSettings = async () => {
+    const tableName = "BACKGROUNDS";
+
+    const userColumnSettings = await API.graphql({
+      query: qGetUserColumnSettings,
+      variables: {
+        tableName: tableName,
+        userId: localStorage.getItem("userId"),
+      },
+    });
+
+    if (userColumnSettings.data.userColumnSettings.length === 0) {
+      // no default user column settings
+
+      const defaultColumnSettings = await API.graphql({
+        query: qGetDefaultColumnSettings,
+        variables: {
+          tableName: tableName,
+        },
+      });
+
+      if (defaultColumnSettings.data.columnSettings !== null) {
+        const defaultColumnSettingsIds =
+          defaultColumnSettings.data.columnSettings.map((i) => {
+            return { id: i.id };
+          });
+
+        const insertDefaultUserColumnSettings = await API.graphql({
+          query: mCreateDefaultUserColumnSettings,
+          variables: {
+            columnSettings: defaultColumnSettingsIds,
+            userId: localStorage.getItem("userId"),
+          },
+        });
+
+        getColumnSettings();
+      }
+    } else {
+      setTableColumnList(userColumnSettings.data.userColumnSettings);
+    }
+  };
+
+  const mUpdateUserColumnSettings = `
+  mutation UpdateUserColumnSettings($isVisible: Boolean, $id: ID) {
+    userColumnSettingsUpdate(id: $id, isVisible: $isVisible) {
+      id
+    }
+  }
+  `;
+
+  async function updateUserColumnSettings(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateUserColumnSettings,
+          variables: {
+            id: id,
+            isVisible: data.isVisible,
+          },
+        });
+
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
   }
 
   return (
@@ -270,64 +346,47 @@ const ActionButtons = ({
             </svg>
           </button>
 
-
           <div className="inline-flex">
+            <button
+              type="button"
+              className={
+                "hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+              }
+              onClick={() => handleShowHide()}
+            >
+              SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
+            </button>
+            {showhideState && (
+              <div className="w-64 h-38 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+                <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
+                  TABLE COLUMN OPTIONS
+                </p>
+
+                {tableColumnList !== null &&
+                  tableColumnList.map((data, index) => (
+                    <div className="px-2 py-1" key={data.id}>
+                      <input
+                        type="checkbox"
+                        name={data.columnSettings.name}
+                        className="cursor-pointer"
+                        checked={data.isVisible}
+                        onChange={(event) =>
+                          handleColumnCheckChanged(event, data)
+                        }
+                      />
+                      &nbsp; {data.columnSettings.label}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+
           <button
             type="button"
-            className={"hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"}
-            onClick={() => handleShowHide()}
-          >
-            SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
-          </button>
-          {showhideState &&
-          <div className="w-64 h-38 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
-            <p className="px-2 py-2 text-gray-400 text-xs font-semibold">TABLE COLUMN OPTIONS</p>
-            {/* <div className="px-2 py-1">
-              <input type="checkbox" 
-                name="checkNo"
-                className="cursor-pointer"
-                checked={checkNo}
-                onChange={(event) => handleCheckNo()}
-              />
-              &nbsp; No.
-            </div> */}
-            <div className="px-2 py-1">
-              <input type="checkbox" 
-                  name="checkDate"
-                  className="cursor-pointer"
-                  checked={checkDate}
-                  onChange={(event) => handleCheckDate()}
-              />
-              &nbsp; Date
-            </div>
-            <div className="px-2 py-1">
-              <input type="checkbox" 
-                name="checkDesc"
-                className="cursor-pointer"
-                checked={checkDesc}
-                onChange={(event) => handleCheckDesc()}
-              />
-              &nbsp; Description of Background and Category
-            </div>
-            <div className="px-2 py-1">
-              <input type="checkbox" 
-                name="checkDocu"
-                className="cursor-pointer"
-                checked={checkDocu}
-                onChange={(event) => handleCheckDocu()}
-              />
-              &nbsp; Document
-            </div>
-          </div>
-          }
-          </div>
-       
-          
-          <button
-            type="button"
-            className=
-            {!activateButton ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-            : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            className={
+              !activateButton
+                ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
             }
             onClick={() => handleManageFiles()}
           >
