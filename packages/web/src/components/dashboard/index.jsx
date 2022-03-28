@@ -18,23 +18,22 @@ import ToastNotification from "../toast-notification";
 import "../../assets/styles/Dashboard.css";
 import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
-import { API } from "aws-amplify";
+import { a, API } from "aws-amplify";
 import { initialState } from "./initialState";
-import { allMatterListReducer } from "./reducers";
-import { getMatterList } from "./actions";
+import { clientMatterReducers } from "./reducers";
+import { getMatterList, addClientMatter, deleteMatterClient } from "./actions";
 
 export const MatterContext = createContext();
 
 export default function Dashboard() {
-  const [matterlist, dispatch] = useReducer(allMatterListReducer, initialState);
-
+  const [matterlist, dispatch] = useReducer(clientMatterReducers, initialState);
+  const [error, setError] = useState(false);
   const [userInfo, setuserInfo] = useState(null);
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setsearchMatter] = useState();
   const [clientName, setclientName] = useState(null);
   const [matterName, setmatterName] = useState(null);
   const modalDeleteAlertMsg = "Successfully deleted!";
-  const createMatterAlertMsg = "Matter successfully added!";
 
   const [showDeleteModal, setshowDeleteModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -52,10 +51,9 @@ export default function Dashboard() {
   const [selectedClientMatter, setSelectedClientMatter] = useState();
 
   const [isLoaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
 
   //restructure data from matterlist
-  const { listmatters, loading, errorMatter } = matterlist;
+  const { listmatters, loading, errorMatter, toastMessage, toast } = matterlist;
   const companyId = localStorage.getItem("companyId");
 
   const {
@@ -86,16 +84,10 @@ export default function Dashboard() {
       featureAccessFilters();
     }
 
-    if (!isLoaded) {
-      if (listmatters !== undefined) {
-        getMatterList(dispatch, companyId);
-      }
+    getMatterList(dispatch, companyId);
 
-      Clients();
-      Matters();
-
-      setLoaded(true);
-    }
+    Clients();
+    Matters();
   }, [searchMatter, userInfo]);
 
   const featureAccessFilters = async () => {
@@ -137,23 +129,22 @@ export default function Dashboard() {
     }
   };
 
-  // const filter = (v) => {
-  //   setClientMattersList(
-  //     clientMattersList
-  //       .filter(
-  //         (x) =>
-  //           x.matter.name.toLowerCase().includes(v.toLowerCase()) ||
-  //           x.client.name.toLowerCase().includes(v.toLowerCase())
-  //       )
-  //       .sort((a, b) => a.matter.name.localeCompare(b.matter.name))
-  //   );
+  const filter = (v) => {
+    listmatters
+      .filter(
+        (x) =>
+          x.matter.name.toLowerCase().includes(v.toLowerCase()) ||
+          x.client.name.toLowerCase().includes(v.toLowerCase())
+      )
+      .sort((a, b) => a.matter.name.localeCompare(b.matter.name));
 
-  //   if (v === "") {
-  //     getMatterList(companyId, dispatch);
-  //   }
-  // };
+    if (v === "") {
+      getMatterList(companyId, dispatch);
+    }
+  };
 
   const handleClientChanged = (newValue) => {
+    console.log(newValue);
     if (newValue?.__isNew__) {
       addClients(newValue.label);
     } else {
@@ -176,11 +167,11 @@ export default function Dashboard() {
   const handleNewMatter = async () => {
     if (clientName === null) {
       setShowToast(true);
-      setalertMessage("Client name is required");
       setError(true);
+      setalertMessage("Client name is required");
+
       setTimeout(() => {
         setShowToast(false);
-        setalertMessage("");
         setError(false);
       }, 3000);
     } else if (matterName === null) {
@@ -189,7 +180,6 @@ export default function Dashboard() {
       setError(true);
       setTimeout(() => {
         setShowToast(false);
-        setalertMessage("");
         setError(false);
       }, 3000);
     } else {
@@ -202,7 +192,14 @@ export default function Dashboard() {
           name: matterName.label,
         };
 
-      await addClientMatter(client, matter);
+      addClientMatter(client, matter, companyId, dispatch);
+      setShowToast(true);
+      setalertMessage(toastMessage);
+      setError(false);
+      setTimeout(() => {
+        setShowToast(toast);
+        setalertMessage("");
+      }, 3000);
     }
   };
 
@@ -223,23 +220,14 @@ export default function Dashboard() {
     setSelectedClientMatter(id);
   };
 
-  const handleDeleteModal = async () => {
-    if (selectedClientMatter !== null && selectedClientMatter !== undefined) {
-      await API.graphql({
-        query: deleteClientMatter,
-        variables: {
-          id: selectedClientMatter,
-        },
-      });
-
-      setalertMessage(modalDeleteAlertMsg);
-      handleModalClose();
-      getMatterList(dispatch, companyId);
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-    }
+  const handleDeleteModal = () => {
+    setalertMessage(toastMessage);
+    handleModalClose();
+    deleteMatterClient(selectedClientMatter, dispatch, companyId);
+    setShowToast(toast);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
   };
 
   const listClient = `
@@ -371,46 +359,11 @@ mutation addMatter($companyId: String, $name: String) {
     setmatterName(result[0]);
   };
 
-  const createClientMatter = `
-  mutation createClientMatter($companyId: String, $client: ClientInput, $matter:MatterInput) {
-    clientMatterCreate(companyId: $companyId, client: $client, matter:$matter) {
-      id
-    }
-}
-`;
+  const allmatterlist = useMemo(() => {
+    return listmatters;
+  }, [listmatters]);
 
-  const deleteClientMatter = `
-  mutation deleteClientMatter($id: ID) {
-    clientMatterDelete(id: $id) {
-      id
-    }
-}
-`;
-
-  const addClientMatter = async (client, matter) => {
-    const companyId = localStorage.getItem("companyId");
-    const addedClientMatter = await API.graphql({
-      query: createClientMatter,
-      variables: {
-        companyId: companyId,
-        client: client,
-        matter: matter,
-      },
-    });
-
-    setalertMessage(createMatterAlertMsg);
-    handleModalClose();
-    setShowToast(true);
-    setSelectedClient([]);
-    setSelectedMatter([]);
-
-    setTimeout(() => {
-      setShowToast(false);
-      setmatterName("");
-    }, 3000);
-  };
-
-  console.log(listmatters);
+  console.log(allmatterlist);
 
   return userInfo ? (
     <>
@@ -437,7 +390,9 @@ mutation addMatter($companyId: String, $name: String) {
                             isSearchable
                             onChange={handleClientChanged}
                             value={selectedClient}
-                            placeholder="Client"
+                            placeholder={
+                              !selectedClient ? "client" : selectedClient
+                            }
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
                         </div>
@@ -451,7 +406,9 @@ mutation addMatter($companyId: String, $name: String) {
                             isSearchable
                             onChange={handleMatterChanged}
                             value={selectedMatter}
-                            placeholder="Matters"
+                            placeholder={
+                              !selectedMatter ? "Matter" : selectedMatter
+                            }
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
                         </div>
@@ -459,8 +416,15 @@ mutation addMatter($companyId: String, $name: String) {
                       <div className="pr-2">
                         <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
                           <button
+                            disabled={
+                              matterName === null || clientName === null
+                            }
                             type="submit"
-                            className="bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
+                            className={
+                              matterName === null || clientName === null
+                                ? "bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
+                                : "bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
+                            }
                           >
                             +
                           </button>
@@ -518,36 +482,30 @@ mutation addMatter($companyId: String, $name: String) {
               : "grid-flow-row auto-rows-max"
           }
         >
-          {/* <MatterContext.Provider value={listmatters}>
-            {listmatters.map((matter, index) => (
-              <ClientMatters
-                key={index}
-                index={index}
-                clientMatter={matter}
-                view={mattersView}
-                onShowDeleteModal={handleShowDeleteModal}
-                showDeleteMatter={showDeleteMatter}
-                allowOpenMatter={allowOpenMatter}
-                allowOpenFileBucket={allowOpenFileBucket}
-                allowOpenBackground={allowOpenBackground}
-              />
-            ))}
-          </MatterContext.Provider> */}
-
-          <MatterContext.Provider
-            value={{
-              listmatters: listmatters,
-              loading: loading,
-              error: errorMatter,
-              onShowDeleteModal: handleShowDeleteModal,
-              showDeleteMatter: showDeleteMatter,
-              allowOpenMatter: allowOpenMatter,
-              allowOpenFileBucket: allowOpenFileBucket,
-              allowOpenBackground: allowOpenBackground,
-            }}
-          >
-            <ClientMatters />
-          </MatterContext.Provider>
+          {allmatterlist.length <= 0 ? (
+            <span>no records</span>
+          ) : (
+            <>
+              {" "}
+              {allmatterlist.map((matter, index) => (
+                <MatterContext.Provider
+                  value={{
+                    clientMatter: matter,
+                    loading: loading,
+                    error: errorMatter,
+                    view: mattersView,
+                    onShowDeleteModal: handleShowDeleteModal,
+                    showDeleteMatter: showDeleteMatter,
+                    allowOpenMatter: allowOpenMatter,
+                    allowOpenFileBucket: allowOpenFileBucket,
+                    allowOpenBackground: allowOpenBackground,
+                  }}
+                >
+                  <ClientMatters key={index} index={index} />
+                </MatterContext.Provider>
+              ))}
+            </>
+          )}
 
           {showDeleteModal && (
             <DeleteMatterModal
@@ -558,8 +516,9 @@ mutation addMatter($companyId: String, $name: String) {
 
           {showToast && (
             <ToastNotification
+              errorMatter={errorMatter}
               error={error}
-              title={alertMessage}
+              title={toastMessage ? toastMessage : alertMessage}
               hideToast={hideToast}
             />
           )}

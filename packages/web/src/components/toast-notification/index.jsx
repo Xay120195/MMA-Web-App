@@ -37,7 +37,7 @@ const ToastNotification = ({ title, hideToast, error }) => {
               />
             </svg>
           )}
-          <span>{title || "Link copied to clipboard!"}</span>
+          <span>{title || title}</span>
           <span>
             <FaIcons.FaTimes onClick={hideToast} />
           </span>

@@ -5,16 +5,13 @@ import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 import * as FaIcons from "react-icons/fa";
 import { MatterContext } from "./index";
-
-export function ClientMatters() {
-  const listMatterData = useContext(MatterContext);
-
+export function ClientMatters({}) {
   const setshowDeleteModal = (displayStatus, id) => {
     onShowDeleteModal(displayStatus, id);
   };
 
   const {
-    listmatters,
+    clientMatter,
     view,
     onShowDeleteModal,
     showDeleteMatter,
@@ -23,15 +20,17 @@ export function ClientMatters() {
     allowOpenBackground,
     loading,
     error,
-  } = listMatterData;
+  } = useContext(MatterContext);
 
   return (
     <>
-      {view === "grid" ? (
+      {loading ? (
+        <h1 style={{ color: "black" }}>loading files</h1>
+      ) : (
         <>
-          {listmatters.map((clientMatter) => (
+          {view === "grid" ? (
             <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
-              <div key={clientMatter.id}>
+              <div>
                 {allowOpenFileBucket ||
                 allowOpenBackground ||
                 showDeleteMatter ? (
@@ -115,13 +114,9 @@ export function ClientMatters() {
                 </div>
               </div>
             </div>
-          ))}
-        </>
-      ) : (
-        <>
-          {listmatters.map((clientMatter) => (
+          ) : (
             <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4">
-              <div key={clientMatter.id}>
+              <div>
                 {allowOpenFileBucket ||
                 allowOpenBackground ||
                 showDeleteMatter ? (
@@ -200,7 +195,7 @@ export function ClientMatters() {
                 {/* </Link> */}
               </div>
             </div>
-          ))}
+          )}
         </>
       )}
     </>
