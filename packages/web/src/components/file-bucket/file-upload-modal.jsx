@@ -216,24 +216,24 @@ export default function UploadLinkModal(props) {
             );
             console.log(`Progress: ${progressInPercentage}%, ${uf.data.name}`);
 
-            // if(progressInPercentage === 100){
-            //   temp = Array(selectedFiles.length).fill(100);
-            //   setPercent(temp);
-            //   completed = true;
-            // }else{
-            //   if(completed){
+            if(progressInPercentage === 100){
+              temp = Array(selectedFiles.length).fill(100);
+              setPercent(temp);
+              completed = true;
+            }else{
+              if(completed){
 
-            //   }else{
-                // if(temp.length == selectedFiles.length){
-                //   temp = [];
-                // }else{
-                  // temp = [...temp, {prog: progressInPercentage, name: uf.data.name}];
+              }else{
+                if(temp.length == selectedFiles.length){
+                  temp = [];
+                }else{
+                  temp = [...temp, {prog: progressInPercentage, name: uf.data.name}];
                   temp = [...temp, progressInPercentage];
                   setPercent(temp);
-                  // console.log(temp);
-               // }
-            //   }
-            // }
+                  console.log(temp);
+               }
+              }
+            }
             
          
           },
