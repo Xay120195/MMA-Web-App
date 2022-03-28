@@ -180,6 +180,7 @@ export default function UploadLinkModal(props) {
 
 
   var count = 0;
+  var temp=[];
 
   const handleUpload = async () => {
     setUploadStart(true);
@@ -204,8 +205,6 @@ export default function UploadLinkModal(props) {
       }
 
       try {
-        var temp=[];
-        let completed = false;
         await Storage.put(key, uf.data, {
           contentType: type,
           
@@ -216,26 +215,21 @@ export default function UploadLinkModal(props) {
             );
             console.log(`Progress: ${progressInPercentage}%, ${uf.data.name}`);
 
-            if(progressInPercentage === 100){
-              temp = Array(selectedFiles.length).fill(100);
-              setPercent(temp);
-              completed = true;
-            }else{
-              if(completed){
-
-              }else{
-                if(temp.length == selectedFiles.length){
-                  temp = [];
-                }else{
-                  temp = [...temp, {prog: progressInPercentage, name: uf.data.name}];
-                  temp = [...temp, progressInPercentage];
-                  setPercent(temp);
-                  console.log(temp);
-               }
+            if(temp.length > selectedFiles.length){
+              
+              for(var i=0; i<selectedFiles.length; i++){
+                console.log(uf.data.name === temp[i].name);
+                if(temp[i].name === uf.data.name){
+                  temp[i].prog = progressInPercentage;
+                }
               }
+            }else{
+              temp = [...temp, {prog: progressInPercentage, name: uf.data.name}];
             }
+
             
-         
+            console.log(temp);
+            setPercent(temp);
           },
           errorCallback: (err) => {
             console.error("204: Unexpected error while uploading", err);
@@ -257,9 +251,7 @@ export default function UploadLinkModal(props) {
           .catch((err) => {
             console.error("220: Unexpected error while uploading", err);
           });
-          
-
-          
+               
       } catch (e) {
         const response = {
           error: e.message,
@@ -382,7 +374,7 @@ export default function UploadLinkModal(props) {
                       )} */}
 
 
-                      <CircularProgressbar value={percent[index] ? percent[index] : 0} text={percent[index] ? `${percent[index]}%` : '0%'} className="w-10 h-10"/>
+                      <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
                     </div>
                   ))}
                 </div>
