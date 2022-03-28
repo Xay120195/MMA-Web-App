@@ -110,6 +110,49 @@ async function createFeature(data) {
   return response;
 }
 
+async function createUserColumnSettings(data) {
+  let response = {};
+  try {
+    const arrItems = [];
+
+    for (var i = 0; i < data.columnSettings.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            userId: data.userId,
+            columnSettings: data.columnSettings[i],
+            isVisible: true,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+    }
+
+    const params = {
+      RequestItems: {
+        UserColumnSettingsTable: arrItems,
+      },
+    };
+
+    const command = new BatchWriteItemCommand(params);
+    const result = await client.send(command);
+
+    console.log("Result:", result);
+
+    response = result ? data : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
 async function createCompanyAccessType(data) {
   let response = {};
   try {
@@ -390,6 +433,41 @@ async function tagBackgroundFile(data) {
   return response;
 }
 
+async function tagUserColumnSettings(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    const command = new UpdateItemCommand({
+      TableName: "LabelsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await client.send(command);
+    response = request ? params : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
 async function bulkDeleteBackground(data) {
   let response = {};
   try {
@@ -632,6 +710,78 @@ async function createBackground(data) {
     );
 
     response = clientMatterBackgroundRequest ? rawParams : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
+async function createColumnSettings(data) {
+  let response = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      label: data.label,
+      tableName: data.tableName,
+      createdAt: new Date().toISOString(),
+    };
+
+    console.log(rawParams);
+
+    const params = marshall(rawParams);
+    const command = new PutItemCommand({
+      TableName: "ColumnSettingsTable",
+      Item: params,
+    });
+
+    const request = await client.send(command);
+    response = request ? unmarshall(params) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
+async function updateUserColumnSettings(id, data) {
+  let response = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const params = {
+      id,
+      ...data,
+    };
+
+    console.log(params);
+
+    const command = new UpdateItemCommand({
+      TableName: "UserColumnSettingsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await client.send(command);
+
+    response = request ? params : {};
   } catch (e) {
     response = {
       error: e.message,
@@ -927,6 +1077,26 @@ const resolvers = {
     },
     backgroundFileTag: async (ctx) => {
       return await tagBackgroundFile(ctx.arguments);
+    },
+    columnSettingsCreate: async (ctx) => {
+      return await createColumnSettings(ctx.arguments);
+    },
+    userColumnSettingsTag: async (ctx) => {
+      return await tagUserColumnSettings(ctx.arguments);
+    },
+
+    userColumnSettingsCreate: async (ctx) => {
+      return await createUserColumnSettings(ctx.arguments);
+    },
+    userColumnSettingsUpdate: async (ctx) => {
+      const { id, isVisible } = ctx.arguments;
+      const data = {
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (isVisible !== undefined) data.isVisible = isVisible;
+
+      return await updateUserColumnSettings(id, data);
     },
   },
 };
