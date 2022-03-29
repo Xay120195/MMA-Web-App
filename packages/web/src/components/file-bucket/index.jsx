@@ -179,13 +179,13 @@ export default function FileBucket() {
     matterFile(matterId: $matterId, isDeleted: $isDeleted) {
       id
       name
-      downloadURL
-      size
       type
       details
       labels {
-        id
-        name
+        items {
+          id
+          name
+        }
       }
       createdAt
       order
@@ -410,7 +410,7 @@ const mGetPaginateItems = `
             id: id,
             name: data.name,
             details: data.details,
-            labels: data.labels,
+            //labels: data.labels,
           },
         });
 
