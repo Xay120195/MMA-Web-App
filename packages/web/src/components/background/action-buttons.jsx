@@ -33,6 +33,8 @@ const ActionButtons = ({
   setCheckDesc,
   checkDocu,
   setCheckDocu,
+  checkedStateShowHide,
+  setCheckedStateShowHide
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -179,6 +181,37 @@ const ActionButtons = ({
       isVisible: event.target.checked,
     };
 
+    // alert("clicked");
+    // alert(event.target.checked);
+    console.log(data);
+    let temp = checkedStateShowHide;
+    console.log(temp);
+
+    for(var i=0; i<checkedStateShowHide.length; i++){
+      if(data.columnSettings.name === "DATE"){
+        if(temp[0]){
+          temp[0] = false;
+        }else{
+          temp[0] = true;
+        }
+      }else if(data.columnSettings.name === "DOCUMENT"){
+        if(temp[2]){
+          temp[2] = false;
+        }else{
+          temp[2] = true;
+        }
+      }else if(data.columnSettings.name === "DESCRIPTIONOFBACKGROUND"){
+        if(temp[1]){
+          temp[1] = false;
+        }else{
+          temp[1] = true;
+        }
+      }
+    }
+
+    console.log(temp);
+    setCheckedStateShowHide(temp);
+    console.log(checkedStateShowHide);
     updateUserColumnSettings(data.id, params);
   };
 
@@ -221,6 +254,8 @@ const ActionButtons = ({
     }
   }`;
 
+  var temp = [];
+
   const getColumnSettings = async () => {
     const tableName = "BACKGROUNDS";
 
@@ -231,6 +266,13 @@ const ActionButtons = ({
         userId: localStorage.getItem("userId"),
       },
     });
+
+    console.log(userColumnSettings.data.userColumnSettings);
+   
+    userColumnSettings.data.userColumnSettings.map(x=> temp= [...temp, x.isVisible]);
+    setCheckedStateShowHide(temp);
+
+    console.log(checkedStateShowHide);
 
     if (userColumnSettings.data.userColumnSettings.length === 0) {
       // no default user column settings
@@ -369,12 +411,19 @@ const ActionButtons = ({
                         type="checkbox"
                         name={data.columnSettings.name}
                         className="cursor-pointer"
-                        checked={data.isVisible}
+                        // checked={data.isVisible}
+                        checked={
+                          data.columnSettings.name === 'DATE' ?
+                          checkedStateShowHide[0]
+                          : data.columnSettings.name === "DOCUMENT" ?
+                          checkedStateShowHide[2]
+                          : checkedStateShowHide[1]
+                        }
                         onChange={(event) =>
                           handleColumnCheckChanged(event, data)
                         }
                       />
-                      &nbsp; {data.columnSettings.label}
+                      &nbsp; {data.columnSettings.label} {checkedStateShowHide[index]}
                     </div>
                   ))}
               </div>

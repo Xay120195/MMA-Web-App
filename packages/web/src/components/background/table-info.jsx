@@ -58,6 +58,8 @@ const TableInfo = ({
   checkDate,
   checkDesc,
   checkDocu,
+  checkedStateShowHide,
+  setCheckedStateShowHide
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -510,19 +512,19 @@ const TableInfo = ({
                 <EmptyRow search={search} />
               ) : (
                 <>
+                
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          {checkNo && (
+                          
                             <th
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               No
                             </th>
-                          )}
-                          {checkDate && (
+                          {checkedStateShowHide[0] && (
                             <th
                               scope="col"
                               className="px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -537,7 +539,7 @@ const TableInfo = ({
                               />
                             </th>
                           )}
-                          {checkDesc && (
+                          {checkedStateShowHide[1] && (
                             <th
                               scope="col"
                               className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -545,7 +547,7 @@ const TableInfo = ({
                               Description of Background
                             </th>
                           )}
-                          {checkDocu && (
+                          {checkedStateShowHide[2] && (
                             <th
                               scope="col"
                               className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -586,7 +588,7 @@ const TableInfo = ({
                                           : "",
                                     }}
                                   >
-                                    {checkNo && (
+                                  
                                       <td
                                         {...provider.dragHandleProps}
                                         className="px-3 py-3 w-10"
@@ -619,8 +621,8 @@ const TableInfo = ({
                                           </label>
                                         </div>
                                       </td>
-                                    )}
-                                    {checkDate && (
+                                   
+                                    {checkedStateShowHide[0] && (
                                       <td
                                         {...provider.dragHandleProps}
                                         className="px-3 py-3"
@@ -640,7 +642,7 @@ const TableInfo = ({
                                         </div>
                                       </td>
                                     )}
-                                    {checkDesc && (
+                                    {checkedStateShowHide[1] && (
                                       <td
                                         {...provider.dragHandleProps}
                                         className="w-full px-6 py-4"
@@ -684,7 +686,7 @@ const TableInfo = ({
                                         </span>
                                       </td>
                                     )}
-                                    {checkDocu && (
+                                    {checkedStateShowHide[2] && (
                                       <td
                                         {...provider.dragHandleProps}
                                         className="py-2 px-3 w-80 text-sm text-gray-500"
