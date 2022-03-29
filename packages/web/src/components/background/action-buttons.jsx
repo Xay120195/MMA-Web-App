@@ -33,6 +33,8 @@ const ActionButtons = ({
   setCheckDesc,
   checkDocu,
   setCheckDocu,
+  checkedStateShowHide,
+  setCheckedStateShowHide
 }) => {
   const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
@@ -173,8 +175,40 @@ const ActionButtons = ({
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
   };
+  const handleClick = (event, name, state) => {
+    // alert("tests");
+
+    let tempp = state;
+    console.log("state", tempp);
+    console.log(name);
+
+    if(name === 'DATE'){
+      if(checkDate){
+        setCheckDate(false);
+      }else{
+        setCheckDate(true);
+      }
+    }
+    
+    if(name === 'DOCUMENT'){
+      if(checkDocu){
+        setCheckDocu(false);
+      }else{
+        setCheckDocu(true);
+      }
+    }
+
+    if(name === "DESCRIPTIONOFBACKGROUND"){
+      if(checkDesc){
+        setCheckDesc(false);
+      }else{
+        setCheckDesc(true);
+      }
+    }
+  }
 
   const handleColumnCheckChanged = (event, data) => {
+    setShowHideState(true);
     const params = {
       isVisible: event.target.checked,
     };
@@ -221,6 +255,8 @@ const ActionButtons = ({
     }
   }`;
 
+  var temp = [];
+
   const getColumnSettings = async () => {
     const tableName = "BACKGROUNDS";
 
@@ -231,6 +267,14 @@ const ActionButtons = ({
         userId: localStorage.getItem("userId"),
       },
     });
+    console.log("v");
+    console.log(userColumnSettings.data.userColumnSettings);
+   
+    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DATE" && setCheckDate(x.isVisible));
+    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DOCUMENT" && setCheckDocu(x.isVisible));
+    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DESCRIPTIONOFBACKGROUND" && setCheckDesc(x.isVisible));
+
+    console.log(checkedStateShowHide);
 
     if (userColumnSettings.data.userColumnSettings.length === 0) {
       // no default user column settings
@@ -361,6 +405,7 @@ const ActionButtons = ({
                 <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                   TABLE COLUMN OPTIONS
                 </p>
+                
 
                 {tableColumnList !== null &&
                   tableColumnList.map((data, index) => (
@@ -369,12 +414,20 @@ const ActionButtons = ({
                         type="checkbox"
                         name={data.columnSettings.name}
                         className="cursor-pointer"
-                        checked={data.isVisible}
+                        // checked={data.isVisible}
+                        checked={
+                          data.columnSettings.name === 'DATE' ?
+                          checkDate
+                          : data.columnSettings.name === "DOCUMENT" ?
+                          checkDocu
+                          : checkDesc
+                        }
+                        onClick={(event) => handleClick(event, data.columnSettings.name, checkedStateShowHide)}
                         onChange={(event) =>
                           handleColumnCheckChanged(event, data)
                         }
                       />
-                      &nbsp; {data.columnSettings.label}
+                      &nbsp; {data.columnSettings.label} 
                     </div>
                   ))}
               </div>
