@@ -176,42 +176,46 @@ const ActionButtons = ({
     setshowRemoveFileModal(false);
   };
 
-  const handleColumnCheckChanged = (event, data) => {
+  const handleColumnCheckChanged = (event, data, state) => {
     const params = {
       isVisible: event.target.checked,
     };
 
-    // alert("clicked");
-    // alert(event.target.checked);
     console.log(data);
-    let temp = checkedStateShowHide;
-    console.log(temp);
+    let tempp = state;
+    console.log(data.columnSettings.name);
+    console.log("state", tempp);
 
-    for(var i=0; i<checkedStateShowHide.length; i++){
       if(data.columnSettings.name === "DATE"){
-        if(temp[0]){
-          temp[0] = false;
+        if(tempp[0]){
+          tempp[0] = false;
         }else{
-          temp[0] = true;
+          tempp[0] = true;
         }
-      }else if(data.columnSettings.name === "DOCUMENT"){
-        if(temp[2]){
-          temp[2] = false;
-        }else{
-          temp[2] = true;
-        }
-      }else if(data.columnSettings.name === "DESCRIPTIONOFBACKGROUND"){
-        if(temp[1]){
-          temp[1] = false;
-        }else{
-          temp[1] = true;
-        }
+        console.log("save", tempp);
+        setCheckedStateShowHide(tempp);
       }
-    }
+      
+      if(data.columnSettings.name === "DOCUMENT"){
+        if(tempp[2]){
+          tempp[2] = false;
+        }else{
+          tempp[2] = true;
+        }
+        console.log("save", tempp);
+        setCheckedStateShowHide(tempp);
+      }
 
-    console.log(temp);
-    setCheckedStateShowHide(temp);
-    console.log(checkedStateShowHide);
+      if(data.columnSettings.name === "DESCRIPTIONOFBACKGROUND"){
+        if(tempp[1]){
+          tempp[1] = false;
+        }else{
+          tempp[1] = true;
+        }
+        console.log("save", tempp);
+        setCheckedStateShowHide(tempp);
+      }
+
     updateUserColumnSettings(data.id, params);
   };
 
@@ -420,10 +424,10 @@ const ActionButtons = ({
                           : checkedStateShowHide[1]
                         }
                         onChange={(event) =>
-                          handleColumnCheckChanged(event, data)
+                          handleColumnCheckChanged(event, data, checkedStateShowHide)
                         }
                       />
-                      &nbsp; {data.columnSettings.label} {checkedStateShowHide[index]}
+                      &nbsp; {data.columnSettings.label} 
                     </div>
                   ))}
               </div>
