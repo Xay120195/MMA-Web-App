@@ -175,46 +175,43 @@ const ActionButtons = ({
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
   };
+  const handleClick = (event, name, state) => {
+    // alert("tests");
 
-  const handleColumnCheckChanged = (event, data, state) => {
+    let tempp = state;
+    console.log("state", tempp);
+    console.log(name);
+
+    if(name === 'DATE'){
+      if(checkDate){
+        setCheckDate(false);
+      }else{
+        setCheckDate(true);
+      }
+    }
+    
+    if(name === 'DOCUMENT'){
+      if(checkDocu){
+        setCheckDocu(false);
+      }else{
+        setCheckDocu(true);
+      }
+    }
+
+    if(name === "DESCRIPTIONOFBACKGROUND"){
+      if(checkDesc){
+        setCheckDesc(false);
+      }else{
+        setCheckDesc(true);
+      }
+    }
+  }
+
+  const handleColumnCheckChanged = (event, data) => {
+    setShowHideState(true);
     const params = {
       isVisible: event.target.checked,
     };
-
-    console.log(data);
-    let tempp = state;
-    console.log(data.columnSettings.name);
-    console.log("state", tempp);
-
-      if(data.columnSettings.name === "DATE"){
-        if(tempp[0]){
-          tempp[0] = false;
-        }else{
-          tempp[0] = true;
-        }
-        console.log("save", tempp);
-        setCheckedStateShowHide(tempp);
-      }
-      
-      if(data.columnSettings.name === "DOCUMENT"){
-        if(tempp[2]){
-          tempp[2] = false;
-        }else{
-          tempp[2] = true;
-        }
-        console.log("save", tempp);
-        setCheckedStateShowHide(tempp);
-      }
-
-      if(data.columnSettings.name === "DESCRIPTIONOFBACKGROUND"){
-        if(tempp[1]){
-          tempp[1] = false;
-        }else{
-          tempp[1] = true;
-        }
-        console.log("save", tempp);
-        setCheckedStateShowHide(tempp);
-      }
 
     updateUserColumnSettings(data.id, params);
   };
@@ -270,11 +267,12 @@ const ActionButtons = ({
         userId: localStorage.getItem("userId"),
       },
     });
-
+    console.log("v");
     console.log(userColumnSettings.data.userColumnSettings);
    
-    userColumnSettings.data.userColumnSettings.map(x=> temp= [...temp, x.isVisible]);
-    setCheckedStateShowHide(temp);
+    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DATE" && setCheckDate(x.isVisible));
+    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DOCUMENT" && setCheckDocu(x.isVisible));
+    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DESCRIPTIONOFBACKGROUND" && setCheckDesc(x.isVisible));
 
     console.log(checkedStateShowHide);
 
@@ -407,6 +405,7 @@ const ActionButtons = ({
                 <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                   TABLE COLUMN OPTIONS
                 </p>
+                
 
                 {tableColumnList !== null &&
                   tableColumnList.map((data, index) => (
@@ -418,13 +417,14 @@ const ActionButtons = ({
                         // checked={data.isVisible}
                         checked={
                           data.columnSettings.name === 'DATE' ?
-                          checkedStateShowHide[0]
+                          checkDate
                           : data.columnSettings.name === "DOCUMENT" ?
-                          checkedStateShowHide[2]
-                          : checkedStateShowHide[1]
+                          checkDocu
+                          : checkDesc
                         }
+                        onClick={(event) => handleClick(event, data.columnSettings.name, checkedStateShowHide)}
                         onChange={(event) =>
-                          handleColumnCheckChanged(event, data, checkedStateShowHide)
+                          handleColumnCheckChanged(event, data)
                         }
                       />
                       &nbsp; {data.columnSettings.label} 
