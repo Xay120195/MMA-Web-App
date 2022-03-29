@@ -307,6 +307,34 @@ async function getLabel(data) {
   return response;
 }
 
+async function listColumnSettingsByTable(data) {
+  try {
+    const params = {
+      TableName: "ColumnSettingsTable",
+      IndexName: "byTableName",
+      KeyConditionExpression: "tableName = :tableName",
+      ExpressionAttributeValues: marshall({
+        ":tableName": data.tableName,
+      }),
+    };
+
+    const command = new QueryCommand(params);
+    const request = await client.send(command);
+
+    const result = request.Items.map((d) => unmarshall(d));
+
+    response = request ? result : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 async function getBackground(data) {
   try {
     const params = {
@@ -402,6 +430,79 @@ async function getClientMatter(data) {
   return response;
 }
 
+async function getUserColumnSettings(data) {
+  const { userId, tableName } = data;
+
+  let response = {},
+    result = {};
+  try {
+    const userColumnSettingsParams = {
+      TableName: "UserColumnSettingsTable",
+      IndexName: "byUser",
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: marshall({
+        ":userId": userId,
+      }),
+    };
+
+    const userColumnSettingsCommand = new QueryCommand(
+      userColumnSettingsParams
+    );
+    const userColumnSettingsRequest = await client.send(
+      userColumnSettingsCommand
+    );
+
+    //const userColumnSettings = userColumnSettingsRequest.Items.map((i) => unmarshall(i));
+
+    const columnSettingsIds = userColumnSettingsRequest.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.columnSettings.id }));
+
+    if (columnSettingsIds.length != 0) {
+      const ColumnSettingsParams = {
+        RequestItems: {
+          ColumnSettingsTable: {
+            Keys: columnSettingsIds,
+          },
+        },
+      };
+
+      const columnSettingsCommand = new BatchGetItemCommand(
+        ColumnSettingsParams
+      );
+      const columnSettingsResult = await client.send(columnSettingsCommand);
+
+      const objColumnSettings =
+        columnSettingsResult.Responses.ColumnSettingsTable.map((i) =>
+          unmarshall(i)
+        );
+      const objUserColumnSettings = userColumnSettingsRequest.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      result = objUserColumnSettings
+        .map((item) => {
+          const filterColumnSettings = objColumnSettings.find(
+            (u) => u.id === item.columnSettings.id
+          );
+          return { ...item, ...{ columnSettings: filterColumnSettings } };
+        })
+        .filter(({ columnSettings }) => columnSettings.tableName === tableName);
+    }
+
+    response = Object.keys(result).length !== 0 ? result : [];
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+
+  return response;
+}
+
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -457,6 +558,12 @@ const resolvers = {
     },
     backgrounds: async (ctx) => {
       return listBackgrounds(ctx.arguments);
+    },
+    columnSettings: async (ctx) => {
+      return listColumnSettingsByTable(ctx.arguments);
+    },
+    userColumnSettings: async (ctx) => {
+      return getUserColumnSettings(ctx.arguments);
     },
   },
 };
