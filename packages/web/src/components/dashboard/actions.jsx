@@ -97,6 +97,7 @@ export const getMatterList = async (dispatch, companyId) => {
         })
         .reverse();
     }
+    //dispatch data to reducers
 
     dispatch({
       type: MATTER_SUCCESS,
@@ -166,7 +167,7 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
         })
         .reverse();
     }
-
+    //dispatch data to reducers
     dispatch({
       type: CREATE_MATTER_SUCCESS,
       payload: {
@@ -241,7 +242,7 @@ export const deleteMatterClient = async (
         })
         .reverse();
     }
-
+    //dispatch data to reducers
     dispatch({
       type: DELETE_MATTER_SUCCESS,
       payload: {
@@ -251,7 +252,78 @@ export const deleteMatterClient = async (
     });
   } catch (error) {
     dispatch({
-      type: DELETE_MATTER_SUCCESS,
+      type: DELETE_MATTER_ERROR,
+      payload: error,
+    });
+  }
+};
+
+//search client matter
+export const searchMatterClient = async (
+  companyId,
+  listmatters,
+  searchMatter,
+  dispatch
+) => {
+  try {
+    dispatch({
+      type: SEARCH_MATTER_REQUEST,
+      payload: { loading: true },
+    });
+
+    let result = [];
+
+    const clientMattersOpt = await API.graphql({
+      query: listClientMatters,
+      variables: {
+        companyId: companyId,
+      },
+    });
+
+    if (clientMattersOpt.data.company.clientMatters.items !== null) {
+      result = clientMattersOpt.data.company.clientMatters.items;
+
+      const dummyPersonResponsible = {
+        id: 2,
+        name: "Adrian Silva",
+        email: "adrian.silva@lophils.com",
+        profile_picture:
+          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
+      };
+
+      var apdPr = result.map((v) => ({
+        ...v,
+        substantially_responsible: dummyPersonResponsible,
+      }));
+      var allrecords = apdPr
+        .map((v) => ({
+          ...v,
+          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+            -4
+          )}/${v.client.id.slice(-4)}}`,
+        }))
+        .sort((a, b) => {
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        });
+    }
+
+    const matterslists = listmatters.filter(
+      (x) =>
+        x.matter.name.toLowerCase().includes(searchMatter.toLowerCase()) ||
+        x.client.name.toLowerCase().includes(searchMatter.toLowerCase())
+    );
+    //dispatch data to reducers
+    dispatch({
+      type: SEARCH_MATTER_SUCCESS,
+      payload: {
+        matterlist: searchMatter.length <= 1 ? allrecords : matterslists,
+      },
+    });
+  } catch (error) {
+    dispatch({
+      type: SEARCH_MATTER_ERROR,
       payload: error,
     });
   }
