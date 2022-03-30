@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import "../../assets/styles/ToastNotification.css";
 import * as FaIcons from "react-icons/fa";
 
-const ToastNotification = ({ title, hideToast, error }) => {
+const ToastNotification = ({ title, error }) => {
   return (
     <>
       <div
@@ -41,9 +41,6 @@ const ToastNotification = ({ title, hideToast, error }) => {
             </svg>
           )}
           <span>{title || title}</span>
-          <span>
-            <FaIcons.FaTimes onClick={hideToast} />
-          </span>
         </div>
       </div>
     </>
