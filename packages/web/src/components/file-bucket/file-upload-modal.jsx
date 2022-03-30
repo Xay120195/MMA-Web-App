@@ -4,6 +4,7 @@ import { API, Storage } from "aws-amplify";
 import "../../assets/styles/FileUpload.css";
 import Pie from "../link-to-chronology/Pie";
 import config from "../../aws-exports";
+import {RiErrorWarningLine, RiErrorWarningFill} from "react-icons/ri";
 
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -353,7 +354,9 @@ export default function UploadLinkModal(props) {
                 </div>
                 <div className="items-grid">
                   {selectedFiles?.map((selectedFile, index) => (
-                    <div id="uploadDivContent" key={index}>
+                    <div id="uploadDivContent" key={index}
+                    className={selectedFile.data.size > 4000 ? "bg-orange-300" : ""}
+                    >
                       <span className="upload-name">
                         {selectedFile.data.name}
                       </span>
@@ -363,18 +366,11 @@ export default function UploadLinkModal(props) {
                         }`}
                         onClick={() => deleteBtn(index)}
                       />
-                      {/* {random.percentage === 100 && random.index === index ? (
-                        <Pie percentage={100} colour={random.colour} />
-                      ) : (
-                        <Pie
-                          percentage={random.percentage}
-                          colour={random.colour}
-                        />
-                        
-                      )} */}
-
-
-                      <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
+                      {/* {selectedFile.data.size} */}
+                      {selectedFile.data.size > 2147483648 ?
+                      <RiErrorWarningLine className="w-8 h-8" color="orange"/>
+                      : <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
+                      }
                     </div>
                   ))}
                 </div>
