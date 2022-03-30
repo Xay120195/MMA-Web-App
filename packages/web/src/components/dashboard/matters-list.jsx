@@ -28,8 +28,6 @@ export function ClientMatters({}) {
         <>
           {loading ? (
             <span>loading datas</span>
-          ) : error ? (
-            <span>Internal server error</span>
           ) : (
             <>
               {clientMatter.map((item) => (
@@ -50,7 +48,7 @@ export function ClientMatters({}) {
                             {allowOpenFileBucket ? (
                               <li className="p-2">
                                 <Link
-                                  to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}/000`}
+                                  to={`${AppRoutes.FILEBUCKET}/${item.id}/000`}
                                 >
                                   File Bucket
                                 </Link>
@@ -58,9 +56,7 @@ export function ClientMatters({}) {
                             ) : null}
                             {allowOpenBackground ? (
                               <li className="p-2">
-                                <Link
-                                  to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}
-                                >
+                                <Link to={`${AppRoutes.BACKGROUND}/${item.id}`}>
                                   Background
                                 </Link>
                               </li>
@@ -69,7 +65,7 @@ export function ClientMatters({}) {
                               <li
                                 className="p-2 cursor-pointer"
                                 onClick={() =>
-                                  setshowDeleteModal(true, clientMatter.id)
+                                  setshowDeleteModal(true, item.id)
                                 }
                               >
                                 Delete
@@ -147,7 +143,7 @@ export function ClientMatters({}) {
                             {allowOpenFileBucket ? (
                               <li className="p-2">
                                 <Link
-                                  to={`${AppRoutes.FILEBUCKET}/${clientMatter.id}/000`}
+                                  to={`${AppRoutes.FILEBUCKET}/${item.id}/000`}
                                 >
                                   File Bucket
                                 </Link>
@@ -155,9 +151,7 @@ export function ClientMatters({}) {
                             ) : null}
                             {allowOpenBackground ? (
                               <li className="p-2">
-                                <Link
-                                  to={`${AppRoutes.BACKGROUND}/${clientMatter.id}`}
-                                >
+                                <Link to={`${AppRoutes.BACKGROUND}/${item.id}`}>
                                   Background
                                 </Link>
                               </li>
@@ -166,7 +160,7 @@ export function ClientMatters({}) {
                               <li
                                 className="p-2 cursor-pointer"
                                 onClick={() =>
-                                  setshowDeleteModal(true, clientMatter.id)
+                                  setshowDeleteModal(true, item.id)
                                 }
                               >
                                 Delete

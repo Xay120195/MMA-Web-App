@@ -30,15 +30,16 @@ export const MatterContext = createContext();
 
 export default function Dashboard() {
   const [matterlist, dispatch] = useReducer(clientMatterReducers, initialState);
-
   const [error, setError] = useState(false);
   const [userInfo, setuserInfo] = useState(null);
   const [mattersView, setmattersView] = useState("grid");
   const [searchMatter, setSearchMatter] = useState("");
   const [clientName, setclientName] = useState(null);
   const [matterName, setmatterName] = useState(null);
+
   const [showDeleteModal, setshowDeleteModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
   const [allowOpenFileBucket, setAllowOpenFileBucket] = useState(false);
@@ -53,12 +54,6 @@ export default function Dashboard() {
 
   //restructure data from matterlist
   const { listmatters, loading, errorMatter, toastMessage, toast } = matterlist;
-
-  //memoize listmatters
-  const memoizeClientMatter = useMemo(() => {
-    return listmatters;
-  }, [listmatters]);
-
   const companyId = localStorage.getItem("companyId");
 
   const {
@@ -81,17 +76,20 @@ export default function Dashboard() {
       setuserInfo(ls);
     }
 
+    // if (searchMatter !== undefined) {
+    //   filter(searchMatter);
+    // }
+
     if (userInfo) {
       featureAccessFilters();
     }
-    //all data side effects
+
     getMatterList(dispatch, companyId);
 
     Clients();
     Matters();
   }, [userInfo, dispatch, companyId]);
 
-  //menu list
   const featureAccessFilters = async () => {
     const dashboardAccess = await AccessControl("DASHBOARD");
 
@@ -131,8 +129,8 @@ export default function Dashboard() {
     }
   };
 
-  //create new client or select existing client
   const handleClientChanged = (newValue) => {
+    console.log(newValue);
     if (newValue?.__isNew__) {
       addClients(newValue.label);
     } else {
@@ -147,7 +145,7 @@ export default function Dashboard() {
       setmatterName(newValue);
     }
   };
-  //create new matter or select exusting matter
+
   const handleNewMatter = async () => {
     if (clientName === null) {
       setShowToast(true);
@@ -206,6 +204,7 @@ export default function Dashboard() {
 
   const handleDeleteModal = () => {
     setalertMessage(toastMessage);
+    console.log(selectedClientMatter);
     handleModalClose();
     deleteMatterClient(selectedClientMatter, dispatch, companyId);
     setShowToast(toast);
@@ -345,7 +344,7 @@ mutation addMatter($companyId: String, $name: String) {
 
   const handleSearchMatterChange = (e) => {
     setSearchMatter(e.target.value);
-    searchMatterClient(companyId, memoizeClientMatter, searchMatter, dispatch);
+    searchMatterClient(companyId, listmatters, searchMatter, dispatch);
   };
 
   return userInfo ? (
@@ -354,7 +353,7 @@ mutation addMatter($companyId: String, $name: String) {
         <div className="relative bg-gray-100 px-12 py-8 sm:px-12 sm:py-8 rounded-sm mb-8">
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">
-              <Welcome user={userInfo} clientmatters={memoizeClientMatter} />
+              <Welcome user={userInfo} clientmatters={listmatters} />
 
               {showCreateMatter && (
                 <>
@@ -370,13 +369,10 @@ mutation addMatter($companyId: String, $name: String) {
                           <CreatableSelect
                             options={clientsOptions}
                             isClearable
-                            onBlur={(e) => setSelectedClient(e.target.value)}
                             isSearchable
                             onChange={handleClientChanged}
                             value={selectedClient}
-                            placeholder={
-                              !selectedClient ? "client" : selectedClient
-                            }
+                            placeholder="Client"
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
                         </div>
@@ -386,14 +382,11 @@ mutation addMatter($companyId: String, $name: String) {
                           <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3"></span>
                           <CreatableSelect
                             options={mattersOptions}
-                            onBlur={(e) => setSelectedMatter(e.target.value)}
+                            placeholder="Matter"
                             isClearable
                             isSearchable
                             onChange={handleMatterChanged}
                             value={selectedMatter}
-                            placeholder={
-                              !selectedMatter ? "Matter" : selectedMatter
-                            }
                             className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                           />
                         </div>
@@ -468,12 +461,12 @@ mutation addMatter($companyId: String, $name: String) {
               : "grid-flow-row auto-rows-max"
           }
         >
-          {memoizeClientMatter.length <= 0 ? (
+          {listmatters.length <= 0 ? (
             <span className="text-rose-500">No records found</span>
           ) : (
             <MatterContext.Provider
               value={{
-                clientMatter: memoizeClientMatter,
+                clientMatter: listmatters,
                 loading: loading,
                 error: errorMatter,
                 view: mattersView,
