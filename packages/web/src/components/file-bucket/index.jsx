@@ -335,7 +335,7 @@ const mGetPaginateItems = `
         },
       });
       result = createLabel.data.labelCreate;
-      console.log(result.name);
+      console.log("res", result);
     }
 
     getLabels(data);
@@ -419,6 +419,7 @@ const mGetPaginateItems = `
   }
 
   async function tagFileLabel(fileId, labels) {
+    // console.log("check", labels);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -429,6 +430,7 @@ const mGetPaginateItems = `
           },
         });
         resolve(request);
+        console.log("reqq", request);
       } catch (e) {
         reject(e.errors[0].message);
       }
@@ -450,7 +452,12 @@ const mGetPaginateItems = `
 
     options.map(async (o) => {
       if (o.__isNew__) {
+        console.log("ooo", o);
+        console.log("newlabel", o.label);
         createdLabel = await addLabel(o.label);
+        console.log("cl",createdLabel);
+        let test1 = await tagFileLabel(o.id, createdLabel);
+        console.log("test1", test1);
       }
     });
 
@@ -468,11 +475,13 @@ const mGetPaginateItems = `
     };
 
     console.log("test",data.labels.items);
+    console.log("dataaa", data);
 
+    setUpdateProgress(true);
     updateArr(data.labels.items, index);
     await updateMatterFile(id, data);
-    await tagFileLabel(id, data.labels.items);
-    setUpdateProgress(true);
+    let test = await tagFileLabel(id, data.labels.items);
+
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
@@ -519,13 +528,13 @@ const mGetPaginateItems = `
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      //var updatedLabels = [];
       var updatedName = [];
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
 
       if (typeof nameArr[index] === "undefined") {
         updatedName[0] = name;
@@ -535,7 +544,7 @@ const mGetPaginateItems = `
       const data = {
         name: updatedName[0],
         details: details,
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -556,14 +565,14 @@ const mGetPaginateItems = `
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      // var updatedLabels = [];
       var updatedName = [];
 
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
 
       if (typeof nameArr[index] === "undefined") {
         updatedName[0] = name;
@@ -574,7 +583,7 @@ const mGetPaginateItems = `
       const data = {
         name: updatedName[0],
         details: textDetails,
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -616,13 +625,13 @@ const mGetPaginateItems = `
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      // var updatedLabels = [];
       var updatedDesc = [];
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
       if (details == "") {
         updatedDesc[0] = "";
       } else if (typeof descArr[index] === "undefined") {
@@ -633,7 +642,7 @@ const mGetPaginateItems = `
       const data = {
         name: name,
         details: updatedDesc[0],
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -654,13 +663,13 @@ const mGetPaginateItems = `
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      //var updatedLabels = [];
       var updatedDesc = [];
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
       if (details == "") {
         updatedDesc[0] = "";
       } else if (typeof descArr[index] === "undefined") {
@@ -671,7 +680,7 @@ const mGetPaginateItems = `
       const data = {
         name: textName,
         details: updatedDesc[0],
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -701,6 +710,7 @@ const mGetPaginateItems = `
       newOptions.map(
         (data) => (filterOptionsArray = [...filterOptionsArray, data])
       );
+      console.log("no",newOptions);
 
       //filter duplicates
       pageSelectedLabels = [
@@ -708,7 +718,6 @@ const mGetPaginateItems = `
           filterOptionsArray.map((item) => [JSON.stringify(item.label), item])
         ).values(),
       ];
-      // setFilterLabelsData(pageSelectedLabels);
       return newOptions;
     } else {
       return null;
@@ -1403,7 +1412,7 @@ const mGetPaginateItems = `
                                                 data.name,
                                                 data.details,
                                                 data.id,
-                                                data.labels,
+                                                data.labels.items,
                                                 index
                                               )
                                             }
@@ -1467,7 +1476,7 @@ const mGetPaginateItems = `
                                                 data.name,
                                                 data.details,
                                                 data.id,
-                                                data.labels,
+                                                data.labels.items,
                                                 index
                                               )
                                             }
