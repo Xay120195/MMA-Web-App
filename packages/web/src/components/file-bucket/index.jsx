@@ -8,7 +8,7 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
-import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
+import { AiOutlineDownload, AiFillTags, AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
@@ -16,7 +16,7 @@ import FilterLabels from "./filter-labels-modal";
 import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
+import { FaRegFileAudio, FaRegFileVideo} from "react-icons/fa";
 
 import {
   GrDocumentPdf,
@@ -62,8 +62,13 @@ export default function FileBucket() {
   const [textDetails, setTextDetails] = useState("");
   const { matter_id, background_id } = useParams();
   const [searchFile, setSearchFile] = useState();
-
   const [filterLabelsData, setFilterLabelsData] = useState([]);
+  const [pageTotal, setPageTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [nextToken, setNextToken] = useState("");
+  const [prevToken, setPrevToken] = useState("");
+  const [filteredFiles, setFilteredFiles] = useState([]);
 
   let filterOptionsArray = [];
 
@@ -174,13 +179,13 @@ export default function FileBucket() {
     matterFile(matterId: $matterId, isDeleted: $isDeleted) {
       id
       name
-      downloadURL
-      size
       type
       details
       labels {
-        id
-        name
+        items {
+          id
+          name
+        }
       }
       createdAt
       order
@@ -242,6 +247,17 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }
     }
   `;
+
+const mGetPaginateItems = `
+  query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
+    matterFile(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit) {
+      id
+      name,
+      downloadURL,
+      nextToken
+    }
+  }
+`;
 
   async function tagBackgroundFile() {
     let arrFiles = [];
@@ -334,6 +350,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     if (matterFiles === null) {
       console.log("matterFiles is null");
       getMatterFiles();
+      getPaginateItems("", "");
     }
 
     if (labels === null) {
@@ -365,6 +382,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setClientMatterName(
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
+      setPageTotal(fileCount);
     });
   };
 
@@ -392,7 +410,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             id: id,
             name: data.name,
             details: data.details,
-            labels: data.labels,
+            //labels: data.labels,
           },
         });
 
@@ -1015,12 +1033,67 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }
     }
 
-    console.log(counter);
-
     setTimeout(() => {
       setShowToast(false);
       window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/?count=${counter}`;
     }, 1500);
+  }
+
+  const getPaginateItems = async (action, page) => {
+    let pageList = 20;
+    let pageResult = [];
+    
+    const request = await API.graphql({
+      query: mGetPaginateItems,
+      variables: {
+        matterId: matter_id,
+        isDeleted: false,
+        nextToken: page,
+        limit: pageList
+      },
+    });
+
+    if (request.data.matterFile !== null) {
+      pageResult = request.data.matterFile.map(
+        ({ id }) => ({
+          id: id
+        })
+      );
+    }
+
+    setFilteredFiles(pageResult);
+
+    if(action === "next") {
+      setPageIndex(pageIndex + pageList);
+      setPageSize(pageSize + pageList);
+      setPrevToken(prevToken);
+
+      for (let i = 0; i < request.data.matterFile.length; i++) {
+        if(request.data.matterFile[i].nextToken !== null) {
+          setNextToken(request.data.matterFile[i].nextToken);
+        }
+      }
+
+    } else if(action === "prev") {
+      setPageIndex(pageIndex - pageList);
+      setPageSize(pageSize - pageList);
+      setPrevToken(prevToken);
+
+      for (let i = 0; i < request.data.matterFile.length; i++) {
+        if(request.data.matterFile[i].nextToken !== null) {
+          setNextToken(request.data.matterFile[i].nextToken);
+        }
+      }
+
+    } else {
+      for (let i = 0; i < request.data.matterFile.length; i++) {
+        if(request.data.matterFile[i].nextToken !== null) {
+          setPrevToken(page);
+          setNextToken(request.data.matterFile[i].nextToken);
+        }
+      }
+
+    }
   }
 
   return (
@@ -1139,6 +1212,19 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
+        <div className="px-2 py-0">
+          <p className={"text-sm mt-3 font-medium float-right inline-block"}>
+            <AiOutlineLeft 
+              className={pageIndex === 1 ? "text-gray-300 inline-block pointer-events-none" : "inline-block cursor-pointer"}
+              onClick={() => getPaginateItems('prev', prevToken) } 
+            />
+            &nbsp;&nbsp;Showing {pageIndex} - {pageSize >= pageTotal ? pageTotal : pageSize} of {pageTotal}&nbsp;&nbsp; 
+            <AiOutlineRight 
+              className={pageSize >= pageTotal ? "text-gray-300 inline-block pointer-events-none" : "inline-block cursor-pointer"}
+              onClick={() => getPaginateItems('next', nextToken) } 
+            /></p>
+        </div>
+
         {matterFiles !== null && (
           <>
             {matterFiles.length === 0 &&
@@ -1181,7 +1267,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
-                              {matterFiles.map((data, index) => (
+                              {matterFiles
+                              .filter(
+                                (x) =>
+                                filteredFiles.find( files => files.id === x.id )
+                              ).map((data, index) => (
                                 <Draggable
                                   key={data.id}
                                   draggableId={data.id}
