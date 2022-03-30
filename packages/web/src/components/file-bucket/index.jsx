@@ -146,15 +146,11 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
-        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels ) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String) {
+        matterFileUpdate(id: $id, name: $name, details: $details ) {
           id
           name
           details
-          labels {
-            id
-            name
-          }
         }
       }
   `;
