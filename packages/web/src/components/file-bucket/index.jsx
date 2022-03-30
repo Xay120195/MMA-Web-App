@@ -150,10 +150,6 @@ export default function FileBucket() {
           id
           name
           details
-          labels {
-            id
-            name
-          }
         }
       }
   `;
@@ -402,6 +398,7 @@ const mGetPaginateItems = `
   }
 
   async function updateMatterFile(id, data) {
+    console.log("data", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -410,7 +407,7 @@ const mGetPaginateItems = `
             id: id,
             name: data.name,
             details: data.details,
-            //labels: data.labels,
+            // labels: data.labels.items,
           },
         });
 
@@ -449,6 +446,8 @@ const mGetPaginateItems = `
     let createdLabel;
     var updated;
 
+    console.log("options", options);
+
     options.map(async (o) => {
       if (o.__isNew__) {
         createdLabel = await addLabel(o.label);
@@ -465,12 +464,14 @@ const mGetPaginateItems = `
     const data = {
       name: name,
       details: details,
-      labels: updated,
+      labels: {items: updated},
     };
 
-    updateArr(data.labels, index);
+    console.log("test",data.labels.items);
+
+    updateArr(data.labels.items, index);
     await updateMatterFile(id, data);
-    await tagFileLabel(id, data.labels);
+    await tagFileLabel(id, data.labels.items);
     setUpdateProgress(true);
     setResultMessage(`Updating labels..`);
     setShowToast(true);
@@ -689,6 +690,7 @@ const mGetPaginateItems = `
   };
 
   const extractArray = (ar) => {
+    console.log("selectedlabels", ar);
     if (Array.isArray(ar) && ar.length) {
       const newOptions = ar.map(({ id: value, name: label }) => ({
         value,
@@ -1488,13 +1490,13 @@ const mGetPaginateItems = `
                                       >
                                         <CreatableSelect
                                           defaultValue={extractArray(
-                                            data.labels
-                                              ? data.labels
+                                            data.labels.items
+                                              ? data.labels.items
                                               : { value: 0, label: "" }
                                           )}
                                           options={newOptions(
                                             labels,
-                                            data.labels
+                                            data.labels.items
                                           )}
                                           // options={labels}
                                           isMulti
