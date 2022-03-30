@@ -80,9 +80,9 @@ const resolvers = {
         ctx.source
       );
     },
-    labels: async (ctx) => {
-      return listFileLabels(ctx);
-    },
+    // labels: async (ctx) => {
+    //   return listFileLabels(ctx);
+    // },
   },
 };
 
