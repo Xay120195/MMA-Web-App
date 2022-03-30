@@ -323,7 +323,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           .sort((a, b) => a.label.localeCompare(b.label));
       }
     }
-    console.log("Labels", result);
+    // console.log("Labels", result);
 
     setLabels(result);
   };
@@ -342,7 +342,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         },
       });
       result = createLabel.data.labelCreate;
-      console.log("res", result);
+      // console.log("res", result);
     }
 
     getLabels(data);
@@ -413,8 +413,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           variables: {
             id: id,
             name: data.name,
-            details: data.details,
-            // labels: data.labels.items,
+            details: data.details
           },
         });
 
@@ -426,7 +425,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   async function tagFileLabel(fileId, labels) {
-    // console.log("check", labels);
+    console.log("fileid",fileId);
+    console.log("labelsinsidetagfile", labels);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -455,16 +455,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     let createdLabel;
     var updated;
 
-    console.log("options", options);
-
     options.map(async (o) => {
       if (o.__isNew__) {
-        console.log("ooo", o);
-        console.log("newlabel", o.label);
         createdLabel = await addLabel(o.label);
         console.log("cl",createdLabel);
-        let test1 = await tagFileLabel(o.id, createdLabel);
-        console.log("test1", test1);
       }
     });
 
@@ -474,20 +468,21 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }));
 
     updated = newOptions.map((d) => (d.name == d.id ? { ...d, id: id } : d));
+    console.log("updated",updated);
 
     const data = {
       name: name,
       details: details,
-      labels: {items: updated},
+      labels: updated,
     };
 
-    console.log("test",data.labels.items);
-    console.log("dataaa", data);
+    console.log("data",data);
+    console.log("tobesaved", data.labels);
 
     setUpdateProgress(true);
     updateArr(data.labels.items, index);
     await updateMatterFile(id, data);
-    let test = await tagFileLabel(id, data.labels.items);
+    await tagFileLabel(id, data.labels);
 
     setResultMessage(`Updating labels..`);
     setShowToast(true);
@@ -712,7 +707,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       newOptions.map(
         (data) => (filterOptionsArray = [...filterOptionsArray, data])
       );
-      console.log("no",newOptions);
+     // console.log("no",newOptions);
 
       //filter duplicates
       pageSelectedLabels = [
@@ -1522,13 +1517,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         >
                                           <CreatableSelect
                                             defaultValue={extractArray(
-                                              data.labels
-                                                ? data.labels
+                                              data.labels.items
+                                                ? data.labels.items
                                                 : { value: 0, label: "" }
                                             )}
                                             options={newOptions(
                                               labels,
-                                              data.labels
+                                              data.labels.items
                                             )}
                                             // options={labels}
                                             isMulti
