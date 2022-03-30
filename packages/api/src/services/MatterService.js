@@ -44,6 +44,8 @@ export async function getMatterFile(data) {
       IndexName: "byMatter",
       KeyConditionExpression: "matterId = :matterId",
       FilterExpression: "isDeleted = :isDeleted",
+      //ConsistentRead:true,
+      ScanIndexForward: false,
       ExpressionAttributeValues: marshall({
         ":matterId": matterId,
         ":isDeleted": isDeleted,
@@ -60,9 +62,12 @@ export async function getMatterFile(data) {
     const command = new QueryCommand(params);
     const request = await ddbClient.send(command);
 
-    const result = request.Items.map((d) => unmarshall(d));
+    console.log("Limit:", limit);
+    console.log("Count:", request.Count);
+    console.log("nextToken/LastEvaluatedKey:", request.LastEvaluatedKey);
 
-    if (request && result.length !== 0) {
+    const result = request.Items.map((d) => unmarshall(d));
+    if (request && request.Count !== 0) {
       result[0].nextToken = request.LastEvaluatedKey
         ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
             "base64"

@@ -68,3 +68,27 @@ body {
   cursor: pointer;
   margin-left: 0;
 }
+.hideMe {
+  -webkit-animation: seconds 1s forwards;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-delay: 3s;
+  animation: seconds 1s forwards;
+  animation-iteration-count: 1;
+  animation-delay: 3s;
+}
+@-webkit-keyframes seconds {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes seconds {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

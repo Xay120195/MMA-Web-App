@@ -4,6 +4,10 @@ import { API, Storage } from "aws-amplify";
 import "../../assets/styles/FileUpload.css";
 import Pie from "../link-to-chronology/Pie";
 import config from "../../aws-exports";
+import {RiErrorWarningLine, RiErrorWarningFill} from "react-icons/ri";
+
+import { CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 const useRefEventListener = (fn) => {
   const fnRef = useRef(fn);
@@ -30,6 +34,9 @@ export default function UploadLinkModal(props) {
   const [flags, setFlags] = useState([]);
   // const flagTemp = [];
   const [flagTemp, setArr] = useState([]);
+  const [percent, setPercent] = useState([]);
+  const [itr, setItr] = useState(0);
+  
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -172,9 +179,14 @@ export default function UploadLinkModal(props) {
     perc: 1,
   });
 
+
+  var count = 0;
+  var temp=[];
+
   const handleUpload = async () => {
     setUploadStart(true);
     selectedFiles.map(async (uf, index) => {
+      // var temp = [];
       if (uf.data.name.split(".").pop() == "docx") {
         // console.log(uf.data.type);
         var name = uf.data.name,
@@ -196,17 +208,34 @@ export default function UploadLinkModal(props) {
       try {
         await Storage.put(key, uf.data, {
           contentType: type,
+          
+          
           progressCallback(progress) {
             const progressInPercentage = Math.round(
               (progress.loaded / progress.total) * 100
             );
-            console.log(`Progress: ${progressInPercentage}%`);
+            console.log(`Progress: ${progressInPercentage}%, ${uf.data.name}`);
 
-            generateRandomValues(progressInPercentage, index);
+            if(temp.length > selectedFiles.length){
+              
+              for(var i=0; i<selectedFiles.length; i++){
+                console.log(uf.data.name === temp[i].name);
+                if(temp[i].name === uf.data.name){
+                  temp[i].prog = progressInPercentage;
+                }
+              }
+            }else{
+              temp = [...temp, {prog: progressInPercentage, name: uf.data.name}];
+            }
+
+            
+            console.log(temp);
+            setPercent(temp);
           },
           errorCallback: (err) => {
             console.error("204: Unexpected error while uploading", err);
           },
+          
         })
           .then(async (fd) => {
             var fileData = {
@@ -223,6 +252,7 @@ export default function UploadLinkModal(props) {
           .catch((err) => {
             console.error("220: Unexpected error while uploading", err);
           });
+               
       } catch (e) {
         const response = {
           error: e.message,
@@ -264,6 +294,16 @@ export default function UploadLinkModal(props) {
       index: idx,
     });
   };
+
+  // const getValuePercentage = (percent, index) => {
+
+  // if(percent[parseInt(index+itr)] != undefined || percent[parseInt(index+itr)] != null){
+  //   console.log(percent[parseInt(index+itr)]);
+  //   return percent[parseInt(index+itr)];
+  // }else{
+  //   return null;
+  // }
+  // }
 
   return (
     <>
@@ -314,7 +354,9 @@ export default function UploadLinkModal(props) {
                 </div>
                 <div className="items-grid">
                   {selectedFiles?.map((selectedFile, index) => (
-                    <div id="uploadDivContent" key={index}>
+                    <div id="uploadDivContent" key={index}
+                    className={selectedFile.data.size > 4000 ? "bg-orange-300" : ""}
+                    >
                       <span className="upload-name">
                         {selectedFile.data.name}
                       </span>
@@ -324,16 +366,11 @@ export default function UploadLinkModal(props) {
                         }`}
                         onClick={() => deleteBtn(index)}
                       />
-                      {random.percentage === 100 && random.index === index ? (
-                        <Pie percentage={100} colour={random.colour} />
-                      ) : (
-                        <Pie
-                          percentage={random.percentage}
-                          colour={random.colour}
-                        />
-
-                        //counter(); //error
-                      )}
+                      {/* {selectedFile.data.size} */}
+                      {selectedFile.data.size > 2147483648 ?
+                      <RiErrorWarningLine className="w-8 h-8" color="orange"/>
+                      : <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
+                      }
                     </div>
                   ))}
                 </div>

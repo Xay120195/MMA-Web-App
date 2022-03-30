@@ -48,6 +48,8 @@ export default function Background() {
   const [checkDesc, setCheckDesc] = useState(true);
   const [checkDocu, setCheckDocu] = useState(true);
 
+  const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
+
   useEffect(() => {
     ClientMatterList();
     getBackground();
@@ -256,6 +258,8 @@ export default function Background() {
                 setCheckDesc={setCheckDesc}
                 checkDocu={checkDocu}
                 setCheckDocu={setCheckDocu}
+                checkedStateShowHide={checkedStateShowHide}
+                setCheckedStateShowHide={setCheckedStateShowHide}
               />
             </div>
           </div>
@@ -302,6 +306,8 @@ export default function Background() {
         checkDate={checkDate}
         checkDesc={checkDesc}
         checkDocu={checkDocu}
+        checkedStateShowHide={checkedStateShowHide}
+        setCheckedStateShowHide={setCheckedStateShowHide}
       />
     </>
   );

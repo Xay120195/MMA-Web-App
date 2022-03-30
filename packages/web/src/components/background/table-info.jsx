@@ -58,6 +58,8 @@ const TableInfo = ({
   checkDate,
   checkDesc,
   checkDocu,
+  checkedStateShowHide,
+  setCheckedStateShowHide
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -510,18 +512,18 @@ const TableInfo = ({
                 <EmptyRow search={search} />
               ) : (
                 <>
+                
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          {checkNo && (
+                          
                             <th
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               No
                             </th>
-                          )}
                           {checkDate && (
                             <th
                               scope="col"
@@ -586,7 +588,7 @@ const TableInfo = ({
                                           : "",
                                     }}
                                   >
-                                    {checkNo && (
+                                  
                                       <td
                                         {...provider.dragHandleProps}
                                         className="px-3 py-3 w-10"
@@ -619,7 +621,7 @@ const TableInfo = ({
                                           </label>
                                         </div>
                                       </td>
-                                    )}
+                                   
                                     {checkDate && (
                                       <td
                                         {...provider.dragHandleProps}
