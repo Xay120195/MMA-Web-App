@@ -61,7 +61,10 @@ export async function getMatterFile(data) {
     const command = new QueryCommand(params);
     const request = await ddbClient.send(command);
 
-    console.log(request);
+    console.log("Limit:", limit);
+    console.log("Count:", request.Count);
+    console.log("nextToken/LastEvaluatedKey:", request.LastEvaluatedKey);
+
     const result = request.Items.map((d) => unmarshall(d));
     if (request && request.Count !== 0) {
       result[0].nextToken = request.LastEvaluatedKey
