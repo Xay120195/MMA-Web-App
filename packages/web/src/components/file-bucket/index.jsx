@@ -112,6 +112,7 @@ export default function FileBucket() {
         setTimeout(() => {
           setShowToast(false);
           getMatterFiles();
+          getPaginateItems("", "");
           tempArr = [];
           nameArr = [];
           descArr = [];
@@ -254,7 +255,9 @@ const mGetPaginateItems = `
       id
       name,
       downloadURL,
-      nextToken
+      nextToken,
+      createdAt,
+      order
     }
   }
 `;
@@ -476,6 +479,7 @@ const mGetPaginateItems = `
     setShowToast(true);
     setTimeout(() => {
       getMatterFiles();
+      getPaginateItems("", "");
       setTimeout(() => {
         setTimeout(() => {
           setShowToast(false);
@@ -539,6 +543,7 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
+        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
           setResultMessage(`Successfully updated `);
@@ -578,6 +583,7 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
+        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
 
@@ -637,6 +643,7 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
+        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
           setResultMessage(`Successfully updated `);
@@ -675,6 +682,7 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
+        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
           setResultMessage(`Successfully updated `);
@@ -880,6 +888,7 @@ const mGetPaginateItems = `
       setShowToast(true);
       setTimeout(() => {
         getMatterFiles();
+        getPaginateItems("", "");
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
@@ -949,6 +958,7 @@ const mGetPaginateItems = `
 
     if (v === "") {
       getMatterFiles();
+      getPaginateItems("", "");
     } else {
       const filterRecord = files.filter((x) =>
         x.name.toLowerCase().includes(v.toLowerCase())
@@ -1061,6 +1071,7 @@ const mGetPaginateItems = `
       );
     }
 
+    console.log(request.data.matterFile);
     setFilteredFiles(pageResult);
 
     if(action === "next") {
