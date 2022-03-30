@@ -112,7 +112,6 @@ export default function FileBucket() {
         setTimeout(() => {
           setShowToast(false);
           getMatterFiles();
-          getPaginateItems("", "");
           tempArr = [];
           nameArr = [];
           descArr = [];
@@ -353,7 +352,7 @@ const mGetPaginateItems = `
     if (matterFiles === null) {
       console.log("matterFiles is null");
       getMatterFiles();
-      getPaginateItems("", "");
+      
     }
 
     if (labels === null) {
@@ -387,6 +386,7 @@ const mGetPaginateItems = `
       );
       setPageTotal(fileCount);
     });
+    getPaginateItems("", "");
   };
 
   async function createMatterFile(file) {
@@ -479,7 +479,6 @@ const mGetPaginateItems = `
     setShowToast(true);
     setTimeout(() => {
       getMatterFiles();
-      getPaginateItems("", "");
       setTimeout(() => {
         setTimeout(() => {
           setShowToast(false);
@@ -543,7 +542,6 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
-        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
           setResultMessage(`Successfully updated `);
@@ -583,7 +581,6 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
-        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
 
@@ -643,7 +640,6 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
-        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
           setResultMessage(`Successfully updated `);
@@ -682,7 +678,6 @@ const mGetPaginateItems = `
       await updateMatterFile(id, data);
       setTimeout(() => {
         getMatterFiles();
-        getPaginateItems("", "");
         setTimeout(() => {
           setTextName("");
           setResultMessage(`Successfully updated `);
@@ -888,7 +883,6 @@ const mGetPaginateItems = `
       setShowToast(true);
       setTimeout(() => {
         getMatterFiles();
-        getPaginateItems("", "");
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
@@ -958,7 +952,6 @@ const mGetPaginateItems = `
 
     if (v === "") {
       getMatterFiles();
-      getPaginateItems("", "");
     } else {
       const filterRecord = files.filter((x) =>
         x.name.toLowerCase().includes(v.toLowerCase())
@@ -1049,11 +1042,13 @@ const mGetPaginateItems = `
     }, 1500);
   }
 
+  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
+
   const getPaginateItems = async (action, page) => {
     let pageList = 20;
     let pageResult = [];
     
-    const request = await API.graphql({
+    /*const request = await API.graphql({
       query: mGetPaginateItems,
       variables: {
         matterId: matter_id,
@@ -1069,43 +1064,45 @@ const mGetPaginateItems = `
           id: id
         })
       );
-    }
+    }*/
 
-    console.log(request.data.matterFile);
-    setFilteredFiles(pageResult);
+    //setFilteredFiles(pageResult);
 
     if(action === "next") {
       setPageIndex(pageIndex + pageList);
       setPageSize(pageSize + pageList);
-      setPrevToken(prevToken);
+      //setPrevToken(prevToken);
 
-      for (let i = 0; i < request.data.matterFile.length; i++) {
+      /*for (let i = 0; i < request.data.matterFile.length; i++) {
         if(request.data.matterFile[i].nextToken !== null) {
           setNextToken(request.data.matterFile[i].nextToken);
         }
-      }
+      }*/
 
     } else if(action === "prev") {
       setPageIndex(pageIndex - pageList);
       setPageSize(pageSize - pageList);
-      setPrevToken(prevToken);
+      //setPrevToken(prevToken);
 
-      for (let i = 0; i < request.data.matterFile.length; i++) {
+      /*for (let i = 0; i < request.data.matterFile.length; i++) {
         if(request.data.matterFile[i].nextToken !== null) {
           setNextToken(request.data.matterFile[i].nextToken);
         }
-      }
+      }*/
 
     } else {
-      for (let i = 0; i < request.data.matterFile.length; i++) {
+      /*for (let i = 0; i < request.data.matterFile.length; i++) {
         if(request.data.matterFile[i].nextToken !== null) {
           setPrevToken(page);
           setNextToken(request.data.matterFile[i].nextToken);
         }
-      }
+      }*/
 
     }
   }
+
+  console.log(matterFiles);
+  
 
   return (
     <>
@@ -1278,11 +1275,13 @@ const mGetPaginateItems = `
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
+                              {/* get ready for pagination query
                               {matterFiles
                               .filter(
                                 (x) =>
                                 filteredFiles.find( files => files.id === x.id )
-                              ).map((data, index) => (
+                              ).map((data, index) => ( */}
+                              {matterFiles.slice(pageIndex-1, pageSizeConst).map((data, index) => (
                                 <Draggable
                                   key={data.id}
                                   draggableId={data.id}
