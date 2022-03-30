@@ -28,6 +28,8 @@ export function ClientMatters({}) {
         <>
           {loading ? (
             <span>loading datas</span>
+          ) : error ? (
+            <span>Internal server error</span>
           ) : (
             <>
               {clientMatter.map((item) => (
