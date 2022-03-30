@@ -28,6 +28,8 @@ export function ClientMatters({}) {
         <>
           {loading ? (
             <span>loading datas</span>
+          ) : clientMatter.length <= 0 ? (
+            <span>No results founds</span>
           ) : (
             <>
               {clientMatter.map((item) => (
@@ -123,6 +125,8 @@ export function ClientMatters({}) {
         <>
           {loading ? (
             <span>loading datas</span>
+          ) : clientMatter.length <= 0 ? (
+            <span>No results found</span>
           ) : (
             <>
               {clientMatter.map((item) => (

@@ -421,25 +421,21 @@ mutation addMatter($companyId: String, $name: String) {
               : "grid-flow-row auto-rows-max"
           }
         >
-          {listmatters.length <= 0 ? (
-            <span className="text-rose-500">No records found</span>
-          ) : (
-            <MatterContext.Provider
-              value={{
-                clientMatter: listmatters,
-                loading: loading,
-                error: errorMatter,
-                view: mattersView,
-                onShowDeleteModal: handleShowDeleteModal,
-                showDeleteMatter: showDeleteMatter,
-                allowOpenMatter: allowOpenMatter,
-                allowOpenFileBucket: allowOpenFileBucket,
-                allowOpenBackground: allowOpenBackground,
-              }}
-            >
-              <ClientMatters />
-            </MatterContext.Provider>
-          )}
+          <MatterContext.Provider
+            value={{
+              clientMatter: listmatters,
+              loading: loading,
+              error: errorMatter,
+              view: mattersView,
+              onShowDeleteModal: handleShowDeleteModal,
+              showDeleteMatter: showDeleteMatter,
+              allowOpenMatter: allowOpenMatter,
+              allowOpenFileBucket: allowOpenFileBucket,
+              allowOpenBackground: allowOpenBackground,
+            }}
+          >
+            <ClientMatters />
+          </MatterContext.Provider>
 
           {showDeleteModal && (
             <DeleteMatterModal
