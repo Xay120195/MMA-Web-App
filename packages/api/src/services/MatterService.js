@@ -45,6 +45,7 @@ export async function getMatterFile(data) {
       KeyConditionExpression: "matterId = :matterId",
       FilterExpression: "isDeleted = :isDeleted",
       //ConsistentRead:true,
+      ScanIndexForward: false,
       ExpressionAttributeValues: marshall({
         ":matterId": matterId,
         ":isDeleted": isDeleted,
