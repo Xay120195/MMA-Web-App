@@ -11,6 +11,7 @@ import {
   DELETE_MATTER_REQUEST,
   DELETE_MATTER_SUCCESS,
   DELETE_MATTER_ERROR,
+  HIDETOAST,
 } from "./constants";
 //fecth all matter reducers
 export const clientMatterReducers = (state, action) => {
@@ -63,10 +64,10 @@ export const clientMatterReducers = (state, action) => {
     case CREATE_MATTER_SUCCESS:
       return {
         loading: false,
-        listmatters: action.payload.matterlist,
-        errorMatter: {},
         toastMessage: action.payload.message,
+        listmatters: action.payload.matterlist,
         toast: true,
+        errorMatter: {},
       };
     case CREATE_MATTER_ERROR:
       return {
@@ -87,8 +88,8 @@ export const clientMatterReducers = (state, action) => {
       return {
         loading: false,
         listmatters: action.payload.matterlist,
-        errorMatter: {},
         toastMessage: action.payload.message,
+        errorMatter: {},
         toast: true,
       };
     case DELETE_MATTER_ERROR:

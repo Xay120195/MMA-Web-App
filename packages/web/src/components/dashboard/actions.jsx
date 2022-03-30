@@ -246,8 +246,8 @@ export const deleteMatterClient = async (
     dispatch({
       type: DELETE_MATTER_SUCCESS,
       payload: {
+        matterlist: apdMn ? apdMn : [],
         message: `Successfully deleted`,
-        matterlist: apdMn,
       },
     });
   } catch (error) {

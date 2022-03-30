@@ -19,6 +19,7 @@ import CreatableSelect from "react-select/creatable";
 import { API } from "aws-amplify";
 import { initialState } from "./initialState";
 import { clientMatterReducers } from "./reducers";
+
 import {
   getMatterList,
   addClientMatter,
@@ -38,7 +39,7 @@ export default function Dashboard() {
   const [matterName, setmatterName] = useState(null);
 
   const [showDeleteModal, setshowDeleteModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState(true);
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
@@ -75,10 +76,6 @@ export default function Dashboard() {
       };
       setuserInfo(ls);
     }
-
-    // if (searchMatter !== undefined) {
-    //   filter(searchMatter);
-    // }
 
     if (userInfo) {
       featureAccessFilters();
@@ -147,42 +144,16 @@ export default function Dashboard() {
   };
 
   const handleNewMatter = async () => {
-    if (clientName === null) {
-      setShowToast(true);
-      setError(true);
-      setalertMessage("Client name is required");
+    let client = {
+        id: clientName.value,
+        name: clientName.label,
+      },
+      matter = {
+        id: matterName.value,
+        name: matterName.label,
+      };
 
-      setTimeout(() => {
-        setShowToast(false);
-        setError(false);
-      }, 3000);
-    } else if (matterName === null) {
-      setShowToast(true);
-      setalertMessage("Matter name is required");
-      setError(true);
-      setTimeout(() => {
-        setShowToast(false);
-        setError(false);
-      }, 3000);
-    } else {
-      let client = {
-          id: clientName.value,
-          name: clientName.label,
-        },
-        matter = {
-          id: matterName.value,
-          name: matterName.label,
-        };
-
-      addClientMatter(client, matter, companyId, dispatch);
-      setShowToast(true);
-      setalertMessage(toastMessage);
-      setError(false);
-      setTimeout(() => {
-        setShowToast(toast);
-        setalertMessage("");
-      }, 3000);
-    }
+    addClientMatter(client, matter, companyId, dispatch);
   };
 
   const contentDiv = {
@@ -203,14 +174,8 @@ export default function Dashboard() {
   };
 
   const handleDeleteModal = () => {
-    setalertMessage(toastMessage);
-    console.log(selectedClientMatter);
     handleModalClose();
     deleteMatterClient(selectedClientMatter, dispatch, companyId);
-    setShowToast(toast);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
   };
 
   const listClient = `
@@ -488,11 +453,12 @@ mutation addMatter($companyId: String, $name: String) {
             />
           )}
 
-          {showToast && (
+          {toast && (
             <ToastNotification
+              showToast={toast}
               errorMatter={errorMatter}
               error={error}
-              title={toastMessage ? toastMessage : alertMessage}
+              title={toastMessage}
               hideToast={hideToast}
             />
           )}

@@ -1,10 +1,13 @@
+import React, { useEffect } from "react";
 import "../../assets/styles/ToastNotification.css";
 import * as FaIcons from "react-icons/fa";
 
 const ToastNotification = ({ title, hideToast, error }) => {
   return (
     <>
-      <div className={error ? "main-div-error" : "main-div-success"}>
+      <div
+        className={error ? "main-div-error hideMe" : "main-div-success hideMe"}
+      >
         <div className="inline-flex content-grid">
           {error ? (
             <svg
