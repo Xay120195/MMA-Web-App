@@ -454,7 +454,6 @@ mutation addMatter($companyId: String, $name: String) {
               errorMatter={errorMatter}
               error={error}
               title={toastMessage}
-              hideToast={hideToast}
             />
           )}
         </div>
