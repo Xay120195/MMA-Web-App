@@ -61,8 +61,7 @@ export async function getMatterFile(data) {
     const request = await ddbClient.send(command);
 
     const result = request.Items.map((d) => unmarshall(d));
-
-    if (request && result.length !== 0) {
+    if (request && request.Count !== 0) {
       result[0].nextToken = request.LastEvaluatedKey
         ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
             "base64"

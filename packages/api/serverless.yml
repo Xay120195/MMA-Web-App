@@ -238,6 +238,21 @@ custom:
         field: fileLabelTag
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: userColumnSettings
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userColumnSettingsCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userColumnSettingsUpdate
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: labelUpdate
@@ -308,7 +323,16 @@ custom:
         field: backgrounds
         request: false
         response: false
-
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: columnSettings
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: columnSettingsCreate
+        request: false
+        response: false
     dataSources:
       - type: AWS_LAMBDA
         name: LambdaQueryDS
