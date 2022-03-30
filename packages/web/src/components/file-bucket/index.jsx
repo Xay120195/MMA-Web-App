@@ -1113,6 +1113,10 @@ const mGetPaginateItems = `
                   {clientMatterName}
                 </span>
               </h1>
+              <br/>
+                Prev: {prevToken} 
+              <br/>  
+                Next: {nextToken}
             </div>
 
             <div className="absolute right-0">
