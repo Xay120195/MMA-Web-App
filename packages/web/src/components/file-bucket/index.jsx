@@ -150,11 +150,15 @@ export default function FileBucket() {
   `;
 
   const mUpdateMatterFile = `
-      mutation updateMatterFile ($id: ID, $name: String, $details: String) {
-        matterFileUpdate(id: $id, name: $name, details: $details ) {
+      mutation updateMatterFile ($id: ID, $name: String, $details: String, $labels : [LabelInput]) {
+        matterFileUpdate(id: $id, name: $name, details: $details, labels : $labels ) {
           id
           name
           details
+          labels {
+            id
+            name
+          }
         }
       }
   `;
@@ -183,10 +187,8 @@ export default function FileBucket() {
       type
       details
       labels {
-        items {
           id
           name
-        }
       }
       createdAt
       order
@@ -237,6 +239,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       matterFileUpdate(id: $id, order: $order) {
         id
         order
+        labels {
+          id
+          name
+        }
       }
     }
 `;
@@ -323,7 +329,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           .sort((a, b) => a.label.localeCompare(b.label));
       }
     }
-    // console.log("Labels", result);
+    console.log("Labels", result);
 
     setLabels(result);
   };
@@ -342,7 +348,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         },
       });
       result = createLabel.data.labelCreate;
-      // console.log("res", result);
+      console.log(result.name);
     }
 
     getLabels(data);
@@ -405,7 +411,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   async function updateMatterFile(id, data) {
-    console.log("data", data);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -413,7 +418,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           variables: {
             id: id,
             name: data.name,
-            details: data.details
+            details: data.details,
+            labels: data.labels,
           },
         });
 
@@ -425,8 +431,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   async function tagFileLabel(fileId, labels) {
-    console.log("fileid",fileId);
-    console.log("labelsinsidetagfile", labels);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -437,7 +441,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           },
         });
         resolve(request);
-        console.log("reqq", request);
       } catch (e) {
         reject(e.errors[0].message);
       }
@@ -458,7 +461,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     options.map(async (o) => {
       if (o.__isNew__) {
         createdLabel = await addLabel(o.label);
-        console.log("cl",createdLabel);
       }
     });
 
@@ -468,7 +470,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }));
 
     updated = newOptions.map((d) => (d.name == d.id ? { ...d, id: id } : d));
-    console.log("updated",updated);
 
     const data = {
       name: name,
@@ -476,14 +477,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       labels: updated,
     };
 
-    console.log("data",data);
-    console.log("tobesaved", data.labels);
-
-    setUpdateProgress(true);
-    updateArr(data.labels.items, index);
+    updateArr(data.labels, index);
     await updateMatterFile(id, data);
     await tagFileLabel(id, data.labels);
-
+    setUpdateProgress(true);
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
@@ -503,11 +500,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const handleDetailsContent = (e, details, id) => {
     if (!descAlert) {
+      // setDescHeight("w-full p-2 font-poppins h-full");
       setTextDetails(!details ? "" : details);
       setDetId(id);
       setDesAlert("");
     } else {
       setTextDetails("");
+      // setDescHeight("w-full p-2 font-poppins h-10");
     }
   };
 
@@ -525,13 +524,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      //var updatedLabels = [];
+      var updatedLabels = [];
       var updatedName = [];
-      // if (typeof tempArr[index] === "undefined") {
-      //   updatedLabels[0] = labels;
-      // } else {
-      //   updatedLabels[0] = tempArr[index];
-      // }
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
 
       if (typeof nameArr[index] === "undefined") {
         updatedName[0] = name;
@@ -541,7 +540,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: updatedName[0],
         details: e.target.innerHTML,
-        // labels: updatedLabels[0],
+        labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -562,14 +561,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      // var updatedLabels = [];
+      var updatedLabels = [];
       var updatedName = [];
 
-      // if (typeof tempArr[index] === "undefined") {
-      //   updatedLabels[0] = labels;
-      // } else {
-      //   updatedLabels[0] = tempArr[index];
-      // }
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
 
       if (typeof nameArr[index] === "undefined") {
         updatedName[0] = name;
@@ -580,7 +579,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: updatedName[0],
         details: e.target.innerHTML,
-        // labels: updatedLabels[0],
+        labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -622,13 +621,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      // var updatedLabels = [];
+      var updatedLabels = [];
       var updatedDesc = [];
-      // if (typeof tempArr[index] === "undefined") {
-      //   updatedLabels[0] = labels;
-      // } else {
-      //   updatedLabels[0] = tempArr[index];
-      // }
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
       if (details == "") {
         updatedDesc[0] = "";
       } else if (typeof descArr[index] === "undefined") {
@@ -639,7 +638,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: name,
         details: updatedDesc[0],
-        // labels: updatedLabels[0],
+        labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -660,13 +659,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      //var updatedLabels = [];
+      var updatedLabels = [];
       var updatedDesc = [];
-      // if (typeof tempArr[index] === "undefined") {
-      //   updatedLabels[0] = labels;
-      // } else {
-      //   updatedLabels[0] = tempArr[index];
-      // }
+      if (typeof tempArr[index] === "undefined") {
+        updatedLabels[0] = labels;
+      } else {
+        updatedLabels[0] = tempArr[index];
+      }
       if (details == "") {
         updatedDesc[0] = "";
       } else if (typeof descArr[index] === "undefined") {
@@ -677,7 +676,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: textName,
         details: updatedDesc[0],
-        // labels: updatedLabels[0],
+        labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -696,7 +695,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const extractArray = (ar) => {
-    // console.log("selectedlabels", ar);
     if (Array.isArray(ar) && ar.length) {
       const newOptions = ar.map(({ id: value, name: label }) => ({
         value,
@@ -707,7 +705,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       newOptions.map(
         (data) => (filterOptionsArray = [...filterOptionsArray, data])
       );
-     // console.log("no",newOptions);
 
       //filter duplicates
       pageSelectedLabels = [
@@ -715,6 +712,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           filterOptionsArray.map((item) => [JSON.stringify(item.label), item])
         ).values(),
       ];
+      // setFilterLabelsData(pageSelectedLabels);
       return newOptions;
     } else {
       return null;
@@ -1337,8 +1335,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                 data.id,
                                                 data.name,
                                                 data.details,
-                                                data.id,
-                                                data.labels.items,
                                                 index
                                               )
                                             }
@@ -1494,6 +1490,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                   data.name,
                                                   data.details,
                                                   data.id,
+                                                  data.labels,
                                                   index
                                                 )
                                               }
@@ -1517,13 +1514,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         >
                                           <CreatableSelect
                                             defaultValue={extractArray(
-                                              data.labels.items
-                                                ? data.labels.items
+                                              data.labels
+                                                ? data.labels
                                                 : { value: 0, label: "" }
                                             )}
                                             options={newOptions(
                                               labels,
-                                              data.labels.items
+                                              data.labels
                                             )}
                                             // options={labels}
                                             isMulti
