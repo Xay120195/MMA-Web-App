@@ -690,7 +690,7 @@ const mGetPaginateItems = `
   };
 
   const extractArray = (ar) => {
-    console.log("selectedlabels", ar);
+    // console.log("selectedlabels", ar);
     if (Array.isArray(ar) && ar.length) {
       const newOptions = ar.map(({ id: value, name: label }) => ({
         value,
