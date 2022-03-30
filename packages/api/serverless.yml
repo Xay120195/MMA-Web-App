@@ -168,6 +168,11 @@ custom:
         field: downloadURL
         request: false
         response: false
+      # - dataSource: LambdaFileDS
+      #   type: File
+      #   field: labels
+      #   request: false
+      #   response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: clientCreate

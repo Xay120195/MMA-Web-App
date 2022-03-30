@@ -84,6 +84,7 @@ type File {
   details: String
   order: Int
   labels: [Label]
+  # labels(limit: Int, nextToken: String): FileLabelConnection
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -238,8 +239,7 @@ type Mutation {
   labelCreate(name: String, clientMatterId: String): Label
   labelUpdate(id: ID, name: String, description: String): Label
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
-  
-  
+
   backgroundCreate(
     description: String
     date: AWSDateTime
@@ -259,9 +259,11 @@ type Mutation {
     label: String
     tableName: ViewTable!
   ): ColumnSettings
-  userColumnSettingsCreate(userId: ID, columnSettings: [ColumnSettingsInput]): UserColumnSettings
+  userColumnSettingsCreate(
+    userId: ID
+    columnSettings: [ColumnSettingsInput]
+  ): UserColumnSettings
   userColumnSettingsUpdate(id: ID, isVisible: Boolean): UserColumnSettings
-
 }
 
 enum UserType {
@@ -334,7 +336,7 @@ input RepresentativeInput {
   email: AWSEmail
 }
 
-input ColumnSettingsInput{
+input ColumnSettingsInput {
   id: ID
   tableName: ViewTable
 }
@@ -367,6 +369,11 @@ type ClientMatterBackgroundConnection {
 }
 
 type ClientMatterLabelConnection {
+  items: [Label]
+  nextToken: String
+}
+
+type FileLabelConnection {
   items: [Label]
   nextToken: String
 }

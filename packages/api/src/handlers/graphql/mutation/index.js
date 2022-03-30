@@ -979,7 +979,7 @@ const resolvers = {
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
-      const { id, name, details, labels, order } = ctx.arguments;
+      const { id, name, details, order, labels } = ctx.arguments;
 
       const data = {
         updatedAt: new Date().toISOString(),
@@ -989,9 +989,9 @@ const resolvers = {
 
       if (details !== undefined) data.details = details;
 
-      if (labels !== undefined) data.labels = labels;
-
       if (order !== undefined) data.order = order;
+
+      if (labels !== undefined) data.labels = labels;
 
       return await updateMatterFile(id, data);
     },
