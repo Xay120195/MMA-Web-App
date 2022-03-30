@@ -39,14 +39,13 @@ export default function Dashboard() {
   const [matterName, setmatterName] = useState(null);
 
   const [showDeleteModal, setshowDeleteModal] = useState(false);
-  const [showToast, setShowToast] = useState(true);
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
   const [allowOpenFileBucket, setAllowOpenFileBucket] = useState(false);
   const [allowOpenBackground, setAllowOpenBackground] = useState(false);
   const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
-  const [alertMessage, setalertMessage] = useState();
+
   const [clientsOptions, setClientsOptions] = useState();
   const [mattersOptions, setMattersOptions] = useState();
   const [selectedClient, setSelectedClient] = useState();
@@ -162,10 +161,6 @@ export default function Dashboard() {
 
   const handleModalClose = () => {
     setshowDeleteModal(false);
-  };
-
-  const hideToast = () => {
-    setShowToast(false);
   };
 
   const handleShowDeleteModal = (displayStatus, id) => {
