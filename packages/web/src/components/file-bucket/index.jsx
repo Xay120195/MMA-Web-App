@@ -1113,6 +1113,7 @@ const mGetPaginateItems = `
                   {clientMatterName}
                 </span>
               </h1>
+            </div>
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
