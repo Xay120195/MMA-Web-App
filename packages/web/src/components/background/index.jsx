@@ -6,7 +6,6 @@ import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 
 import { API } from "aws-amplify";
-import { RemoveFileModal } from "../file-bucket/remove-file-modal.jsx";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -47,6 +46,9 @@ export default function Background() {
   const [checkDate, setCheckDate] = useState(true);
   const [checkDesc, setCheckDesc] = useState(true);
   const [checkDocu, setCheckDocu] = useState(true);
+  const [pageTotal, setPageTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [pageIndex, setPageIndex] = useState(1);
 
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
@@ -152,6 +154,9 @@ export default function Background() {
         })
       );
       setWitness(sortByOrder(result));
+      setPageTotal(result.length);
+      setPageSize(20);
+      setPageIndex(1);
 
       let mergeArrFiles = [];
       let arrFileResult = [];
@@ -210,6 +215,20 @@ export default function Background() {
     setActivateButton(!activateButton);
   };
 
+  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
+
+  const getPaginateItems = async (action) => {
+    let pageList = 20;
+
+    if (action === "next") {
+      setPageIndex(pageIndex + pageList);
+      setPageSize(pageSize + pageList);
+    } else if (action === "prev") {
+      setPageIndex(pageIndex - pageList);
+      setPageSize(pageSize - pageList);
+    }
+  }
+
   return (
     <>
       <div
@@ -260,6 +279,11 @@ export default function Background() {
                 setCheckDocu={setCheckDocu}
                 checkedStateShowHide={checkedStateShowHide}
                 setCheckedStateShowHide={setCheckedStateShowHide}
+                pageTotal={pageTotal}
+                pageIndex={pageIndex}
+                pageSize={pageSize}
+                pageSizeConst={pageSizeConst}
+                getPaginateItems={getPaginateItems}
               />
             </div>
           </div>
@@ -271,6 +295,7 @@ export default function Background() {
         ShowModalParagraph={ShowModalParagraph}
         setShowModalParagraph={setShowModalParagraph}
         fileMatter={fileMatter}
+        setFileMatter={setFileMatter}
         files={files}
         setFiles={setFiles}
         setWitness={setWitness}
@@ -308,6 +333,10 @@ export default function Background() {
         checkDocu={checkDocu}
         checkedStateShowHide={checkedStateShowHide}
         setCheckedStateShowHide={setCheckedStateShowHide}
+        pageTotal={pageTotal}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        pageSizeConst={pageSizeConst}
       />
     </>
   );
