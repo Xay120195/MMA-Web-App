@@ -3,7 +3,6 @@ import React, {
   useEffect,
   createContext,
   useReducer,
-  useMemo,
 } from "react";
 import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";

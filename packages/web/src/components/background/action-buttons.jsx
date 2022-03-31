@@ -2,19 +2,16 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
-import { AiFillFile, AiFillEye } from "react-icons/ai";
+import { AiFillFile, AiFillEye, AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
-  idList,
   setWitness,
   witness,
-  setShowSearch,
   checkAllState,
   setcheckAllState,
   setCheckedState,
   settotalChecked,
-  setSearch,
   setId,
   matterId,
   getBackground,
@@ -25,8 +22,6 @@ const ActionButtons = ({
   setShowDeleteButton,
   activateButton,
   handleManageFiles,
-  checkNo,
-  setCheckNo,
   checkDate,
   setCheckDate,
   checkDesc,
@@ -34,9 +29,11 @@ const ActionButtons = ({
   checkDocu,
   setCheckDocu,
   checkedStateShowHide,
-  setCheckedStateShowHide
+  pageTotal,
+  pageIndex,
+  pageSize,
+  getPaginateItems,
 }) => {
-  const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
@@ -62,7 +59,7 @@ const ActionButtons = ({
         }
         `;
 
-      const deleteBackgroundRow = await API.graphql({
+      await API.graphql({
         query: mDeleteBackground,
         variables: {
           id: backgroundIds,
@@ -148,39 +145,29 @@ const ActionButtons = ({
     }
   };
 
-  const handleSearchChange = (event) => {
+  /** const handleSearchChange = (event) => {
     setSearch(event.target.value);
     var dm = event.target.value;
     var str = dm.toString();
-    var result = newWitness.filter((x) => x.name.toLowerCase().includes(str));
+    var result = witness.filter((x) => x.name.toLowerCase().includes(str));
     if (result === []) {
       setWitness(witness);
       setShowSearch(true);
     } else {
       setWitness(result);
     }
-  };
-  useEffect(() => {
-    setWitness(newWitness);
+  }; */
 
+  useEffect(() => {
     if (tableColumnList === null) {
       getColumnSettings();
     }
-  }, [tableColumnList, newWitness]);
-
-  function showModal() {
-    setshowRemoveFileModal(true);
-  }
+  }, [tableColumnList, witness]);
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
   };
   const handleClick = (event, name, state) => {
-    // alert("tests");
-
-    let tempp = state;
-    console.log("state", tempp);
-    console.log(name);
 
     if(name === 'DATE'){
       if(checkDate){
@@ -255,8 +242,6 @@ const ActionButtons = ({
     }
   }`;
 
-  var temp = [];
-
   const getColumnSettings = async () => {
     const tableName = "BACKGROUNDS";
 
@@ -267,14 +252,10 @@ const ActionButtons = ({
         userId: localStorage.getItem("userId"),
       },
     });
-    console.log("v");
-    console.log(userColumnSettings.data.userColumnSettings);
    
     userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DATE" && setCheckDate(x.isVisible));
     userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DOCUMENT" && setCheckDocu(x.isVisible));
     userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DESCRIPTIONOFBACKGROUND" && setCheckDesc(x.isVisible));
-
-    console.log(checkedStateShowHide);
 
     if (userColumnSettings.data.userColumnSettings.length === 0) {
       // no default user column settings
@@ -292,7 +273,7 @@ const ActionButtons = ({
             return { id: i.id };
           });
 
-        const insertDefaultUserColumnSettings = await API.graphql({
+        await API.graphql({
           query: mCreateDefaultUserColumnSettings,
           variables: {
             columnSettings: defaultColumnSettingsIds,
@@ -332,6 +313,8 @@ const ActionButtons = ({
       }
     });
   }
+
+  setWitness(witness);
 
   return (
     <>
@@ -467,6 +450,30 @@ const ActionButtons = ({
               </svg>
             </button>
           )}
+
+          <div className="px-2 py-0">
+            <p className={"text-sm mt-3 font-medium float-right inline-block"}>
+              <AiOutlineLeft
+                className={
+                  pageIndex === 1
+                    ? "text-gray-300 inline-block pointer-events-none"
+                    : "inline-block cursor-pointer"
+                }
+                onClick={() => getPaginateItems("prev")}
+              />
+              &nbsp;&nbsp;Showing {pageIndex} -{" "}
+              {pageSize >= pageTotal ? pageTotal : pageSize} of {pageTotal}
+              &nbsp;&nbsp;
+              <AiOutlineRight
+                className={
+                  pageSize >= pageTotal
+                    ? "text-gray-300 inline-block pointer-events-none"
+                    : "inline-block cursor-pointer"
+                }
+                onClick={() => getPaginateItems("next")}
+              />
+            </p>
+          </div>
         </div>
       </div>
       {showToast && (
