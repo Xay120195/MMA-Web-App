@@ -53,30 +53,10 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       const fileSize = file.size;
 
-      // if (result) {
-      //   if (showAlert == 1) {
-      //     return false;
-      //   } else {
-      //     alert("Your file type is invalid.");
-      //     showAlert = 1; //set flag to don't show
-      //     return false;
-      //   }
-      // } 
-      // else if (fileSize > 2147483648) {
-      //   if (showAlert == 1) {
-      //     return false;
-      //   } else {
-      //     alert("Your file size exceeds the 2GB limit.");
-      //     showAlert = 1; //set flag to don't show
-      //     return false;
-      //   }
-      // } 
-      // else {
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
-      //}
     });
 
     setSelectedFiles([...selectedFiles, ...tempArr]);
@@ -135,30 +115,10 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       const fileSize = file.size;
 
-      // if (result) {
-      //   if (showAlert == 1) {
-      //     return false;
-      //   } else {
-      //     alert("Your file type is invalid.");
-      //     showAlert = 1; 
-      //     return false;
-      //   }
-      // } 
-      // else if (fileSize > 2147483648) {
-      //   if (showAlert == 1) {
-      //     return false;
-      //   } else {
-      //     alert("Your file size exceeds the 2GB limit.");
-      //     showAlert = 1; 
-      //     return false;
-      //   }
-      // } 
-      // else {
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
-      //}
     });
 
     setSelectedFiles([...myCurrentRef.current, ...tempArr]);
@@ -186,7 +146,27 @@ export default function UploadLinkModal(props) {
 
   const handleUpload = async () => {
     setUploadStart(true);
-    console.log(selectedFiles);
+    console.log("selFiles",selectedFiles);
+
+    var tempArr= [];
+    
+    selectedFiles.map((uf) => {
+      console.log(uf);
+      var re = /(?:\.([^.]+))?$/;
+      var ext = re.exec(uf.data.name)[0];
+      const result = rejectFiles.find((item) => item.includes(ext));
+      console.log("ress", result);
+
+      if(uf.data.size > 2147483648 || result){
+        // selectedFiles.splice(selectedFiles.indexOf(uf), 1);
+        // console.log("sf",selectedFiles);
+        // do nothing
+      }else{
+        tempArr = [...tempArr, uf];
+      }
+    });
+    _setSelectedFiles(tempArr);
+
     selectedFiles.map(async (uf, index) => {
       // var temp = [];
       if (uf.data.name.split(".").pop() == "docx") {
@@ -207,16 +187,6 @@ export default function UploadLinkModal(props) {
             .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
       }
     
-      var re = /(?:\.([^.]+))?$/;
-      var ext = re.exec(uf.data.name)[0];
-      // console.log(ext);
-
-      const result = rejectFiles.find((item) => item.includes(ext));
-      console.log("ress", result);
-
-    if(uf.data.size > 4000 || result){
-      selectedFiles.splice(selectedFiles.indexOf(uf), 1);
-    }
 
       try {
         await Storage.put(key, uf.data, {
@@ -298,7 +268,6 @@ export default function UploadLinkModal(props) {
     setArr((flagTemp) => [...flagTemp, perc]);
   };
 
-  // var index= 0;
   const generateRandomValues = (perc, idx) => {
     const rand = (n) => Math.random() * n;
     setRandom({
@@ -308,15 +277,21 @@ export default function UploadLinkModal(props) {
     });
   };
 
-  // const getValuePercentage = (percent, index) => {
+  const checkExtension = (fileName) => {
+      var re = /(?:\.([^.]+))?$/;
+      var ext = re.exec(fileName)[0];
+      console.log("ext",ext);
 
-  // if(percent[parseInt(index+itr)] != undefined || percent[parseInt(index+itr)] != null){
-  //   console.log(percent[parseInt(index+itr)]);
-  //   return percent[parseInt(index+itr)];
-  // }else{
-  //   return null;
-  // }
-  // }
+      const result1 = rejectFiles.find((item) => item.includes(ext));
+      console.log("ress", result1);
+
+      if(result1){
+        return true;
+      }else{
+        return false;
+      }
+  };
+
 
   return (
     <>
@@ -368,7 +343,7 @@ export default function UploadLinkModal(props) {
                 <div className="items-grid">
                   {selectedFiles?.map((selectedFile, index) => (
                     <div id="uploadDivContent" key={index} 
-                    className={selectedFile.data.size > 4000 ? "invalid px-2 py-1" : "px-2 py-1"}
+                    className={selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ? "invalid px-2 py-1" : "px-2 py-1"}
                     >
                       <span className="upload-name bg-orange-400">
                         {selectedFile.data.name}
@@ -380,7 +355,7 @@ export default function UploadLinkModal(props) {
                         onClick={() => deleteBtn(index)}
                       />
                       {/* {selectedFile.data.size} */}
-                      {selectedFile.data.size > 4000 || checkExtension(selectedFile.data.name) == true ?
+                      {selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ?
                       <RiErrorWarningLine className="w-11 h-11" color="orange"/>
                       : <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
                       }
