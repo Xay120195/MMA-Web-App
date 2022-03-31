@@ -16,6 +16,7 @@ import {
 } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
+import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
 //import AccessControl from "../../shared/accessControl";

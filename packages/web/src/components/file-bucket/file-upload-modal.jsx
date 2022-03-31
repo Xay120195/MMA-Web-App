@@ -8,6 +8,7 @@ import {RiErrorWarningLine, RiErrorWarningFill} from "react-icons/ri";
 
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import "../../assets/styles/custom-styles.css";
 
 const useRefEventListener = (fn) => {
   const fnRef = useRef(fn);
@@ -52,30 +53,30 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       const fileSize = file.size;
 
-      if (result) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file type is invalid.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } 
-      else if (fileSize > 2147483648) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file size exceeds the 2GB limit.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } 
-      else {
+      // if (result) {
+      //   if (showAlert == 1) {
+      //     return false;
+      //   } else {
+      //     alert("Your file type is invalid.");
+      //     showAlert = 1; //set flag to don't show
+      //     return false;
+      //   }
+      // } 
+      // else if (fileSize > 2147483648) {
+      //   if (showAlert == 1) {
+      //     return false;
+      //   } else {
+      //     alert("Your file size exceeds the 2GB limit.");
+      //     showAlert = 1; //set flag to don't show
+      //     return false;
+      //   }
+      // } 
+      // else {
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
-      }
+      //}
     });
 
     setSelectedFiles([...selectedFiles, ...tempArr]);
@@ -134,30 +135,30 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       const fileSize = file.size;
 
-      if (result) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file type is invalid.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } 
-      else if (fileSize > 2147483648) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file size exceeds the 2GB limit.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } 
-      else {
+      // if (result) {
+      //   if (showAlert == 1) {
+      //     return false;
+      //   } else {
+      //     alert("Your file type is invalid.");
+      //     showAlert = 1; 
+      //     return false;
+      //   }
+      // } 
+      // else if (fileSize > 2147483648) {
+      //   if (showAlert == 1) {
+      //     return false;
+      //   } else {
+      //     alert("Your file size exceeds the 2GB limit.");
+      //     showAlert = 1; 
+      //     return false;
+      //   }
+      // } 
+      // else {
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
-      }
+      //}
     });
 
     setSelectedFiles([...myCurrentRef.current, ...tempArr]);
@@ -185,6 +186,7 @@ export default function UploadLinkModal(props) {
 
   const handleUpload = async () => {
     setUploadStart(true);
+    console.log(selectedFiles);
     selectedFiles.map(async (uf, index) => {
       // var temp = [];
       if (uf.data.name.split(".").pop() == "docx") {
@@ -204,12 +206,21 @@ export default function UploadLinkModal(props) {
             .replaceAll(/\s/g, "")
             .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
       }
+    
+      var re = /(?:\.([^.]+))?$/;
+      var ext = re.exec(uf.data.name)[0];
+      // console.log(ext);
+
+      const result = rejectFiles.find((item) => item.includes(ext));
+      console.log("ress", result);
+
+    if(uf.data.size > 4000 || result){
+      selectedFiles.splice(selectedFiles.indexOf(uf), 1);
+    }
 
       try {
         await Storage.put(key, uf.data, {
           contentType: type,
-          
-          
           progressCallback(progress) {
             const progressInPercentage = Math.round(
               (progress.loaded / progress.total) * 100
@@ -261,6 +272,8 @@ export default function UploadLinkModal(props) {
         };
         console.error("228: Unexpected error while uploading", response);
       }
+   
+
     });
   };
 
@@ -354,10 +367,10 @@ export default function UploadLinkModal(props) {
                 </div>
                 <div className="items-grid">
                   {selectedFiles?.map((selectedFile, index) => (
-                    <div id="uploadDivContent" key={index}
-                    className={selectedFile.data.size > 4000 ? "bg-orange-300" : ""}
+                    <div id="uploadDivContent" key={index} 
+                    className={selectedFile.data.size > 4000 ? "invalid px-2 py-1" : "px-2 py-1"}
                     >
-                      <span className="upload-name">
+                      <span className="upload-name bg-orange-400">
                         {selectedFile.data.name}
                       </span>
                       <FiTrash
@@ -367,8 +380,8 @@ export default function UploadLinkModal(props) {
                         onClick={() => deleteBtn(index)}
                       />
                       {/* {selectedFile.data.size} */}
-                      {selectedFile.data.size > 2147483648 ?
-                      <RiErrorWarningLine className="w-8 h-8" color="orange"/>
+                      {selectedFile.data.size > 4000 || checkExtension(selectedFile.data.name) == true ?
+                      <RiErrorWarningLine className="w-11 h-11" color="orange"/>
                       : <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
                       }
                     </div>
