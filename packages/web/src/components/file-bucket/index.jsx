@@ -735,9 +735,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       //filter duplicates
       pageSelectedLabels = [
         ...new Map(
-          filterOptionsArray.map((item) => [JSON.stringify(item.label), item])
+          filterOptionsArray.map((item) => [JSON.stringify(item), item])
         ).values(),
       ];
+
+      console.log("psl",pageSelectedLabels);
       return newOptions;
     } else {
       return null;
@@ -990,6 +992,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const handleFilter = (fileFilter) => {
+    console.log("ff", fileFilter);
     setFilterLabels(false);
     var filterRecord = [];
     if (
@@ -999,10 +1002,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     ) {
       setMatterFiles(sortByOrder(files));
     } else {
+      console.log("files",files);
       for (var i = 0; i < fileFilter.length; i++) {
         files.map((x) =>
-          x.labels !== null
-            ? x.labels.map((y) =>
+          x.labels.items !== null
+            ? x.labels.items.map((y) =>
                 y.name === fileFilter[i]
                   ? (filterRecord = [...filterRecord, x])
                   : (filterRecord = filterRecord)
@@ -1474,9 +1478,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         >
                                           <div className="flex">
                                             <span
-                                              // className={data.details!=null || data.details!=undefined ?
-                                              //   "w-full p-2 font-poppins"
-                                              // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
                                               className={
                                                 data.details
                                                   ? "w-full p-2 font-poppins h-full"
