@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { API, toast } from "aws-amplify";
+import { API } from "aws-amplify";
 import BlankState from "../blank-state";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
@@ -18,7 +18,7 @@ import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
-import AccessControl from "../../shared/accessControl";
+//import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
@@ -34,11 +34,6 @@ import {
 } from "react-icons/gr";
 import {
   BsArrowLeft,
-  BsConeStriped,
-  BsFillArrowDownLeftSquareFill,
-  BsFillArrowLeftSquareFill,
-  BsFillExclamationOctagonFill,
-  BsFillPersonLinesFill,
   BsFillTrashFill,
 } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
@@ -365,7 +360,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     if (matterFiles === null) {
       console.log("matterFiles is null");
       getMatterFiles();
-      getPaginateItems("", "");
     }
 
     if (labels === null) {
@@ -398,6 +392,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
       setPageTotal(fileCount);
+      getPaginateItems("", "");
     });
   };
 
@@ -1073,7 +1068,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }, 1500);
   }
 
-  const getPaginateItems = async (action, page) => {
+  /*const getPaginateItems = async (action, page) => {
     let pageList = 20;
     let pageResult = [];
 
@@ -1123,7 +1118,21 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         }
       }
     }
-  };
+  }*/
+
+  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
+
+  const getPaginateItems = async (action) => {
+    let pageList = 20;
+
+    if (action === "next") {
+      setPageIndex(pageIndex + pageList);
+      setPageSize(pageSize + pageList);
+    } else if (action === "prev") {
+      setPageIndex(pageIndex - pageList);
+      setPageSize(pageSize - pageList);
+    }
+  }
 
   return (
     <>
@@ -1307,13 +1316,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
-                              {matterFiles
+                              {/* {matterFiles
                                 .filter((x) =>
                                   filteredFiles.find(
                                     (files) => files.id === x.id
                                   )
                                 )
-                                .map((data, index) => (
+                                .map((data, index) => ( */}
+                                {matterFiles.slice(pageIndex-1, pageSizeConst).map((data, index) => (
                                   <Draggable
                                     key={data.id}
                                     draggableId={data.id}
