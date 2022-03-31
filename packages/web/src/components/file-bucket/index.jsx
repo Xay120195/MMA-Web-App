@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { API, toast } from "aws-amplify";
+import { API } from "aws-amplify";
 import BlankState from "../blank-state";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
@@ -18,7 +18,7 @@ import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
-import AccessControl from "../../shared/accessControl";
+//import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
@@ -34,11 +34,6 @@ import {
 } from "react-icons/gr";
 import {
   BsArrowLeft,
-  BsConeStriped,
-  BsFillArrowDownLeftSquareFill,
-  BsFillArrowLeftSquareFill,
-  BsFillExclamationOctagonFill,
-  BsFillPersonLinesFill,
   BsFillTrashFill,
 } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
@@ -1099,8 +1094,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }*/
     }
   };
-
-  console.log(matterFiles);
 
   return (
     <>
