@@ -559,7 +559,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }
       const data = {
         name: updatedName[0],
-        details: details,
+        details: e.target.innerHTML,
         // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
@@ -598,7 +598,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
       const data = {
         name: updatedName[0],
-        details: textDetails,
+        details: e.target.innerHTML,
         // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
@@ -726,7 +726,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       newOptions.map(
         (data) => (filterOptionsArray = [...filterOptionsArray, data])
       );
-      console.log("no", newOptions);
+      //console.log("no", newOptions);
 
       //filter duplicates
       pageSelectedLabels = [
@@ -1007,7 +1007,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                   ? (filterRecord = [...filterRecord, x])
                   : (filterRecord = filterRecord)
               )
-            : x.labels
+            : x.labels.items
         );
       }
 
@@ -1432,7 +1432,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             )}
                                             &nbsp;&nbsp;
                                             <span
-                                              className="p-2 w-60 font-poppins"
+                                              className="p-2 w-52 font-poppins"
                                               style={{
                                                 cursor: "auto",
                                                 outlineColor:
@@ -1491,8 +1491,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             <span
                                               className={
                                                 data.details
-                                                  ? "w-full p-2 font-poppins h-full"
-                                                  : "w-full p-2 font-poppins h-9"
+                                                  ? "w-full p-2 font-poppins h-full mx-2"
+                                                  : "w-full p-2 font-poppins h-9 mx-2"
                                               }
                                               style={{
                                                 cursor: "auto",
@@ -1526,9 +1526,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               contentEditable={
                                                 updateProgess ? false : true
                                               }
-                                            >
-                                              {data.details}
-                                            </span>
+                                              dangerouslySetInnerHTML={{
+                                                __html: data.details,
+                                              }}
+                                            ></span>
                                           </div>
                                           <br />
                                           <span className="text-red-400 filename-validation">
