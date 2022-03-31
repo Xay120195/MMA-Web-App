@@ -725,7 +725,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       newOptions.map(
         (data) => (filterOptionsArray = [...filterOptionsArray, data])
       );
-      console.log("no", newOptions);
+      //console.log("no", newOptions);
 
       //filter duplicates
       pageSelectedLabels = [
@@ -1006,7 +1006,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                   ? (filterRecord = [...filterRecord, x])
                   : (filterRecord = filterRecord)
               )
-            : x.labels
+            : x.labels.items
         );
       }
 
