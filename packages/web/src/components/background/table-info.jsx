@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -15,8 +15,6 @@ import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
 import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
-import { useMemo } from "react";
-import { useCallback } from "react";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -59,13 +57,16 @@ const TableInfo = ({
   checkDesc,
   checkDocu,
   checkedStateShowHide,
-  setCheckedStateShowHide
+  setCheckedStateShowHide,
+  totalWitness,
+  pageIndex,
+  pageSizeConst,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-  const [loading, setLoading] = useState(true);
+  /* const [loading, setLoading] = useState(true); */
 
   const [active, setActive] = useState(false);
   const [selected, setSelected] = useState("");
@@ -152,13 +153,11 @@ const TableInfo = ({
         setShowDeleteButton(false);
       }
     }
-
-    console.log(selectedRowsBGFiles);
   };
 
   useEffect(() => {
     setTimeout(() => {
-      setLoading(false);
+      /* setLoading(false); */
     }, 1000);
 
     setIdList(getId);
@@ -179,7 +178,6 @@ const TableInfo = ({
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
-    console.log(e.target.innerHTML);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
       setUpdateProgress(false);
@@ -275,11 +273,6 @@ const TableInfo = ({
     });
   }
 
-  function stripedTags(str) {
-    const stripedStr = str.replace(/<[^>]+>/g, "");
-    return stripedStr;
-  }
-
   const handleDragEnd = async (e) => {
     let tempWitness = [...witness];
 
@@ -291,8 +284,7 @@ const TableInfo = ({
     const res = tempWitness.map(myFunction);
 
     function myFunction(item, index) {
-      let data;
-      return (data = {
+      return ({
         id: item.id,
         order: index + 1,
       });
@@ -346,9 +338,8 @@ const TableInfo = ({
         .map(({ id }) => ({
           id: id,
         }));
-      console.log(arrFiles);
       if (witness[i].id !== null) {
-        const request = API.graphql({
+        API.graphql({
           query: mUpdateBackgroundFile,
           variables: {
             backgroundId: witness[i].id,
@@ -480,7 +471,7 @@ const TableInfo = ({
     });
 
     if (background_id !== null) {
-      const request = await API.graphql({
+      await API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
           backgroundId: background_id,
@@ -496,9 +487,6 @@ const TableInfo = ({
     }, 2000);
   };
 
-  const handleSelected = (date) => {
-    return new Date(date);
-  };
   return (
     <>
       <div
@@ -564,7 +552,8 @@ const TableInfo = ({
                             {...provider.droppableProps}
                             className="bg-white divide-y divide-gray-200"
                           >
-                            {witness.map((item, index) => (
+                            {/* {witness.map((item, index) => ( */}
+                            {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => (
                               <Draggable
                                 key={item.id}
                                 draggableId={item.id}

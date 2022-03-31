@@ -1065,7 +1065,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setTimeout(() => {
       setShowToast(false);
       window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/?count=${counter}`;
-    }, 1500);
+    }, 1000);
   }
 
   /*const getPaginateItems = async (action, page) => {
