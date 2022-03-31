@@ -17,6 +17,7 @@ async function listClientMatterLabels(ctx) {
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,
       }),
+      ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -91,6 +92,7 @@ async function listCompanyMatterBackgrounds(ctx) {
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,
       }),
+      ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,

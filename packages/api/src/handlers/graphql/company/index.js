@@ -16,6 +16,7 @@ async function listCompanyUsers(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
+      ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -81,6 +82,7 @@ async function listCompanyMatters(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
+      ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -151,6 +153,7 @@ async function listCompanyClients(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
+      ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -219,6 +222,7 @@ async function listCompanyClientMatters(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
+      ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
