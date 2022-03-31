@@ -6,7 +6,6 @@ import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 
 import { API } from "aws-amplify";
-import { RemoveFileModal } from "../file-bucket/remove-file-modal.jsx";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -29,6 +28,7 @@ export default function Background() {
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
+  const [selectRow, setSelectRow] = useState([]);
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
@@ -47,6 +47,9 @@ export default function Background() {
   const [checkDate, setCheckDate] = useState(true);
   const [checkDesc, setCheckDesc] = useState(true);
   const [checkDocu, setCheckDocu] = useState(true);
+  const [pageTotal, setPageTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [pageIndex, setPageIndex] = useState(1);
 
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
@@ -152,6 +155,9 @@ export default function Background() {
         })
       );
       setWitness(sortByOrder(result));
+      setPageTotal(result.length);
+      setPageSize(20);
+      setPageIndex(1);
 
       let mergeArrFiles = [];
       let arrFileResult = [];
@@ -191,10 +197,7 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort(
-        (a, b) =>
-          new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else {
       sort = arr.sort(
         (a, b) =>
@@ -208,6 +211,20 @@ export default function Background() {
 
   const handleManageFiles = () => {
     setActivateButton(!activateButton);
+  };
+
+  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
+
+  const getPaginateItems = async (action) => {
+    let pageList = 20;
+
+    if (action === "next") {
+      setPageIndex(pageIndex + pageList);
+      setPageSize(pageSize + pageList);
+    } else if (action === "prev") {
+      setPageIndex(pageIndex - pageList);
+      setPageSize(pageSize - pageList);
+    }
   };
 
   return (
@@ -260,6 +277,13 @@ export default function Background() {
                 setCheckDocu={setCheckDocu}
                 checkedStateShowHide={checkedStateShowHide}
                 setCheckedStateShowHide={setCheckedStateShowHide}
+                pageTotal={pageTotal}
+                pageIndex={pageIndex}
+                pageSize={pageSize}
+                pageSizeConst={pageSizeConst}
+                getPaginateItems={getPaginateItems}
+                selectRow={selectRow}
+                setSelectRow={setSelectRow}
               />
             </div>
           </div>
@@ -271,6 +295,7 @@ export default function Background() {
         ShowModalParagraph={ShowModalParagraph}
         setShowModalParagraph={setShowModalParagraph}
         fileMatter={fileMatter}
+        setFileMatter={setFileMatter}
         files={files}
         setFiles={setFiles}
         setWitness={setWitness}
@@ -308,6 +333,12 @@ export default function Background() {
         checkDocu={checkDocu}
         checkedStateShowHide={checkedStateShowHide}
         setCheckedStateShowHide={setCheckedStateShowHide}
+        pageTotal={pageTotal}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        pageSizeConst={pageSizeConst}
+        selectRow={selectRow}
+        setSelectRow={setSelectRow}
       />
     </>
   );

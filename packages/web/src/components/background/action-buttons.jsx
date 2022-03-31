@@ -2,19 +2,21 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
-import { AiFillFile, AiFillEye } from "react-icons/ai";
+import {
+  AiFillFile,
+  AiFillEye,
+  AiOutlineLeft,
+  AiOutlineRight,
+} from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
-  idList,
   setWitness,
   witness,
-  setShowSearch,
   checkAllState,
   setcheckAllState,
   setCheckedState,
   settotalChecked,
-  setSearch,
   setId,
   matterId,
   getBackground,
@@ -25,8 +27,6 @@ const ActionButtons = ({
   setShowDeleteButton,
   activateButton,
   handleManageFiles,
-  checkNo,
-  setCheckNo,
   checkDate,
   setCheckDate,
   checkDesc,
@@ -34,9 +34,13 @@ const ActionButtons = ({
   checkDocu,
   setCheckDocu,
   checkedStateShowHide,
-  setCheckedStateShowHide
+  pageTotal,
+  pageIndex,
+  pageSize,
+  getPaginateItems,
+  selectRow,
+  setSelectRow,
 }) => {
-  const [newWitness, setList] = useState(witness);
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
@@ -62,7 +66,7 @@ const ActionButtons = ({
         }
         `;
 
-      const deleteBackgroundRow = await API.graphql({
+      await API.graphql({
         query: mDeleteBackground,
         variables: {
           id: backgroundIds,
@@ -83,6 +87,7 @@ const ActionButtons = ({
       }
 
       setShowToast(true);
+      setSelectRow([]);
       setshowRemoveFileModal(false);
       setTimeout(() => {
         setShowToast(false);
@@ -148,64 +153,53 @@ const ActionButtons = ({
     }
   };
 
-  const handleSearchChange = (event) => {
+  /** const handleSearchChange = (event) => {
     setSearch(event.target.value);
     var dm = event.target.value;
     var str = dm.toString();
-    var result = newWitness.filter((x) => x.name.toLowerCase().includes(str));
+    var result = witness.filter((x) => x.name.toLowerCase().includes(str));
     if (result === []) {
       setWitness(witness);
       setShowSearch(true);
     } else {
       setWitness(result);
     }
-  };
-  useEffect(() => {
-    setWitness(newWitness);
+  }; */
 
+  useEffect(() => {
     if (tableColumnList === null) {
       getColumnSettings();
     }
-  }, [tableColumnList, newWitness]);
-
-  function showModal() {
-    setshowRemoveFileModal(true);
-  }
+  }, [tableColumnList, witness]);
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
   };
   const handleClick = (event, name, state) => {
-    // alert("tests");
-
-    let tempp = state;
-    console.log("state", tempp);
-    console.log(name);
-
-    if(name === 'DATE'){
-      if(checkDate){
+    if (name === "DATE") {
+      if (checkDate) {
         setCheckDate(false);
-      }else{
+      } else {
         setCheckDate(true);
       }
     }
-    
-    if(name === 'DOCUMENT'){
-      if(checkDocu){
+
+    if (name === "DOCUMENT") {
+      if (checkDocu) {
         setCheckDocu(false);
-      }else{
+      } else {
         setCheckDocu(true);
       }
     }
 
-    if(name === "DESCRIPTIONOFBACKGROUND"){
-      if(checkDesc){
+    if (name === "DESCRIPTIONOFBACKGROUND") {
+      if (checkDesc) {
         setCheckDesc(false);
-      }else{
+      } else {
         setCheckDesc(true);
       }
     }
-  }
+  };
 
   const handleColumnCheckChanged = (event, data) => {
     setShowHideState(true);
@@ -255,8 +249,6 @@ const ActionButtons = ({
     }
   }`;
 
-  var temp = [];
-
   const getColumnSettings = async () => {
     const tableName = "BACKGROUNDS";
 
@@ -267,14 +259,18 @@ const ActionButtons = ({
         userId: localStorage.getItem("userId"),
       },
     });
-    console.log("v");
-    console.log(userColumnSettings.data.userColumnSettings);
-   
-    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DATE" && setCheckDate(x.isVisible));
-    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DOCUMENT" && setCheckDocu(x.isVisible));
-    userColumnSettings.data.userColumnSettings.map(x=> x.columnSettings.name ==="DESCRIPTIONOFBACKGROUND" && setCheckDesc(x.isVisible));
 
-    console.log(checkedStateShowHide);
+    userColumnSettings.data.userColumnSettings.map(
+      (x) => x.columnSettings.name === "DATE" && setCheckDate(x.isVisible)
+    );
+    userColumnSettings.data.userColumnSettings.map(
+      (x) => x.columnSettings.name === "DOCUMENT" && setCheckDocu(x.isVisible)
+    );
+    userColumnSettings.data.userColumnSettings.map(
+      (x) =>
+        x.columnSettings.name === "DESCRIPTIONOFBACKGROUND" &&
+        setCheckDesc(x.isVisible)
+    );
 
     if (userColumnSettings.data.userColumnSettings.length === 0) {
       // no default user column settings
@@ -292,7 +288,7 @@ const ActionButtons = ({
             return { id: i.id };
           });
 
-        const insertDefaultUserColumnSettings = await API.graphql({
+        await API.graphql({
           query: mCreateDefaultUserColumnSettings,
           variables: {
             columnSettings: defaultColumnSettingsIds,
@@ -333,6 +329,42 @@ const ActionButtons = ({
     });
   }
 
+  setWitness(witness);
+
+  const handleCopyRow = () => {
+    selectRow.map(async function (x) {
+      const mCreateBackground = `
+      mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
+        backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+          id
+          date
+          description
+        }
+      }
+  `;
+
+      const createBackgroundRow = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          clientMatterId: matterId,
+          date: new Date(x.date).toISOString(),
+          description: x.details,
+        },
+      });
+      console.log(createBackgroundRow);
+      if (createBackgroundRow) {
+        getBackground();
+        setcheckAllState(false);
+        setSelectRow([]);
+        // const newArr = Array(witness.length).fill(false);
+        // setCheckedState = newArr;
+        setCheckedState(new Array(witness.length).fill(false));
+        setSelectedRowsBG([]);
+        setShowDeleteButton(false);
+      }
+    });
+  };
+
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5">
@@ -346,66 +378,69 @@ const ActionButtons = ({
             onChange={(e) => handleCheckAllChange(e.target.checked)}
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
-
-          <button
-            onClick={handleAddRow}
-            type="button"
-            className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-          >
-            Add row
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mx-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={() => setShowModalParagraph(true)}
-            type="button"
-            className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-          >
-            Add Paragraph
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mx-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </button>
-
-          <div className="inline-flex">
+          {!showDeleteButton && (
             <button
+              onClick={handleAddRow}
               type="button"
-              className={
-                "hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-              }
-              onClick={() => handleShowHide()}
+              className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
             >
-              SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
+              Add row
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mx-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </button>
+          )}
+          {!showDeleteButton && (
+            <button
+              onClick={() => setShowModalParagraph(true)}
+              type="button"
+              className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+            >
+              Add Paragraph
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mx-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+          )}
+          <div className="inline-flex">
+            {!showDeleteButton && (
+              <button
+                type="button"
+                className={
+                  "hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                }
+                onClick={() => handleShowHide()}
+              >
+                SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
+              </button>
+            )}
             {showhideState && (
               <div className="w-64 h-38 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
                 <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                   TABLE COLUMN OPTIONS
                 </p>
-                
 
                 {tableColumnList !== null &&
                   tableColumnList.map((data, index) => (
@@ -416,57 +451,110 @@ const ActionButtons = ({
                         className="cursor-pointer"
                         // checked={data.isVisible}
                         checked={
-                          data.columnSettings.name === 'DATE' ?
-                          checkDate
-                          : data.columnSettings.name === "DOCUMENT" ?
-                          checkDocu
-                          : checkDesc
+                          data.columnSettings.name === "DATE"
+                            ? checkDate
+                            : data.columnSettings.name === "DOCUMENT"
+                            ? checkDocu
+                            : checkDesc
                         }
-                        onClick={(event) => handleClick(event, data.columnSettings.name, checkedStateShowHide)}
+                        onClick={(event) =>
+                          handleClick(
+                            event,
+                            data.columnSettings.name,
+                            checkedStateShowHide
+                          )
+                        }
                         onChange={(event) =>
                           handleColumnCheckChanged(event, data)
                         }
                       />
-                      &nbsp; {data.columnSettings.label} 
+                      &nbsp; {data.columnSettings.label}
                     </div>
                   ))}
               </div>
             )}
           </div>
-
-          <button
-            type="button"
-            className={
-              !activateButton
-                ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-                : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-            }
-            onClick={() => handleManageFiles()}
-          >
-            MANAGE FILES &nbsp; <AiFillFile />
-          </button>
-
-          {showDeleteButton && (
+          {!showDeleteButton && (
             <button
               type="button"
-              onClick={() => setshowRemoveFileModal(true)}
-              className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+              className={
+                !activateButton
+                  ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                  : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+              }
+              onClick={() => handleManageFiles()}
             >
-              Delete
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              MANAGE FILES &nbsp; <AiFillFile />
             </button>
           )}
+          {showDeleteButton && (
+            <>
+              <button
+                type="button"
+                onClick={handleCopyRow}
+                className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+              >
+                COPY {selectRow.length} ROW
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => setshowRemoveFileModal(true)}
+                className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+              >
+                Delete
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </>
+          )}
+
+          <div className="px-2 py-0">
+            <p className={"text-sm mt-3 font-medium float-right inline-block"}>
+              <AiOutlineLeft
+                className={
+                  pageIndex === 1
+                    ? "text-gray-300 inline-block pointer-events-none"
+                    : "inline-block cursor-pointer"
+                }
+                onClick={() => getPaginateItems("prev")}
+              />
+              &nbsp;&nbsp;Showing {pageIndex} -{" "}
+              {pageSize >= pageTotal ? pageTotal : pageSize} of {pageTotal}
+              &nbsp;&nbsp;
+              <AiOutlineRight
+                className={
+                  pageSize >= pageTotal
+                    ? "text-gray-300 inline-block pointer-events-none"
+                    : "inline-block cursor-pointer"
+                }
+                onClick={() => getPaginateItems("next")}
+              />
+            </p>
+          </div>
         </div>
       </div>
       {showToast && (
