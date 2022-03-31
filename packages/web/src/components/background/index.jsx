@@ -28,6 +28,7 @@ export default function Background() {
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
+  const [selectRow, setSelectRow] = useState([]);
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
@@ -196,10 +197,7 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort(
-        (a, b) =>
-          new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else {
       sort = arr.sort(
         (a, b) =>
@@ -227,7 +225,7 @@ export default function Background() {
       setPageIndex(pageIndex - pageList);
       setPageSize(pageSize - pageList);
     }
-  }
+  };
 
   return (
     <>
@@ -284,6 +282,8 @@ export default function Background() {
                 pageSize={pageSize}
                 pageSizeConst={pageSizeConst}
                 getPaginateItems={getPaginateItems}
+                selectRow={selectRow}
+                setSelectRow={setSelectRow}
               />
             </div>
           </div>
@@ -337,6 +337,8 @@ export default function Background() {
         pageIndex={pageIndex}
         pageSize={pageSize}
         pageSizeConst={pageSizeConst}
+        selectRow={selectRow}
+        setSelectRow={setSelectRow}
       />
     </>
   );

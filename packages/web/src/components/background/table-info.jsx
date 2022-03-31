@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -49,26 +49,18 @@ const TableInfo = ({
   selectedRowsBGFiles,
   setSelectedId,
   selectedId,
-  setpasteButton,
-  pasteButton,
-  setActivateButton,
-  checkNo,
+  selectRow,
+  setSelectRow,
   checkDate,
   checkDesc,
   checkDocu,
-  checkedStateShowHide,
-  setCheckedStateShowHide,
-  totalWitness,
-  pageIndex,
-  pageSizeConst,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-  /* const [loading, setLoading] = useState(true); */
+  const [loading, setLoading] = useState(true);
 
-  const [active, setActive] = useState(false);
   const [selected, setSelected] = useState("");
   const [descId, setDescId] = useState("");
   const [textDesc, setTextDesc] = useState("");
@@ -104,7 +96,20 @@ const TableInfo = ({
     setshowRemoveFileModal(false);
   };
 
-  const handleCheckboxChange = (position, event, id) => {
+  const handleCheckboxChange = (position, event, id, date, details) => {
+    const checkedId = selectRow.some((x) => x.id === id);
+    if (!checkedId && event.target.checked) {
+      const x = selectRow;
+      x.push({ id: id, date: date, details: details });
+      setSelectRow(x);
+    }
+    if (checkedId) {
+      var x = selectRow.filter(function (sel) {
+        return sel.id !== id;
+      });
+      setSelectRow(x);
+    }
+
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
     );
@@ -153,11 +158,13 @@ const TableInfo = ({
         setShowDeleteButton(false);
       }
     }
+
+    console.log(selectedRowsBGFiles);
   };
 
   useEffect(() => {
     setTimeout(() => {
-      /* setLoading(false); */
+      setLoading(false);
     }, 1000);
 
     setIdList(getId);
@@ -178,6 +185,7 @@ const TableInfo = ({
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
+    console.log(e.target.innerHTML);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
       setUpdateProgress(false);
@@ -273,6 +281,11 @@ const TableInfo = ({
     });
   }
 
+  function stripedTags(str) {
+    const stripedStr = str.replace(/<[^>]+>/g, "");
+    return stripedStr;
+  }
+
   const handleDragEnd = async (e) => {
     let tempWitness = [...witness];
 
@@ -284,7 +297,8 @@ const TableInfo = ({
     const res = tempWitness.map(myFunction);
 
     function myFunction(item, index) {
-      return ({
+      let data;
+      return (data = {
         id: item.id,
         order: index + 1,
       });
@@ -310,11 +324,6 @@ const TableInfo = ({
 
   const handleChageBackground = (id) => {
     setSelected(id);
-    if (active) {
-      setActive(false);
-    } else {
-      setActive(true);
-    }
   };
 
   const previewAndDownloadFile = async (downloadURL) => {
@@ -338,8 +347,9 @@ const TableInfo = ({
         .map(({ id }) => ({
           id: id,
         }));
+      console.log(arrFiles);
       if (witness[i].id !== null) {
-        API.graphql({
+        const request = API.graphql({
           query: mUpdateBackgroundFile,
           variables: {
             backgroundId: witness[i].id,
@@ -471,7 +481,7 @@ const TableInfo = ({
     });
 
     if (background_id !== null) {
-      await API.graphql({
+      const request = await API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
           backgroundId: background_id,
@@ -487,6 +497,10 @@ const TableInfo = ({
     }, 2000);
   };
 
+  const handleSelected = (date) => {
+    return new Date(date);
+  };
+
   return (
     <>
       <div
@@ -500,18 +514,16 @@ const TableInfo = ({
                 <EmptyRow search={search} />
               ) : (
                 <>
-                
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              No
-                            </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            No
+                          </th>
                           {checkDate && (
                             <th
                               scope="col"
@@ -552,8 +564,7 @@ const TableInfo = ({
                             {...provider.droppableProps}
                             className="bg-white divide-y divide-gray-200"
                           >
-                            {/* {witness.map((item, index) => ( */}
-                            {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => (
+                            {witness.map((item, index) => (
                               <Draggable
                                 key={item.id}
                                 draggableId={item.id}
@@ -564,7 +575,13 @@ const TableInfo = ({
                                     key={item.id}
                                     index={index}
                                     className={
-                                      index + 1 <= counter ? highlightRows : ""
+                                      index + 1 <= counter
+                                        ? highlightRows
+                                        : selectRow.find(
+                                            (x) => x.id === item.id
+                                          )
+                                        ? "bg-green-200"
+                                        : ""
                                     }
                                     {...provider.draggableProps}
                                     ref={provider.innerRef}
@@ -572,45 +589,46 @@ const TableInfo = ({
                                       ...provider.draggableProps.style,
                                       backgroundColor:
                                         snapshot.isDragging ||
-                                        (active && item.id === selected)
+                                        item.id === selected
                                           ? "rgba(255, 255, 239, 0.767)"
                                           : "",
                                     }}
                                   >
-                                  
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="px-3 py-3 w-10"
-                                      >
-                                        <div className="flex items-center ">
-                                          <MdDragIndicator
-                                            className="text-2xl"
-                                            onClick={() =>
-                                              handleChageBackground(item.id)
-                                            }
-                                          />
-                                          <input
-                                            type="checkbox"
-                                            name={item.id}
-                                            className="cursor-pointer w-10"
-                                            checked={checkedState[index]}
-                                            onChange={(event) =>
-                                              handleCheckboxChange(
-                                                index,
-                                                event,
-                                                item.id
-                                              )
-                                            }
-                                          />
-                                          <label
-                                            htmlFor="checkbox-1"
-                                            className="text-sm font-medium text-gray-900 dark:text-gray-300"
-                                          >
-                                            {index + 1}
-                                          </label>
-                                        </div>
-                                      </td>
-                                   
+                                    <td
+                                      {...provider.dragHandleProps}
+                                      className="px-3 py-3 w-10"
+                                    >
+                                      <div className="flex items-center ">
+                                        <MdDragIndicator
+                                          className="text-2xl"
+                                          onClick={() =>
+                                            handleChageBackground(item.id)
+                                          }
+                                        />
+                                        <input
+                                          type="checkbox"
+                                          name={item.id}
+                                          className="cursor-pointer w-10"
+                                          checked={checkedState[index]}
+                                          onChange={(event) =>
+                                            handleCheckboxChange(
+                                              index,
+                                              event,
+                                              item.id,
+                                              item.date,
+                                              item.description
+                                            )
+                                          }
+                                        />
+                                        <label
+                                          htmlFor="checkbox-1"
+                                          className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                        >
+                                          {index + 1}
+                                        </label>
+                                      </div>
+                                    </td>
+
                                     {checkDate && (
                                       <td
                                         {...provider.dragHandleProps}
@@ -681,12 +699,19 @@ const TableInfo = ({
                                         className="py-2 px-3 w-80 text-sm text-gray-500"
                                       >
                                         {!activateButton ? (
-                                          <Link
-                                            className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                            to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
-                                          >
-                                            File Bucket +
-                                          </Link>
+                                          !activateButton &&
+                                          selectRow.find(
+                                            (x) => x.id === item.id
+                                          ) ? (
+                                            ""
+                                          ) : (
+                                            <Link
+                                              className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                              to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
+                                            >
+                                              File Bucket +
+                                            </Link>
+                                          )
                                         ) : (
                                           <span
                                             className={
