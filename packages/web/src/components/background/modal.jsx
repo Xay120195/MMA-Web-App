@@ -25,6 +25,8 @@ export const ModalParagraph = ({
         mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
           backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
             id
+            date
+            description
           }
         }
     `;
@@ -37,6 +39,7 @@ export const ModalParagraph = ({
           description: x,
         },
       });
+
       if (createBackgroundRow) {
         getBackground();
         setcheckAllState(false);
