@@ -99,6 +99,7 @@ export default function UploadLinkModal(props) {
   const onDragEnter = () => dropRef.current.classList.add("dragover");
   const onDragLeave = () => dropRef.current.classList.remove("dragover");
   const onDrop = () => dropRef.current.classList.remove("dragover");
+  var setFlag = 0; //0 = no valid files
 
   const onSelectFile = (e) => {
     console.log(e.target.files.length);
@@ -107,21 +108,24 @@ export default function UploadLinkModal(props) {
     }
     const tempArr = [];
     console.log(e.target.files);
-
+   
     [...e.target.files].forEach((file) => {
       var re = /(?:\.([^.]+))?$/;
       var ext = re.exec(file.name)[0];
-
-      const result = rejectFiles.find((item) => item.includes(ext));
-      const fileSize = file.size;
 
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
     });
-
     setSelectedFiles([...myCurrentRef.current, ...tempArr]);
+
+    let tempArray = selectedFiles;
+
+    var re = /(?:\.([^.]+))?$/;
+    // selectedFiles.map(x=> rejectFiles.find((item) => item.includes(x.data.name)) ? setFlag = 0 : setFlag = 1);
+
+   
   };
 
   const deleteBtn = (index) => {
@@ -157,17 +161,28 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       console.log("ress", result);
 
-      if(uf.data.size > 2147483648 || result){
-        // selectedFiles.splice(selectedFiles.indexOf(uf), 1);
-        // console.log("sf",selectedFiles);
-        // do nothing
+      if(result){
+        tempArr = tempArr;
+      }else if(uf.data.size > 2147483648){
+        tempArr = tempArr;
       }else{
         tempArr = [...tempArr, uf];
       }
     });
-    _setSelectedFiles(tempArr);
 
-    selectedFiles.map(async (uf, index) => {
+    console.log(tempArr);
+    console.log("sff", tempArr);
+    setSelectedFiles(tempArr);
+    _setSelectedFiles(tempArr);
+    
+    console.log("sff1", selectedFiles);
+ 
+  
+    if(tempArr.length < 1){
+        setUploadedFiles({ files: [] });
+    }else{
+
+        tempArr.map(async (uf, index) => {
       // var temp = [];
       if (uf.data.name.split(".").pop() == "docx") {
         // console.log(uf.data.type);
@@ -229,6 +244,11 @@ export default function UploadLinkModal(props) {
             setUploadedFiles((prevState) => ({
               files: [...prevState.files, fileData],
             }));
+
+            // setUploadStart(false);
+            // setSelectedFiles([]);
+            
+   
           })
           .catch((err) => {
             console.error("220: Unexpected error while uploading", err);
@@ -242,9 +262,9 @@ export default function UploadLinkModal(props) {
         };
         console.error("228: Unexpected error while uploading", response);
       }
-   
-
     });
+    }
+
   };
 
   const [isOpen, setIsOpen] = useState(true);
