@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
-import { API, toast } from "aws-amplify";
+import { API } from "aws-amplify";
 import BlankState from "../blank-state";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
@@ -16,9 +16,10 @@ import {
 } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
+import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
-import AccessControl from "../../shared/accessControl";
+//import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
@@ -34,11 +35,6 @@ import {
 } from "react-icons/gr";
 import {
   BsArrowLeft,
-  BsConeStriped,
-  BsFillArrowDownLeftSquareFill,
-  BsFillArrowLeftSquareFill,
-  BsFillExclamationOctagonFill,
-  BsFillPersonLinesFill,
   BsFillTrashFill,
 } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
@@ -155,10 +151,6 @@ export default function FileBucket() {
           id
           name
           details
-          labels {
-            id
-            name
-          }
         }
       }
   `;
@@ -187,8 +179,10 @@ export default function FileBucket() {
       type
       details
       labels {
+        items {
           id
           name
+        }
       }
       createdAt
       order
@@ -239,10 +233,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       matterFileUpdate(id: $id, order: $order) {
         id
         order
-        labels {
-          id
-          name
-        }
       }
     }
 `;
@@ -261,9 +251,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       id
       name,
       downloadURL,
-      nextToken,
-      createdAt,
-      order
+      nextToken
     }
   }
 `;
@@ -309,7 +297,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     });
   }
 
-  const getLabels = async (data) => {
+  const getLabels = async () => {
     let result = [];
 
     const labelsOpt = await API.graphql({
@@ -334,24 +322,38 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setLabels(result);
   };
 
-  const addLabel = async (data) => {
+  const addLabel = async (fileId, data, index, newLabel) => {
+    console.group("addLabel()");
     let result;
 
-    if (labels.some((x) => x.label === data.trim())) {
+    if (labels.some((x) => x.label === newLabel.trim())) {
       return;
     } else {
       const createLabel = await API.graphql({
         query: mCreateLabel,
         variables: {
           clientMatterId: matter_id,
-          name: data,
+          name: newLabel,
         },
       });
       result = createLabel.data.labelCreate;
-      console.log(result.name);
+      console.log("createLabel result:", result);
+      console.groupEnd();
+      getLabels();
+
+      console.log("348 - data.labels.items", data.labels.items);
+
+      const newOptions = data.labels.items.map((d) =>
+        d.name === d.id ? { ...d, id: createLabel.data.labelCreate.id } : d
+      );
+      console.log("353 - newOptions", newOptions);
+
+      data.labels = newOptions;
+      updateArr(newOptions, index);
+      await updateMatterFile(fileId, data);
+      tagFileLabel(fileId, newOptions);
     }
 
-    getLabels(data);
     return result;
   };
 
@@ -391,8 +393,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
       );
       setPageTotal(fileCount);
+      getPaginateItems("", "");
     });
-    getPaginateItems("", "");
   };
 
   async function createMatterFile(file) {
@@ -411,6 +413,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   async function updateMatterFile(id, data) {
+    console.group("updateMatterFile()");
+    console.log("id:", id);
+    console.log("data:", data);
+    console.groupEnd();
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -419,7 +425,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
             id: id,
             name: data.name,
             details: data.details,
-            labels: data.labels,
+            // labels: data.labels.items,
           },
         });
 
@@ -431,6 +437,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 
   async function tagFileLabel(fileId, labels) {
+    console.log("tagFileLabel()");
+    console.log("fileId", fileId, "check", labels);
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
@@ -441,6 +449,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           },
         });
         resolve(request);
+        console.log("reqq", request);
       } catch (e) {
         reject(e.errors[0].message);
       }
@@ -452,35 +461,45 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     gridtemplatecolumn: "1fr auto",
   };
 
-  const handleMatterChanged = async (options, id, name, details, index) => {
-    setFileId(id);
+  const handleLabelChanged = async (options, fileId, name, details, index) => {
+    setFileId(fileId);
+    setUpdateProgress(true);
     let newOptions = [];
     let createdLabel;
-    var updated;
-
-    options.map(async (o) => {
-      if (o.__isNew__) {
-        createdLabel = await addLabel(o.label);
-      }
-    });
+    let isNewCtr = 0;
 
     newOptions = options.map(({ value: id, label: name }) => ({
       id: id,
       name: name,
     }));
 
-    updated = newOptions.map((d) => (d.name == d.id ? { ...d, id: id } : d));
-
     const data = {
       name: name,
       details: details,
-      labels: updated,
+      labels: { items: newOptions },
     };
 
-    updateArr(data.labels, index);
-    await updateMatterFile(id, data);
-    await tagFileLabel(id, data.labels);
-    setUpdateProgress(true);
+    console.log("options", options);
+
+    await options.map(async (o) => {
+      if (o.__isNew__) {
+        isNewCtr++;
+        console.log("ooo", o);
+        console.log("newlabel", o.label);
+        createdLabel = await addLabel(fileId, data, index, o.label);
+        console.log("cl", createdLabel);
+      }
+    });
+
+    if (isNewCtr === 0) {
+      console.log("No new labels found");
+      console.log("data.labels.items", data.labels.items);
+
+      updateArr(data.labels.items, index);
+      await updateMatterFile(fileId, data);
+      tagFileLabel(fileId, data.labels.items);
+    }
+
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
@@ -495,6 +514,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   function updateArr(data, index) {
+    console.log("updateArr", data, index);
     tempArr[index] = data;
   }
 
@@ -524,13 +544,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      //var updatedLabels = [];
       var updatedName = [];
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
 
       if (typeof nameArr[index] === "undefined") {
         updatedName[0] = name;
@@ -540,7 +560,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: updatedName[0],
         details: e.target.innerHTML,
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -561,14 +581,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      // var updatedLabels = [];
       var updatedName = [];
 
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
 
       if (typeof nameArr[index] === "undefined") {
         updatedName[0] = name;
@@ -579,7 +599,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: updatedName[0],
         details: e.target.innerHTML,
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -621,13 +641,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      // var updatedLabels = [];
       var updatedDesc = [];
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
       if (details == "") {
         updatedDesc[0] = "";
       } else if (typeof descArr[index] === "undefined") {
@@ -638,7 +658,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: name,
         details: updatedDesc[0],
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -659,13 +679,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setResultMessage(`Saving in progress..`);
       setShowToast(true);
 
-      var updatedLabels = [];
+      //var updatedLabels = [];
       var updatedDesc = [];
-      if (typeof tempArr[index] === "undefined") {
-        updatedLabels[0] = labels;
-      } else {
-        updatedLabels[0] = tempArr[index];
-      }
+      // if (typeof tempArr[index] === "undefined") {
+      //   updatedLabels[0] = labels;
+      // } else {
+      //   updatedLabels[0] = tempArr[index];
+      // }
       if (details == "") {
         updatedDesc[0] = "";
       } else if (typeof descArr[index] === "undefined") {
@@ -676,7 +696,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       const data = {
         name: textName,
         details: updatedDesc[0],
-        labels: updatedLabels[0],
+        // labels: updatedLabels[0],
       };
       await updateMatterFile(id, data);
       setTimeout(() => {
@@ -695,6 +715,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const extractArray = (ar) => {
+    // console.log("selectedlabels", ar);
     if (Array.isArray(ar) && ar.length) {
       const newOptions = ar.map(({ id: value, name: label }) => ({
         value,
@@ -705,14 +726,16 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       newOptions.map(
         (data) => (filterOptionsArray = [...filterOptionsArray, data])
       );
+      //console.log("no", newOptions);
 
       //filter duplicates
       pageSelectedLabels = [
         ...new Map(
-          filterOptionsArray.map((item) => [JSON.stringify(item.label), item])
+          filterOptionsArray.map((item) => [JSON.stringify(item), item])
         ).values(),
       ];
-      // setFilterLabelsData(pageSelectedLabels);
+
+      console.log("psl",pageSelectedLabels);
       return newOptions;
     } else {
       return null;
@@ -965,6 +988,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   };
 
   const handleFilter = (fileFilter) => {
+    console.log("ff", fileFilter);
     setFilterLabels(false);
     var filterRecord = [];
     if (
@@ -974,15 +998,16 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     ) {
       setMatterFiles(sortByOrder(files));
     } else {
+      console.log("files",files);
       for (var i = 0; i < fileFilter.length; i++) {
         files.map((x) =>
-          x.labels !== null
-            ? x.labels.map((y) =>
+          x.labels.items !== null
+            ? x.labels.items.map((y) =>
                 y.name === fileFilter[i]
                   ? (filterRecord = [...filterRecord, x])
                   : (filterRecord = filterRecord)
               )
-            : x.labels
+            : x.labels.items
         );
       }
 
@@ -1041,66 +1066,74 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     setTimeout(() => {
       setShowToast(false);
       window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/?count=${counter}`;
-    }, 1500);
+    }, 1000);
   }
 
-  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
-
-  const getPaginateItems = async (action, page) => {
+  /*const getPaginateItems = async (action, page) => {
     let pageList = 20;
     let pageResult = [];
 
-    /*const request = await API.graphql({
+    const request = await API.graphql({
       query: mGetPaginateItems,
       variables: {
         matterId: matter_id,
         isDeleted: false,
         nextToken: page,
-        limit: pageList
+        limit: pageList,
       },
     });
 
     if (request.data.matterFile !== null) {
-      pageResult = request.data.matterFile.map(
-        ({ id }) => ({
-          id: id
-        })
-      );
-    }*/
+      pageResult = request.data.matterFile.map(({ id }) => ({
+        id: id,
+      }));
+    }
 
-    //setFilteredFiles(pageResult);
+    setFilteredFiles(pageResult);
 
     if (action === "next") {
       setPageIndex(pageIndex + pageList);
       setPageSize(pageSize + pageList);
-      //setPrevToken(prevToken);
+      setPrevToken(prevToken);
 
-      /*for (let i = 0; i < request.data.matterFile.length; i++) {
-        if(request.data.matterFile[i].nextToken !== null) {
+      for (let i = 0; i < request.data.matterFile.length; i++) {
+        if (request.data.matterFile[i].nextToken !== null) {
           setNextToken(request.data.matterFile[i].nextToken);
         }
-      }*/
+      }
     } else if (action === "prev") {
       setPageIndex(pageIndex - pageList);
       setPageSize(pageSize - pageList);
-      //setPrevToken(prevToken);
+      setPrevToken(prevToken);
 
-      /*for (let i = 0; i < request.data.matterFile.length; i++) {
-        if(request.data.matterFile[i].nextToken !== null) {
+      for (let i = 0; i < request.data.matterFile.length; i++) {
+        if (request.data.matterFile[i].nextToken !== null) {
           setNextToken(request.data.matterFile[i].nextToken);
         }
-      }*/
+      }
     } else {
-      /*for (let i = 0; i < request.data.matterFile.length; i++) {
-        if(request.data.matterFile[i].nextToken !== null) {
+      for (let i = 0; i < request.data.matterFile.length; i++) {
+        if (request.data.matterFile[i].nextToken !== null) {
           setPrevToken(page);
           setNextToken(request.data.matterFile[i].nextToken);
         }
-      }*/
+      }
     }
-  };
+  }*/
 
-  console.log(matterFiles);
+  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
+
+  const getPaginateItems = async (action) => {
+    let pageList = 20;
+
+    if (action === "next") {
+      setPageIndex(pageIndex + pageList);
+      setPageSize(pageSize + pageList);
+    } else if (action === "prev") {
+      setPageIndex(pageIndex - pageList);
+      setPageSize(pageSize - pageList);
+    }
+  }
 
   return (
     <>
@@ -1284,15 +1317,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
-                              {/* get ready for pagination query
-                              {matterFiles
-                              .filter(
-                                (x) =>
-                                filteredFiles.find( files => files.id === x.id )
-                              ).map((data, index) => ( */}
-                              {matterFiles
-                                .slice(pageIndex - 1, pageSizeConst)
-                                .map((data, index) => (
+                              {/* {matterFiles
+                                .filter((x) =>
+                                  filteredFiles.find(
+                                    (files) => files.id === x.id
+                                  )
+                                )
+                                .map((data, index) => ( */}
+                                {matterFiles.slice(pageIndex-1, pageSizeConst).map((data, index) => (
                                   <Draggable
                                     key={data.id}
                                     draggableId={data.id}
@@ -1400,7 +1432,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                             )}
                                             &nbsp;&nbsp;
                                             <span
-                                              className="p-2 w-60 font-poppins"
+                                              className="p-2 w-52 font-poppins"
                                               style={{
                                                 cursor: "auto",
                                                 outlineColor:
@@ -1424,7 +1456,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                   data.name,
                                                   data.details,
                                                   data.id,
-                                                  data.labels,
+                                                  data.labels.items,
                                                   index
                                                 )
                                               }
@@ -1457,13 +1489,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         >
                                           <div className="flex">
                                             <span
-                                              // className={data.details!=null || data.details!=undefined ?
-                                              //   "w-full p-2 font-poppins"
-                                              // : "w-full p-2 font-poppins h-10 bg-blue-400 test"}
                                               className={
                                                 data.details
-                                                  ? "w-full p-2 font-poppins h-full"
-                                                  : "w-full p-2 font-poppins h-9"
+                                                  ? "w-full p-2 font-poppins h-full mx-2"
+                                                  : "w-full p-2 font-poppins h-9 mx-2"
                                               }
                                               style={{
                                                 cursor: "auto",
@@ -1490,7 +1519,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                   data.name,
                                                   data.details,
                                                   data.id,
-                                                  data.labels,
+                                                  data.labels.items,
                                                   index
                                                 )
                                               }
@@ -1514,20 +1543,20 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                         >
                                           <CreatableSelect
                                             defaultValue={extractArray(
-                                              data.labels
-                                                ? data.labels
+                                              data.labels.items
+                                                ? data.labels.items
                                                 : { value: 0, label: "" }
                                             )}
                                             options={newOptions(
                                               labels,
-                                              data.labels
+                                              data.labels.items
                                             )}
                                             // options={labels}
                                             isMulti
                                             isClearable
                                             isSearchable
                                             onChange={(options) =>
-                                              handleMatterChanged(
+                                              handleLabelChanged(
                                                 options,
                                                 data.id,
                                                 data.name,
