@@ -57,6 +57,10 @@ const TableInfo = ({
   // paste,
   // setSrcIndex,
   // srcIndex,
+  pageTotal,
+  pageIndex,
+  pageSize,
+  pageSizeConst,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -573,7 +577,8 @@ const TableInfo = ({
                             {...provider.droppableProps}
                             className="bg-white divide-y divide-gray-200"
                           >
-                            {witness.map((item, index) => (
+                            {/* {witness.map((item, index) => ( */}
+                            {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => (
                               <>
                                 <Draggable
                                   key={item.id}
