@@ -15,6 +15,7 @@ const useRefEventListener = (fn) => {
   fnRef.current = fn;
   return fnRef;
 };
+// let invalidFiles = [];
 
 export default function UploadLinkModal(props) {
   Storage.configure({
@@ -23,22 +24,19 @@ export default function UploadLinkModal(props) {
     identityPoolId: config.aws_user_pools_id,
   });
 
+  const [invalidFiles, setInvalidFiles] = useState([]);
+
   const [selectedFiles, _setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState({ files: [] });
 
   const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
   const [uploadStart, setUploadStart] = useState(false);
-
-  var showAlert = 0;
-
-  const [flags, setFlags] = useState([]);
-  // const flagTemp = [];
   const [flagTemp, setArr] = useState([]);
   const [percent, setPercent] = useState([]);
   const [itr, setItr] = useState(0);
   
-
+  //Drop File
   const handleDrop = (e) => {
     e.preventDefault();
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
@@ -50,39 +48,20 @@ export default function UploadLinkModal(props) {
       var re = /(?:\.([^.]+))?$/;
       var ext = re.exec(file.name)[0];
 
-      const result = rejectFiles.find((item) => item.includes(ext));
+      const result = rejectFiles.find((item) => item.includes(re.exec(file.name)[0]));
       const fileSize = file.size;
 
-      if (result) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file type is invalid.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } 
-      else if (fileSize > 2147483648) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file size exceeds the 2GB limit.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } 
-      else {
+      if(result){
+        invalidFiles.push({
+          data: file,
+          url: URL.createObjectURL(file),
+        });
+      }else{
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
-
       }
-
-        // tempArr.push({
-        //   data: file,
-        //   url: URL.createObjectURL(file),
-        // });
     });
 
     setSelectedFiles([...selectedFiles, ...tempArr]);
@@ -126,40 +105,28 @@ export default function UploadLinkModal(props) {
   const onDragLeave = () => dropRef.current.classList.remove("dragover");
   const onDrop = () => dropRef.current.classList.remove("dragover");
 
+  //Select File
   const onSelectFile = (e) => {
     console.log(e.target.files.length);
     if (!e.target.files || e.target.files.length === 0) {
       return;
     }
     const tempArr = [];
+    const invalidArr = [];
     console.log(e.target.files);
-
+   
     [...e.target.files].forEach((file) => {
       var re = /(?:\.([^.]+))?$/;
       var ext = re.exec(file.name)[0];
 
-      const result = rejectFiles.find((item) => item.includes(ext));
-      const fileSize = file.size;
+      const result = rejectFiles.find((item) => item.includes(re.exec(file.name)[0]));
 
-      if (result) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file type is invalid.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } 
-      else if (fileSize > 2147483648) {
-        if (showAlert == 1) {
-          return false;
-        } else {
-          alert("Your file size exceeds the 2GB limit.");
-          showAlert = 1; //set flag to don't show
-          return false;
-        }
-      } else{
-
+      if(result){
+        invalidFiles.push({
+          data: file,
+          url: URL.createObjectURL(file),
+        });
+      }else{
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
@@ -168,6 +135,7 @@ export default function UploadLinkModal(props) {
     });
 
     setSelectedFiles([...myCurrentRef.current, ...tempArr]);
+    console.log(invalidFiles);
   };
 
   const deleteBtn = (index) => {
@@ -186,8 +154,6 @@ export default function UploadLinkModal(props) {
     perc: 1,
   });
 
-
-  var count = 0;
   var temp=[];
 
   const handleUpload = async () => {
@@ -195,7 +161,6 @@ export default function UploadLinkModal(props) {
     console.log("selFiles",selectedFiles);
 
     var tempArr= [];
-    
     selectedFiles.map((uf) => {
       console.log(uf);
       var re = /(?:\.([^.]+))?$/;
@@ -203,98 +168,89 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       console.log("ress", result);
 
-      if(uf.data.size > 2147483648 || result){
-        // selectedFiles.splice(selectedFiles.indexOf(uf), 1);
-        // console.log("sf",selectedFiles);
-        // do nothing
+      if(result){
+        tempArr = tempArr;
+      }else if(uf.data.size > 2147483648){
+        tempArr = tempArr;
       }else{
         tempArr = [...tempArr, uf];
       }
     });
-    _setSelectedFiles(tempArr);
     setSelectedFiles(tempArr);
+    _setSelectedFiles(tempArr);
+      tempArr.map(async (uf, index) => {
+        if (uf.data.name.split(".").pop() == "docx") {
+          var name = uf.data.name,
+            size = uf.data.size,
+            type =
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            key = `${props.bucketName}/${Number(new Date())}${name
+              .replaceAll(/\s/g, "")
+              .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+        } else {
+          var name = uf.data.name,
+            size = uf.data.size,
+            type = uf.data.type,
+            key = `${props.bucketName}/${Number(new Date())}${name
+              .replaceAll(/\s/g, "")
+              .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+        }
+      
 
-    tempArr.map(async (uf, index) => {
-      // var temp = [];
-      if (uf.data.name.split(".").pop() == "docx") {
-        // console.log(uf.data.type);
-        var name = uf.data.name,
-          size = uf.data.size,
-          type =
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          key = `${props.bucketName}/${Number(new Date())}${name
-            .replaceAll(/\s/g, "")
-            .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
-      } else {
-        var name = uf.data.name,
-          size = uf.data.size,
-          type = uf.data.type,
-          key = `${props.bucketName}/${Number(new Date())}${name
-            .replaceAll(/\s/g, "")
-            .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
-      }
-    
+        try {
+          await Storage.put(key, uf.data, {
+            contentType: type,
+            progressCallback(progress) {
+              const progressInPercentage = Math.round(
+                (progress.loaded / progress.total) * 100
+              );
+              console.log(`Progress: ${progressInPercentage}%, ${uf.data.name}`);
 
-      try {
-        await Storage.put(key, uf.data, {
-          contentType: type,
-          progressCallback(progress) {
-            const progressInPercentage = Math.round(
-              (progress.loaded / progress.total) * 100
-            );
-            console.log(`Progress: ${progressInPercentage}%, ${uf.data.name}`);
-
-            if(temp.length > selectedFiles.length){
-              
-              for(var i=0; i<selectedFiles.length; i++){
-                console.log(uf.data.name === temp[i].name);
-                if(temp[i].name === uf.data.name){
-                  temp[i].prog = progressInPercentage;
+              if(temp.length > selectedFiles.length){
+                for(var i=0; i<selectedFiles.length; i++){
+                  console.log(uf.data.name === temp[i].name);
+                  if(temp[i].name === uf.data.name){
+                    temp[i].prog = progressInPercentage;
+                  }
                 }
+              }else{
+                temp = [...temp, {prog: progressInPercentage, name: uf.data.name}];
               }
-            }else{
-              temp = [...temp, {prog: progressInPercentage, name: uf.data.name}];
-            }
-
+              console.log(temp);
+              setPercent(temp);
+            },
+            errorCallback: (err) => {
+              console.error("204: Unexpected error while uploading", err);
+            },
             
-            console.log(temp);
-            setPercent(temp);
-          },
-          errorCallback: (err) => {
-            console.error("204: Unexpected error while uploading", err);
-          },
-          
-        })
-          .then(async (fd) => {
-            var fileData = {
-              s3ObjectKey: fd.key,
-              size: parseInt(size),
-              type: type,
-              name: name.split(".").slice(0, -1).join("."),
-            };
-
-            setUploadedFiles((prevState) => ({
-              files: [...prevState.files, fileData],
-            }));
-
-
           })
-          .catch((err) => {
-            console.error("220: Unexpected error while uploading", err);
-          });
-               
-      } catch (e) {
-        const response = {
-          error: e.message,
-          errorStack: e.stack,
-          statusCode: 500,
-        };
-        console.error("228: Unexpected error while uploading", response);
-      }
-   
+            .then(async (fd) => {
+              var fileData = {
+                s3ObjectKey: fd.key,
+                size: parseInt(size),
+                type: type,
+                name: name.split(".").slice(0, -1).join("."),
+              };
 
-    });
-    setUploadStart(false);
+              setUploadedFiles((prevState) => ({
+                files: [...prevState.files, fileData],
+              }));
+
+            })
+            .catch((err) => {
+              console.error("220: Unexpected error while uploading", err);
+            });
+                
+        } catch (e) {
+          const response = {
+            error: e.message,
+            errorStack: e.stack,
+            statusCode: 500,
+          };
+          console.error("228: Unexpected error while uploading", response);
+        }
+      });
+
   };
 
   const [isOpen, setIsOpen] = useState(true);
@@ -307,41 +263,13 @@ export default function UploadLinkModal(props) {
 
   const ref = useRef(null);
 
-  const startrun = (perc) => {
-    setTimeout(() => {
-      ref.current.click();
-      generateRandomValues(perc);
-    }, 2000);
+  const [hover, setHover] = useState(false);
+  const onHover = () => {
+    setHover(true);
   };
-
-  const saveUploadProgress = (perc) => {
-    setArr((flagTemp) => [...flagTemp, perc]);
+  const onLeave = () => {
+    setHover(false);
   };
-
-  const generateRandomValues = (perc, idx) => {
-    const rand = (n) => Math.random() * n;
-    setRandom({
-      percentage: perc,
-      colour: `hsl(121, 96%, 24%)`,
-      index: idx,
-    });
-  };
-
-  const checkExtension = (fileName) => {
-      var re = /(?:\.([^.]+))?$/;
-      var ext = re.exec(fileName)[0];
-      console.log("ext",ext);
-
-      const result1 = rejectFiles.find((item) => item.includes(ext));
-      console.log("ress", result1);
-
-      if(result1){
-        return true;
-      }else{
-        return false;
-      }
-  };
-
 
   return (
     <>
@@ -385,17 +313,33 @@ export default function UploadLinkModal(props) {
                 </p>
               </div>
             </div>
-            {selectedFiles.length ? (
+            {selectedFiles.length || invalidFiles.length ? (
               <div className="upload-details">
                 <div className="line-separator">
                   <span>Items Uploaded</span>
                 </div>
                 <div className="items-grid">
-                  {selectedFiles?.map((selectedFile, index) => (
+                  {invalidFiles?.map((invalidFile, index) => ( 
                     <div id="uploadDivContent" key={index} 
-                    // className={selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ? "invalid px-2 py-1" : "px-2 py-1"}
-                    
+                    className="invalid px-2 py-1"
                     >
+                      {hover ? 
+                        <span className="upload-name text-red-500">
+                          Invalid File.
+                        </span>
+                      : <span className="upload-name">
+                          {invalidFile.data.name}
+                        </span>
+                    }
+                      <p> </p>
+                      <RiErrorWarningLine 
+                        onMouseEnter={onHover}
+                        onMouseLeave={onLeave} 
+                        className="w-11 h-11" color="orange"/>
+                    </div>
+                  ))}
+                  {selectedFiles?.map((selectedFile, index) => (
+                    <div id="uploadDivContent" key={index}>
                       <span className="upload-name bg-orange-400">
                         {selectedFile.data.name}
                       </span>
@@ -405,12 +349,11 @@ export default function UploadLinkModal(props) {
                         }`}
                         onClick={() => deleteBtn(index)}
                       />
-                      {/* {selectedFile.data.size} */}
-                      {/* {selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ?
-                      <RiErrorWarningLine className="w-11 h-11" color="orange"/> */}
-                      {/* :  */}
-                      <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
-                      {/* } */}
+                      <CircularProgressbar 
+                        value={percent[index] ? parseInt(percent[index].prog) : 0} 
+                        text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} 
+                        className="w-10 h-10"
+                      />
                     </div>
                   ))}
                 </div>
