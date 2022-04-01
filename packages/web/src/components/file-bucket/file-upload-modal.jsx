@@ -32,11 +32,6 @@ export default function UploadLinkModal(props) {
   const rejectFiles = [".config", ".exe", ".7z", ".dll", ".exe1", ".zvz"]; //list of rejected files
 
   const [uploadStart, setUploadStart] = useState(false);
-
-  var showAlert = 0;
-
-  const [flags, setFlags] = useState([]);
-  // const flagTemp = [];
   const [flagTemp, setArr] = useState([]);
   const [percent, setPercent] = useState([]);
   const [itr, setItr] = useState(0);
@@ -166,7 +161,6 @@ export default function UploadLinkModal(props) {
     console.log("selFiles",selectedFiles);
 
     var tempArr= [];
-    
     selectedFiles.map((uf) => {
       console.log(uf);
       var re = /(?:\.([^.]+))?$/;
@@ -182,13 +176,8 @@ export default function UploadLinkModal(props) {
         tempArr = [...tempArr, uf];
       }
     });
-
-    console.log(tempArr);
-    console.log("sff", tempArr);
     setSelectedFiles(tempArr);
     _setSelectedFiles(tempArr);
-    
-    console.log("sff1", selectedFiles);
       tempArr.map(async (uf, index) => {
         if (uf.data.name.split(".").pop() == "docx") {
           var name = uf.data.name,
@@ -261,7 +250,6 @@ export default function UploadLinkModal(props) {
           console.error("228: Unexpected error while uploading", response);
         }
       });
-    //}
 
   };
 
@@ -275,44 +263,13 @@ export default function UploadLinkModal(props) {
 
   const ref = useRef(null);
 
-
-  const saveUploadProgress = (perc) => {
-    setArr((flagTemp) => [...flagTemp, perc]);
-  };
-
-  const generateRandomValues = (perc, idx) => {
-    const rand = (n) => Math.random() * n;
-    setRandom({
-      percentage: perc,
-      colour: `hsl(121, 96%, 24%)`,
-      index: idx,
-    });
-  };
-
-  const checkExtension = (fileName) => {
-      var re = /(?:\.([^.]+))?$/;
-      var ext = re.exec(fileName)[0];
-      console.log("ext",ext);
-
-      const result1 = rejectFiles.find((item) => item.includes(ext));
-      console.log("ress", result1);
-
-      if(result1){
-        return true;
-      }else{
-        return false;
-      }
-  };
-
   const [hover, setHover] = useState(false);
   const onHover = () => {
     setHover(true);
   };
-
   const onLeave = () => {
     setHover(false);
   };
-
 
   return (
     <>
@@ -382,9 +339,7 @@ export default function UploadLinkModal(props) {
                     </div>
                   ))}
                   {selectedFiles?.map((selectedFile, index) => (
-                    <div id="uploadDivContent" key={index} 
-                    className={selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ? "invalid px-2 py-1" : "px-2 py-1"}
-                    >
+                    <div id="uploadDivContent" key={index}>
                       <span className="upload-name bg-orange-400">
                         {selectedFile.data.name}
                       </span>
@@ -394,11 +349,11 @@ export default function UploadLinkModal(props) {
                         }`}
                         onClick={() => deleteBtn(index)}
                       />
-                      {/* {selectedFile.data.size} */}
-                      {selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ?
-                      <RiErrorWarningLine className="w-11 h-11" color="orange"/>
-                      : <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
-                      }
+                      <CircularProgressbar 
+                        value={percent[index] ? parseInt(percent[index].prog) : 0} 
+                        text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} 
+                        className="w-10 h-10"
+                      />
                     </div>
                   ))}
                 </div>

@@ -28,7 +28,7 @@ export default function Background() {
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
-  const [selectRow, setSelectRow] = useState([]);
+  // const [selectRow, setSelectRow] = useState([]);
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
@@ -282,8 +282,8 @@ export default function Background() {
                 pageSize={pageSize}
                 pageSizeConst={pageSizeConst}
                 getPaginateItems={getPaginateItems}
-                selectRow={selectRow}
-                setSelectRow={setSelectRow}
+                // selectRow={selectRow}
+                // setSelectRow={setSelectRow}
               />
             </div>
           </div>
@@ -337,8 +337,8 @@ export default function Background() {
         pageIndex={pageIndex}
         pageSize={pageSize}
         pageSizeConst={pageSizeConst}
-        selectRow={selectRow}
-        setSelectRow={setSelectRow}
+        // selectRow={selectRow}
+        // setSelectRow={setSelectRow}
       />
     </>
   );

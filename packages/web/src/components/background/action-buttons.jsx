@@ -489,7 +489,7 @@ const ActionButtons = ({
           )}
           {showDeleteButton && (
             <>
-              <button
+              {/* <button
                 type="button"
                 onClick={handleCopyRow}
                 className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
@@ -509,7 +509,7 @@ const ActionButtons = ({
                     d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
                   />
                 </svg>
-              </button>
+              </button> */}
               <button
                 type="button"
                 onClick={() => setshowRemoveFileModal(true)}
