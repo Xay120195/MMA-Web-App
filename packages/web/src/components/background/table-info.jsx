@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -49,15 +49,14 @@ const TableInfo = ({
   selectedRowsBGFiles,
   setSelectedId,
   selectedId,
-  selectRow,
-  setSelectRow,
+  // selectRow,
+  // setSelectRow,
   checkDate,
   checkDesc,
   checkDocu,
-  pageTotal,
-  pageIndex,
-  pageSize,
-  pageSizeConst,
+  // paste,
+  // setSrcIndex,
+  // srcIndex,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -101,18 +100,20 @@ const TableInfo = ({
   };
 
   const handleCheckboxChange = (position, event, id, date, details) => {
-    const checkedId = selectRow.some((x) => x.id === id);
-    if (!checkedId && event.target.checked) {
-      const x = selectRow;
-      x.push({ id: id, date: date, details: details });
-      setSelectRow(x);
-    }
-    if (checkedId) {
-      var x = selectRow.filter(function (sel) {
-        return sel.id !== id;
-      });
-      setSelectRow(x);
-    }
+    // const checkedId = selectRow.some((x) => x.id === id);
+    // if (!checkedId && event.target.checked) {
+    //   const x = selectRow;
+    //   x.push({ id: id, date: date, details: details });
+    //   setSelectRow(x);
+    //   setSrcIndex(position);
+    // }
+    // if (checkedId) {
+    //   var x = selectRow.filter(function (sel) {
+    //     return sel.id !== id;
+    //   });
+    //   setSelectRow(x);
+    //   setSrcIndex("");
+    // }
 
     const updatedCheckedState = checkedState.map((item, index) =>
       index === position ? !item : item
@@ -162,8 +163,6 @@ const TableInfo = ({
         setShowDeleteButton(false);
       }
     }
-
-    console.log(selectedRowsBGFiles);
   };
 
   useEffect(() => {
@@ -505,6 +504,12 @@ const TableInfo = ({
     return new Date(date);
   };
 
+  // const handlePasteRow = (targetIndex) => {
+  //   let tempWitness = [...witness];
+
+  //   tempWitness.splice(targetIndex, 0, selectRow);
+  // };
+
   return (
     <>
       <div
@@ -568,265 +573,267 @@ const TableInfo = ({
                             {...provider.droppableProps}
                             className="bg-white divide-y divide-gray-200"
                           >
-                            {/* {witness.map((item, index) => ( */}
-                            {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => (
-                              <Draggable
-                                key={item.id}
-                                draggableId={item.id}
-                                index={index}
-                              >
-                                {(provider, snapshot) => (
-                                  <tr
-                                    key={item.id}
-                                    index={index}
-                                    className={
-                                      index + 1 <= counter
-                                        ? highlightRows
-                                        : selectRow.find(
-                                            (x) => x.id === item.id
-                                          )
-                                        ? "bg-green-200"
-                                        : ""
-                                    }
-                                    {...provider.draggableProps}
-                                    ref={provider.innerRef}
-                                    style={{
-                                      ...provider.draggableProps.style,
-                                      backgroundColor:
-                                        snapshot.isDragging ||
-                                        item.id === selected
-                                          ? "rgba(255, 255, 239, 0.767)"
-                                          : "",
-                                    }}
-                                  >
-                                    <td
-                                      {...provider.dragHandleProps}
-                                      className="px-3 py-3 w-10"
+                            {witness.map((item, index) => (
+                              <>
+                                <Draggable
+                                  key={item.id}
+                                  draggableId={item.id}
+                                  index={index}
+                                >
+                                  {(provider, snapshot) => (
+                                    <tr
+                                      key={item.id}
+                                      index={index}
+                                      {...provider.draggableProps}
+                                      ref={provider.innerRef}
+                                      style={{
+                                        ...provider.draggableProps.style,
+                                        backgroundColor:
+                                          snapshot.isDragging ||
+                                          item.id === selected
+                                            ? "rgba(255, 255, 239, 0.767)"
+                                            : "",
+                                      }}
                                     >
-                                      <div className="flex items-center ">
-                                        <MdDragIndicator
-                                          className="text-2xl"
-                                          onClick={() =>
-                                            handleChageBackground(item.id)
-                                          }
-                                        />
-                                        <input
-                                          type="checkbox"
-                                          name={item.id}
-                                          className="cursor-pointer w-10"
-                                          checked={checkedState[index]}
-                                          onChange={(event) =>
-                                            handleCheckboxChange(
-                                              index,
-                                              event,
-                                              item.id,
-                                              item.date,
-                                              item.description
-                                            )
-                                          }
-                                        />
-                                        <label
-                                          htmlFor="checkbox-1"
-                                          className="text-sm font-medium text-gray-900 dark:text-gray-300"
-                                        >
-                                          {index + 1}
-                                        </label>
-                                      </div>
-                                    </td>
-
-                                    {checkDate && (
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-3 py-3"
+                                        className="px-3 py-3 w-10"
                                       >
-                                        <div>
-                                          <DatePicker
-                                            className="border w-28 rounded border-gray-300"
-                                            selected={new Date(item.date)}
-                                            onChange={(selected) =>
-                                              handleChangeDate(
-                                                selected,
+                                        <div className="flex items-center ">
+                                          <MdDragIndicator
+                                            className="text-2xl"
+                                            onClick={() =>
+                                              handleChageBackground(item.id)
+                                            }
+                                          />
+                                          <input
+                                            type="checkbox"
+                                            name={item.id}
+                                            className="cursor-pointer w-10"
+                                            checked={checkedState[index]}
+                                            onChange={(event) =>
+                                              handleCheckboxChange(
+                                                index,
+                                                event,
                                                 item.id,
+                                                item.date,
                                                 item.description
                                               )
                                             }
                                           />
+                                          <label
+                                            htmlFor="checkbox-1"
+                                            className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                          >
+                                            {index + 1}
+                                          </label>
                                         </div>
                                       </td>
-                                    )}
-                                    {checkDesc && (
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="w-full px-6 py-4"
-                                      >
-                                        <div
-                                          className="p-2 w-full h-full font-poppins"
-                                          style={{
-                                            cursor: "auto",
-                                            outlineColor:
-                                              "rgb(204, 204, 204, 0.5)",
-                                            outlineWidth: "thin",
-                                          }}
-                                          suppressContentEditableWarning
-                                          onClick={(event) =>
-                                            handleDescContent(
-                                              event,
-                                              item.description,
-                                              item.id
-                                            )
-                                          }
-                                          dangerouslySetInnerHTML={{
-                                            __html: item.description,
-                                          }}
-                                          onInput={(event) =>
-                                            handleChangeDesc(event)
-                                          }
-                                          onBlur={(e) =>
-                                            handleSaveDesc(
-                                              e,
-                                              item.description,
-                                              item.date,
-                                              item.id
-                                            )
-                                          }
-                                          contentEditable={
-                                            updateProgess ? false : true
-                                          }
-                                        ></div>
-                                        <span className="text-red-400 filename-validation">
-                                          {item.id === descId && descAlert}
-                                        </span>
-                                      </td>
-                                    )}
-                                    {checkDocu && (
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="py-2 px-3 w-80 text-sm text-gray-500"
-                                      >
-                                        {!activateButton ? (
-                                          !activateButton &&
-                                          selectRow.find(
-                                            (x) => x.id === item.id
-                                          ) ? (
-                                            ""
-                                          ) : (
+
+                                      {checkDate && (
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="px-3 py-3"
+                                        >
+                                          <div>
+                                            <DatePicker
+                                              className="border w-28 rounded border-gray-300"
+                                              selected={new Date(item.date)}
+                                              onChange={(selected) =>
+                                                handleChangeDate(
+                                                  selected,
+                                                  item.id,
+                                                  item.description
+                                                )
+                                              }
+                                            />
+                                          </div>
+                                        </td>
+                                      )}
+                                      {checkDesc && (
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="w-10/12 px-6 py-4"
+                                        >
+                                          <div
+                                            className="p-2 w-full h-full font-poppins"
+                                            style={{
+                                              cursor: "auto",
+                                              outlineColor:
+                                                "rgb(204, 204, 204, 0.5)",
+                                              outlineWidth: "thin",
+                                            }}
+                                            suppressContentEditableWarning
+                                            onClick={(event) =>
+                                              handleDescContent(
+                                                event,
+                                                item.description,
+                                                item.id
+                                              )
+                                            }
+                                            dangerouslySetInnerHTML={{
+                                              __html: item.description,
+                                            }}
+                                            onInput={(event) =>
+                                              handleChangeDesc(event)
+                                            }
+                                            onBlur={(e) =>
+                                              handleSaveDesc(
+                                                e,
+                                                item.description,
+                                                item.date,
+                                                item.id
+                                              )
+                                            }
+                                            contentEditable={
+                                              updateProgess ? false : true
+                                            }
+                                          ></div>
+                                          <span className="text-red-400 filename-validation">
+                                            {item.id === descId && descAlert}
+                                          </span>
+                                        </td>
+                                      )}
+                                      {checkDocu && (
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="py-2 px-3 w-80 text-sm text-gray-500"
+                                        >
+                                          {!activateButton ? (
                                             <Link
                                               className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                               to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
                                             >
                                               File Bucket +
                                             </Link>
-                                          )
-                                        ) : (
-                                          <span
-                                            className={
-                                              selectedId === item.id
-                                                ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                                : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                            }
-                                            onClick={() => {
-                                              pasteFilestoBackground(item.id);
-                                            }}
-                                          >
-                                            {" "}
-                                            {selectedId === item.id
-                                              ? "Pasted"
-                                              : "Paste"}
-                                            &nbsp;
-                                            <FaPaste />
-                                          </span>
-                                        )}
-
-                                        {files.length === 0 ? (
-                                          <>
-                                            <br />
-                                            <p className="text-xs">
-                                              <b>No items yet</b>
-                                            </p>
-                                            <p className="text-xs">
-                                              Select from the files bucket to
-                                              start adding one row
-                                            </p>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <br />
-                                            <span className="font-bold">
-                                              Files Selected
+                                          ) : (
+                                            <span
+                                              className={
+                                                selectedId === item.id
+                                                  ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                  : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                              }
+                                              onClick={() => {
+                                                pasteFilestoBackground(item.id);
+                                              }}
+                                            >
+                                              {" "}
+                                              {selectedId === item.id
+                                                ? "Pasted"
+                                                : "Paste"}
+                                              &nbsp;
+                                              <FaPaste />
                                             </span>
-                                            <br />
-                                            <br />
-                                            {files
-                                              .filter(
-                                                (x) =>
-                                                  x.backgroundId === item.id
-                                              )
-                                              .map((items, index) => (
-                                                <>
-                                                  <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
-                                                    {activateButton ? (
-                                                      <input
-                                                        type="checkbox"
-                                                        name={items.uniqueId}
-                                                        className="cursor-pointer w-10 inline-block align-middle"
-                                                        onChange={(event) =>
-                                                          handleFilesCheckboxChange(
-                                                            event,
-                                                            items.uniqueId,
-                                                            items.id,
-                                                            items.backgroundId
-                                                          )
-                                                        }
-                                                      />
-                                                    ) : (
-                                                      ""
-                                                    )}
-                                                    <span className="align-middle">
-                                                      {items.name.substring(
-                                                        0,
-                                                        15
+                                          )}
+
+                                          {files.length === 0 ? (
+                                            <>
+                                              <br />
+                                              <p className="text-xs">
+                                                <b>No items yet</b>
+                                              </p>
+                                              <p className="text-xs">
+                                                Select from the files bucket to
+                                                start adding one row
+                                              </p>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <br />
+                                              <span className="font-bold">
+                                                Files Selected
+                                              </span>
+                                              <br />
+                                              <br />
+                                              {files
+                                                .filter(
+                                                  (x) =>
+                                                    x.backgroundId === item.id
+                                                )
+                                                .map((items, index) => (
+                                                  <>
+                                                    <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                      {activateButton ? (
+                                                        <input
+                                                          type="checkbox"
+                                                          name={items.uniqueId}
+                                                          className="cursor-pointer w-10 inline-block align-middle"
+                                                          onChange={(event) =>
+                                                            handleFilesCheckboxChange(
+                                                              event,
+                                                              items.uniqueId,
+                                                              items.id,
+                                                              items.backgroundId
+                                                            )
+                                                          }
+                                                        />
+                                                      ) : (
+                                                        ""
                                                       )}
-                                                    </span>
-                                                    &nbsp;
-                                                    <AiOutlineDownload
-                                                      className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
-                                                      onClick={() =>
-                                                        previewAndDownloadFile(
-                                                          items.downloadURL
-                                                        )
-                                                      }
-                                                    />
-                                                    {activateButton ? (
-                                                      <BsFillTrashFill
-                                                        className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                      <span className="align-middle">
+                                                        {items.name.substring(
+                                                          0,
+                                                          15
+                                                        )}
+                                                      </span>
+                                                      &nbsp;
+                                                      <AiOutlineDownload
+                                                        className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
                                                         onClick={() =>
-                                                          showModal(
-                                                            items.uniqueId,
-                                                            items.backgroundId
+                                                          previewAndDownloadFile(
+                                                            items.downloadURL
                                                           )
                                                         }
                                                       />
-                                                    ) : (
-                                                      <BsFillTrashFill
-                                                        className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
-                                                        onClick={() =>
-                                                          showModal(
-                                                            items.uniqueId,
-                                                            items.backgroundId
-                                                          )
-                                                        }
-                                                      />
-                                                    )}
-                                                  </p>
-                                                </>
-                                              ))}
-                                          </>
-                                        )}
-                                      </td>
-                                    )}
+                                                      {activateButton ? (
+                                                        <BsFillTrashFill
+                                                          className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                          onClick={() =>
+                                                            showModal(
+                                                              items.uniqueId,
+                                                              items.backgroundId
+                                                            )
+                                                          }
+                                                        />
+                                                      ) : (
+                                                        <BsFillTrashFill
+                                                          className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
+                                                          onClick={() =>
+                                                            showModal(
+                                                              items.uniqueId,
+                                                              items.backgroundId
+                                                            )
+                                                          }
+                                                        />
+                                                      )}
+                                                    </p>
+                                                  </>
+                                                ))}
+                                            </>
+                                          )}
+                                        </td>
+                                      )}
+                                    </tr>
+                                  )}
+                                </Draggable>
+                                {/* {paste && (
+                                  <tr
+                                    style={{
+                                      border: "rgb(0, 204, 0) 2px dashed",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => handlePasteRow(index)}
+                                    className="hover:bg-green-500 hover:text-white"
+                                  >
+                                    <td></td>
+                                    <td></td>
+                                    <td className="text-center">
+                                      <h1>PASTE HERE</h1>
+                                    </td>
+                                    <td></td>
                                   </tr>
-                                )}
-                              </Draggable>
+                                )} */}
+                              </>
                             ))}
                             {provider.placeholder}
                           </tbody>
