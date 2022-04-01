@@ -368,12 +368,13 @@ export default function UploadLinkModal(props) {
                     >
                       {hover ? 
                         <span className="upload-name text-red-500">
-                          Invalid File/s will not be uploaded.
+                          Invalid File.
                         </span>
                       : <span className="upload-name">
                           {invalidFile.data.name}
                         </span>
                     }
+                      <p> </p>
                       <RiErrorWarningLine 
                         onMouseEnter={onHover}
                         onMouseLeave={onLeave} 
