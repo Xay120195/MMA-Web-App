@@ -53,10 +53,36 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       const fileSize = file.size;
 
+      if (result) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file type is invalid.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } 
+      else if (fileSize > 2147483648) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file size exceeds the 2GB limit.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } 
+      else {
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
+
+      }
+
+        // tempArr.push({
+        //   data: file,
+        //   url: URL.createObjectURL(file),
+        // });
     });
 
     setSelectedFiles([...selectedFiles, ...tempArr]);
@@ -115,10 +141,30 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(ext));
       const fileSize = file.size;
 
+      if (result) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file type is invalid.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } 
+      else if (fileSize > 2147483648) {
+        if (showAlert == 1) {
+          return false;
+        } else {
+          alert("Your file size exceeds the 2GB limit.");
+          showAlert = 1; //set flag to don't show
+          return false;
+        }
+      } else{
+
         tempArr.push({
           data: file,
           url: URL.createObjectURL(file),
         });
+      }
     });
 
     setSelectedFiles([...myCurrentRef.current, ...tempArr]);
@@ -166,8 +212,9 @@ export default function UploadLinkModal(props) {
       }
     });
     _setSelectedFiles(tempArr);
+    setSelectedFiles(tempArr);
 
-    selectedFiles.map(async (uf, index) => {
+    tempArr.map(async (uf, index) => {
       // var temp = [];
       if (uf.data.name.split(".").pop() == "docx") {
         // console.log(uf.data.type);
@@ -229,6 +276,8 @@ export default function UploadLinkModal(props) {
             setUploadedFiles((prevState) => ({
               files: [...prevState.files, fileData],
             }));
+
+
           })
           .catch((err) => {
             console.error("220: Unexpected error while uploading", err);
@@ -245,6 +294,7 @@ export default function UploadLinkModal(props) {
    
 
     });
+    setUploadStart(false);
   };
 
   const [isOpen, setIsOpen] = useState(true);
@@ -343,7 +393,8 @@ export default function UploadLinkModal(props) {
                 <div className="items-grid">
                   {selectedFiles?.map((selectedFile, index) => (
                     <div id="uploadDivContent" key={index} 
-                    className={selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ? "invalid px-2 py-1" : "px-2 py-1"}
+                    // className={selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ? "invalid px-2 py-1" : "px-2 py-1"}
+                    
                     >
                       <span className="upload-name bg-orange-400">
                         {selectedFile.data.name}
@@ -355,10 +406,11 @@ export default function UploadLinkModal(props) {
                         onClick={() => deleteBtn(index)}
                       />
                       {/* {selectedFile.data.size} */}
-                      {selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ?
-                      <RiErrorWarningLine className="w-11 h-11" color="orange"/>
-                      : <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
-                      }
+                      {/* {selectedFile.data.size > 2147483648 || checkExtension(selectedFile.data.name) ?
+                      <RiErrorWarningLine className="w-11 h-11" color="orange"/> */}
+                      {/* :  */}
+                      <CircularProgressbar value={percent[index] ? parseInt(percent[index].prog) : 0} text={percent[index] ? `${parseInt(percent[index].prog)}%` : "0%"} className="w-10 h-10"/>
+                      {/* } */}
                     </div>
                   ))}
                 </div>
