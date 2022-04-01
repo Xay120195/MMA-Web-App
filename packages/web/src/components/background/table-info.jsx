@@ -655,7 +655,7 @@ const TableInfo = ({
                                         className="w-full px-6 py-4"
                                       >
                                         <div
-                                          className="p-2 w-full font-poppins"
+                                          className="p-2 w-full h-full font-poppins"
                                           style={{
                                             cursor: "auto",
                                             outlineColor:
@@ -726,7 +726,7 @@ const TableInfo = ({
                                             {" "}
                                             {selectedId === item.id
                                               ? "Pasted"
-                                              : "Paste"}{" "}
+                                              : "Paste"}
                                             &nbsp;
                                             <FaPaste />
                                           </span>
