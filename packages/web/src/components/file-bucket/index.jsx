@@ -33,10 +33,7 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
-import {
-  BsArrowLeft,
-  BsFillTrashFill,
-} from "react-icons/bs";
+import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 
 export var selectedRows = [];
@@ -735,7 +732,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
         ).values(),
       ];
 
-      console.log("psl",pageSelectedLabels);
+      console.log("psl", pageSelectedLabels);
       return newOptions;
     } else {
       return null;
@@ -998,7 +995,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     ) {
       setMatterFiles(sortByOrder(files));
     } else {
-      console.log("files",files);
+      console.log("files", files);
       for (var i = 0; i < fileFilter.length; i++) {
         files.map((x) =>
           x.labels.items !== null
@@ -1133,7 +1130,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       setPageIndex(pageIndex - pageList);
       setPageSize(pageSize - pageList);
     }
-  }
+  };
 
   return (
     <>
@@ -1324,7 +1321,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                   )
                                 )
                                 .map((data, index) => ( */}
-                                {matterFiles.slice(pageIndex-1, pageSizeConst).map((data, index) => (
+                              {matterFiles
+                                .slice(pageIndex - 1, pageSizeConst)
+                                .map((data, index) => (
                                   <Draggable
                                     key={data.id}
                                     draggableId={data.id}
@@ -1485,15 +1484,11 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                          className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
                                         >
                                           <div className="flex">
                                             <span
-                                              className={
-                                                data.details
-                                                  ? "w-full p-2 font-poppins h-full mx-2"
-                                                  : "w-full p-2 font-poppins h-9 mx-2"
-                                              }
+                                              className="w-full p-2 font-poppins h-full mx-2"
                                               style={{
                                                 cursor: "auto",
                                                 outlineColor:
