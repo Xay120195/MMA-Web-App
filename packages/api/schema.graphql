@@ -176,7 +176,10 @@ type Query {
   file(id: ID): File
   labels: [Label]
   label(id: ID): Label
-  backgrounds: [Background]
+  backgrounds (
+    limit: Int
+    nextToken: String
+  ) : [Background]
   background(id: ID): Background
   columnSettings(tableName: ViewTable): [ColumnSettings]
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]

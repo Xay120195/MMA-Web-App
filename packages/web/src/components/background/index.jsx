@@ -50,6 +50,7 @@ export default function Background() {
   const [pageTotal, setPageTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [pageIndex, setPageIndex] = useState(1);
+  const [nextToken, setNextToken] = useState("");
 
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
@@ -102,10 +103,10 @@ export default function Background() {
   };
 
   const qListBackground = `
-    query listBackground($id: ID) {
+    query listBackground($id: ID, $limit: Int, $nextToken: String) {
       clientMatter(id: $id) {
         id
-        backgrounds {
+        backgrounds (limit: $limit, $nextToken: String) {
           items {
             id
             description
@@ -113,6 +114,7 @@ export default function Background() {
             createdAt
             order
           }
+          nextToken
         }
       }
     }
@@ -139,10 +141,10 @@ export default function Background() {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: {
-        id: matterId,
-      },
+      variables: { id: matterId, limit: 22, nextToken: null },
     });
+
+    setNextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
     if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
@@ -154,7 +156,9 @@ export default function Background() {
           order: order,
         })
       );
+
       setWitness(sortByOrder(result));
+      
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);

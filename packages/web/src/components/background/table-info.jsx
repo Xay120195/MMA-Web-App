@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -15,6 +15,7 @@ import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
 import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
+import { useBottomScrollListener } from 'react-bottom-scroll-listener';
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -514,6 +515,15 @@ const TableInfo = ({
   //   tempWitness.splice(targetIndex, 0, selectRow);
   // };
 
+  const handleOnDocumentBottom = useCallback(() => {
+    console.log('Reached bottom page');
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  });
+  useBottomScrollListener(handleOnDocumentBottom);
+
   return (
     <>
       <div
@@ -522,7 +532,7 @@ const TableInfo = ({
       >
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg" >
               {witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
@@ -577,8 +587,8 @@ const TableInfo = ({
                             {...provider.droppableProps}
                             className="bg-white divide-y divide-gray-200"
                           >
-                            {/* {witness.map((item, index) => ( */}
-                            {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => (
+                            {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
+                            {witness.map((item, index) => (
                               <>
                                 <Draggable
                                   key={item.id}
@@ -851,6 +861,13 @@ const TableInfo = ({
             </div>
           </div>
         </div>
+        {loading ? (
+            <span>loading now datas</span>
+          ) : (
+            <span></span>
+          )
+        }
+          
       </div>
       {ShowModalParagraph && (
         <ModalParagraph
