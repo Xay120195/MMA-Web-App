@@ -3,7 +3,6 @@ const {
   GetItemCommand,
   UpdateItemCommand,
   QueryCommand,
-  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 const { v4 } = require("uuid");
@@ -26,20 +25,20 @@ export async function generatePresignedUrl(Key, src) {
     request.ResponseContentDisposition = "attachment";
   }
 
-  const command = new GetObjectCommand(request);
+  const cmd = new GetObjectCommand(request);
 
   /**
    * Generate Pre-signed url using getSignedUrl expires after 1 hour
    */
-  return getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  return getSignedUrl(s3Client, cmd, { expiresIn: 3600 });
 }
 
 export async function getMatterFile(data) {
   const { matterId, isDeleted = false, limit, nextToken } = data;
 
-  let response = {};
+  let resp = {};
   try {
-    const params = {
+    const param = {
       TableName: "MatterFileTable",
       IndexName: "byMatter",
       KeyConditionExpression: "matterId = :matterId",
@@ -56,15 +55,11 @@ export async function getMatterFile(data) {
     };
 
     if (limit !== undefined) {
-      params.Limit = limit;
+      param.Limit = limit;
     }
 
-    const command = new QueryCommand(params);
-    const request = await ddbClient.send(command);
-
-    console.log("Limit:", limit);
-    console.log("Count:", request.Count);
-    console.log("nextToken/LastEvaluatedKey:", request.LastEvaluatedKey);
+    const cmd = new QueryCommand(param);
+    const request = await ddbClient.send(cmd);
 
     const result = request.Items.map((d) => unmarshall(d));
     if (request && request.Count !== 0) {
@@ -75,45 +70,43 @@ export async function getMatterFile(data) {
         : null;
     }
 
-    response = request ? result : {};
+    resp = request ? result : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 export async function getFile(data) {
-  let response = {};
+  let resp = {};
   try {
-    const params = {
+    const param = {
       TableName: "MatterFileTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await ddbClient.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 export async function createMatterFile(data) {
-  let response = {};
+  let resp = {};
   try {
     const rawParams = {
       id: v4(),
@@ -127,28 +120,27 @@ export async function createMatterFile(data) {
       createdAt: new Date().toISOString(),
     };
 
-    const params = marshall(rawParams);
-    const command = new PutItemCommand({
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
       TableName: "MatterFileTable",
-      Item: params,
+      Item: param,
     });
 
-    const request = await ddbClient.send(command);
-    response = request ? unmarshall(params) : {};
+    const request = await ddbClient.send(cmd);
+    resp = request ? unmarshall(param) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 export async function softDeleteMatterFile(id, data) {
-  let response = {};
+  let resp = {};
 
   try {
     const {
@@ -157,33 +149,32 @@ export async function softDeleteMatterFile(id, data) {
       UpdateExpression,
     } = getUpdateExpressions(data);
 
-    const params = {
+    const param = {
       id,
       ...data,
     };
 
-    const command = new UpdateItemCommand({
+    const cmd = new UpdateItemCommand({
       TableName: "MatterFileTable",
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
-    const request = await ddbClient.send(command);
-    response = request ? params : {};
+    const request = await ddbClient.send(cmd);
+    resp = request ? param : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 export async function updateMatterFile(id, data) {
-  let response = {};
+  let resp = {};
   try {
     const {
       ExpressionAttributeNames,
@@ -191,29 +182,28 @@ export async function updateMatterFile(id, data) {
       UpdateExpression,
     } = getUpdateExpressions(data);
 
-    const params = {
+    const param = {
       id,
       ...data,
     };
 
-    const command = new UpdateItemCommand({
+    const cmd = new UpdateItemCommand({
       TableName: "MatterFileTable",
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
-    const request = await ddbClient.send(command);
-    response = request ? params : {};
+    const request = await ddbClient.send(cmd);
+    resp = request ? param : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 export function getUpdateExpressions(data) {

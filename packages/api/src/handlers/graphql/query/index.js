@@ -11,181 +11,173 @@ const { getMatterFile, getFile } = require("../../../services/MatterService");
 
 async function getCompany(data) {
   try {
-    const params = {
+    const param = {
       TableName: "CompanyTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await client.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listPages() {
   try {
-    const params = {
+    const param = {
       TableName: "PageTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await client.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 async function listClients() {
   try {
-    const params = {
+    const param = {
       TableName: "ClientsTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await client.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 async function listCompanies() {
   try {
-    const params = {
+    const param = {
       TableName: "CompanyTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await client.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 async function listMatters() {
   try {
-    const params = {
+    const param = {
       TableName: "MatterTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await client.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 async function listLabels() {
   try {
-    const params = {
+    const param = {
       TableName: "LabelsTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await client.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listClientMatters() {
   try {
-    const params = {
+    const param = {
       TableName: "ClientMatterTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await client.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listBackgrounds() {
   try {
-    const params = {
+    const param = {
       TableName: "BackgroundsTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await client.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getCompanyAccessType(data) {
   try {
-    const params = {
+    const param = {
       TableName: "CompanyAccessTypeTable",
       IndexName: "byCompany",
       KeyConditionExpression: "companyId = :companyId",
@@ -194,8 +186,8 @@ async function getCompanyAccessType(data) {
       }),
     };
 
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
+    const cmd = new QueryCommand(param);
+    const request = await client.send(cmd);
     var parseResponse = request.Items.map((data) => unmarshall(data));
 
     if (data.userType) {
@@ -203,113 +195,108 @@ async function getCompanyAccessType(data) {
         (userType) => userType.userType === data.userType
       );
     }
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getFeature(data) {
   try {
-    const params = {
+    const param = {
       TableName: "FeatureTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await client.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getClient(data) {
   try {
-    const params = {
+    const param = {
       TableName: "ClientsTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await client.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getMatter(data) {
   try {
-    const params = {
+    const param = {
       TableName: "MatterTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await client.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getLabel(data) {
   try {
-    const params = {
+    const param = {
       TableName: "LabelsTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await client.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listColumnSettingsByTable(data) {
   try {
-    const params = {
+    const param = {
       TableName: "ColumnSettingsTable",
       IndexName: "byTableName",
       KeyConditionExpression: "tableName = :tableName",
@@ -318,34 +305,33 @@ async function listColumnSettingsByTable(data) {
       }),
     };
 
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
+    const cmd = new QueryCommand(param);
+    const request = await client.send(cmd);
 
     const result = request.Items.map((d) => unmarshall(d));
 
-    response = request ? result : {};
+    resp = request ? result : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getBackground(data) {
   try {
-    const params = {
+    const param = {
       TableName: "BackgroundsTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
+    const cmd = new GetItemCommand(param);
+    const { Item } = await client.send(cmd);
 
     const backgrounds = unmarshall(Item);
 
@@ -392,48 +378,46 @@ async function getBackground(data) {
       backgrounds.files = { items: extractFiles };
     }
 
-    response = backgrounds ? backgrounds : {};
+    resp = backgrounds ? backgrounds : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getClientMatter(data) {
   const clientMatterId = data.id;
   try {
-    const params = {
+    const param = {
       TableName: "ClientMatterTable",
       Key: marshall({
         id: clientMatterId,
       }),
     };
 
-    const command = new GetItemCommand(params);
+    const cmd = new GetItemCommand(param);
 
-    const { Item } = await client.send(command);
+    const { Item } = await client.send(cmd);
 
-    response = Item ? unmarshall(Item) : {};
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getUserColumnSettings(data) {
   const { userId, tableName } = data;
 
-  let response = {},
+  let resp = {},
     result = {};
   try {
     const userColumnSettingsParams = {
@@ -490,17 +474,17 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    response = (Object.keys(result).length !== 0 && result !== null) ? result : [];
+    resp =
+      Object.keys(result).length !== 0 && result !== null ? result : [];
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 const resolvers = {
