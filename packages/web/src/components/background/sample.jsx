@@ -15,7 +15,7 @@ import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
 import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
-import "./background.css";
+
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
 
@@ -44,7 +44,6 @@ const TableInfo = ({
   setAscDesc,
   ascDesc,
   setShowDeleteButton,
-  setNewWitness,
   activateButton,
   setSelectedRowsBGFiles,
   selectedRowsBGFiles,
@@ -55,17 +54,13 @@ const TableInfo = ({
   checkDate,
   checkDesc,
   checkDocu,
-  pasteButton,
+  paste,
   setSrcIndex,
   srcIndex,
   pageTotal,
   pageIndex,
   pageSize,
   pageSizeConst,
-  newRow,
-  newWitness,
-  setPasteButton,
-  setNewRow,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -112,7 +107,7 @@ const TableInfo = ({
     const checkedId = selectRow.some((x) => x.id === id);
     if (!checkedId && event.target.checked) {
       const x = selectRow;
-      x.push({ id: id, date: date, details: details });
+      x.push({ id: id, date: date, description: details });
       setSelectRow(x);
       setSrcIndex(position);
     }
@@ -514,50 +509,15 @@ const TableInfo = ({
   };
 
   const handlePasteRow = (targetIndex) => {
-    let newList = [...newWitness];
+    let tempWitness = [...witness];
 
-    const [newlist] = newRow;
-
-    console.log(typeof newRow);
-
-    newList.splice(targetIndex, 0, newlist);
-
-    setPasteButton(false);
-    setShowDeleteButton(false);
-    const res = newList.map(myFunction);
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
-    }
-
-    res.map(async function (x) {
-      const mUpdateBackgroundOrder = `
-    mutation updateBackground($id: ID, $order: Int) {
-      backgroundUpdate(id: $id, order: $order) {
-        id
-        order
-      }
-    }`;
-      await API.graphql({
-        query: mUpdateBackgroundOrder,
-        variables: {
-          id: x.id,
-          order: x.order,
-        },
-      });
-    });
-    getBackground();
-    console.log(witness);
-    setTimeout(() => {
-      setSelectRow([]);
-      setNewWitness([]);
-      setNewRow([]);
-      setSrcIndex("");
-    }, 4000);
+    let [selectedrow] = selectRow;
+    console.log(targetIndex);
+    tempWitness.splice(targetIndex, 0, selectedrow);
+    setWitness(tempWitness);
   };
+
+  console.log(witness);
 
   return (
     <>
@@ -760,13 +720,6 @@ const TableInfo = ({
                                             {...provider.dragHandleProps}
                                             className="py-2 px-3 w-80 text-sm text-gray-500"
                                           >
-                                            {selectRow.find(
-                                              (x) => x.id === item.id
-                                            ) && (
-                                              <div class="separator">
-                                                ROW SELECTED
-                                              </div>
-                                            )}
                                             {!activateButton ? (
                                               !activateButton &&
                                               selectRow.find(
@@ -895,7 +848,7 @@ const TableInfo = ({
                                       </tr>
                                     )}
                                   </Draggable>
-                                  {pasteButton && (
+                                  {paste && (
                                     <tr
                                       style={{
                                         border: "rgb(0, 204, 0) 2px dashed",
