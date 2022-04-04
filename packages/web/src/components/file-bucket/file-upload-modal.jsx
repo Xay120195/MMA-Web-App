@@ -51,7 +51,7 @@ export default function UploadLinkModal(props) {
       const result = rejectFiles.find((item) => item.includes(re.exec(file.name)[0]));
       const fileSize = file.size;
 
-      if(result){
+      if(result || fileSize > 2147483648){
         invalidFiles.push({
           data: file,
           url: URL.createObjectURL(file),
@@ -120,8 +120,9 @@ export default function UploadLinkModal(props) {
       var ext = re.exec(file.name)[0];
 
       const result = rejectFiles.find((item) => item.includes(re.exec(file.name)[0]));
+      const fileSize = file.size;
 
-      if(result){
+      if(result || fileSize > 2147483648){
         invalidFiles.push({
           data: file,
           url: URL.createObjectURL(file),
@@ -323,15 +324,18 @@ export default function UploadLinkModal(props) {
                     <div id="uploadDivContent" key={index} 
                     className="invalid px-2 py-1"
                     >
-                      {hover ? 
+                    <span className="upload-name">
+                      {invalidFile.data.name}
+                    </span>
+                      {/* {hover ? 
                         <span className="upload-name text-red-500">
-                          Invalid File.
+                          {invalidFile.data.size > 2147483648 ? "File Size is more than 2GB." : "Cannot allow File type to be uploaded."}
                         </span>
                       : <span className="upload-name">
                           {invalidFile.data.name}
                         </span>
-                    }
-                      <p> </p>
+                       } */}
+                      <p>&nbsp;</p>
                       <RiErrorWarningLine 
                         onMouseEnter={onHover}
                         onMouseLeave={onLeave} 
