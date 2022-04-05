@@ -16,6 +16,8 @@ import RemoveModal from "../delete-prompt-modal";
 import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
 import { useBottomScrollListener } from 'react-bottom-scroll-listener';
+import ContentLoader from "react-content-loader";
+import imgLoading from "../../assets/images/loading-circle.gif";
 import "./background.css";
 
 export let selectedRowsBGPass = [],
@@ -69,12 +71,14 @@ const TableInfo = ({
   newWitness,
   setPasteButton,
   setNewRow,
+  loading,
+  setLoading,
+  maxLoading
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-  const [loading, setLoading] = useState(true);
 
   const [selected, setSelected] = useState("");
   const [descId, setDescId] = useState("");
@@ -562,19 +566,18 @@ const TableInfo = ({
     }, 4000);
   };
 
-  const handleOnDocumentBottom = useCallback(() => {
+  const handleBottomScroll = useCallback(() => {
     console.log('Reached bottom page '+ Math.round(performance.now()));
-    setLoading(true);
     setTimeout(() => {
-      setLoading(false);
+      setLoading(true);
+    }, 1500);
+    setTimeout(() => {
       loadMoreBackground();
-    }, 3000);
+      setLoading(false);
+    }, 2500);
   });
-  
-  useBottomScrollListener(handleOnDocumentBottom, {
-    offset: 0
-  });
-  
+
+  useBottomScrollListener(handleBottomScroll);
 
   return (
     <>
@@ -590,7 +593,7 @@ const TableInfo = ({
               ) : (
                 <>
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200" >
                       <thead className="bg-gray-50">
                         <tr>
                           <th
@@ -931,13 +934,40 @@ const TableInfo = ({
             </div>
           </div>
         </div>
-        {loading ? (
-            <span>loading now datas</span>
-          ) : (
-            <span></span>
-          )
-        }
-          
+        <div>
+          {maxLoading ? (
+              <div className="flex justify-center items-center mt-5">
+                <p>All data has been loaded.</p>
+              </div>
+            ) : (
+              <div className="flex justify-center items-center mt-5">
+                <img src={imgLoading} width={50} height={100} />
+              </div>
+            )
+          }
+
+          {!maxLoading && loading ? (
+              <ContentLoader 
+                speed={5}
+                width={1350}
+                height={500}
+                viewBox="0 0 800 160"
+                backgroundColor="#f3f3f3"
+                foregroundColor="#ecebeb"
+                className="content-center"
+              >
+                <rect x="48" y="8" rx="3" ry="3" width="88" height="6" /> 
+                <rect x="48" y="26" rx="3" ry="3" width="52" height="6" /> 
+                <rect x="0" y="56" rx="3" ry="3" width="410" height="6" /> 
+                <rect x="0" y="72" rx="3" ry="3" width="380" height="6" /> 
+                <rect x="0" y="88" rx="3" ry="3" width="178" height="6" /> 
+                <circle cx="20" cy="20" r="20" />
+              </ContentLoader>
+            ) : (
+              <span></span>
+            )
+          }
+        </div>
       </div>
       {ShowModalParagraph && (
         <ModalParagraph

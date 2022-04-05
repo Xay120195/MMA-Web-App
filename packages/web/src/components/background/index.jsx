@@ -55,6 +55,8 @@ export default function Background() {
   const [pageSize, setPageSize] = useState(20);
   const [pageIndex, setPageIndex] = useState(1);
   const [vNextToken, setVnextToken] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [maxLoading, setMaxLoading] = useState(false);
 
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
@@ -198,8 +200,16 @@ export default function Background() {
     }
   };
 
+  const goToBottom = () => {
+    window.scrollTo({
+      bottom: 0,
+      behavior: 'smooth',
+    });
+  };
+
   const loadMoreBackground = async () => {
-    if(vNextToken !== null && witness.length > 0) {
+    if(vNextToken !== null && !loading) {
+      setLoading(true);
       let result = [];
       const matterId = matter_id;
 
@@ -222,15 +232,19 @@ export default function Background() {
         );
 
         if(witness !== "") {
-          setWitness(witness => witness.concat(result));
+          goToBottom();
+          setTimeout(() => {
+            setLoading(false);
+            setWitness(witness => witness.concat(result));
+          }, 1500);
         }
-
       }
-
     } else {
       console.log("NO MORE!");
+      setMaxLoading(true);
     }
   }
+
 
   const matt = matterList.find((i) => i.id === matter_id);
   const obj = { ...matt };
@@ -285,8 +299,6 @@ export default function Background() {
         }
         style={contentDiv}
       >
-        <p>{vNextToken}</p>
-        <button onClick={() => loadMoreBackground() }>Add Array</button>
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
@@ -406,6 +418,10 @@ export default function Background() {
         setNewRow={setNewRow}
         newWitness={newWitness}
         setNewWitness={setNewWitness}
+        loading={loading}
+        setLoading={setLoading}
+        setMaxLoading={setMaxLoading}
+        maxLoading={maxLoading}
       />
     </>
   );
