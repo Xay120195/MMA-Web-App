@@ -2,10 +2,10 @@ type Company {
   id: ID!
   name: String
   address: Address
-  users(limit: Int, nextToken: String): CompanyUserConnection
-  clients(limit: Int, nextToken: String): CompanyClientConnection
-  matters(limit: Int, nextToken: String): CompanyMatterConnection
-  clientMatters(limit: Int, nextToken: String): CompanyClientMatterConnection
+  users(limit: Int, nextToken: String): CompanyUserConn
+  clients(limit: Int, nextToken: String): CompanyClientConn
+  matters(limit: Int, nextToken: String): CompanyMatterConn
+  clientMatters(limit: Int, nextToken: String): CompanyClientMatterConn
   phone: String
   email: AWSEmail
   representative: User
@@ -84,7 +84,7 @@ type File {
   details: String
   order: Int
   # labels: [Label]
-  labels(limit: Int, nextToken: String): FileLabelConnection
+  labels(limit: Int, nextToken: String): FileLabelConn
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -124,8 +124,9 @@ type ClientMatter {
   id: ID!
   matter: Matter
   client: Client
-  backgrounds(limit: Int, nextToken: String): ClientMatterBackgroundConnection
-  labels(limit: Int, nextToken: String): ClientMatterLabelConnection
+  backgrounds(limit: Int, nextToken: String): ClientMatterBackgroundConn
+  labels(limit: Int, nextToken: String): ClientMatterLabelConn
+  # rfi(limit: Int, nextToken: String): ClientMatterRFIConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -135,7 +136,16 @@ type Background {
   date: AWSDateTime
   description: String
   order: Int
-  files: BackgroundFileConnection
+  files: BackgroundFileConn
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type RFI {
+  id: ID!
+  name: String
+  description: String
+  order: Int
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -180,10 +190,9 @@ type Query {
   files: [File]
   labels: [Label]
   label(id: ID): Label
-  backgrounds (
-    limit: Int
-    nextToken: String
-  ) : [Background]
+  rfi(id: ID): RFI
+  rfis:[RFI]
+  backgrounds: [Background]
   background(id: ID): Background
   columnSettings(tableName: ViewTable): [ColumnSettings]
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
@@ -271,6 +280,7 @@ type Mutation {
     columnSettings: [ColumnSettingsInput]
   ): UserColumnSettings
   userColumnSettingsUpdate(id: ID, isVisible: Boolean): UserColumnSettings
+  rfiCreate(name: String, clientMatterId: String): RFI
 }
 
 enum UserType {
@@ -348,44 +358,49 @@ input ColumnSettingsInput {
   tableName: ViewTable
 }
 
-# Relationships / Connections
+# Relationships / Conns
 
-type CompanyUserConnection {
+type CompanyUserConn {
   items: [User]
   nextToken: String
 }
 
-type CompanyClientConnection {
+type CompanyClientConn {
   items: [Client]
   nextToken: String
 }
 
-type CompanyMatterConnection {
+type CompanyMatterConn {
   items: [Matter]
   nextToken: String
 }
 
-type CompanyClientMatterConnection {
+type CompanyClientMatterConn {
   items: [ClientMatter]
   nextToken: String
 }
 
-type ClientMatterBackgroundConnection {
+type ClientMatterBackgroundConn {
   items: [Background]
   nextToken: String
 }
 
-type ClientMatterLabelConnection {
+type ClientMatterLabelConn {
   items: [Label]
   nextToken: String
 }
 
-type FileLabelConnection {
+type FileLabelConn {
   items: [Label]
   nextToken: String
 }
 
-type BackgroundFileConnection {
+type BackgroundFileConn {
   items: [File]
   # nextToken: String
 }
+
+# type ClientMatterRFIConn {
+#   items: [RFI]
+#   nextToken: String
+# }

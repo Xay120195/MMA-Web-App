@@ -699,6 +699,51 @@ async function createBackground(data) {
   return resp;
 }
 
+async function createRFI(data) {
+  let resp = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      createdAt: new Date().toISOString(),
+      order: 0,
+    };
+
+    console.log("rawParams", rawParams);
+
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
+      TableName: "RFITable",
+      Item: param,
+    });
+    const request = await client.send(cmd);
+
+    const clientMatterRFIParams = {
+      id: v4(),
+      rfiId: rawParams.id,
+      clientMatterId: data.clientMatterId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const clientMatterRFICommand = new PutItemCommand({
+      TableName: "ClientMatterRFITable",
+      Item: marshall(clientMatterRFIParams),
+    });
+
+    const clientMatterRFIRequest = await client.send(clientMatterRFICommand);
+
+    resp = clientMatterRFIRequest ? rawParams : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function createColumnSettings(data) {
   let resp = {};
   try {
@@ -1063,6 +1108,9 @@ const resolvers = {
       if (isVisible !== undefined) data.isVisible = isVisible;
 
       return await updateUserColumnSettings(id, data);
+    },
+    rfiCreate: async (ctx) => {
+      return await createRFI(ctx.arguments);
     },
   },
 };
