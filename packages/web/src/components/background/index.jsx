@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import { useParams } from "react-router-dom";
 import BreadCrumb from "../breadcrumb/breadcrumb";
@@ -28,7 +28,11 @@ export default function Background() {
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
-  // const [selectRow, setSelectRow] = useState([]);
+  const [selectRow, setSelectRow] = useState([]);
+  const [newRow, setNewRow] = useState([]);
+  const newWitness = useRef();
+
+  const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
@@ -50,6 +54,9 @@ export default function Background() {
   const [pageTotal, setPageTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [pageIndex, setPageIndex] = useState(1);
+  const [vNextToken, setVnextToken] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [maxLoading, setMaxLoading] = useState(false);
 
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
@@ -102,10 +109,10 @@ export default function Background() {
   };
 
   const qListBackground = `
-    query listBackground($id: ID) {
+    query listBackground($id: ID, $limit: Int, $nextToken: String) {
       clientMatter(id: $id) {
         id
-        backgrounds {
+        backgrounds (limit: $limit, nextToken: $nextToken) {
           items {
             id
             description
@@ -113,6 +120,7 @@ export default function Background() {
             createdAt
             order
           }
+          nextToken
         }
       }
     }
@@ -139,10 +147,10 @@ export default function Background() {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: {
-        id: matterId,
-      },
+      variables: { id: matterId, limit: 25, nextToken: vNextToken },
     });
+
+    setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
     if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
@@ -154,7 +162,14 @@ export default function Background() {
           order: order,
         })
       );
-      setWitness(sortByOrder(result));
+
+      if (witness !== null) {
+        // setWitness(...witness, result);
+        // setWitness([...witness, result]);
+        setWitness(result);
+        setMaxLoading(false);
+      }
+
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);
@@ -186,6 +201,77 @@ export default function Background() {
     }
   };
 
+  const goToBottom = () => {
+    window.scrollTo({
+      bottom: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const loadMoreBackground = async () => {
+    if (vNextToken !== null && !loading) {
+      setLoading(true);
+      let result = [];
+      const matterId = matter_id;
+
+      const backgroundOpt = await API.graphql({
+        query: qListBackground,
+        variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      });
+
+      setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+
+      if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+        result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+          ({ id, description, date, createdAt, order }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+          })
+        );
+
+        if (witness !== "") {
+          goToBottom();
+          setTimeout(() => {
+            setLoading(false);
+            setMaxLoading(false);
+            setWitness((witness) => witness.concat(result));
+          }, 1500);
+        }
+
+        let mergeArrFiles = [];
+        let arrFileResult = [];
+        for (let i = 0; i < sortByOrder(result).length; i++) {
+          const backgroundFilesOpt = await API.graphql({
+            query: qlistBackgroundFiles,
+            variables: {
+              id: result[i].id,
+            },
+          });
+          if (backgroundFilesOpt.data.background.files !== null) {
+            arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+              ({ id, downloadURL, name }) => ({
+                uniqueId: result[i].id + id,
+                backgroundId: result[i].id,
+                id: id,
+                downloadURL: downloadURL,
+                name: name,
+              })
+            );
+
+            mergeArrFiles.push(...arrFileResult);
+          }
+        }
+        setFiles(mergeArrFiles);
+      }
+    } else {
+      console.log("NO MORE!");
+      setMaxLoading(true);
+    }
+  };
+
   const matt = matterList.find((i) => i.id === matter_id);
   const obj = { ...matt };
   const client = Object.values(obj);
@@ -197,14 +283,20 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sort = arr.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else {
-      sort = arr.sort(
-        (a, b) =>
-          a.order - b.order ||
-          new Date(b.date) - new Date(a.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      if (selectRow.length <= 0) {
+        sort = arr.sort(
+          (a, b) =>
+            a.order - b.order ||
+            new Date(b.date) - new Date(a.date) ||
+            new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      } else {
+        sort = arr.sort(
+          (a, b) => a.order - b.order || b.createdAt - a.createdAt
+        );
+      }
     }
     return sort;
   }
@@ -282,14 +374,23 @@ export default function Background() {
                 pageSize={pageSize}
                 pageSizeConst={pageSizeConst}
                 getPaginateItems={getPaginateItems}
-                // selectRow={selectRow}
-                // setSelectRow={setSelectRow}
+                selectRow={selectRow}
+                setSelectRow={setSelectRow}
+                setPasteButton={setPasteButton}
+                pasteButton={pasteButton}
+                setSrcIndex={setSrcIndex}
+                srcIndex={srcIndex}
+                setNewRow={setNewRow}
+                newRow={newRow}
+                newWitness={newWitness}
+                setMaxLoading={setMaxLoading}
               />
             </div>
           </div>
         </div>
       </div>
       <TableInfo
+        setPasteButton={setPasteButton}
         setIdList={setIdList}
         witness={witness}
         ShowModalParagraph={ShowModalParagraph}
@@ -325,7 +426,6 @@ export default function Background() {
         selectedRowsBGFiles={selectedRowsBGFiles}
         setSelectedId={setSelectedId}
         selectedId={selectedId}
-        setPasteButton={setPasteButton}
         pasteButton={pasteButton}
         checkNo={checkNo}
         checkDate={checkDate}
@@ -337,8 +437,18 @@ export default function Background() {
         pageIndex={pageIndex}
         pageSize={pageSize}
         pageSizeConst={pageSizeConst}
-        // selectRow={selectRow}
-        // setSelectRow={setSelectRow}
+        loadMoreBackground={loadMoreBackground}
+        selectRow={selectRow}
+        setSelectRow={setSelectRow}
+        setSrcIndex={setSrcIndex}
+        srcIndex={srcIndex}
+        newRow={newRow}
+        setNewRow={setNewRow}
+        newWitness={newWitness}
+        loading={loading}
+        setLoading={setLoading}
+        setMaxLoading={setMaxLoading}
+        maxLoading={maxLoading}
       />
     </>
   );

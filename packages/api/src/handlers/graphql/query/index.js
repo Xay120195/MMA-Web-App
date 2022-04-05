@@ -1,4 +1,4 @@
-const client = require("../../../lib/dynamodb-client");
+const ddbClient = require("../../../lib/dynamodb-client");
 const {
   GetItemCommand,
   ScanCommand,
@@ -6,7 +6,7 @@ const {
   BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
-const { getUser } = require("../../../services/UserService");
+const { getUser, listUsers } = require("../../../services/UserService");
 const { getMatterFile, getFile } = require("../../../services/MatterService");
 
 async function getCompany(data) {
@@ -19,7 +19,7 @@ async function getCompany(data) {
     };
 
     const cmd = new GetItemCommand(param);
-    const { Item } = await client.send(cmd);
+    const { Item } = await ddbClient.send(cmd);
     resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
@@ -38,8 +38,31 @@ async function listPages() {
     };
 
     const cmd = new ScanCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function listFeatures() {
+  try {
+    const param = {
+      TableName: "FeatureTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+
     resp = request ? parseResponse : {};
   } catch (e) {
     resp = {
@@ -59,7 +82,7 @@ async function listClients() {
     };
 
     const cmd = new ScanCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
     resp = request ? parseResponse : {};
   } catch (e) {
@@ -80,7 +103,7 @@ async function listCompanies() {
     };
 
     const cmd = new ScanCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
     resp = request ? parseResponse : {};
   } catch (e) {
@@ -101,7 +124,7 @@ async function listMatters() {
     };
 
     const cmd = new ScanCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
     resp = request ? parseResponse : {};
   } catch (e) {
@@ -122,7 +145,7 @@ async function listLabels() {
     };
 
     const cmd = new ScanCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
     resp = request ? parseResponse : {};
   } catch (e) {
@@ -142,7 +165,7 @@ async function listClientMatters() {
     };
 
     const cmd = new ScanCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
     resp = request ? parseResponse : {};
   } catch (e) {
@@ -162,7 +185,27 @@ async function listBackgrounds() {
     };
 
     const cmd = new ScanCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listFiles() {
+  try {
+    const param = {
+      TableName: "MatterFileTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
     resp = request ? parseResponse : {};
   } catch (e) {
@@ -187,7 +230,7 @@ async function getCompanyAccessType(data) {
     };
 
     const cmd = new QueryCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     var parseResponse = request.Items.map((data) => unmarshall(data));
 
     if (data.userType) {
@@ -216,7 +259,29 @@ async function getFeature(data) {
     };
 
     const cmd = new GetItemCommand(param);
-    const { Item } = await client.send(cmd);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function getPage(data) {
+  try {
+    const param = {
+      TableName: "PageTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
     resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
@@ -238,7 +303,7 @@ async function getClient(data) {
     };
 
     const cmd = new GetItemCommand(param);
-    const { Item } = await client.send(cmd);
+    const { Item } = await ddbClient.send(cmd);
     resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
@@ -260,7 +325,7 @@ async function getMatter(data) {
     };
 
     const cmd = new GetItemCommand(param);
-    const { Item } = await client.send(cmd);
+    const { Item } = await ddbClient.send(cmd);
     resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
@@ -282,7 +347,7 @@ async function getLabel(data) {
     };
 
     const cmd = new GetItemCommand(param);
-    const { Item } = await client.send(cmd);
+    const { Item } = await ddbClient.send(cmd);
     resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
@@ -306,7 +371,7 @@ async function listColumnSettingsByTable(data) {
     };
 
     const cmd = new QueryCommand(param);
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     const result = request.Items.map((d) => unmarshall(d));
 
@@ -331,7 +396,7 @@ async function getBackground(data) {
     };
 
     const cmd = new GetItemCommand(param);
-    const { Item } = await client.send(cmd);
+    const { Item } = await ddbClient.send(cmd);
 
     const backgrounds = unmarshall(Item);
 
@@ -345,7 +410,7 @@ async function getBackground(data) {
     };
 
     const backgroundFileCommand = new QueryCommand(backgroundFileParams);
-    const backgroundFileResult = await client.send(backgroundFileCommand);
+    const backgroundFileResult = await ddbClient.send(backgroundFileCommand);
 
     const fileIds = backgroundFileResult.Items.map((i) => unmarshall(i)).map(
       (f) => marshall({ id: f.fileId })
@@ -361,7 +426,7 @@ async function getBackground(data) {
       };
 
       const filesCommand = new BatchGetItemCommand(fileParams);
-      const filesResult = await client.send(filesCommand);
+      const filesResult = await ddbClient.send(filesCommand);
 
       const objFiles = filesResult.Responses.MatterFileTable.map((i) =>
         unmarshall(i)
@@ -401,7 +466,7 @@ async function getClientMatter(data) {
 
     const cmd = new GetItemCommand(param);
 
-    const { Item } = await client.send(cmd);
+    const { Item } = await ddbClient.send(cmd);
 
     resp = Item ? unmarshall(Item) : {};
   } catch (e) {
@@ -432,7 +497,7 @@ async function getUserColumnSettings(data) {
     const userColumnSettingsCommand = new QueryCommand(
       userColumnSettingsParams
     );
-    const userColumnSettingsRequest = await client.send(
+    const userColumnSettingsRequest = await ddbClient.send(
       userColumnSettingsCommand
     );
 
@@ -454,7 +519,7 @@ async function getUserColumnSettings(data) {
       const columnSettingsCommand = new BatchGetItemCommand(
         ColumnSettingsParams
       );
-      const columnSettingsResult = await client.send(columnSettingsCommand);
+      const columnSettingsResult = await ddbClient.send(columnSettingsCommand);
 
       const objColumnSettings =
         columnSettingsResult.Responses.ColumnSettingsTable.map((i) =>
@@ -474,8 +539,7 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    resp =
-      Object.keys(result).length !== 0 && result !== null ? result : [];
+    resp = Object.keys(result).length !== 0 && result !== null ? result : [];
   } catch (e) {
     resp = {
       error: e.message,
@@ -487,6 +551,48 @@ async function getUserColumnSettings(data) {
   return resp;
 }
 
+async function getRFI(data) {
+  try {
+    const param = {
+      TableName: "RFITable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listRFIs() {
+  try {
+    const param = {
+      TableName: "RFITable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -495,59 +601,78 @@ const resolvers = {
     companies: async () => {
       return listCompanies();
     },
+    page: async (ctx) => {
+      return getPage(ctx.arguments);
+    },
     pages: async () => {
       return listPages();
     },
     user: async (ctx) => {
       return getUser(ctx.arguments);
     },
+    users: async () => {
+      return listUsers();
+    },
     feature: async (ctx) => {
       return getFeature(ctx.arguments);
+    },
+    features: async () => {
+      return listFeatures();
     },
     client: async (ctx) => {
       return getClient(ctx.arguments);
     },
-    clients: async (ctx) => {
-      return listClients(ctx.arguments);
+    clients: async () => {
+      return listClients();
     },
     matter: async (ctx) => {
       return getMatter(ctx.arguments);
     },
-    matters: async (ctx) => {
-      return listMatters(ctx.arguments);
+    matters: async () => {
+      return listMatters();
     },
     clientMatter: async (ctx) => {
       return getClientMatter(ctx.arguments);
     },
-    clientMatters: async (ctx) => {
-      return listClientMatters(ctx.arguments);
+    clientMatters: async () => {
+      return listClientMatters();
     },
     label: async (ctx) => {
       return getLabel(ctx.arguments);
     },
-    labels: async (ctx) => {
-      return listLabels(ctx.arguments);
+    labels: async () => {
+      return listLabels();
     },
     companyAccessType: async (ctx) => {
       return getCompanyAccessType(ctx.arguments);
     },
-    matterFile: async (ctx) => {
-      return getMatterFile(ctx.arguments);
-    },
+
     file: async (ctx) => {
       return getFile(ctx.arguments);
+    },
+    files: async () => {
+      return listFiles();
+    },
+    matterFile: async (ctx) => {
+      return getMatterFile(ctx.arguments);
     },
     background: async (ctx) => {
       return getBackground(ctx.arguments);
     },
-    backgrounds: async (ctx) => {
-      return listBackgrounds(ctx.arguments);
+    backgrounds: async () => {
+      return listBackgrounds();
     },
     columnSettings: async (ctx) => {
       return listColumnSettingsByTable(ctx.arguments);
     },
     userColumnSettings: async (ctx) => {
       return getUserColumnSettings(ctx.arguments);
+    },
+    rfi: async (ctx) => {
+      return getRFI(ctx.arguments);
+    },
+    rfis: async () => {
+      return listRFIs();
     },
   },
 };
