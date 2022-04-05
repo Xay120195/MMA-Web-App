@@ -28,7 +28,11 @@ export default function Background() {
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
-  // const [selectRow, setSelectRow] = useState([]);
+  const [selectRow, setSelectRow] = useState([]);
+  const [newRow, setNewRow] = useState([]);
+  const [newWitness, setNewWitness] = useState([]);
+
+  const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
     new Array(witness.length).fill(false)
   );
@@ -239,14 +243,18 @@ export default function Background() {
     const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sort = arr.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else {
-      sort = arr.sort(
-        (a, b) =>
-          a.order - b.order ||
-          new Date(b.date) - new Date(a.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      if (selectRow.length <= 0) {
+        sort = arr.sort(
+          (a, b) =>
+            a.order - b.order ||
+            new Date(b.date) - new Date(a.date) ||
+            new Date(b.createdAt) - new Date(a.createdAt)
+        );
+      } else {
+        sort = arr.sort((a, b) => a.order - b.order);
+      }
     }
     return sort;
   }
@@ -326,14 +334,23 @@ export default function Background() {
                 pageSize={pageSize}
                 pageSizeConst={pageSizeConst}
                 getPaginateItems={getPaginateItems}
-                // selectRow={selectRow}
-                // setSelectRow={setSelectRow}
+                selectRow={selectRow}
+                setSelectRow={setSelectRow}
+                setPasteButton={setPasteButton}
+                pasteButton={pasteButton}
+                setSrcIndex={setSrcIndex}
+                srcIndex={srcIndex}
+                setNewRow={setNewRow}
+                setNewWitness={setNewWitness}
+                newRow={newRow}
+                newWitness={newWitness}
               />
             </div>
           </div>
         </div>
       </div>
       <TableInfo
+        setPasteButton={setPasteButton}
         setIdList={setIdList}
         witness={witness}
         ShowModalParagraph={ShowModalParagraph}
@@ -369,7 +386,6 @@ export default function Background() {
         selectedRowsBGFiles={selectedRowsBGFiles}
         setSelectedId={setSelectedId}
         selectedId={selectedId}
-        setPasteButton={setPasteButton}
         pasteButton={pasteButton}
         checkNo={checkNo}
         checkDate={checkDate}
@@ -382,8 +398,14 @@ export default function Background() {
         pageSize={pageSize}
         pageSizeConst={pageSizeConst}
         loadMoreBackground={loadMoreBackground}
-        // selectRow={selectRow}
-        // setSelectRow={setSelectRow}
+        selectRow={selectRow}
+        setSelectRow={setSelectRow}
+        setSrcIndex={setSrcIndex}
+        srcIndex={srcIndex}
+        newRow={newRow}
+        setNewRow={setNewRow}
+        newWitness={newWitness}
+        setNewWitness={setNewWitness}
       />
     </>
   );

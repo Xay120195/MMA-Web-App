@@ -1,4 +1,4 @@
-const { PutItemCommand, GetItemCommand } = require("@aws-sdk/client-dynamodb");
+const { PutItemCommand, GetItemCommand, ScanCommand } = require("@aws-sdk/client-dynamodb");
 import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import ddbClient from "../lib/dynamodb-client";
@@ -7,31 +7,52 @@ import randomString from "../shared/randomString";
 import { v4 } from "uuid";
 
 export async function getUser(data) {
-  let response = {};
+  let resp = {};
   try {
-    const params = {
+    const param = {
       TableName: "UserTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await ddbClient.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
   }
 
-  return response;
+  return resp;
+}
+
+export async function listUsers() {
+  let resp = {};
+  try {
+    const param = {
+      TableName: "UserTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
 }
 
 export async function createUser(data) {
-  let response = {};
+  let resp = {};
   try {
     const rawParams = {
       id: data.id,
@@ -43,41 +64,36 @@ export async function createUser(data) {
       createdAt: new Date().toISOString(),
     };
 
-    const params = marshall(rawParams);
-    const command = new PutItemCommand({
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
       TableName: "UserTable",
-      Item: params,
+      Item: param,
     });
 
-    const request = await ddbClient.send(command);
+    const request = await ddbClient.send(cmd);
 
-    //put on CompanyUser
-
-    const companyUserParams = {
+    const compUserParam = {
       id: v4(),
       userId: data.id,
       companyId: data.company.id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    const putCompanyUserCommand = new PutItemCommand({
+    const putCompUserCmd = new PutItemCommand({
       TableName: "CompanyUserTable",
-      Item: marshall(companyUserParams),
+      Item: marshall(compUserParam),
     });
 
-    const putCompanyUserCommandrequest = await ddbClient.send(
-      putCompanyUserCommand
-    );
+    const putCompUserCmdReq = await ddbClient.send(putCompUserCmd);
 
-    response = request ? unmarshall(params) : {};
+    resp = request ? unmarshall(param) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
   }
-  return response;
+  return resp;
 }
 
 export async function inviteUser(data) {
@@ -103,11 +119,10 @@ export async function inviteUser(data) {
 }
 
 async function createCognitoUser(input) {
-  const command = new AdminCreateUserCommand(input);
-  const response = await identityClient.send(command);
-  const id = response.User.Attributes.filter(
-    (attrib) => attrib.Name === "sub"
-  )[0].Value;
-  response.id = id;
-  return response;
+  const cmd = new AdminCreateUserCommand(input);
+  const resp = await identityClient.send(cmd);
+  const id = resp.User.Attributes.filter((attrib) => attrib.Name === "sub")[0]
+    .Value;
+  resp.id = id;
+  return resp;
 }

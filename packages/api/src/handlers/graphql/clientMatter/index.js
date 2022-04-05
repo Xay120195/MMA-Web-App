@@ -7,10 +7,9 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listClientMatterLabels(ctx) {
   const { id } = ctx.source;
-
   const { limit, nextToken } = ctx.arguments;
   try {
-    const clientMatterLabelsParams = {
+    const cmLabelsParam = {
       TableName: "ClientMatterLabelTable",
       IndexName: "byClientMatter",
       KeyConditionExpression: "clientMatterId = :clientMatterId",
@@ -24,21 +23,17 @@ async function listClientMatterLabels(ctx) {
     };
 
     if (limit !== undefined) {
-      clientMatterLabelsParams.Limit = limit;
+      cmLabelsParam.Limit = limit;
     }
 
-    const clientMatterLabelsCommand = new QueryCommand(
-      clientMatterLabelsParams
-    );
-    const clientMatterLabelsResult = await client.send(
-      clientMatterLabelsCommand
+    const cmLabelsCmd = new QueryCommand(cmLabelsParam);
+    const cmLabelsResult = await client.send(cmLabelsCmd);
+
+    const labelIds = cmLabelsResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.labelId })
     );
 
-    const labelIds = clientMatterLabelsResult.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.labelId }));
-
-    const labelsParams = {
+    const labelsParam = {
       RequestItems: {
         LabelsTable: {
           Keys: labelIds,
@@ -46,34 +41,31 @@ async function listClientMatterLabels(ctx) {
       },
     };
 
-    const labelsCommand = new BatchGetItemCommand(labelsParams);
+    const labelsCommand = new BatchGetItemCommand(labelsParam);
     const labelsResult = await client.send(labelsCommand);
 
     const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
       unmarshall(i)
     );
-    const objClientMatterLabels = clientMatterLabelsResult.Items.map((i) =>
-      unmarshall(i)
-    );
+    const objCMLabels = cmLabelsResult.Items.map((i) => unmarshall(i));
 
-    const response = objClientMatterLabels.map((item) => {
+    const response = objCMLabels.map((item) => {
       const filterLabel = objLabels.find((u) => u.id === item.labelId);
       return { ...item, ...filterLabel };
     });
 
     return {
       items: response,
-      nextToken: clientMatterLabelsResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(clientMatterLabelsResult.LastEvaluatedKey)
-          ).toString("base64")
+      nextToken: cmLabelsResult.LastEvaluatedKey
+        ? Buffer.from(JSON.stringify(cmLabelsResult.LastEvaluatedKey)).toString(
+            "base64"
+          )
         : null,
     };
   } catch (e) {
     response = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
     console.log(response);
   }
@@ -85,7 +77,7 @@ async function listCompanyMatterBackgrounds(ctx) {
 
   const { limit, nextToken } = ctx.arguments;
   try {
-    const clientMatterBackgroundsParams = {
+    const cmBackgroundsParam = {
       TableName: "ClientMatterBackgroundTable",
       IndexName: "byClientMatter",
       KeyConditionExpression: "clientMatterId = :clientMatterId",
@@ -96,25 +88,20 @@ async function listCompanyMatterBackgrounds(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
-      
     };
 
     if (limit !== undefined) {
-      clientMatterBackgroundsParams.Limit = limit;
+      cmBackgroundsParam.Limit = limit;
     }
 
-    const clientMatterBackgroundsCommand = new QueryCommand(
-      clientMatterBackgroundsParams
-    );
-    const clientMatterBackgroundsResult = await client.send(
-      clientMatterBackgroundsCommand
-    );
+    const cmBackgroundsCmd = new QueryCommand(cmBackgroundsParam);
+    const cmBackgroundsResult = await client.send(cmBackgroundsCmd);
 
-    const backgroundIds = clientMatterBackgroundsResult.Items.map((i) =>
+    const backgroundIds = cmBackgroundsResult.Items.map((i) =>
       unmarshall(i)
     ).map((f) => marshall({ id: f.backgroundId }));
 
-    const backgroundsParams = {
+    const backgroundsParam = {
       RequestItems: {
         BackgroundsTable: {
           Keys: backgroundIds,
@@ -122,17 +109,17 @@ async function listCompanyMatterBackgrounds(ctx) {
       },
     };
 
-    const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
+    const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
     const backgroundsResult = await client.send(backgroundsCommand);
 
     const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
       (i) => unmarshall(i)
     );
-    const objClientMatterBackgrounds = clientMatterBackgroundsResult.Items.map(
-      (i) => unmarshall(i)
+    const objCMBackgrounds = cmBackgroundsResult.Items.map((i) =>
+      unmarshall(i)
     );
 
-    const response = objClientMatterBackgrounds.map((item) => {
+    const response = objCMBackgrounds.map((item) => {
       const filterBackground = objBackgrounds.find(
         (u) => u.id === item.backgroundId
       );
@@ -141,9 +128,9 @@ async function listCompanyMatterBackgrounds(ctx) {
 
     return {
       items: response,
-      nextToken: clientMatterBackgroundsResult.LastEvaluatedKey
+      nextToken: cmBackgroundsResult.LastEvaluatedKey
         ? Buffer.from(
-            JSON.stringify(clientMatterBackgroundsResult.LastEvaluatedKey)
+            JSON.stringify(cmBackgroundsResult.LastEvaluatedKey)
           ).toString("base64")
         : null,
     };
@@ -151,7 +138,6 @@ async function listCompanyMatterBackgrounds(ctx) {
     response = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
     console.log(response);
   }
@@ -166,15 +152,6 @@ const resolvers = {
     backgrounds: async (ctx) => {
       return listCompanyMatterBackgrounds(ctx);
     },
-    // clients: async (ctx) => {
-    //   return listCompanyClients(ctx);
-    // },
-    // clientMatters: async (ctx) => {
-    //   return listCompanyClientMatters(ctx);
-    // },
-    // labels: async (ctx) => {
-    //   return listCompanyLabels(ctx);
-    // },
   },
 };
 

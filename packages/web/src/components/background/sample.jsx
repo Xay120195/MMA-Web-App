@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -15,8 +15,6 @@ import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
 import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
-import { useBottomScrollListener } from 'react-bottom-scroll-listener';
-import "./background.css";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -46,7 +44,6 @@ const TableInfo = ({
   setAscDesc,
   ascDesc,
   setShowDeleteButton,
-  setNewWitness,
   activateButton,
   setSelectedRowsBGFiles,
   selectedRowsBGFiles,
@@ -57,18 +54,13 @@ const TableInfo = ({
   checkDate,
   checkDesc,
   checkDocu,
-  pasteButton,
+  paste,
   setSrcIndex,
   srcIndex,
   pageTotal,
   pageIndex,
   pageSize,
   pageSizeConst,
-  loadMoreBackground,
-  newRow,
-  newWitness,
-  setPasteButton,
-  setNewRow,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -115,7 +107,7 @@ const TableInfo = ({
     const checkedId = selectRow.some((x) => x.id === id);
     if (!checkedId && event.target.checked) {
       const x = selectRow;
-      x.push({ id: id, date: date, details: details });
+      x.push({ id: id, date: date, description: details });
       setSelectRow(x);
       setSrcIndex(position);
     }
@@ -517,64 +509,15 @@ const TableInfo = ({
   };
 
   const handlePasteRow = (targetIndex) => {
-    let newList = [...newWitness];
+    let tempWitness = [...witness];
 
-    const [newlist] = newRow;
-
-    console.log(typeof newRow);
-
-    newList.splice(targetIndex, 0, newlist);
-
-    setPasteButton(false);
-    setShowDeleteButton(false);
-    const res = newList.map(myFunction);
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
-    }
-
-    res.map(async function (x) {
-      const mUpdateBackgroundOrder = `
-    mutation updateBackground($id: ID, $order: Int) {
-      backgroundUpdate(id: $id, order: $order) {
-        id
-        order
-      }
-    }`;
-      await API.graphql({
-        query: mUpdateBackgroundOrder,
-        variables: {
-          id: x.id,
-          order: x.order,
-        },
-      });
-    });
-    getBackground();
-    console.log(witness);
-    setTimeout(() => {
-      setSelectRow([]);
-      setNewWitness([]);
-      setNewRow([]);
-      setSrcIndex("");
-    }, 4000);
+    let [selectedrow] = selectRow;
+    console.log(targetIndex);
+    tempWitness.splice(targetIndex, 0, selectedrow);
+    setWitness(tempWitness);
   };
 
-  const handleOnDocumentBottom = useCallback(() => {
-    console.log('Reached bottom page '+ Math.round(performance.now()));
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      loadMoreBackground();
-    }, 3000);
-  });
-  
-  useBottomScrollListener(handleOnDocumentBottom, {
-    offset: 0
-  });
-  
+  console.log(witness);
 
   return (
     <>
@@ -584,7 +527,7 @@ const TableInfo = ({
       >
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg" >
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
               {witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
@@ -639,52 +582,63 @@ const TableInfo = ({
                             {...provider.droppableProps}
                             className="bg-white divide-y divide-gray-200"
                           >
-                            {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
-                            {witness.map((item, index) => (
-                              <>
-                                <Draggable
-                                  key={item.id}
-                                  draggableId={item.id}
-                                  index={index}
-                                >
-                                  {(provider, snapshot) => (
-                                    <tr
-                                      key={item.id}
-                                      index={index}
-                                      {...provider.draggableProps}
-                                      ref={provider.innerRef}
-                                      style={{
-                                        ...provider.draggableProps.style,
-                                        backgroundColor:
-                                          snapshot.isDragging ||
-                                          item.id === selected
-                                            ? "rgba(255, 255, 239, 0.767)"
-                                            : "",
-                                      }}
-                                    >
-                                      <td
-                                        {...provider.dragHandleProps}
-                                        className="px-3 py-3 w-10"
+                            {/* {witness.map((item, index) => ( */}
+                            {witness
+                              .slice(pageIndex - 1, pageSizeConst)
+                              .map((item, index) => (
+                                <>
+                                  <Draggable
+                                    key={item.id}
+                                    draggableId={item.id}
+                                    index={index}
+                                  >
+                                    {(provider, snapshot) => (
+                                      <tr
+                                        key={item.id}
+                                        index={index}
+                                        className={
+                                          index + 1 <= counter
+                                            ? highlightRows
+                                            : selectRow.find(
+                                                (x) => x.id === item.id
+                                              )
+                                            ? "bg-green-200"
+                                            : ""
+                                        }
+                                        {...provider.draggableProps}
+                                        ref={provider.innerRef}
+                                        style={{
+                                          ...provider.draggableProps.style,
+                                          backgroundColor:
+                                            snapshot.isDragging ||
+                                            item.id === selected
+                                              ? "rgba(255, 255, 239, 0.767)"
+                                              : "",
+                                        }}
                                       >
-                                        <div className="flex items-center ">
-                                          <MdDragIndicator
-                                            className="text-2xl"
-                                            onClick={() =>
-                                              handleChageBackground(item.id)
-                                            }
-                                          />
-                                          <input
-                                            type="checkbox"
-                                            name={item.id}
-                                            className="cursor-pointer w-10"
-                                            checked={checkedState[index]}
-                                            onChange={(event) =>
-                                              handleCheckboxChange(
-                                                index,
-                                                event,
-                                                item.id,
-                                                item.date,
-                                                item.description
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="px-3 py-3 w-10"
+                                        >
+                                          <div className="flex items-center ">
+                                            <MdDragIndicator
+                                              className="text-2xl"
+                                              onClick={() =>
+                                                handleChageBackground(item.id)
+                                              }
+                                            />
+                                            <input
+                                              type="checkbox"
+                                              name={item.id}
+                                              className="cursor-pointer w-10"
+                                              checked={checkedState[index]}
+                                              onChange={(event) =>
+                                                handleCheckboxChange(
+                                                  index,
+                                                  event,
+                                                  item.id,
+                                                  item.date,
+                                                  item.description
                                                 )
                                               }
                                             />
@@ -766,13 +720,6 @@ const TableInfo = ({
                                             {...provider.dragHandleProps}
                                             className="py-2 px-3 w-80 text-sm text-gray-500"
                                           >
-                                            {selectRow.find(
-                                              (x) => x.id === item.id
-                                            ) && (
-                                              <div class="separator">
-                                                ROW SELECTED
-                                              </div>
-                                            )}
                                             {!activateButton ? (
                                               !activateButton &&
                                               selectRow.find(
@@ -901,7 +848,7 @@ const TableInfo = ({
                                       </tr>
                                     )}
                                   </Draggable>
-                                  {pasteButton && (
+                                  {paste && (
                                     <tr
                                       style={{
                                         border: "rgb(0, 204, 0) 2px dashed",
@@ -931,13 +878,6 @@ const TableInfo = ({
             </div>
           </div>
         </div>
-        {loading ? (
-            <span>loading now datas</span>
-          ) : (
-            <span></span>
-          )
-        }
-          
       </div>
       {ShowModalParagraph && (
         <ModalParagraph
