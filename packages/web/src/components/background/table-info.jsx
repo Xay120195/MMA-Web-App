@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -15,7 +15,10 @@ import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
 import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
+import { useBottomScrollListener } from 'react-bottom-scroll-listener';
+import imgLoading from "../../assets/images/loading-circle.gif";
 import "./background.css";
+
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
 
@@ -62,16 +65,19 @@ const TableInfo = ({
   pageIndex,
   pageSize,
   pageSizeConst,
+  loadMoreBackground,
   newRow,
   newWitness,
   setPasteButton,
   setNewRow,
+  loading,
+  setLoading,
+  maxLoading
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-  const [loading, setLoading] = useState(true);
 
   const [selected, setSelected] = useState("");
   const [descId, setDescId] = useState("");
@@ -559,6 +565,19 @@ const TableInfo = ({
     }, 4000);
   };
 
+  const handleBottomScroll = useCallback(() => {
+    console.log('Reached bottom page '+ Math.round(performance.now()));
+    setTimeout(() => {
+      setLoading(true);
+    }, 1500);
+    setTimeout(() => {
+      loadMoreBackground();
+      setLoading(false);
+    }, 2500);
+  });
+
+  useBottomScrollListener(handleBottomScroll);
+
   return (
     <>
       <div
@@ -567,13 +586,13 @@ const TableInfo = ({
       >
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg" >
               {witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
                 <>
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200" >
                       <thead className="bg-gray-50">
                         <tr>
                           <th
@@ -622,63 +641,52 @@ const TableInfo = ({
                             {...provider.droppableProps}
                             className="bg-white divide-y divide-gray-200"
                           >
-                            {/* {witness.map((item, index) => ( */}
-                            {witness
-                              .slice(pageIndex - 1, pageSizeConst)
-                              .map((item, index) => (
-                                <>
-                                  <Draggable
-                                    key={item.id}
-                                    draggableId={item.id}
-                                    index={index}
-                                  >
-                                    {(provider, snapshot) => (
-                                      <tr
-                                        key={item.id}
-                                        index={index}
-                                        className={
-                                          index + 1 <= counter
-                                            ? highlightRows
-                                            : selectRow.find(
-                                                (x) => x.id === item.id
-                                              )
-                                            ? "bg-green-200"
-                                            : ""
-                                        }
-                                        {...provider.draggableProps}
-                                        ref={provider.innerRef}
-                                        style={{
-                                          ...provider.draggableProps.style,
-                                          backgroundColor:
-                                            snapshot.isDragging ||
-                                            item.id === selected
-                                              ? "rgba(255, 255, 239, 0.767)"
-                                              : "",
-                                        }}
+                            {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
+                            {witness.map((item, index) => (
+                              <>
+                                <Draggable
+                                  key={item.id}
+                                  draggableId={item.id}
+                                  index={index}
+                                >
+                                  {(provider, snapshot) => (
+                                    <tr
+                                      key={item.id}
+                                      index={index}
+                                      {...provider.draggableProps}
+                                      ref={provider.innerRef}
+                                      style={{
+                                        ...provider.draggableProps.style,
+                                        backgroundColor:
+                                          snapshot.isDragging ||
+                                          item.id === selected
+                                            ? "rgba(255, 255, 239, 0.767)"
+                                            : "",
+                                      }}
+                                    >
+                                      <td
+                                        {...provider.dragHandleProps}
+                                        className="px-3 py-3 w-10"
                                       >
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="px-3 py-3 w-10"
-                                        >
-                                          <div className="flex items-center ">
-                                            <MdDragIndicator
-                                              className="text-2xl"
-                                              onClick={() =>
-                                                handleChageBackground(item.id)
-                                              }
-                                            />
-                                            <input
-                                              type="checkbox"
-                                              name={item.id}
-                                              className="cursor-pointer w-10"
-                                              checked={checkedState[index]}
-                                              onChange={(event) =>
-                                                handleCheckboxChange(
-                                                  index,
-                                                  event,
-                                                  item.id,
-                                                  item.date,
-                                                  item.description
+                                        <div className="flex items-center ">
+                                          <MdDragIndicator
+                                            className="text-2xl"
+                                            onClick={() =>
+                                              handleChageBackground(item.id)
+                                            }
+                                          />
+                                          <input
+                                            type="checkbox"
+                                            name={item.id}
+                                            className="cursor-pointer w-10"
+                                            checked={checkedState[index]}
+                                            onChange={(event) =>
+                                              handleCheckboxChange(
+                                                index,
+                                                event,
+                                                item.id,
+                                                item.date,
+                                                item.description
                                                 )
                                               }
                                             />
@@ -924,6 +932,25 @@ const TableInfo = ({
               )}
             </div>
           </div>
+        </div>
+        <div>
+          {maxLoading ? (
+              <div className="flex justify-center items-center mt-5">
+                <p>All data has been loaded.</p>
+              </div>
+            ) : (
+              <div className="flex justify-center items-center mt-5">
+                <img src={imgLoading} width={50} height={100} />
+              </div>
+            )
+          }
+
+          {!maxLoading && loading ? (
+              <span className="grid" ></span>
+            ) : (
+              <span></span>
+            )
+          }
         </div>
       </div>
       {ShowModalParagraph && (
