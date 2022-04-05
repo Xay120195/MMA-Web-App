@@ -167,6 +167,7 @@ export default function Background() {
        // setWitness(...witness, result);
        // setWitness([...witness, result]);
        setWitness(result);
+       setMaxLoading(false);
       }
 
       setPageTotal(result.length);
@@ -235,9 +236,35 @@ export default function Background() {
           goToBottom();
           setTimeout(() => {
             setLoading(false);
+            setMaxLoading(false);
             setWitness(witness => witness.concat(result));
           }, 1500);
         }
+
+        let mergeArrFiles = [];
+        let arrFileResult = [];
+        for (let i = 0; i < sortByOrder(result).length; i++) {
+          const backgroundFilesOpt = await API.graphql({
+            query: qlistBackgroundFiles,
+            variables: {
+              id: result[i].id,
+            },
+          });
+          if (backgroundFilesOpt.data.background.files !== null) {
+            arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+              ({ id, downloadURL, name }) => ({
+                uniqueId: result[i].id + id,
+                backgroundId: result[i].id,
+                id: id,
+                downloadURL: downloadURL,
+                name: name,
+              })
+            );
+
+            mergeArrFiles.push(...arrFileResult);
+          }
+        }
+        setFiles(mergeArrFiles);
       }
     } else {
       console.log("NO MORE!");
@@ -356,6 +383,7 @@ export default function Background() {
                 setNewWitness={setNewWitness}
                 newRow={newRow}
                 newWitness={newWitness}
+                setMaxLoading={setMaxLoading}
               />
             </div>
           </div>
