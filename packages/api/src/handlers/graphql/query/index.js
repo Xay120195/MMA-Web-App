@@ -1,4 +1,4 @@
-const client = require("../../../lib/dynamodb-client");
+const ddbClient = require("../../../lib/dynamodb-client");
 const {
   GetItemCommand,
   ScanCommand,
@@ -6,186 +6,221 @@ const {
   BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
-const { getUser } = require("../../../services/UserService");
+const { getUser, listUsers } = require("../../../services/UserService");
 const { getMatterFile, getFile } = require("../../../services/MatterService");
 
 async function getCompany(data) {
   try {
-    const params = {
+    const param = {
       TableName: "CompanyTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listPages() {
   try {
-    const params = {
+    const param = {
       TableName: "PageTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
+}
+
+async function listFeatures() {
+  try {
+    const param = {
+      TableName: "FeatureTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
 }
 
 async function listClients() {
   try {
-    const params = {
+    const param = {
       TableName: "ClientsTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 async function listCompanies() {
   try {
-    const params = {
+    const param = {
       TableName: "CompanyTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 async function listMatters() {
   try {
-    const params = {
+    const param = {
       TableName: "MatterTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
 }
 
 async function listLabels() {
   try {
-    const params = {
+    const param = {
       TableName: "LabelsTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listClientMatters() {
   try {
-    const params = {
+    const param = {
       TableName: "ClientMatterTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listBackgrounds() {
   try {
-    const params = {
+    const param = {
       TableName: "BackgroundsTable",
     };
 
-    const command = new ScanCommand(params);
-    const request = await client.send(command);
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
     const parseResponse = request.Items.map((data) => unmarshall(data));
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
+}
+
+async function listFiles() {
+  try {
+    const param = {
+      TableName: "MatterFileTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
 }
 
 async function getCompanyAccessType(data) {
   try {
-    const params = {
+    const param = {
       TableName: "CompanyAccessTypeTable",
       IndexName: "byCompany",
       KeyConditionExpression: "companyId = :companyId",
@@ -194,8 +229,8 @@ async function getCompanyAccessType(data) {
       }),
     };
 
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
+    const cmd = new QueryCommand(param);
+    const request = await ddbClient.send(cmd);
     var parseResponse = request.Items.map((data) => unmarshall(data));
 
     if (data.userType) {
@@ -203,113 +238,130 @@ async function getCompanyAccessType(data) {
         (userType) => userType.userType === data.userType
       );
     }
-    response = request ? parseResponse : {};
+    resp = request ? parseResponse : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getFeature(data) {
   try {
-    const params = {
+    const param = {
       TableName: "FeatureTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
+}
+
+async function getPage(data) {
+  try {
+    const param = {
+      TableName: "PageTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
 }
 
 async function getClient(data) {
   try {
-    const params = {
+    const param = {
       TableName: "ClientsTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getMatter(data) {
   try {
-    const params = {
+    const param = {
       TableName: "MatterTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getLabel(data) {
   try {
-    const params = {
+    const param = {
       TableName: "LabelsTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
-    response = Item ? unmarshall(Item) : {};
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function listColumnSettingsByTable(data) {
   try {
-    const params = {
+    const param = {
       TableName: "ColumnSettingsTable",
       IndexName: "byTableName",
       KeyConditionExpression: "tableName = :tableName",
@@ -318,34 +370,33 @@ async function listColumnSettingsByTable(data) {
       }),
     };
 
-    const command = new QueryCommand(params);
-    const request = await client.send(command);
+    const cmd = new QueryCommand(param);
+    const request = await ddbClient.send(cmd);
 
     const result = request.Items.map((d) => unmarshall(d));
 
-    response = request ? result : {};
+    resp = request ? result : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getBackground(data) {
   try {
-    const params = {
+    const param = {
       TableName: "BackgroundsTable",
       Key: marshall({
         id: data.id,
       }),
     };
 
-    const command = new GetItemCommand(params);
-    const { Item } = await client.send(command);
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
 
     const backgrounds = unmarshall(Item);
 
@@ -359,7 +410,7 @@ async function getBackground(data) {
     };
 
     const backgroundFileCommand = new QueryCommand(backgroundFileParams);
-    const backgroundFileResult = await client.send(backgroundFileCommand);
+    const backgroundFileResult = await ddbClient.send(backgroundFileCommand);
 
     const fileIds = backgroundFileResult.Items.map((i) => unmarshall(i)).map(
       (f) => marshall({ id: f.fileId })
@@ -375,7 +426,7 @@ async function getBackground(data) {
       };
 
       const filesCommand = new BatchGetItemCommand(fileParams);
-      const filesResult = await client.send(filesCommand);
+      const filesResult = await ddbClient.send(filesCommand);
 
       const objFiles = filesResult.Responses.MatterFileTable.map((i) =>
         unmarshall(i)
@@ -392,48 +443,46 @@ async function getBackground(data) {
       backgrounds.files = { items: extractFiles };
     }
 
-    response = backgrounds ? backgrounds : {};
+    resp = backgrounds ? backgrounds : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getClientMatter(data) {
   const clientMatterId = data.id;
   try {
-    const params = {
+    const param = {
       TableName: "ClientMatterTable",
       Key: marshall({
         id: clientMatterId,
       }),
     };
 
-    const command = new GetItemCommand(params);
+    const cmd = new GetItemCommand(param);
 
-    const { Item } = await client.send(command);
+    const { Item } = await ddbClient.send(cmd);
 
-    response = Item ? unmarshall(Item) : {};
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
-  return response;
+  return resp;
 }
 
 async function getUserColumnSettings(data) {
   const { userId, tableName } = data;
 
-  let response = {},
+  let resp = {},
     result = {};
   try {
     const userColumnSettingsParams = {
@@ -448,7 +497,7 @@ async function getUserColumnSettings(data) {
     const userColumnSettingsCommand = new QueryCommand(
       userColumnSettingsParams
     );
-    const userColumnSettingsRequest = await client.send(
+    const userColumnSettingsRequest = await ddbClient.send(
       userColumnSettingsCommand
     );
 
@@ -470,7 +519,7 @@ async function getUserColumnSettings(data) {
       const columnSettingsCommand = new BatchGetItemCommand(
         ColumnSettingsParams
       );
-      const columnSettingsResult = await client.send(columnSettingsCommand);
+      const columnSettingsResult = await ddbClient.send(columnSettingsCommand);
 
       const objColumnSettings =
         columnSettingsResult.Responses.ColumnSettingsTable.map((i) =>
@@ -490,17 +539,58 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    response = (Object.keys(result).length !== 0 && result !== null) ? result : [];
+    resp = Object.keys(result).length !== 0 && result !== null ? result : [];
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
-    console.log(response);
+    console.log(resp);
   }
 
-  return response;
+  return resp;
+}
+
+async function getRFI(data) {
+  try {
+    const param = {
+      TableName: "RFITable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listRFIs() {
+  try {
+    const param = {
+      TableName: "RFITable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
 }
 
 const resolvers = {
@@ -511,59 +601,78 @@ const resolvers = {
     companies: async () => {
       return listCompanies();
     },
+    page: async (ctx) => {
+      return getPage(ctx.arguments);
+    },
     pages: async () => {
       return listPages();
     },
     user: async (ctx) => {
       return getUser(ctx.arguments);
     },
+    users: async () => {
+      return listUsers();
+    },
     feature: async (ctx) => {
       return getFeature(ctx.arguments);
+    },
+    features: async () => {
+      return listFeatures();
     },
     client: async (ctx) => {
       return getClient(ctx.arguments);
     },
-    clients: async (ctx) => {
-      return listClients(ctx.arguments);
+    clients: async () => {
+      return listClients();
     },
     matter: async (ctx) => {
       return getMatter(ctx.arguments);
     },
-    matters: async (ctx) => {
-      return listMatters(ctx.arguments);
+    matters: async () => {
+      return listMatters();
     },
     clientMatter: async (ctx) => {
       return getClientMatter(ctx.arguments);
     },
-    clientMatters: async (ctx) => {
-      return listClientMatters(ctx.arguments);
+    clientMatters: async () => {
+      return listClientMatters();
     },
     label: async (ctx) => {
       return getLabel(ctx.arguments);
     },
-    labels: async (ctx) => {
-      return listLabels(ctx.arguments);
+    labels: async () => {
+      return listLabels();
     },
     companyAccessType: async (ctx) => {
       return getCompanyAccessType(ctx.arguments);
     },
-    matterFile: async (ctx) => {
-      return getMatterFile(ctx.arguments);
-    },
+
     file: async (ctx) => {
       return getFile(ctx.arguments);
+    },
+    files: async () => {
+      return listFiles();
+    },
+    matterFile: async (ctx) => {
+      return getMatterFile(ctx.arguments);
     },
     background: async (ctx) => {
       return getBackground(ctx.arguments);
     },
-    backgrounds: async (ctx) => {
-      return listBackgrounds(ctx.arguments);
+    backgrounds: async () => {
+      return listBackgrounds();
     },
     columnSettings: async (ctx) => {
       return listColumnSettingsByTable(ctx.arguments);
     },
     userColumnSettings: async (ctx) => {
       return getUserColumnSettings(ctx.arguments);
+    },
+    rfi: async (ctx) => {
+      return getRFI(ctx.arguments);
+    },
+    rfis: async () => {
+      return listRFIs();
     },
   },
 };

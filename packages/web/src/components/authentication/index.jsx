@@ -5,6 +5,7 @@ import {
   AmplifySignUp,
   AmplifySignIn,
   AmplifyForgotPassword,
+  AmplifyRequireNewPassword,
 } from "@aws-amplify/ui-react";
 import { I18n } from "aws-amplify";
 import {
@@ -54,6 +55,26 @@ const Authentication = () => {
 
   useEffect(() => {
     clearLocalStorage();
+    // const signupHost = document.getElementById("amplify-sign-up");
+    // const requireChangePasswordHost = document.getElementById(
+    //   "amplify-require-new-password"
+    // );
+
+    // const hintStyle = document.createElement("style");
+    // hintStyle.innerHTML = "#password-hint{white-space: pre-wrap !important;}";
+
+    // if (signupHost !== null) {
+    //   if (signupHost.shadowRoot !== null) {
+    //     signupHost.shadowRoot.appendChild(hintStyle);
+    //   }
+    // }
+
+    // if (requireChangePasswordHost !== null) {
+    //   if (requireChangePasswordHost.shadowRoot !== null) {
+    //     requireChangePasswordHost.shadowRoot.appendChild(hintStyle);
+    //   }
+    // }
+
     return onAuthUIStateChange((nextAuthState, authData) => {
       console.log(authState, nextAuthState);
       if (authState !== nextAuthState) {
@@ -66,7 +87,6 @@ const Authentication = () => {
 
       setAuthState(nextAuthState);
       setUser(authData);
-      
 
       if (prevAuthState === "confirmSignUp" && nextAuthState === "signedin") {
         history.push(AppRoutes.POSTREGISTRATION);
@@ -87,7 +107,7 @@ const Authentication = () => {
   }
 
   function clearLocalStorage() {
-    console.log('clearLocalStorage');
+    console.log("clearLocalStorage");
     localStorage.removeItem("userId");
     localStorage.removeItem("email");
     localStorage.removeItem("firstName");
@@ -108,7 +128,7 @@ const Authentication = () => {
       required: true,
       value: firstName,
       handleInputChange: (event) => {
-        let i = clean_up(event.target.value);
+        let i = event.target.value;
         setFirstName(i);
         event.target.value = i;
       },
@@ -154,6 +174,18 @@ const Authentication = () => {
       autoComplete: "off",
       placeholder: "",
       required: true,
+      hint: "Minimum of 8 characters, must include lowercase and uppercase characters, numerals and symbols",
+    },
+  ];
+
+  const requireNewPassword = [
+    {
+      type: "password",
+      label: "New Password",
+      autoComplete: "off",
+      placeholder: "Enter your new password",
+      required: true,
+      hint: "Minimum of 8 characters, must include lowercase and uppercase characters, numerals and symbols",
     },
   ];
 
@@ -245,6 +277,7 @@ const Authentication = () => {
               formFields={AuthFields.login}
             />
             <AmplifySignUp
+              id="amplify-sign-up"
               usernameAlias="email"
               slot="sign-up"
               formFields={signUpFields}
@@ -257,6 +290,14 @@ const Authentication = () => {
               formFields={AuthFields.forgotpassword}
               headerText="Forgot Password"
             />
+
+            {/* <AmplifyRequireNewPassword
+              id="amplify-require-new-password"
+              usernameAlias="email"
+              slot="require-new-password"
+              formFields={requireNewPassword}
+              headerText="Password Change Required"
+            /> */}
           </AmplifyAuthenticator>
         </div>
       </div>
