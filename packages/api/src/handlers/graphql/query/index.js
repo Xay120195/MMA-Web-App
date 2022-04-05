@@ -551,6 +551,28 @@ async function getUserColumnSettings(data) {
   return resp;
 }
 
+async function getRFI(data) {
+  try {
+    const param = {
+      TableName: "RFITable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -626,6 +648,10 @@ const resolvers = {
     userColumnSettings: async (ctx) => {
       return getUserColumnSettings(ctx.arguments);
     },
+    rfi: async (ctx) => {
+      return getRFI(ctx.arguments);
+    },
+    
   },
 };
 

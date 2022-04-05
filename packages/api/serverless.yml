@@ -168,6 +168,11 @@ custom:
         field: files
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: rfi
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: matterFileCreate
@@ -316,6 +321,11 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: backgroundFileTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: rfiCreate
         request: false
         response: false
       - dataSource: LambdaCompanyDS
