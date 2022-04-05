@@ -46,6 +46,7 @@ const ActionButtons = ({
   setNewWitness,
   newRow,
   newWitness,
+  setMaxLoading,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -80,6 +81,7 @@ const ActionButtons = ({
       });
 
       setalertMessage(`Successfully deleted`);
+      setMaxLoading(false);
 
       const newArr = Array(witness.length).fill(false);
       setCheckedState(newArr);
@@ -126,12 +128,10 @@ const ActionButtons = ({
     if (createBackgroundRow) {
       getBackground();
       setcheckAllState(false);
-
-      // const newArr = Array(witness.length).fill(false);
-      // setCheckedState = newArr;
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
+      setMaxLoading(false);
     }
   };
 
@@ -556,7 +556,7 @@ const ActionButtons = ({
             </>
           )}
 
-          <div className="px-2 py-0">
+          {/* <div className="px-2 py-0">
             <p className={"text-sm mt-3 font-medium float-right inline-block"}>
               <AiOutlineLeft
                 className={
@@ -578,7 +578,7 @@ const ActionButtons = ({
                 onClick={() => getPaginateItems("next")}
               />
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
       {showToast && (
