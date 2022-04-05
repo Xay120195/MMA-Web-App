@@ -40,6 +40,12 @@ const ActionButtons = ({
   getPaginateItems,
   selectRow,
   setSelectRow,
+  pasteButton,
+  setPasteButton,
+  setNewRow,
+  setNewWitness,
+  newRow,
+  newWitness,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -332,13 +338,16 @@ const ActionButtons = ({
   setWitness(witness);
 
   const handleCopyRow = () => {
+    setPasteButton(true);
     selectRow.map(async function (x) {
       const mCreateBackground = `
       mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
         backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
-          id
+          createdAt
           date
           description
+          id
+          order
         }
       }
   `;
@@ -351,17 +360,32 @@ const ActionButtons = ({
           description: x.details,
         },
       });
-      console.log(createBackgroundRow);
-      if (createBackgroundRow) {
-        getBackground();
-        setcheckAllState(false);
-        setSelectRow([]);
-        // const newArr = Array(witness.length).fill(false);
-        // setCheckedState = newArr;
-        setCheckedState(new Array(witness.length).fill(false));
-        setSelectedRowsBG([]);
-        setShowDeleteButton(false);
-      }
+
+      setNewRow((newRow) => [
+        ...newRow,
+        [
+          {
+            id: createBackgroundRow.data.backgroundCreate.id,
+            date: createBackgroundRow.data.backgroundCreate.date,
+            description: createBackgroundRow.data.backgroundCreate.description,
+            createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+            order: 0,
+          },
+        ],
+      ]);
+
+      setNewWitness(witness, [
+        ...witness,
+        {
+          id: createBackgroundRow.data.backgroundCreate.id,
+          date: createBackgroundRow.data.backgroundCreate.date,
+          description: createBackgroundRow.data.backgroundCreate.description,
+          createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+          order: 0,
+        },
+      ]);
+
+      // setCheckedState(new Array(witness.length).fill(false));
     });
   };
 
@@ -489,12 +513,12 @@ const ActionButtons = ({
           )}
           {showDeleteButton && (
             <>
-              {/* <button
+              <button
                 type="button"
                 onClick={handleCopyRow}
                 className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
               >
-                COPY {selectRow.length} ROW
+                {pasteButton ? "PASTE" : "COPY"} {selectRow.length} ROW
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -509,7 +533,7 @@ const ActionButtons = ({
                     d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
                   />
                 </svg>
-              </button> */}
+              </button>
               <button
                 type="button"
                 onClick={() => setshowRemoveFileModal(true)}

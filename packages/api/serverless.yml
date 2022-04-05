@@ -93,6 +93,11 @@ custom:
         field: user
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: users
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: userCreate
@@ -101,6 +106,11 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: userInvite
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: page
         request: false
         response: false
       - dataSource: LambdaQueryDS
@@ -116,6 +126,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: feature
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: features
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -146,6 +161,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: file
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: files
         request: false
         response: false
       - dataSource: LambdaMutationDS
