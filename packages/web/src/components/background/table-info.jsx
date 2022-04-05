@@ -72,6 +72,7 @@ const TableInfo = ({
   loading,
   setLoading,
   maxLoading,
+  sortByOrder,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -567,8 +568,6 @@ const TableInfo = ({
       setSrcIndex("");
     }, 4000);
   };
-
-  console.log(witness);
 
   const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));

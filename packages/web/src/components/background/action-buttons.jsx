@@ -124,6 +124,7 @@ const ActionButtons = ({
         description: "",
       },
     });
+    console.log(createBackgroundRow)
     if (createBackgroundRow) {
       getBackground();
       setcheckAllState(false);
