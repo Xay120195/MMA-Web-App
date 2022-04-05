@@ -191,6 +191,7 @@ type Query {
   labels: [Label]
   label(id: ID): Label
   rfi(id: ID): RFI
+  rfis:[RFI]
   backgrounds: [Background]
   background(id: ID): Background
   columnSettings(tableName: ViewTable): [ColumnSettings]

@@ -173,6 +173,11 @@ custom:
         field: rfi
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: rfis
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: matterFileCreate
