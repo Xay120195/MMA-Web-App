@@ -532,7 +532,7 @@ const ActionButtons = ({
             </>
           )}
 
-          <div className="px-2 py-0">
+          {/* <div className="px-2 py-0">
             <p className={"text-sm mt-3 font-medium float-right inline-block"}>
               <AiOutlineLeft
                 className={
@@ -554,7 +554,7 @@ const ActionButtons = ({
                 onClick={() => getPaginateItems("next")}
               />
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
       {showToast && (

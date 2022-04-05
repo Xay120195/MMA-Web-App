@@ -50,7 +50,7 @@ export default function Background() {
   const [pageTotal, setPageTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [pageIndex, setPageIndex] = useState(1);
-  const [nextToken, setNextToken] = useState("");
+  const [vNextToken, setVnextToken] = useState(null);
 
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
@@ -106,7 +106,7 @@ export default function Background() {
     query listBackground($id: ID, $limit: Int, $nextToken: String) {
       clientMatter(id: $id) {
         id
-        backgrounds (limit: $limit, $nextToken: String) {
+        backgrounds (limit: $limit, nextToken: $nextToken) {
           items {
             id
             description
@@ -141,10 +141,10 @@ export default function Background() {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: { id: matterId, limit: 22, nextToken: null },
+      variables: { id: matterId, limit: 8, nextToken: vNextToken },
     });
 
-    setNextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+    setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
     if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
@@ -157,8 +157,12 @@ export default function Background() {
         })
       );
 
-      setWitness(sortByOrder(result));
-      
+      if(witness !== null) {
+       // setWitness(...witness, result);
+       // setWitness([...witness, result]);
+       setWitness(result);
+      }
+
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);
@@ -189,6 +193,40 @@ export default function Background() {
       setFiles(mergeArrFiles);
     }
   };
+
+  const loadMoreBackground = async () => {
+    if(vNextToken !== null && witness.length > 0) {
+      let result = [];
+      const matterId = matter_id;
+
+      const backgroundOpt = await API.graphql({
+        query: qListBackground,
+        variables: { id: matterId, limit: 8, nextToken: vNextToken },
+      });
+
+      setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+
+      if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+        result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+          ({ id, description, date, createdAt, order }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+          })
+        );
+
+        if(witness !== "") {
+          setWitness(witness => witness.concat(result));
+        }
+
+      }
+
+    } else {
+      console.log("NO MORE!");
+    }
+  }
 
   const matt = matterList.find((i) => i.id === matter_id);
   const obj = { ...matt };
@@ -239,6 +277,8 @@ export default function Background() {
         }
         style={contentDiv}
       >
+        <p>{vNextToken}</p>
+        <button onClick={() => loadMoreBackground() }>Add Array</button>
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
@@ -341,6 +381,7 @@ export default function Background() {
         pageIndex={pageIndex}
         pageSize={pageSize}
         pageSizeConst={pageSizeConst}
+        loadMoreBackground={loadMoreBackground}
         // selectRow={selectRow}
         // setSelectRow={setSelectRow}
       />

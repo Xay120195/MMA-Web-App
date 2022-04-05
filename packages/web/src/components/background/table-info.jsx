@@ -62,6 +62,7 @@ const TableInfo = ({
   pageIndex,
   pageSize,
   pageSizeConst,
+  loadMoreBackground,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -516,13 +517,18 @@ const TableInfo = ({
   // };
 
   const handleOnDocumentBottom = useCallback(() => {
-    console.log('Reached bottom page');
+    console.log('Reached bottom page '+ Math.round(performance.now()));
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-    }, 2000);
+      loadMoreBackground();
+    }, 3000);
   });
-  useBottomScrollListener(handleOnDocumentBottom);
+  
+  useBottomScrollListener(handleOnDocumentBottom, {
+    offset: 0
+  });
+  
 
   return (
     <>
