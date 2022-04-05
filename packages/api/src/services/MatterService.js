@@ -82,6 +82,66 @@ export async function getMatterFile(data) {
   return resp;
 }
 
+export async function getMatterFiles(data) {
+  const { matterId, isDeleted = false, limit, nextToken } = data;
+
+  let resp = {};
+  try {
+    const param = {
+      TableName: "MatterFileTable",
+      IndexName: "byMatter",
+      KeyConditionExpression: "matterId = :matterId",
+      FilterExpression: "isDeleted = :isDeleted",
+      //ConsistentRead:true,
+      ScanIndexForward: false,
+      ExpressionAttributeValues: marshall({
+        ":matterId": matterId,
+        ":isDeleted": isDeleted,
+      }),
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      param.Limit = limit;
+    }
+
+    const cmd = new QueryCommand(param);
+    const request = await ddbClient.send(cmd);
+
+    const result = request.Items.map((d) => unmarshall(d));
+
+    // if (request && request.Count !== 0) {
+    //   result[0].nextToken = request.LastEvaluatedKey
+    //     ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
+    //         "base64"
+    //       )
+    //     : null;
+    // }
+
+    resp = {
+      items: request ? result : [],
+      nextToken: request.LastEvaluatedKey
+        ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
+            "base64"
+          )
+        : null,
+    };
+
+    console.log({ resp });
+    // resp = request ? result : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 export async function getFile(data) {
   let resp = {};
   try {

@@ -160,6 +160,11 @@ custom:
         response: false
       - dataSource: LambdaQueryDS
         type: Query
+        field: matterFiles
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
         field: file
         request: false
         response: false
