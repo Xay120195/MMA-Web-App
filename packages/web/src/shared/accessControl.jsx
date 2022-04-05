@@ -36,28 +36,36 @@ const AccessControl = async (pagename) => {
       userType: user_type,
     },
   });
-  //console.log(page_access);
+
   const page = page_access.data.pages.filter((f) => f.name === pagename);
 
-  var userAccess = page_access.data.companyAccessType[0].access;
-  userAccess = userAccess.find((p) => p.id === page[0].id);
+  if (page.length !== 0) {
+    var userAccess = page_access.data.companyAccessType[0].access;
 
-  if (userAccess !== undefined) {
-    const userAccessIDs = userAccess.features.map((f) => f.id);
+    userAccess = userAccess.find((p) => p.id === page[0].id);
 
-    var retainedPageNames = page[0].features.filter(
-      (f) => userAccessIDs.includes(f.id) && f
-    );
+    if (userAccess !== undefined) {
+      const userAccessIDs = userAccess.features.map((f) => f.id);
 
-    retainedPageNames = retainedPageNames.map((f) => f.name);
+      var retainedPageNames = page[0].features.filter(
+        (f) => userAccessIDs.includes(f.id) && f
+      );
 
-    result = {
-      status: "allow",
-      data: {
-        name: page[0].name,
-        features: retainedPageNames,
-      },
-    };
+      retainedPageNames = retainedPageNames.map((f) => f.name);
+
+      result = {
+        status: "allow",
+        data: {
+          name: page[0].name,
+          features: retainedPageNames,
+        },
+      };
+    } else {
+      result = {
+        status: "restrict",
+        message: `${user_type} has no access to ${pagename} page`,
+      };
+    }
   } else {
     result = {
       status: "restrict",
