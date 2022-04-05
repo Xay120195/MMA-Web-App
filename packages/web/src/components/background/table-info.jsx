@@ -780,12 +780,12 @@ const TableInfo = ({
                                             </div>
                                           )} */}
                                           {!activateButton ? (
-                                            <Link
+                                            <button
                                               className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                              to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
+                                              onClick={() => window.location=`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
                                             >
                                               File Bucket +
-                                            </Link>
+                                            </button>
                                           ) : (
                                             <span
                                               className={
