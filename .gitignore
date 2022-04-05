@@ -3,5 +3,3 @@ yarn-error.log
 .DS_Store
 packages/web/.vscode/settings.json
 packages/web/.env
-packages/api/AWSCLIV2.pkg
-pnpm-lock.yaml
