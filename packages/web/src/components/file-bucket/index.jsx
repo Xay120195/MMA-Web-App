@@ -646,6 +646,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
+            getMatterFiles();
           }, 1000);
         }, 500);
       // }, 1000);
@@ -659,13 +660,13 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       };
       await updateMatterFileName(id, data);
       // setTimeout(() => {
-        //getMatterFiles();
         setTimeout(() => {
           // setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
+            getMatterFiles();
           }, 1000);
         }, 500);
       // }, 1000);
