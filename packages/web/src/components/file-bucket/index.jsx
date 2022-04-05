@@ -530,6 +530,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     tempArr[index] = data;
   }
 
+
+
+  //description saving
   const handleDetailsContent = (e, details, id) => {
     if (!descAlert) {
       setTextDetails(!details ? "" : details);
@@ -540,7 +543,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   };
 
-  //description saving
   const handleOnChangeDetails = (event) => {
     setTextDetails(event.currentTarget.textContent);
   };
@@ -612,7 +614,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   //filename saving
   const handleNameContent = (e, name, id) => {
     if (!fileAlert) {
-      setTextName(name);
+      setTextName(!name ? "" : name);
       setFileId(id);
       setFileAlert("");
     } else {
@@ -627,44 +629,46 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   const handleSaveName = async (e, name, details, id, labels, index) => {
     if (textName.length <= 0) {
       setFileAlert("File name can't be empty");
-    } else if (textName === name) {
+    } 
+    else if (textName === name) {
       setFileAlert("");
-      setResultMessage(`Saving in progress..`);
-      setShowToast(true);
+      // setResultMessage(`Saving in progress..`);
+      // setShowToast(true);
       const data = {
         name: name
       };
       await updateMatterFileName(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      // setTimeout(() => {
+      //  getMatterFiles();
         setTimeout(() => {
-          setTextName("");
+         //setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
           }, 1000);
-        }, 1000);
-      }, 1000);
-    } else {
+        }, 500);
+      // }, 1000);
+    } 
+    else {
       setFileAlert("");
-      setResultMessage(`Saving in progress..`);
-      setShowToast(true);
+      // setResultMessage(`Saving in progress..`);
+      // setShowToast(true);
       const data = {
         name: textName
       };
       await updateMatterFileName(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      // setTimeout(() => {
+        //getMatterFiles();
         setTimeout(() => {
-          setTextName("");
+          // setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
           }, 1000);
-        }, 1000);
-      }, 1000);
+        }, 500);
+      // }, 1000);
     }
   };
 
@@ -1403,7 +1407,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                                   "rgb(204, 204, 204, 0.5)",
                                                 outlineWidth: "thin",
                                               }}
-                                              suppressContentEditableWarning
+                                              suppressContentEditableWarning={
+                                                true
+                                              }
                                               onClick={(event) =>
                                                 handleNameContent(
                                                   event,
@@ -1427,6 +1433,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
                                               contentEditable={
                                                 updateProgess ? false : true
                                               }
+                                              
+                                          
                                             >
                                               {data.name}
                                             </span>

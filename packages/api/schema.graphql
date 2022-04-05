@@ -159,8 +159,11 @@ type Query {
   company(id: String): Company
   companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
   user(id: String): User
+  users: [User]
+  page(id: ID): Page
   pages: [Page]
   feature(id: String): Feature
+  features: [Feature]
   clients: [Client]
   client(id: ID): Client
   clientMatters: [ClientMatter]
@@ -174,6 +177,7 @@ type Query {
     nextToken: String
   ): [File]
   file(id: ID): File
+  files: [File]
   labels: [Label]
   label(id: ID): Label
   backgrounds: [Background]

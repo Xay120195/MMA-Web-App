@@ -1,4 +1,4 @@
-const { PutItemCommand, GetItemCommand } = require("@aws-sdk/client-dynamodb");
+const { PutItemCommand, GetItemCommand, ScanCommand } = require("@aws-sdk/client-dynamodb");
 import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import ddbClient from "../lib/dynamodb-client";
@@ -24,6 +24,28 @@ export async function getUser(data) {
       error: e.message,
       errorStack: e.stack,
     };
+  }
+
+  return resp;
+}
+
+export async function listUsers() {
+  let resp = {};
+  try {
+    const param = {
+      TableName: "UserTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
   }
 
   return resp;
