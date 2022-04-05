@@ -929,14 +929,17 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading ? (
-            <div className="flex justify-center items-center mt-5">
-              <p>All data has been loaded.</p>
-            </div>
-          ) : (
-            <div className="flex justify-center items-center mt-5">
-              <img src={imgLoading} width={50} height={100} />
-            </div>
-          )}
+              <div className="flex justify-center items-center mt-5">
+                <p>All data has been loaded.</p>
+              </div>
+            ) : witness.length >= 25 ? (
+              <div className="flex justify-center items-center mt-5">
+                <img src={imgLoading} width={50} height={100} />
+              </div>
+            ) : (
+              <span></span>
+            )
+          }
 
           {!maxLoading && loading ? (
             <span className="grid"></span>
