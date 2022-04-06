@@ -368,6 +368,11 @@ custom:
         field: backgrounds
         request: false
         response: false
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: rfis
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: columnSettings

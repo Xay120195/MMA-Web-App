@@ -126,7 +126,7 @@ type ClientMatter {
   client: Client
   backgrounds(limit: Int, nextToken: String): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
-  # rfi(limit: Int, nextToken: String): ClientMatterRFIConn
+  rfis(limit: Int, nextToken: String): ClientMatterRFIConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -406,10 +406,10 @@ type BackgroundFileConn {
   # nextToken: String
 }
 
-# type ClientMatterRFIConn {
-#   items: [RFI]
-#   nextToken: String
-# }
+type ClientMatterRFIConn {
+  items: [RFI]
+  nextToken: String
+}
 
 type MatterFileConn {
   items: [File]
