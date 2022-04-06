@@ -33,33 +33,42 @@ async function listCompanyUsers(ctx) {
       marshall({ id: f.userId })
     );
 
-    const usersParam = {
-      RequestItems: {
-        UserTable: {
-          Keys: userIds,
+    if (userIds.length !== 0) {
+      const usersParam = {
+        RequestItems: {
+          UserTable: {
+            Keys: userIds,
+          },
         },
-      },
-    };
+      };
 
-    const usersCmd = new BatchGetItemCommand(usersParam);
-    const usersResult = await client.send(usersCmd);
+      const usersCmd = new BatchGetItemCommand(usersParam);
+      const usersResult = await client.send(usersCmd);
 
-    const objUsers = usersResult.Responses.UserTable.map((i) => unmarshall(i));
-    const objCompUsers = compUsersResult.Items.map((i) => unmarshall(i));
+      const objUsers = usersResult.Responses.UserTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCompUsers = compUsersResult.Items.map((i) => unmarshall(i));
 
-    const response = objCompUsers.map((item) => {
-      const filterUser = objUsers.find((u) => u.id === item.userId);
-      return { ...item, ...filterUser };
-    });
+      const response = objCompUsers.map((item) => {
+        const filterUser = objUsers.find((u) => u.id === item.userId);
+        return { ...item, ...filterUser };
+      });
 
-    return {
-      items: response,
-      nextToken: compUsersResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(compUsersResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
-    };
+      return {
+        items: response,
+        nextToken: compUsersResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(compUsersResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,
@@ -98,35 +107,42 @@ async function listCompanyMatters(ctx) {
       (f) => marshall({ id: f.matterId })
     );
 
-    const mattersParam = {
-      RequestItems: {
-        MatterTable: {
-          Keys: matterIds,
+    if (matterIds.length !== 0) {
+      const mattersParam = {
+        RequestItems: {
+          MatterTable: {
+            Keys: matterIds,
+          },
         },
-      },
-    };
+      };
 
-    const mattersCmd = new BatchGetItemCommand(mattersParam);
-    const mattersResult = await client.send(mattersCmd);
+      const mattersCmd = new BatchGetItemCommand(mattersParam);
+      const mattersResult = await client.send(mattersCmd);
 
-    const objMatters = mattersResult.Responses.MatterTable.map((i) =>
-      unmarshall(i)
-    );
-    const objCompMatters = compMattersResult.Items.map((i) => unmarshall(i));
+      const objMatters = mattersResult.Responses.MatterTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCompMatters = compMattersResult.Items.map((i) => unmarshall(i));
 
-    const response = objCompMatters.map((item) => {
-      const filterMatter = objMatters.find((u) => u.id === item.matterId);
-      return { ...item, ...filterMatter };
-    });
+      const response = objCompMatters.map((item) => {
+        const filterMatter = objMatters.find((u) => u.id === item.matterId);
+        return { ...item, ...filterMatter };
+      });
 
-    return {
-      items: response,
-      nextToken: compMattersResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(compMattersResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
-    };
+      return {
+        items: response,
+        nextToken: compMattersResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(compMattersResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,
@@ -165,35 +181,42 @@ async function listCompanyClients(ctx) {
       (f) => marshall({ id: f.clientId })
     );
 
-    const clientsParam = {
-      RequestItems: {
-        ClientsTable: {
-          Keys: clientIds,
+    if (clientIds.length !== 0) {
+      const clientsParam = {
+        RequestItems: {
+          ClientsTable: {
+            Keys: clientIds,
+          },
         },
-      },
-    };
+      };
 
-    const clientsCmd = new BatchGetItemCommand(clientsParam);
-    const clientsResult = await client.send(clientsCmd);
+      const clientsCmd = new BatchGetItemCommand(clientsParam);
+      const clientsResult = await client.send(clientsCmd);
 
-    const objClients = clientsResult.Responses.ClientsTable.map((i) =>
-      unmarshall(i)
-    );
-    const objCompClients = compClientsResult.Items.map((i) => unmarshall(i));
+      const objClients = clientsResult.Responses.ClientsTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCompClients = compClientsResult.Items.map((i) => unmarshall(i));
 
-    const response = objCompClients.map((item) => {
-      const filterClient = objClients.find((u) => u.id === item.clientId);
-      return { ...item, ...filterClient };
-    });
+      const response = objCompClients.map((item) => {
+        const filterClient = objClients.find((u) => u.id === item.clientId);
+        return { ...item, ...filterClient };
+      });
 
-    return {
-      items: response,
-      nextToken: compClientsResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(compClientsResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
-    };
+      return {
+        items: response,
+        nextToken: compClientsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(compClientsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,
@@ -232,37 +255,44 @@ async function listCompanyClientMatters(ctx) {
       (f) => marshall({ id: f.clientMatterId })
     );
 
-    const clientmattersParam = {
-      RequestItems: {
-        ClientMatterTable: {
-          Keys: clientMatterIds,
+    if (clientMatterIds !== 0) {
+      const clientmattersParam = {
+        RequestItems: {
+          ClientMatterTable: {
+            Keys: clientMatterIds,
+          },
         },
-      },
-    };
+      };
 
-    const cmCmd = new BatchGetItemCommand(clientmattersParam);
-    const cmResult = await client.send(cmCmd);
+      const cmCmd = new BatchGetItemCommand(clientmattersParam);
+      const cmResult = await client.send(cmCmd);
 
-    const objCM = cmResult.Responses.ClientMatterTable.map((i) =>
-      unmarshall(i)
-    );
-    const objCompCM = compCMResult.Items.map((i) => unmarshall(i));
-
-    const response = objCompCM.map((item) => {
-      const filterClientMatter = objCM.find(
-        (u) => u.id === item.clientMatterId
+      const objCM = cmResult.Responses.ClientMatterTable.map((i) =>
+        unmarshall(i)
       );
-      return { ...item, ...filterClientMatter };
-    });
+      const objCompCM = compCMResult.Items.map((i) => unmarshall(i));
 
-    return {
-      items: response,
-      nextToken: compCMResult.LastEvaluatedKey
-        ? Buffer.from(JSON.stringify(compCMResult.LastEvaluatedKey)).toString(
-            "base64"
-          )
-        : null,
-    };
+      const response = objCompCM.map((item) => {
+        const filterClientMatter = objCM.find(
+          (u) => u.id === item.clientMatterId
+        );
+        return { ...item, ...filterClientMatter };
+      });
+
+      return {
+        items: response,
+        nextToken: compCMResult.LastEvaluatedKey
+          ? Buffer.from(JSON.stringify(compCMResult.LastEvaluatedKey)).toString(
+              "base64"
+            )
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,

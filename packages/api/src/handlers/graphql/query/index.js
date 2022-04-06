@@ -445,6 +445,8 @@ async function getBackground(data) {
       });
 
       backgrounds.files = { items: extractFiles };
+    } else {
+      backgrounds.files = { items: [] };
     }
 
     resp = backgrounds ? backgrounds : {};

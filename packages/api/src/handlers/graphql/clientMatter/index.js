@@ -33,35 +33,42 @@ async function listClientMatterLabels(ctx) {
       marshall({ id: f.labelId })
     );
 
-    const labelsParam = {
-      RequestItems: {
-        LabelsTable: {
-          Keys: labelIds,
+    if (labelIds.length !== 0) {
+      const labelsParam = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
         },
-      },
-    };
+      };
 
-    const labelsCommand = new BatchGetItemCommand(labelsParam);
-    const labelsResult = await client.send(labelsCommand);
+      const labelsCommand = new BatchGetItemCommand(labelsParam);
+      const labelsResult = await client.send(labelsCommand);
 
-    const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
-      unmarshall(i)
-    );
-    const objCMLabels = cmLabelsResult.Items.map((i) => unmarshall(i));
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCMLabels = cmLabelsResult.Items.map((i) => unmarshall(i));
 
-    const response = objCMLabels.map((item) => {
-      const filterLabel = objLabels.find((u) => u.id === item.labelId);
-      return { ...item, ...filterLabel };
-    });
+      const response = objCMLabels.map((item) => {
+        const filterLabel = objLabels.find((u) => u.id === item.labelId);
+        return { ...item, ...filterLabel };
+      });
 
-    return {
-      items: response,
-      nextToken: cmLabelsResult.LastEvaluatedKey
-        ? Buffer.from(JSON.stringify(cmLabelsResult.LastEvaluatedKey)).toString(
-            "base64"
-          )
-        : null,
-    };
+      return {
+        items: response,
+        nextToken: cmLabelsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(cmLabelsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,
@@ -101,39 +108,46 @@ async function listCompanyMatterBackgrounds(ctx) {
       unmarshall(i)
     ).map((f) => marshall({ id: f.backgroundId }));
 
-    const backgroundsParam = {
-      RequestItems: {
-        BackgroundsTable: {
-          Keys: backgroundIds,
+    if (backgroundIds.length !== 0) {
+      const backgroundsParam = {
+        RequestItems: {
+          BackgroundsTable: {
+            Keys: backgroundIds,
+          },
         },
-      },
-    };
+      };
 
-    const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
-    const backgroundsResult = await client.send(backgroundsCommand);
+      const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
+      const backgroundsResult = await client.send(backgroundsCommand);
 
-    const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
-      (i) => unmarshall(i)
-    );
-    const objCMBackgrounds = cmBackgroundsResult.Items.map((i) =>
-      unmarshall(i)
-    );
-
-    const response = objCMBackgrounds.map((item) => {
-      const filterBackground = objBackgrounds.find(
-        (u) => u.id === item.backgroundId
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
       );
-      return { ...item, ...filterBackground };
-    });
+      const objCMBackgrounds = cmBackgroundsResult.Items.map((i) =>
+        unmarshall(i)
+      );
 
-    return {
-      items: response,
-      nextToken: cmBackgroundsResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(cmBackgroundsResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
-    };
+      const response = objCMBackgrounds.map((item) => {
+        const filterBackground = objBackgrounds.find(
+          (u) => u.id === item.backgroundId
+        );
+        return { ...item, ...filterBackground };
+      });
+
+      return {
+        items: response,
+        nextToken: cmBackgroundsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(cmBackgroundsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,
