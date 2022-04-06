@@ -452,6 +452,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       const matterFilesList = files.data.matterFiles.items;
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(matterFilesList);
+      getMatterDetails();
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -474,7 +475,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
         setMatterFiles(matterFiles => matterFiles.concat(sortByOrder(matterFilesList)));
-        getMatterDetails();
         setMaxLoading(false);
         console.log(matterFilesList);
       });
