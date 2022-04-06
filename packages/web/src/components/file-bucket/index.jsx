@@ -629,8 +629,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         details: e.target.innerHTML
       };
       await updateMatterFileDesc(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      //   getMatterFiles();
         setTimeout(() => {
           setResultMessage(`Successfully updated `);
           setShowToast(true);
@@ -638,15 +637,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             setShowToast(false);
           }, 1000);
         }, 1000);
-      }, 1000);
     } else {
       setDesAlert("");
       const data = {
         details: e.target.innerHTML
       };
       await updateMatterFileDesc(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      //   getMatterFiles();
         setTimeout(() => {
           setResultMessage(`Successfully updated `);
           setShowToast(true);
@@ -654,7 +651,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             setShowToast(false);
           }, 1000);
         }, 1000);
-      }, 1000);
+      // }, 1000);
     }
   };
 
@@ -703,8 +700,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         name: name
       };
       await updateMatterFileName(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      //   getMatterFiles();
         setTimeout(() => {
           setResultMessage(`Successfully updated `);
           setShowToast(true);
@@ -712,7 +708,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             setShowToast(false);
           }, 1000);
         }, 1000);
-      }, 1000);
     } 
     else {
       setFileAlert("");
@@ -720,8 +715,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         name: textName
       };
       await updateMatterFileName(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      //   getMatterFiles();
         setTimeout(() => {
           setResultMessage(`Successfully updated `);
           setShowToast(true);
@@ -729,7 +723,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             setShowToast(false);
           }, 1000);
         }, 1000);
-      }, 1000);
     }
   };
 

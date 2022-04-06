@@ -486,6 +486,7 @@ async function getClientMatter(data) {
 }
 
 async function getUserColumnSettings(data) {
+  console.log("getUserColumnSettings()");
   const { userId, tableName } = data;
 
   let resp = {},
@@ -545,7 +546,9 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    resp = Object.keys(result).length !== 0 && result !== null ? result : [];
+    console.log(result);
+    resp = (Object.keys(result).length !== 0 && result !== null && result !== {}) ? result : [];
+    console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
