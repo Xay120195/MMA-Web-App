@@ -596,19 +596,20 @@ const TableInfo = ({
               ) : (
                 <>
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="relative min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50"
+                      >
                         <tr>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             No
                           </th>
                           {checkDate && (
                             <th
                               scope="col"
-                              className="px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Date
                               <img
@@ -623,7 +624,7 @@ const TableInfo = ({
                           {checkDesc && (
                             <th
                               scope="col"
-                              className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Description of Background
                             </th>
@@ -631,7 +632,7 @@ const TableInfo = ({
                           {checkDocu && (
                             <th
                               scope="col"
-                              className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Document
                             </th>
@@ -646,7 +647,7 @@ const TableInfo = ({
                             className="bg-white divide-y divide-gray-200"
                           >
                             {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
-                            {witness.map((item, index) => (
+                            {sortByOrder(witness).map((item, index) => (
                               <>
                                 <Draggable
                                   key={item.id}

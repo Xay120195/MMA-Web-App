@@ -124,9 +124,17 @@ const ActionButtons = ({
         description: "",
       },
     });
-    console.log(createBackgroundRow)
+
     if (createBackgroundRow) {
-      getBackground();
+      const result = ({
+        createdAt: dateToday,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        description: "",
+        date: dateToday,
+        order: 0,
+      });
+
+      setWitness((witness) => witness.concat(result));
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
