@@ -164,8 +164,6 @@ export default function Background() {
       );
 
       if (witness !== null) {
-        // setWitness(...witness, result);
-        // setWitness([...witness, result]);
         setWitness(result);
         setMaxLoading(false);
       }
@@ -267,7 +265,7 @@ export default function Background() {
         setFiles(mergeArrFiles);
       }
     } else {
-      console.log("NO MORE!");
+      console.log("Last Result!");
       setMaxLoading(true);
     }
   };
@@ -449,6 +447,7 @@ export default function Background() {
         setLoading={setLoading}
         setMaxLoading={setMaxLoading}
         maxLoading={maxLoading}
+        sortByOrder={sortByOrder}
       />
     </>
   );
