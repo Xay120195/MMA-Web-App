@@ -280,6 +280,28 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 `;
 
+const mPaginationbyItems = `
+query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit) {
+    items {
+      id
+      name
+      details
+      labels {
+        items {
+          id
+          name
+        }
+      }
+      createdAt
+      order
+      type
+    }
+    nextToken
+  }
+}
+`;
+
   async function tagBackgroundFile() {
     let arrFiles = [];
     arrFiles = selectedRows.map(({ id }) => ({
@@ -417,7 +439,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   let getMatterFiles = async () => {
     const params = {
-      query: mGetPaginateItems,
+      query: mPaginationbyItems,
       variables: {
         matterId: matter_id,
         isDeleted: false,
@@ -427,15 +449,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     };
 
     await API.graphql(params).then((files) => {
-      const matterFilesList = files.data.matterFile;
-
-      for (let i = 0; i < matterFilesList.length; i++) {
-        if (matterFilesList[i].nextToken !== null) {
-          setVnextToken(matterFilesList[i].nextToken);
-        }
-      }
-
+      const matterFilesList = files.data.matterFiles.items;
+      setVnextToken(files.data.matterFiles.nextToken);
       setFiles(matterFilesList);
+      getMatterDetails();
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -444,7 +461,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
       const params = {
-        query: mGetPaginateItems,
+        query: mPaginationbyItems,
         variables: {
           matterId: matter_id,
           isDeleted: false,
@@ -454,23 +471,10 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       };
 
       await API.graphql(params).then((files) => {
-        const matterFilesList = files.data.matterFile;
+        const matterFilesList = files.data.matterFiles.items;
         setFiles(matterFilesList);
-
-        const ObjResult =  matterFilesList.reduce((accumulator, items) => (accumulator||items.nextToken !== null), false);
-
-        if(ObjResult) {
-          for (let i = 0; i < matterFilesList.length; i++) {
-            if (matterFilesList[i].nextToken !== null) {
-                setVnextToken(matterFilesList[i].nextToken);
-            }
-          }
-        } else {
-          setVnextToken(null);
-        }
-
+        setVnextToken(files.data.matterFiles.nextToken);
         setMatterFiles(matterFiles => matterFiles.concat(sortByOrder(matterFilesList)));
-        getMatterDetails();
         setMaxLoading(false);
         console.log(matterFilesList);
       });

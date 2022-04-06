@@ -186,12 +186,18 @@ type Query {
     limit: Int
     nextToken: String
   ): [File]
+  matterFiles(
+    matterId: ID
+    isDeleted: Boolean
+    limit: Int
+    nextToken: String
+  ): MatterFileConn
   file(id: ID): File
   files: [File]
   labels: [Label]
   label(id: ID): Label
   rfi(id: ID): RFI
-  rfis:[RFI]
+  rfis: [RFI]
   backgrounds: [Background]
   background(id: ID): Background
   columnSettings(tableName: ViewTable): [ColumnSettings]
@@ -404,3 +410,8 @@ type BackgroundFileConn {
 #   items: [RFI]
 #   nextToken: String
 # }
+
+type MatterFileConn {
+  items: [File]
+  nextToken: String
+}

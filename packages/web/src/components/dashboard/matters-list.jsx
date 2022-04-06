@@ -27,7 +27,7 @@ export function ClientMatters({}) {
       {view === "grid" ? (
         <>
           {loading ? (
-            <span>loading datas</span>
+            <span>Please wait...</span>
           ) : clientMatter.length <= 0 ? (
             <span>No results founds</span>
           ) : (
@@ -124,7 +124,7 @@ export function ClientMatters({}) {
       ) : (
         <>
           {loading ? (
-            <span>loading datas</span>
+            <span>Please wait...</span>
           ) : clientMatter.length <= 0 ? (
             <span>No results found</span>
           ) : (
