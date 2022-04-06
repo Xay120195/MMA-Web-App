@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import { useParams } from "react-router-dom";
 import BreadCrumb from "../breadcrumb/breadcrumb";
@@ -30,7 +30,7 @@ export default function Background() {
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [selectRow, setSelectRow] = useState([]);
   const [newRow, setNewRow] = useState([]);
-  const [newWitness, setNewWitness] = useState([]);
+  const newWitness = useRef();
 
   const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
@@ -163,11 +163,9 @@ export default function Background() {
         })
       );
 
-      if(witness !== null) {
-       // setWitness(...witness, result);
-       // setWitness([...witness, result]);
-       setWitness(result);
-       setMaxLoading(false);
+      if (witness !== null) {
+        setWitness(result);
+        setMaxLoading(false);
       }
 
       setPageTotal(result.length);
@@ -204,12 +202,12 @@ export default function Background() {
   const goToBottom = () => {
     window.scrollTo({
       bottom: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   };
 
   const loadMoreBackground = async () => {
-    if(vNextToken !== null && !loading) {
+    if (vNextToken !== null && !loading) {
       setLoading(true);
       let result = [];
       const matterId = matter_id;
@@ -232,12 +230,12 @@ export default function Background() {
           })
         );
 
-        if(witness !== "") {
+        if (witness !== "") {
           goToBottom();
           setTimeout(() => {
             setLoading(false);
             setMaxLoading(false);
-            setWitness(witness => witness.concat(result));
+            setWitness((witness) => witness.concat(result));
           }, 1500);
         }
 
@@ -267,11 +265,10 @@ export default function Background() {
         setFiles(mergeArrFiles);
       }
     } else {
-      console.log("NO MORE!");
+      console.log("Last Result!");
       setMaxLoading(true);
     }
-  }
-
+  };
 
   const matt = matterList.find((i) => i.id === matter_id);
   const obj = { ...matt };
@@ -294,7 +291,9 @@ export default function Background() {
             new Date(b.createdAt) - new Date(a.createdAt)
         );
       } else {
-        sort = arr.sort((a, b) => a.order - b.order);
+        sort = arr.sort(
+          (a, b) => a.order - b.order || b.createdAt - a.createdAt
+        );
       }
     }
     return sort;
@@ -380,7 +379,6 @@ export default function Background() {
                 setSrcIndex={setSrcIndex}
                 srcIndex={srcIndex}
                 setNewRow={setNewRow}
-                setNewWitness={setNewWitness}
                 newRow={newRow}
                 newWitness={newWitness}
                 setMaxLoading={setMaxLoading}
@@ -445,11 +443,11 @@ export default function Background() {
         newRow={newRow}
         setNewRow={setNewRow}
         newWitness={newWitness}
-        setNewWitness={setNewWitness}
         loading={loading}
         setLoading={setLoading}
         setMaxLoading={setMaxLoading}
         maxLoading={maxLoading}
+        sortByOrder={sortByOrder}
       />
     </>
   );

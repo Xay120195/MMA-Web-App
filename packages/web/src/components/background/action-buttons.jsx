@@ -43,7 +43,6 @@ const ActionButtons = ({
   pasteButton,
   setPasteButton,
   setNewRow,
-  setNewWitness,
   newRow,
   newWitness,
   setMaxLoading,
@@ -125,6 +124,7 @@ const ActionButtons = ({
         description: "",
       },
     });
+    console.log(createBackgroundRow)
     if (createBackgroundRow) {
       getBackground();
       setcheckAllState(false);
@@ -360,31 +360,27 @@ const ActionButtons = ({
           description: x.details,
         },
       });
-
-      setNewRow((newRow) => [
-        ...newRow,
-        [
-          {
-            id: createBackgroundRow.data.backgroundCreate.id,
-            date: createBackgroundRow.data.backgroundCreate.date,
-            description: createBackgroundRow.data.backgroundCreate.description,
-            createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-            order: 0,
-          },
-        ],
-      ]);
-
-      setNewWitness(witness, [
-        ...witness,
-        {
+      if (createBackgroundRow) {
+        const xs = witness;
+        xs.push({
           id: createBackgroundRow.data.backgroundCreate.id,
           date: createBackgroundRow.data.backgroundCreate.date,
           description: createBackgroundRow.data.backgroundCreate.description,
           createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
           order: 0,
-        },
-      ]);
+        });
+        newWitness.current = xs;
+      }
 
+      let x2 = newRow;
+      x2.push({
+        id: createBackgroundRow.data.backgroundCreate.id,
+        date: createBackgroundRow.data.backgroundCreate.date,
+        description: createBackgroundRow.data.backgroundCreate.description,
+        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+        order: 0,
+      });
+      setNewRow(x2);
       // setCheckedState(new Array(witness.length).fill(false));
     });
   };
@@ -513,7 +509,7 @@ const ActionButtons = ({
           )}
           {showDeleteButton && (
             <>
-              <button
+              {/* <button
                 type="button"
                 onClick={handleCopyRow}
                 className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
@@ -533,7 +529,7 @@ const ActionButtons = ({
                     d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
                   />
                 </svg>
-              </button>
+              </button> */}
               <button
                 type="button"
                 onClick={() => setshowRemoveFileModal(true)}
