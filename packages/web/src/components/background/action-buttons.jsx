@@ -134,12 +134,17 @@ const ActionButtons = ({
         order: 0,
       };
 
-      setWitness((witness) => witness.concat(result));
+      console.log(result);
+
+      witness.splice(0, 0, result);
+
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
       setMaxLoading(false);
+
+      setWitness(witness);
     }
   };
 
