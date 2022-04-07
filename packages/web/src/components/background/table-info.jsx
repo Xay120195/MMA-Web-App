@@ -121,6 +121,7 @@ const TableInfo = ({
       x.push({ id: id, date: date, details: details });
       setSelectRow(x);
       setSrcIndex(position);
+      setShowDeleteButton(true);
     }
     if (checkedId) {
       var x = selectRow.filter(function (sel) {
@@ -520,53 +521,53 @@ const TableInfo = ({
   };
 
   const handlePasteRow = (targetIndex) => {
-    let newList = newWitness.current;
+    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
-    let result = newlist.filter(function (item) {
-      return newRow.indexOf(item.id) != -1;
-    });
+    storedItemRows.map(async function (x) {
+      const mCreateBackground = `
+          mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
+            backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+              createdAt
+              date
+              description
+              id
+              order
+            }
+          }
+      `;
 
-    setSelectRow(result);
-
-    const [newlist] = [...newList];
-
-    newList.splice(targetIndex, 0, newlist);
-
-    setPasteButton(false);
-    setShowDeleteButton(false);
-    const res = newList.map(myFunction);
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
-    }
-
-    res.map(async function (x) {
-      const mUpdateBackgroundOrder = `
-    mutation updateBackground($id: ID, $order: Int) {
-      backgroundUpdate(id: $id, order: $order) {
-        id
-        order
-      }
-    }`;
-      await API.graphql({
-        query: mUpdateBackgroundOrder,
+      const createBackgroundRow = await API.graphql({
+        query: mCreateBackground,
         variables: {
-          id: x.id,
-          order: x.order,
+          clientMatterId: matterId,
+          date: new Date(x.date).toISOString(),
+          description: x.details,
         },
       });
+
+      const xd = newRow;
+      xd.push({
+        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+        date: createBackgroundRow.data.backgroundCreate.date,
+        description: createBackgroundRow.data.backgroundCreate.description,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        order: 0,
+      });
+      setSelectRow(newRow);
+      newWitness.current = witness;
+      const [newlist] = [...newRow];
+      witness.splice(targetIndex, 0, newlist);
+      setWitness(newWitness.current);
+      setShowDeleteButton(false);
+      setPasteButton(false);
+      setTimeout(() => {
+        setSelectRow([]);
+        setNewRow([]);
+        setSrcIndex("");
+
+        localStorage.removeItem("selectedRows");
+      }, 10000);
     });
-    getBackground();
-
-    setTimeout(() => {
-      setSelectRow([]);
-
-      setNewRow([]);
-      setSrcIndex("");
-    }, 4000);
   };
 
   const handleBottomScroll = useCallback(() => {
@@ -597,8 +598,7 @@ const TableInfo = ({
                 <>
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="relative min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50"
-                      >
+                      <thead className="bg-gray-50">
                         <tr>
                           <th
                             scope="col"
@@ -656,6 +656,11 @@ const TableInfo = ({
                                 >
                                   {(provider, snapshot) => (
                                     <tr
+                                      className={
+                                        selectRow.find(
+                                          (x) => x.id === item.id
+                                        ) && "bg-green-300"
+                                      }
                                       key={item.id}
                                       index={index}
                                       {...provider.draggableProps}
@@ -773,20 +778,29 @@ const TableInfo = ({
                                           {...provider.dragHandleProps}
                                           className="py-2 px-3 w-80 text-sm text-gray-500"
                                         >
-                                          {/* {selectRow.find(
+                                          {selectRow.find(
                                             (x) => x.id === item.id
                                           ) && (
                                             <div class="separator">
                                               ROW SELECTED
                                             </div>
-                                          )} */}
+                                          )}
                                           {!activateButton ? (
-                                            <button
-                                              className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                              onClick={() => window.location=`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
-                                            >
-                                              File Bucket +
-                                            </button>
+                                            !activateButton &&
+                                            selectRow.find(
+                                              (x) => x.id === item.id
+                                            ) ? (
+                                              <button></button>
+                                            ) : (
+                                              <button
+                                                className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                onClick={() =>
+                                                  (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`)
+                                                }
+                                              >
+                                                File Bucket +
+                                              </button>
+                                            )
                                           ) : (
                                             <span
                                               className={
@@ -897,7 +911,7 @@ const TableInfo = ({
                                     </tr>
                                   )}
                                 </Draggable>
-                                {pasteButton && (
+                                {pasteButton && selectRow.length >= 0 && (
                                   <tr
                                     style={{
                                       border: "rgb(0, 204, 0) 2px dashed",
@@ -929,17 +943,16 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading ? (
-              <div className="flex justify-center items-center mt-5">
-                <p>All data has been loaded.</p>
-              </div>
-            ) : witness.length >= 25 ? (
-              <div className="flex justify-center items-center mt-5">
-                <img src={imgLoading} width={50} height={100} />
-              </div>
-            ) : (
-              <span></span>
-            )
-          }
+            <div className="flex justify-center items-center mt-5">
+              <p>All data has been loaded.</p>
+            </div>
+          ) : witness.length >= 25 ? (
+            <div className="flex justify-center items-center mt-5">
+              <img src={imgLoading} width={50} height={100} />
+            </div>
+          ) : (
+            <span></span>
+          )}
 
           {!maxLoading && loading ? (
             <span className="grid"></span>

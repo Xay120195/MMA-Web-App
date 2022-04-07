@@ -620,47 +620,38 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setTextDetails(event.currentTarget.textContent);
   };
 
-  const handleSaveDetails = async (e, name, details, id, index) => {
+  const handleSaveDetails = async (e, details, id) => {
     if (textDetails.length <= 0) {
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
       setDesAlert("");
-      setResultMessage(`Saving in progress..`);
-      setShowToast(true);
       const data = {
         details: e.target.innerHTML
       };
       await updateMatterFileDesc(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      //   getMatterFiles();
         setTimeout(() => {
-          setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
           }, 1000);
         }, 1000);
-      }, 1000);
     } else {
       setDesAlert("");
-      setResultMessage(`Saving in progress..`);
-      setShowToast(true);
       const data = {
         details: e.target.innerHTML
       };
       await updateMatterFileDesc(id, data);
-      setTimeout(() => {
-        getMatterFiles();
+      //   getMatterFiles();
         setTimeout(() => {
-          setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
           }, 1000);
         }, 1000);
-      }, 1000);
+      // }, 1000);
     }
   };
 
@@ -699,50 +690,39 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setTextName(event.currentTarget.textContent);
   };
 
-  const handleSaveName = async (e, name, details, id, labels, index) => {
+  const handleSaveName = async (e, name, id) => {
     if (textName.length <= 0) {
       setFileAlert("File name can't be empty");
     } 
     else if (textName === name) {
       setFileAlert("");
-      // setResultMessage(`Saving in progress..`);
-      // setShowToast(true);
       const data = {
         name: name
       };
       await updateMatterFileName(id, data);
-      // setTimeout(() => {
-      //  getMatterFiles();
+      //   getMatterFiles();
         setTimeout(() => {
-         //setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
-            getMatterFiles();
           }, 1000);
-        }, 500);
-      // }, 1000);
+        }, 1000);
     } 
     else {
       setFileAlert("");
-      // setResultMessage(`Saving in progress..`);
-      // setShowToast(true);
       const data = {
         name: textName
       };
       await updateMatterFileName(id, data);
-      // setTimeout(() => {
+      //   getMatterFiles();
         setTimeout(() => {
-          // setTextName("");
           setResultMessage(`Successfully updated `);
           setShowToast(true);
           setTimeout(() => {
             setShowToast(false);
-            getMatterFiles();
           }, 1000);
-        }, 500);
-      // }, 1000);
+        }, 1000);
     }
   };
 
@@ -1506,10 +1486,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   handleSaveName(
                                                     e,
                                                     data.name,
-                                                    data.details,
-                                                    data.id,
-                                                    data.labels.items,
-                                                    index
+                                                    data.id
                                                   )
                                                 }
                                                 contentEditable={
@@ -1566,11 +1543,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 onBlur={(e) =>
                                                   handleSaveDetails(
                                                     e,
-                                                    data.name,
                                                     data.details,
-                                                    data.id,
-                                                    data.labels.items,
-                                                    index
+                                                    data.id
                                                   )
                                                 }
                                                 contentEditable={
