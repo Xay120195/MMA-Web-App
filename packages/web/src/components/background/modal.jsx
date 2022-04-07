@@ -27,6 +27,8 @@ export const ModalParagraph = ({
             id
             date
             description
+            order
+            createdAt
           }
         }
     `;
@@ -40,18 +42,29 @@ export const ModalParagraph = ({
         },
       });
 
-      if (createBackgroundRow) {
-        getBackground();
+      let newData = [];
+      newData.push({
+        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+        date: createBackgroundRow.data.backgroundCreate.date,
+        description: createBackgroundRow.data.backgroundCreate.description,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        order: 0,
+      });
+
+      if (newData.length >= 0) {
+        const [xs] = [...newData];
+
+        witness.splice(0, 0, xs);
+
+        setShowModalParagraph(false);
+        setParagraph("");
+
         setcheckAllState(false);
 
-        // const newArr = Array(witness.length).fill(false);
-        // setCheckedState = newArr;
         setCheckedState(new Array(witness.length).fill(false));
         setSelectedRowsBG([]);
         setShowDeleteButton(false);
       }
-      setShowModalParagraph(false);
-      setParagraph("");
     });
   };
   const countRow = paragraph.split("\n\n");

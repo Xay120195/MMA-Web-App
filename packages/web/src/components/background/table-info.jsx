@@ -520,7 +520,19 @@ const TableInfo = ({
     return new Date(date);
   };
 
+  const convertArrayToObject = (array) => {
+    const initialValue = {};
+    return array.reduce((obj, item) => {
+      return {
+        ...obj,
+        item: item,
+      };
+    }, initialValue);
+  };
+
   const handlePasteRow = (targetIndex) => {
+    console.log(targetIndex);
+    setCheckedState(new Array(witness.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
     storedItemRows.map(async function (x) {
@@ -545,29 +557,64 @@ const TableInfo = ({
         },
       });
 
-      const xd = newRow;
-      xd.push({
-        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-        date: createBackgroundRow.data.backgroundCreate.date,
-        description: createBackgroundRow.data.backgroundCreate.description,
-        id: createBackgroundRow.data.backgroundCreate.id,
-        order: 0,
-      });
-      setSelectRow(newRow);
-      newWitness.current = witness;
-      const [newlist] = [...newRow];
-      witness.splice(targetIndex, 0, newlist);
-      setWitness(newWitness.current);
-      setShowDeleteButton(false);
-      setPasteButton(false);
-      setTimeout(() => {
-        setSelectRow([]);
-        setNewRow([]);
-        setSrcIndex("");
+      if (createBackgroundRow) {
+        const xd = newRow;
+        xd.push({
+          createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+          date: createBackgroundRow.data.backgroundCreate.date,
+          description: createBackgroundRow.data.backgroundCreate.description,
+          id: createBackgroundRow.data.backgroundCreate.id,
+          order: 0,
+        });
+        setNewRow(xd);
 
-        localStorage.removeItem("selectedRows");
-      }, 10000);
+        const oaWitness = convertArrayToObject(newRow);
+
+        // newWitness.current = [...witness];
+
+        witness.splice(targetIndex + 1, 0, oaWitness.item);
+        setWitness(witness);
+        setSelectRow(newRow);
+        const res = witness.map(myFunction);
+
+        function myFunction(item, index) {
+          let data;
+          return (data = {
+            id: item.id,
+            order: index + 1,
+          });
+        }
+
+        res.map(async function (x) {
+          const mUpdateBackgroundOrder = `
+      mutation updateBackground($id: ID, $order: Int) {
+        backgroundUpdate(id: $id, order: $order) {
+          id
+          order
+        }
+      }`;
+          await API.graphql({
+            query: mUpdateBackgroundOrder,
+            variables: {
+              id: x.id,
+              order: x.order,
+            },
+          });
+        });
+      }
+
+      // setWitness(newWitness.current);
     });
+
+    setShowDeleteButton(false);
+    setPasteButton(false);
+    setTimeout(() => {
+      setSelectRow([]);
+      setNewRow([]);
+      setSrcIndex("");
+
+      localStorage.removeItem("selectedRows");
+    }, 10000);
   };
 
   const handleBottomScroll = useCallback(() => {
@@ -943,11 +990,11 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading ? (
-            <div className="flex justify-center items-center mt-5">
+            <div className="flex justify-center items-center mt-2">
               <p>All data has been loaded.</p>
             </div>
           ) : witness.length >= 25 ? (
-            <div className="flex justify-center items-center mt-5">
+            <div className="flex justify-center items-center mt-2">
               <img src={imgLoading} width={50} height={100} />
             </div>
           ) : (

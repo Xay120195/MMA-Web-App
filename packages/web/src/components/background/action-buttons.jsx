@@ -46,6 +46,7 @@ const ActionButtons = ({
   newRow,
   newWitness,
   setMaxLoading,
+  sortByOrder,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -134,12 +135,16 @@ const ActionButtons = ({
         order: 0,
       };
 
-      setWitness((witness) => witness.concat(result));
+      setWitness((witness) => sortByOrder(witness.concat(result)));
+      witness.splice(0, 0, result);
+      
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
       setMaxLoading(false);
+
+      setWitness(witness);
     }
   };
 
@@ -348,7 +353,6 @@ const ActionButtons = ({
   const handleCopyRow = () => {
     setPasteButton(true);
     localStorage.setItem("selectedRows", JSON.stringify(selectRow));
-    setCheckedState(new Array(witness.length).fill(false));
   };
 
   return (
@@ -499,6 +503,7 @@ const ActionButtons = ({
               </button>
               <button
                 type="button"
+                disabled={pasteButton ? true : false}
                 onClick={() => setshowRemoveFileModal(true)}
                 className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
               >
