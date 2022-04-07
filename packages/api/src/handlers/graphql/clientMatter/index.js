@@ -91,7 +91,7 @@ async function listCompanyMatterBackgrounds(ctx) {
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,
       }),
-      //ScanIndexForward: false,
+      ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -104,9 +104,19 @@ async function listCompanyMatterBackgrounds(ctx) {
     const cmBackgroundsCmd = new QueryCommand(cmBackgroundsParam);
     const cmBackgroundsResult = await client.send(cmBackgroundsCmd);
 
-    const backgroundIds = cmBackgroundsResult.Items.map((i) =>
+    const objCMBackgrounds = cmBackgroundsResult.Items.map((i) =>
       unmarshall(i)
-    ).map((f) => marshall({ id: f.backgroundId }));
+    );
+
+    objCMBackgrounds.sort(function (a, b) {
+      return new Date(a.createdAt).getTime() < new Date(b.createdAt).getTime()
+        ? 1
+        : -1; // ? -1 : 1 for ascending/increasing order
+    });
+
+    const backgroundIds = objCMBackgrounds.map((f) =>
+      marshall({ id: f.backgroundId })
+    );
 
     if (backgroundIds.length !== 0) {
       const backgroundsParam = {
@@ -122,9 +132,6 @@ async function listCompanyMatterBackgrounds(ctx) {
 
       const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
         (i) => unmarshall(i)
-      );
-      const objCMBackgrounds = cmBackgroundsResult.Items.map((i) =>
-        unmarshall(i)
       );
 
       const response = objCMBackgrounds.map((item) => {
@@ -163,7 +170,6 @@ async function listCompanyMatterRFIs(ctx) {
 
   const { limit, nextToken } = ctx.arguments;
 
-  
   try {
     const cmRFIsParam = {
       TableName: "ClientMatterRFITable",
@@ -185,9 +191,9 @@ async function listCompanyMatterRFIs(ctx) {
     const cmRFIsCmd = new QueryCommand(cmRFIsParam);
     const cmRFIsResult = await client.send(cmRFIsCmd);
 
-    const rfiIds = cmRFIsResult.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.rfiId }));
+    const rfiIds = cmRFIsResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.rfiId })
+    );
 
     if (rfiIds.length !== 0) {
       const rfisParam = {
@@ -201,26 +207,20 @@ async function listCompanyMatterRFIs(ctx) {
       const rfisCommand = new BatchGetItemCommand(rfisParam);
       const rfisResult = await client.send(rfisCommand);
 
-      const objRFIs = rfisResult.Responses.RFITable.map(
-        (i) => unmarshall(i)
-      );
-      const objCMRFIs = cmRFIsResult.Items.map((i) =>
-        unmarshall(i)
-      );
+      const objRFIs = rfisResult.Responses.RFITable.map((i) => unmarshall(i));
+      const objCMRFIs = cmRFIsResult.Items.map((i) => unmarshall(i));
 
       const response = objCMRFIs.map((item) => {
-        const filterRFI = objRFIs.find(
-          (u) => u.id === item.rfiId
-        );
+        const filterRFI = objRFIs.find((u) => u.id === item.rfiId);
         return { ...item, ...filterRFI };
       });
 
       return {
         items: response,
         nextToken: cmRFIsResult.LastEvaluatedKey
-          ? Buffer.from(
-              JSON.stringify(cmRFIsResult.LastEvaluatedKey)
-            ).toString("base64")
+          ? Buffer.from(JSON.stringify(cmRFIsResult.LastEvaluatedKey)).toString(
+              "base64"
+            )
           : null,
       };
     } else {
@@ -236,14 +236,8 @@ async function listCompanyMatterRFIs(ctx) {
     };
     console.log(response);
   }
-
-
-
-
-
   return response;
 }
-
 
 const resolvers = {
   ClientMatter: {
@@ -255,7 +249,7 @@ const resolvers = {
     },
     rfis: async (ctx) => {
       return listCompanyMatterRFIs(ctx);
-    }
+    },
   },
 };
 
