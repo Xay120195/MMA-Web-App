@@ -186,6 +186,7 @@ async function listBackgrounds() {
   try {
     const param = {
       TableName: "BackgroundsTable",
+      ScanIndexForward: false,
     };
 
     const cmd = new ScanCommand(param);
