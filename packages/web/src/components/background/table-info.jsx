@@ -72,6 +72,7 @@ const TableInfo = ({
   loading,
   setLoading,
   maxLoading,
+  sortByOrder,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -693,7 +694,7 @@ const TableInfo = ({
                             className="bg-white divide-y divide-gray-200"
                           >
                             {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
-                            {witness.map((item, index) => (
+                            {sortByOrder(witness).map((item, index) => (
                               <>
                                 <Draggable
                                   key={item.id}
@@ -989,11 +990,11 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading ? (
-            <div className="flex justify-center items-center mt-5">
+            <div className="flex justify-center items-center mt-2">
               <p>All data has been loaded.</p>
             </div>
           ) : witness.length >= 25 ? (
-            <div className="flex justify-center items-center mt-5">
+            <div className="flex justify-center items-center mt-2">
               <img src={imgLoading} width={50} height={100} />
             </div>
           ) : (

@@ -382,6 +382,7 @@ export default function Background() {
                 newRow={newRow}
                 newWitness={newWitness}
                 setMaxLoading={setMaxLoading}
+                sortByOrder={sortByOrder}
               />
             </div>
           </div>
