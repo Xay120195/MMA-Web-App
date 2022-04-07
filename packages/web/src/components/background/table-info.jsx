@@ -575,6 +575,32 @@ const TableInfo = ({
         witness.splice(targetIndex + 1, 0, oaWitness.item);
         setWitness(witness);
         setSelectRow(newRow);
+        const res = witness.map(myFunction);
+
+        function myFunction(item, index) {
+          let data;
+          return (data = {
+            id: item.id,
+            order: index + 1,
+          });
+        }
+
+        res.map(async function (x) {
+          const mUpdateBackgroundOrder = `
+      mutation updateBackground($id: ID, $order: Int) {
+        backgroundUpdate(id: $id, order: $order) {
+          id
+          order
+        }
+      }`;
+          await API.graphql({
+            query: mUpdateBackgroundOrder,
+            variables: {
+              id: x.id,
+              order: x.order,
+            },
+          });
+        });
       }
 
       // setWitness(newWitness.current);
@@ -589,32 +615,6 @@ const TableInfo = ({
 
       localStorage.removeItem("selectedRows");
     }, 10000);
-    const res = witness.map(myFunction);
-
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
-    }
-
-    res.map(async function (x) {
-      const mUpdateBackgroundOrder = `
-  mutation updateBackground($id: ID, $order: Int) {
-    backgroundUpdate(id: $id, order: $order) {
-      id
-      order
-    }
-  }`;
-      await API.graphql({
-        query: mUpdateBackgroundOrder,
-        variables: {
-          id: x.id,
-          order: x.order,
-        },
-      });
-    });
   };
 
   const handleBottomScroll = useCallback(() => {
