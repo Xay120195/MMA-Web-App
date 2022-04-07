@@ -158,6 +158,93 @@ async function listCompanyMatterBackgrounds(ctx) {
   return response;
 }
 
+async function listCompanyMatterRFIs(ctx) {
+  const { id } = ctx.source;
+
+  const { limit, nextToken } = ctx.arguments;
+
+  
+  try {
+    const cmRFIsParam = {
+      TableName: "ClientMatterRFITable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": id,
+      }),
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      cmRFIsParam.Limit = limit;
+    }
+
+    const cmRFIsCmd = new QueryCommand(cmRFIsParam);
+    const cmRFIsResult = await client.send(cmRFIsCmd);
+
+    const rfiIds = cmRFIsResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.rfiId }));
+
+    if (rfiIds.length !== 0) {
+      const rfisParam = {
+        RequestItems: {
+          RFITable: {
+            Keys: rfiIds,
+          },
+        },
+      };
+
+      const rfisCommand = new BatchGetItemCommand(rfisParam);
+      const rfisResult = await client.send(rfisCommand);
+
+      const objRFIs = rfisResult.Responses.RFITable.map(
+        (i) => unmarshall(i)
+      );
+      const objCMRFIs = cmRFIsResult.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objCMRFIs.map((item) => {
+        const filterRFI = objRFIs.find(
+          (u) => u.id === item.rfiId
+        );
+        return { ...item, ...filterRFI };
+      });
+
+      return {
+        items: response,
+        nextToken: cmRFIsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(cmRFIsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+
+
+
+
+
+  return response;
+}
+
+
 const resolvers = {
   ClientMatter: {
     labels: async (ctx) => {
@@ -166,6 +253,9 @@ const resolvers = {
     backgrounds: async (ctx) => {
       return listCompanyMatterBackgrounds(ctx);
     },
+    rfis: async (ctx) => {
+      return listCompanyMatterRFIs(ctx);
+    }
   },
 };
 
