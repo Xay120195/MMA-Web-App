@@ -402,55 +402,7 @@ async function getBackground(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-
-    const backgrounds = unmarshall(Item);
-
-    const backgroundFileParams = {
-      TableName: "BackgroundFileTable",
-      IndexName: "byBackground",
-      KeyConditionExpression: "backgroundId = :backgroundId",
-      ExpressionAttributeValues: marshall({
-        ":backgroundId": backgrounds.id,
-      }),
-    };
-
-    const backgroundFileCommand = new QueryCommand(backgroundFileParams);
-    const backgroundFileResult = await ddbClient.send(backgroundFileCommand);
-
-    const fileIds = backgroundFileResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.fileId })
-    );
-
-    if (fileIds.length != 0) {
-      const fileParams = {
-        RequestItems: {
-          MatterFileTable: {
-            Keys: fileIds,
-          },
-        },
-      };
-
-      const filesCommand = new BatchGetItemCommand(fileParams);
-      const filesResult = await ddbClient.send(filesCommand);
-
-      const objFiles = filesResult.Responses.MatterFileTable.map((i) =>
-        unmarshall(i)
-      );
-      const objBackgroundFiles = backgroundFileResult.Items.map((i) =>
-        unmarshall(i)
-      );
-
-      const extractFiles = objBackgroundFiles.map((item) => {
-        const filterFile = objFiles.find((u) => u.id === item.fileId);
-        return { ...filterFile };
-      });
-
-      backgrounds.files = { items: extractFiles };
-    } else {
-      backgrounds.files = { items: [] };
-    }
-
-    resp = backgrounds ? backgrounds : {};
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
       error: e.message,

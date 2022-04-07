@@ -141,6 +141,8 @@ const ActionButtons = ({
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
       setMaxLoading(false);
+
+      setWitness(witness);
     }
   };
 
