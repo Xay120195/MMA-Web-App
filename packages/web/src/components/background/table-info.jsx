@@ -521,6 +521,7 @@ const TableInfo = ({
   };
 
   const handlePasteRow = (targetIndex) => {
+    setCheckedState(new Array(witness.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
     storedItemRows.map(async function (x) {
@@ -553,11 +554,14 @@ const TableInfo = ({
         id: createBackgroundRow.data.backgroundCreate.id,
         order: 0,
       });
-      setSelectRow(newRow);
+
       newWitness.current = witness;
       const [newlist] = [...newRow];
-      witness.splice(targetIndex, 0, newlist);
+      witness.splice(targetIndex + 1, 0, newlist);
+
+      setSelectRow(xd);
       setWitness(newWitness.current);
+
       setShowDeleteButton(false);
       setPasteButton(false);
       setTimeout(() => {
