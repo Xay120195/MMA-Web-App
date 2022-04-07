@@ -46,6 +46,7 @@ const ActionButtons = ({
   newRow,
   newWitness,
   setMaxLoading,
+  sortByOrder,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -134,10 +135,9 @@ const ActionButtons = ({
         order: 0,
       };
 
-      console.log(result);
-
+      setWitness((witness) => sortByOrder(witness.concat(result)));
       witness.splice(0, 0, result);
-
+      
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
