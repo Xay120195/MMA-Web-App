@@ -498,7 +498,7 @@ const ActionButtons = ({
               </button>
               <button
                 type="button"
-                disabled={selectRow.length >= 0}
+                disabled={pasteButton ? true : false}
                 onClick={() => setshowRemoveFileModal(true)}
                 className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
               >
