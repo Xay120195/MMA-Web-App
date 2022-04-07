@@ -10,20 +10,22 @@ const BlankState = (props) => {
           <div className="img-content">
             <img src={Illustration} alt="" />
           </div>
-          <div className="details-txt">
-            {props.title === "RFI" ?
-              <h1> There are no items to show in this view.</h1>
+          <div className="details-txt text-center">
+           
+            <h1> {props.displayText}</h1>
+           
+            {props.noLink ?
+              <h6>{props.noLink}</h6>
             :
-              <h1>You have not added any {props.title || "affidavits"} yet.</h1>
+            <h6> 
+              Click here to
+              <span onClick={handleClick} className="mx-1">
+                {props.txtLink}
+              </span>{" "}
+              now.
+            </h6>
             }
             
-            <h6 className="text-left">
-              Click on the
-              <span onClick={handleClick} className="mx-1">
-                {props.txtLink || "add row"}
-              </span>{" "}
-              button above to start adding one now.
-            </h6>
           </div>
         </div>
       </div>

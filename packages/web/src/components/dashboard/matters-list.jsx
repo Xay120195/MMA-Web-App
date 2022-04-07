@@ -50,6 +50,15 @@ export function ClientMatters({}) {
                             {allowOpenFileBucket ? (
                               <li className="p-2">
                                 <Link
+                                  to={`${AppRoutes.MATTERSRFI}/${item.id}`}
+                                >
+                                  RFI
+                                </Link>
+                              </li>
+                            ) : null}
+                            {allowOpenFileBucket ? (
+                              <li className="p-2">
+                                <Link
                                   to={`${AppRoutes.FILEBUCKET}/${item.id}/000`}
                                 >
                                   File Bucket

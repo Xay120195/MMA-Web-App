@@ -5,7 +5,7 @@ import MattersOverview from "./components/matters-overview";
 import UserTypeAccess from "./components/usertype-access";
 import AccountSettings from "./components/account-settings";
 import WitnessAffidavit from "./components/witness-affidavit";
-import MattersRFI from "./components/matters-rfi";
+import MattersRFI from "./components/matters-rfi-page";
 import Contacts from "./components/contacts";
 import PostRegistration from "./components/authentication/post-registration";
 import PostAuthentication from "./components/authentication/post-authentication";
@@ -16,6 +16,7 @@ import FileBucket from "./components/file-bucket";
 import Background from "./components/background";
 import Labels from "./components/labels";
 import Inbox from "./components/inbox";
+import RFIPage from "./components/rfi-page";
 
 const Routes = () => {
   return (
@@ -55,6 +56,11 @@ const Routes = () => {
             exact
             path={`${AppRoutes.MATTERSRFI}/:id`}
             component={MattersRFI}
+          />
+          <Route
+            exact
+            path={`${AppRoutes.RFIPAGE}/:id`}
+            component={RFIPage}
           />
           <Route exact path={AppRoutes.CONTACTS} component={Contacts} />
           <Route
