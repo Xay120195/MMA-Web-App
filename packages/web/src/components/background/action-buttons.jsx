@@ -136,6 +136,8 @@ const ActionButtons = ({
       };
 
       setWitness((witness) => sortByOrder(witness.concat(result)));
+      witness.splice(0, 0, result);
+      
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
