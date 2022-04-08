@@ -514,7 +514,15 @@ const TableInfo = ({
           files: filteredArr,
         },
       });
-      //getBackground();
+      
+      const updateArrFiles = witness.map(obj => {
+        if (obj.id === background_id) {
+          return {...obj, files: { items: filteredArr }};
+        }
+        return obj;
+      });
+
+      //setWitness(updateArr);
     }
 
     setSelectedId(background_id);
