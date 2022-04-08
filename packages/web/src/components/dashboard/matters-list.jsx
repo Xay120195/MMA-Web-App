@@ -29,7 +29,7 @@ export function ClientMatters({}) {
           {loading ? (
             <span>Please wait...</span>
           ) : clientMatter.length <= 0 ? (
-            <span>No results founds</span>
+            <span>No results found.</span>
           ) : (
             <>
               {clientMatter.map((item) => (
