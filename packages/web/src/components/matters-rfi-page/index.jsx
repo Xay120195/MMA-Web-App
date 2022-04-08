@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import BlankState from "../blank-state";
+import BlankState from "../dynamic-blankstate";
 import { HiOutlinePlusCircle } from "react-icons/hi";
 import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import { matter_rfi, questions } from "./data-source";
@@ -10,6 +10,7 @@ import ToastNotification from "../toast-notification";
 import AccessControl from "../../shared/accessControl";
 import { FaUserCircle } from "react-icons/fa";
 import {AiOutlineFolderOpen} from "react-icons/ai";
+import BlankList from "../../assets/images/RFI_Blank_List.svg";
 
 export default function MattersRFI() {
   let history = useHistory();
@@ -116,11 +117,11 @@ export default function MattersRFI() {
   };
 
   var dummyData = [
-    {id: 111, name: "RFI 1", datecreated: "Jan 01, 2022"},
-    {id: 112, name: "RFI 2", datecreated: "Jan 02, 2022"},
-    {id: 113, name: "RFI 3", datecreated: "Jan 03, 2022"},
-    {id: 114, name: "RFI 4", datecreated: "Jan 04, 2022"},
-    {id: 115, name: "RFI 5", datecreated: "Jan 05, 2022"},
+    // {id: 111, name: "RFI 1", datecreated: "Jan 01, 2022"},
+    // {id: 112, name: "RFI 2", datecreated: "Jan 02, 2022"},
+    // {id: 113, name: "RFI 3", datecreated: "Jan 03, 2022"},
+    // {id: 114, name: "RFI 4", datecreated: "Jan 04, 2022"},
+    // {id: 115, name: "RFI 5", datecreated: "Jan 05, 2022"},
   ];
 
   return (
@@ -181,10 +182,15 @@ export default function MattersRFI() {
           {dummyData.length === 0 ? (
             <div className="p-5 px-5 py-1 left-0">
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
-                <BlankState
+                {/* <BlankState
                   title={"RFI"}
                   txtLink={"add RFI"}
                   handleClick={handleBlankStateClick}
+                /> */}
+                <BlankState
+                    displayText={"There are no questions to show in this view"}
+                    txtLink={"add new RFI"}
+                    iconDisplay={BlankList}
                 />
               </div>
             </div>

@@ -4,6 +4,10 @@ import { MdArrowForwardIos, MdDownload } from "react-icons/md";
 import ToastNotification from "../toast-notification";
 import { IoIosArrowDroprightCircle, IoIosArrowDropright } from "react-icons/io";
 import { AiOutlineFolderOpen } from "react-icons/ai";
+import BlankList from "../../assets/images/RFI_Blank_List.svg";
+import BlankQuestion from "../../assets/images/RFI_Blank_State.svg";
+import BlankAnswer from "../../assets/images/RFI_Blank_Answer.svg";
+
 
 export default function RFIPage() {
   const [showToast, setShowToast] = useState(false);
@@ -76,7 +80,7 @@ export default function RFIPage() {
           </div>
           
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-            <table className="table-fixed divide-y divide-x border-slate-500 border flex-1">
+            <table className="table-fixed divide-y divide-x border-slate-500 border flex-1 w-full">
               <tr>
                   <th className="text-left py-4 px-4 border-slate-500 border">Question</th>
                   <th className="text-left py-4 px-4 border-slate-500 border"><IoIosArrowDropright className="h-8 w-8 absolute -ml-8 -mt-1"/> &nbsp; Answer</th>
@@ -86,20 +90,20 @@ export default function RFIPage() {
                   <BlankState
                     displayText={"There are no questions to show here yet"}
                     txtLink={"start adding one"}
+                    iconDisplay={BlankQuestion}
                   />
                 </td>
                 <td className="border-slate-500 border ">
                   <BlankState
                     displayText={"There are no answers to show in this section"}
                     noLink={"Start creating your RFIs to collaborate with your client"}
+                    iconDisplay={BlankAnswer}
                   />
                 </td>
               </tr>
             </table>
           </div>
-
-        
-    </div>
+      </div>
       
       {showToast && 
         <ToastNotification title={alertMessage} hideToast={hideToast} />
