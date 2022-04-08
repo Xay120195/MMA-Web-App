@@ -125,6 +125,7 @@ export default function Background() {
                 downloadURL
                 details
                 name
+                type
               }
             }
           }
@@ -304,7 +305,6 @@ export default function Background() {
       setPageSize(pageSize - pageList);
     }
   };
-
   return (
     <>
       <div
