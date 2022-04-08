@@ -232,11 +232,19 @@ const TableInfo = ({
         }, 1000);
       }, 1000);
     } else {
-      {
         setDescAlert("");
         setUpdateProgress(true);
         setalertMessage(`Saving in progress..`);
         setShowToast(true);
+
+        const updateArr = witness.map(obj => {
+          if (obj.id === id) {
+            return {...obj, description: e.target.innerHTML};
+          }
+          return obj;
+        });
+  
+        setWitness(updateArr);
 
         const data = {
           description: e.target.innerHTML,
@@ -246,7 +254,7 @@ const TableInfo = ({
         setTimeout(() => {
           setTimeout(() => {
             setTextDesc("");
-            setalertMessage(`Successfully updated `);
+            setalertMessage(`Successfully updated`);
             setShowToast(true);
             setTimeout(() => {
               setShowToast(false);
@@ -254,7 +262,6 @@ const TableInfo = ({
             }, 1000);
           }, 1000);
         }, 1000);
-      }
     }
   };
 
