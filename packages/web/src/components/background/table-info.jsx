@@ -916,7 +916,7 @@ const TableInfo = ({
                                                       <span className="align-middle">
                                                         {items.name.substring(
                                                           0,
-                                                          25
+                                                          15
                                                         )}
                                                       </span>
                                                       &nbsp;
