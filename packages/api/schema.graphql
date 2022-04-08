@@ -136,7 +136,7 @@ type Background {
   date: AWSDateTime
   description: String
   order: Int
-  files: BackgroundFileConn
+  files(limit: Int, nextToken: String): BackgroundFileConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -403,7 +403,7 @@ type FileLabelConn {
 
 type BackgroundFileConn {
   items: [File]
-  # nextToken: String
+  nextToken: String
 }
 
 type ClientMatterRFIConn {

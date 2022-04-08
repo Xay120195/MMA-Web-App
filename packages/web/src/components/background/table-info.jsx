@@ -72,6 +72,7 @@ const TableInfo = ({
   loading,
   setLoading,
   maxLoading,
+  sortByOrder,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -231,11 +232,19 @@ const TableInfo = ({
         }, 1000);
       }, 1000);
     } else {
-      {
         setDescAlert("");
         setUpdateProgress(true);
         setalertMessage(`Saving in progress..`);
         setShowToast(true);
+
+        const updateArr = witness.map(obj => {
+          if (obj.id === id) {
+            return {...obj, description: e.target.innerHTML};
+          }
+          return obj;
+        });
+  
+        setWitness(updateArr);
 
         const data = {
           description: e.target.innerHTML,
@@ -245,7 +254,7 @@ const TableInfo = ({
         setTimeout(() => {
           setTimeout(() => {
             setTextDesc("");
-            setalertMessage(`Successfully updated `);
+            setalertMessage(`Successfully updated`);
             setShowToast(true);
             setTimeout(() => {
               setShowToast(false);
@@ -253,7 +262,6 @@ const TableInfo = ({
             }, 1000);
           }, 1000);
         }, 1000);
-      }
     }
   };
 
@@ -506,7 +514,7 @@ const TableInfo = ({
           files: filteredArr,
         },
       });
-      getBackground();
+      //getBackground();
     }
 
     setSelectedId(background_id);
@@ -693,7 +701,7 @@ const TableInfo = ({
                             className="bg-white divide-y divide-gray-200"
                           >
                             {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
-                            {witness.map((item, index) => (
+                            {sortByOrder(witness).map((item, index) => (
                               <>
                                 <Draggable
                                   key={item.id}
@@ -867,7 +875,7 @@ const TableInfo = ({
                                             </span>
                                           )}
 
-                                          {files.length === 0 ? (
+                                          {item.files.items.length === 0 ? (
                                             <>
                                               <br />
                                               <p className="text-xs">
@@ -886,12 +894,13 @@ const TableInfo = ({
                                               </span>
                                               <br />
                                               <br />
-                                              {files
+                                              {/* {files
                                                 .filter(
                                                   (x) =>
                                                     x.backgroundId === item.id
                                                 )
-                                                .map((items, index) => (
+                                                .map((items, index) => ( */}
+                                                {item.files.items.map((items, index) => (
                                                   <>
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
@@ -902,9 +911,9 @@ const TableInfo = ({
                                                           onChange={(event) =>
                                                             handleFilesCheckboxChange(
                                                               event,
-                                                              items.uniqueId,
+                                                              items.id+item.id,
                                                               items.id,
-                                                              items.backgroundId
+                                                              item.id
                                                             )
                                                           }
                                                         />
@@ -931,8 +940,8 @@ const TableInfo = ({
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id+item.id,
+                                                              items.id
                                                             )
                                                           }
                                                         />
@@ -941,8 +950,8 @@ const TableInfo = ({
                                                           className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id+item.id,
+                                                              items.id
                                                             )
                                                           }
                                                         />

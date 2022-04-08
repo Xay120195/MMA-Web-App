@@ -46,6 +46,7 @@ const ActionButtons = ({
   newRow,
   newWitness,
   setMaxLoading,
+  sortByOrder,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -132,14 +133,19 @@ const ActionButtons = ({
         description: "",
         date: dateToday,
         order: 0,
+        files: {items:[]},
       };
 
-      setWitness((witness) => witness.concat(result));
+      setWitness((witness) => sortByOrder(witness.concat(result)));
+      witness.splice(0, 0, result);
+      
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
       setMaxLoading(false);
+
+      setWitness(witness);
     }
   };
 
