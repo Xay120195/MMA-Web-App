@@ -868,7 +868,7 @@ const TableInfo = ({
                                             </span>
                                           )}
 
-                                          {files.length === 0 ? (
+                                          {item.files.items.length === 0 ? (
                                             <>
                                               <br />
                                               <p className="text-xs">
@@ -887,12 +887,13 @@ const TableInfo = ({
                                               </span>
                                               <br />
                                               <br />
-                                              {files
+                                              {/* {files
                                                 .filter(
                                                   (x) =>
                                                     x.backgroundId === item.id
                                                 )
-                                                .map((items, index) => (
+                                                .map((items, index) => ( */}
+                                                {item.files.items.map((items, index) => (
                                                   <>
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
@@ -903,9 +904,9 @@ const TableInfo = ({
                                                           onChange={(event) =>
                                                             handleFilesCheckboxChange(
                                                               event,
-                                                              items.uniqueId,
+                                                              items.uniqueId+item.id,
                                                               items.id,
-                                                              items.backgroundId
+                                                              item.id
                                                             )
                                                           }
                                                         />
@@ -915,7 +916,7 @@ const TableInfo = ({
                                                       <span className="align-middle">
                                                         {items.name.substring(
                                                           0,
-                                                          15
+                                                          25
                                                         )}
                                                       </span>
                                                       &nbsp;
@@ -990,11 +991,11 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading ? (
-            <div className="flex justify-center items-center mt-2">
+            <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
           ) : witness.length >= 25 ? (
-            <div className="flex justify-center items-center mt-2">
+            <div className="flex justify-center items-center mt-5">
               <img src={imgLoading} width={50} height={100} />
             </div>
           ) : (

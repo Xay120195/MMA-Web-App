@@ -119,6 +119,14 @@ export default function Background() {
             date
             createdAt
             order
+            files {
+              items {
+                id
+                downloadURL
+                details
+                name
+              }
+            }
           }
           nextToken
         }
@@ -154,48 +162,26 @@ export default function Background() {
 
     if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-        ({ id, description, date, createdAt, order }) => ({
+        ({ id, description, date, createdAt, order, files }) => ({
           createdAt: createdAt,
           id: id,
           description: description,
           date: date,
           order: order,
+          files: files
         })
       );
 
-      if (witness !== null) {
-        setWitness(result);
-        setMaxLoading(false);
-      }
+      console.log(result);
 
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);
 
-      let mergeArrFiles = [];
-      let arrFileResult = [];
-      for (let i = 0; i < sortByOrder(result).length; i++) {
-        const backgroundFilesOpt = await API.graphql({
-          query: qlistBackgroundFiles,
-          variables: {
-            id: result[i].id,
-          },
-        });
-        if (backgroundFilesOpt.data.background.files !== null) {
-          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-            ({ id, downloadURL, name }) => ({
-              uniqueId: result[i].id + id,
-              backgroundId: result[i].id,
-              id: id,
-              downloadURL: downloadURL,
-              name: name,
-            })
-          );
-
-          mergeArrFiles.push(...arrFileResult);
-        }
+      if (witness !== null) {
+        setWitness(result);
+        setMaxLoading(false);
       }
-      setFiles(mergeArrFiles);
     }
   };
 
@@ -221,12 +207,13 @@ export default function Background() {
 
       if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
         result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-          ({ id, description, date, createdAt, order }) => ({
+          ({ id, description, date, createdAt, order, files }) => ({
             createdAt: createdAt,
             id: id,
             description: description,
             date: date,
             order: order,
+            files: files,
           })
         );
 
@@ -239,7 +226,7 @@ export default function Background() {
           }, 1500);
         }
 
-        let mergeArrFiles = [];
+        /*let mergeArrFiles = [];
         let arrFileResult = [];
         for (let i = 0; i < sortByOrder(result).length; i++) {
           const backgroundFilesOpt = await API.graphql({
@@ -263,6 +250,7 @@ export default function Background() {
           }
         }
         setFiles(mergeArrFiles);
+        */
       }
     } else {
       console.log("Last Result!");
