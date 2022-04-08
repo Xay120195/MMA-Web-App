@@ -123,6 +123,7 @@ async function listCompanyMatterBackgrounds(ctx) {
         RequestItems: {
           BackgroundsTable: {
             Keys: backgroundIds,
+            ScanIndexForward: false,
           },
         },
       };
