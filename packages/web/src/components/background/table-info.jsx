@@ -514,15 +514,34 @@ const TableInfo = ({
           files: filteredArr,
         },
       });
-      
-      const updateArrFiles = witness.map(obj => {
-        if (obj.id === background_id) {
-          return {...obj, files: { items: filteredArr }};
-        }
-        return obj;
-      });
 
-      //setWitness(updateArr);
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: background_id,
+        },
+      });
+  
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult = backgroundFilesOptReq.data.background.files.items.map(
+          ({ id, name, description, downloadURL }) => ({
+            id: id,
+            name: name,
+            description: description,
+            downloadURL: downloadURL
+          })
+        );
+
+        const updateArrFiles = witness.map(obj => {
+          if (obj.id === background_id) {
+            return {...obj, files: { items: newFilesResult }};
+          }
+          return obj;
+        });
+        setWitness(updateArrFiles);
+      }
+      
+      
     }
 
     setSelectedId(background_id);
