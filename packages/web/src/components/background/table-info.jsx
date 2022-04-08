@@ -507,7 +507,7 @@ const TableInfo = ({
           files: filteredArr,
         },
       });
-      getBackground();
+      //getBackground();
     }
 
     setSelectedId(background_id);
@@ -904,7 +904,7 @@ const TableInfo = ({
                                                           onChange={(event) =>
                                                             handleFilesCheckboxChange(
                                                               event,
-                                                              items.uniqueId+item.id,
+                                                              items.id+item.id,
                                                               items.id,
                                                               item.id
                                                             )
@@ -933,8 +933,8 @@ const TableInfo = ({
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id+item.id,
+                                                              items.id
                                                             )
                                                           }
                                                         />
@@ -943,8 +943,8 @@ const TableInfo = ({
                                                           className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id+item.id,
+                                                              items.id
                                                             )
                                                           }
                                                         />
