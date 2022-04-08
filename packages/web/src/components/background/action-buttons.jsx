@@ -133,6 +133,7 @@ const ActionButtons = ({
         description: "",
         date: dateToday,
         order: 0,
+        files: {items:[]},
       };
 
       setWitness((witness) => sortByOrder(witness.concat(result)));
