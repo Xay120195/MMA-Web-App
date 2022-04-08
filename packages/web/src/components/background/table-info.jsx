@@ -365,26 +365,63 @@ const TableInfo = ({
   `;
 
   const handleDelete = async (item) => {
-    const filteredArrFiles = files.filter((i) => i.uniqueId !== item[0].id);
-    let arrFiles = [];
-    for (let i = 0; i < witness.length; i++) {
-      arrFiles = filteredArrFiles
-        .filter((element) => element.backgroundId === witness[i].id)
-        .map(({ id }) => ({
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: item[0].backgroundId,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      const arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
           id: id,
-        }));
-      console.log(arrFiles);
-      if (witness[i].id !== null) {
-        const request = API.graphql({
-          query: mUpdateBackgroundFile,
+        })
+      );
+
+      const filteredArrFiles = arrFileResult.filter((i) => i.id !== item[0].id);
+
+      const request = API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: item[0].backgroundId,
+          files: filteredArrFiles,
+        },
+      });
+
+      setTimeout(async () => {
+       // list updated result files
+        const backgroundFilesOptReq = await API.graphql({
+          query: qlistBackgroundFiles,
           variables: {
-            backgroundId: witness[i].id,
-            files: arrFiles,
+            id: item[0].backgroundId,
           },
         });
-      }
+    
+        if (backgroundFilesOptReq.data.background.files !== null) {
+          const newFilesResult = backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL
+            })
+          );
+
+          const updateArrFiles = witness.map(obj => {
+            if (obj.id === item[0].backgroundId) {
+              return {...obj, files: { items: newFilesResult }};
+            }
+            return obj;
+          });
+
+          console.log(newFilesResult);
+          setWitness(updateArrFiles);
+        }
+      }, 1000);
     }
-    setFiles(filteredArrFiles);
+
     setshowRemoveFileModal(false);
     setalertMessage(`File successfully deleted!`);
     setShowToast(true);
@@ -540,8 +577,6 @@ const TableInfo = ({
         });
         setWitness(updateArrFiles);
       }
-      
-      
     }
 
     setSelectedId(background_id);
@@ -967,8 +1002,8 @@ const TableInfo = ({
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.id+item.id,
-                                                              items.id
+                                                              items.id,
+                                                              item.id
                                                             )
                                                           }
                                                         />
@@ -977,8 +1012,8 @@ const TableInfo = ({
                                                           className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.id+item.id,
-                                                              items.id
+                                                              items.id,
+                                                              item.id
                                                             )
                                                           }
                                                         />
