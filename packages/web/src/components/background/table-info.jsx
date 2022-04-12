@@ -672,10 +672,40 @@ const TableInfo = ({
         return obj;
       });
 
-      createNewRows.push(updateArrFiles[0]);
-      setCreateMew(createNewRows);
+      const newFiles = convertArrayToObject(updateArrFiles);
+
+      tempWitness.splice(targetIndex + 1, 0, newFiles.item);
+      setWitness(tempWitness);
+      setSelectRow(updateArrFiles);
+
+      const res = tempWitness.map(myFunction);
+
+      function myFunction(item, index) {
+        let data;
+        return (data = {
+          id: item.id,
+          order: index + 1,
+        });
+      }
+
+      res.map(async function (x) {
+        const mUpdateBackgroundOrder = `
+  mutation updateBackground($id: ID, $order: Int) {
+    backgroundUpdate(id: $id, order: $order) {
+      id
+      order
+    }
+  }`;
+        await API.graphql({
+          query: mUpdateBackgroundOrder,
+          variables: {
+            id: x.id,
+            order: x.order,
+          },
+        });
+      });
     });
-    console.log(createNewRows);
+
     setShowDeleteButton(false);
     setPasteButton(false);
     setTimeout(() => {
@@ -684,8 +714,6 @@ const TableInfo = ({
       setSrcIndex("");
       localStorage.removeItem("selectedRows");
     }, 10000);
-
-    console.log(createMew);
   };
 
   // const reOrderFiles = (array, tempWitness, targetIndex) => {
