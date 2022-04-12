@@ -44,7 +44,7 @@ const ActionButtons = ({
   setPasteButton,
   setNewRow,
   newRow,
-  newWitness,
+  setNewWitness,
   setMaxLoading,
   sortByOrder,
 }) => {
@@ -133,12 +133,12 @@ const ActionButtons = ({
         description: "",
         date: dateToday,
         order: 0,
-        files: {items:[]},
+        files: { items: [] },
       };
 
       setWitness((witness) => sortByOrder(witness.concat(result)));
       witness.splice(0, 0, result);
-      
+
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
@@ -331,6 +331,21 @@ const ActionButtons = ({
   }
   `;
 
+  const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
   async function updateUserColumnSettings(id, data) {
     return new Promise((resolve, reject) => {
       try {
@@ -354,6 +369,30 @@ const ActionButtons = ({
   const handleCopyRow = () => {
     setPasteButton(true);
     localStorage.setItem("selectedRows", JSON.stringify(selectRow));
+
+    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
+
+    storedItemRows.map(async function (x) {
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: x.id,
+        },
+      });
+
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+        setNewWitness(newFilesResult);
+      }
+    });
   };
 
   return (
