@@ -29,7 +29,7 @@ export default function Background() {
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [selectRow, setSelectRow] = useState([]);
-  const [newRow, setNewRow] = useState([]);
+  const [newRow, setNewRow] = useState([{}]);
   const [newWitness, setNewWitness] = useState([]);
 
   const [srcIndex, setSrcIndex] = useState("");

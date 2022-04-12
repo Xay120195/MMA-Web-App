@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -446,25 +446,21 @@ const TableInfo = ({
     if (!ascDesc) {
       console.log("f");
       setAscDesc(true);
-      setWitness(witness.slice().sort(
-        (a, b) =>
-          new Date(a.date) - new Date(b.date)
-      ));
-      console.log(witness.slice().sort(
-        (a, b) =>
-          new Date(a.date) - new Date(b.date)
-      ));
+      setWitness(
+        witness.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+      );
+      console.log(
+        witness.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+      );
     } else {
       console.log("t");
       setAscDesc(false);
-      setWitness(witness.slice().sort(
-        (a, b) =>
-          new Date(b.date) - new Date(a.date)
-      ));
-      console.log(witness.slice().sort(
-        (a, b) =>
-          new Date(b.date) - new Date(a.date)
-      ))
+      setWitness(
+        witness.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+      );
+      console.log(
+        witness.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+      );
     }
   };
 
@@ -606,12 +602,12 @@ const TableInfo = ({
       };
     }, initialValue);
   };
-
+  const [createMew, setCreateMew] = useState([]);
   const handlePasteRow = (targetIndex) => {
     let tempWitness = [...witness];
     let arrCopyFiles = [];
     let arrFileResult = [];
-    const seen = new Set();
+    let createNewRows = [];
 
     setCheckedState(new Array(witness.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
@@ -639,16 +635,16 @@ const TableInfo = ({
         },
       });
 
-      const xd = newRow;
-      xd.push({
-        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-        id: createBackgroundRow.data.backgroundCreate.id,
-        files: createBackgroundRow.data.backgroundCreate.files,
-        date: createBackgroundRow.data.backgroundCreate.date,
-        description: createBackgroundRow.data.backgroundCreate.description,
-        order: createBackgroundRow.data.backgroundCreate.order,
-      });
-      setNewRow(xd);
+      arrFileResult = [
+        {
+          createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+          id: createBackgroundRow.data.backgroundCreate.id,
+          files: createBackgroundRow.data.backgroundCreate.files,
+          date: createBackgroundRow.data.backgroundCreate.date,
+          description: createBackgroundRow.data.backgroundCreate.description,
+          order: createBackgroundRow.data.backgroundCreate.order,
+        },
+      ];
 
       arrCopyFiles = newWitness.map(({ id }) => ({
         id: id,
@@ -669,31 +665,63 @@ const TableInfo = ({
         },
       });
 
-      const updateArrFiles = newRow.map((obj) => {
-        if (obj.id === createBackgroundRow.data.backgroundCreate.id) {
+      const updateArrFiles = arrFileResult.map((obj) => {
+        if (obj.id === request.data.backgroundFileTag.id) {
           return { ...obj, files: backgroundFilesOptReq.data.background.files };
         }
         return obj;
       });
 
-      const dt = convertArrayToObject(updateArrFiles);
-      tempWitness.splice(targetIndex + 1, 0, dt.item);
+      const newFiles = convertArrayToObject(updateArrFiles);
 
+      tempWitness.splice(targetIndex + 1, 0, newFiles.item);
       setWitness(tempWitness);
       setSelectRow(updateArrFiles);
 
-      setShowDeleteButton(false);
-      setPasteButton(false);
-      setTimeout(() => {
-        setSelectRow([]);
-        setNewRow([]);
-        setSrcIndex("");
+      const res = tempWitness.map(myFunction);
 
-        localStorage.removeItem("selectedRows");
-      }, 10000);
+      function myFunction(item, index) {
+        let data;
+        return (data = {
+          id: item.id,
+          order: index + 1,
+        });
+      }
+
+      res.map(async function (x) {
+        const mUpdateBackgroundOrder = `
+  mutation updateBackground($id: ID, $order: Int) {
+    backgroundUpdate(id: $id, order: $order) {
+      id
+      order
+    }
+  }`;
+        await API.graphql({
+          query: mUpdateBackgroundOrder,
+          variables: {
+            id: x.id,
+            order: x.order,
+          },
+        });
+      });
     });
+
+    setShowDeleteButton(false);
+    setPasteButton(false);
+    setTimeout(() => {
+      setSelectRow([]);
+      setNewRow([]);
+      setSrcIndex("");
+      localStorage.removeItem("selectedRows");
+    }, 10000);
   };
 
+  // const reOrderFiles = (array, tempWitness, targetIndex) => {
+  //   const df = convertArrayToObject(array);
+
+  //   tempWitness.splice(targetIndex + 1, 0, df.item);
+  //   return setWitness(tempWitness);
+  // };
   const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
