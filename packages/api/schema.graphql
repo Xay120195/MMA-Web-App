@@ -126,7 +126,7 @@ type ClientMatter {
   client: Client
   backgrounds(limit: Int, nextToken: String): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
-  # rfi(limit: Int, nextToken: String): ClientMatterRFIConn
+  rfis(limit: Int, nextToken: String): ClientMatterRFIConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -136,7 +136,7 @@ type Background {
   date: AWSDateTime
   description: String
   order: Int
-  files: BackgroundFileConn
+  files(limit: Int, nextToken: String): BackgroundFileConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -186,12 +186,18 @@ type Query {
     limit: Int
     nextToken: String
   ): [File]
+  matterFiles(
+    matterId: ID
+    isDeleted: Boolean
+    limit: Int
+    nextToken: String
+  ): MatterFileConn
   file(id: ID): File
   files: [File]
   labels: [Label]
   label(id: ID): Label
   rfi(id: ID): RFI
-  rfis:[RFI]
+  rfis: [RFI]
   backgrounds: [Background]
   background(id: ID): Background
   columnSettings(tableName: ViewTable): [ColumnSettings]
@@ -397,10 +403,15 @@ type FileLabelConn {
 
 type BackgroundFileConn {
   items: [File]
-  # nextToken: String
+  nextToken: String
 }
 
-# type ClientMatterRFIConn {
-#   items: [RFI]
-#   nextToken: String
-# }
+type ClientMatterRFIConn {
+  items: [RFI]
+  nextToken: String
+}
+
+type MatterFileConn {
+  items: [File]
+  nextToken: String
+}

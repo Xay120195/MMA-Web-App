@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -72,6 +72,7 @@ const TableInfo = ({
   loading,
   setLoading,
   maxLoading,
+  sortByOrder,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -86,6 +87,7 @@ const TableInfo = ({
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
+  const [sortByDate, setSortByDate] = useState([]);
 
   const location = useLocation();
   const history = useHistory();
@@ -120,6 +122,7 @@ const TableInfo = ({
       x.push({ id: id, date: date, details: details });
       setSelectRow(x);
       setSrcIndex(position);
+      setShowDeleteButton(true);
     }
     if (checkedId) {
       var x = selectRow.filter(function (sel) {
@@ -230,29 +233,36 @@ const TableInfo = ({
         }, 1000);
       }, 1000);
     } else {
-      {
-        setDescAlert("");
-        setUpdateProgress(true);
-        setalertMessage(`Saving in progress..`);
-        setShowToast(true);
+      setDescAlert("");
+      setUpdateProgress(true);
+      setalertMessage(`Saving in progress..`);
+      setShowToast(true);
 
-        const data = {
-          description: e.target.innerHTML,
-          date: date,
-        };
-        await updateBackgroundDetails(id, data);
+      const updateArr = witness.map((obj) => {
+        if (obj.id === id) {
+          return { ...obj, description: e.target.innerHTML };
+        }
+        return obj;
+      });
+
+      setWitness(updateArr);
+
+      const data = {
+        description: e.target.innerHTML,
+        date: date,
+      };
+      await updateBackgroundDetails(id, data);
+      setTimeout(() => {
         setTimeout(() => {
+          setTextDesc("");
+          setalertMessage(`Successfully updated`);
+          setShowToast(true);
           setTimeout(() => {
-            setTextDesc("");
-            setalertMessage(`Successfully updated `);
-            setShowToast(true);
-            setTimeout(() => {
-              setShowToast(false);
-              setUpdateProgress(false);
-            }, 1000);
+            setShowToast(false);
+            setUpdateProgress(false);
           }, 1000);
         }, 1000);
-      }
+      }, 1000);
     }
   };
 
@@ -356,26 +366,63 @@ const TableInfo = ({
   `;
 
   const handleDelete = async (item) => {
-    const filteredArrFiles = files.filter((i) => i.uniqueId !== item[0].id);
-    let arrFiles = [];
-    for (let i = 0; i < witness.length; i++) {
-      arrFiles = filteredArrFiles
-        .filter((element) => element.backgroundId === witness[i].id)
-        .map(({ id }) => ({
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: item[0].backgroundId,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      const arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
           id: id,
-        }));
-      console.log(arrFiles);
-      if (witness[i].id !== null) {
-        const request = API.graphql({
-          query: mUpdateBackgroundFile,
+        })
+      );
+
+      const filteredArrFiles = arrFileResult.filter((i) => i.id !== item[0].id);
+
+      const request = API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: item[0].backgroundId,
+          files: filteredArrFiles,
+        },
+      });
+
+      setTimeout(async () => {
+        // list updated result files
+        const backgroundFilesOptReq = await API.graphql({
+          query: qlistBackgroundFiles,
           variables: {
-            backgroundId: witness[i].id,
-            files: arrFiles,
+            id: item[0].backgroundId,
           },
         });
-      }
+
+        if (backgroundFilesOptReq.data.background.files !== null) {
+          const newFilesResult =
+            backgroundFilesOptReq.data.background.files.items.map(
+              ({ id, name, description, downloadURL }) => ({
+                id: id,
+                name: name,
+                description: description,
+                downloadURL: downloadURL,
+              })
+            );
+
+          const updateArrFiles = witness.map((obj) => {
+            if (obj.id === item[0].backgroundId) {
+              return { ...obj, files: { items: newFilesResult } };
+            }
+            return obj;
+          });
+
+          console.log(newFilesResult);
+          setWitness(updateArrFiles);
+        }
+      }, 1000);
     }
-    setFiles(filteredArrFiles);
+
     setshowRemoveFileModal(false);
     setalertMessage(`File successfully deleted!`);
     setShowToast(true);
@@ -395,24 +442,26 @@ const TableInfo = ({
     }
   }, 10000);
 
-  const SortBydate = () => {
+  const SortBydate = async () => {
     if (!ascDesc) {
+      console.log("f");
       setAscDesc(true);
-
-      witness.sort(
-        (a, b) =>
-          new Date(a.date) - new Date(b.date) ||
-          new Date(a.createdAt) - new Date(b.createdAt)
+      setWitness(
+        witness.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+      );
+      console.log(
+        witness.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
       );
     } else {
+      console.log("t");
       setAscDesc(false);
-      witness.sort(
-        (a, b) =>
-          new Date(b.date) - new Date(a.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
+      setWitness(
+        witness.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+      );
+      console.log(
+        witness.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
       );
     }
-    setWitness(witness);
   };
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
@@ -505,7 +554,33 @@ const TableInfo = ({
           files: filteredArr,
         },
       });
-      getBackground();
+
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: background_id,
+        },
+      });
+
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+
+        const updateArrFiles = witness.map((obj) => {
+          if (obj.id === background_id) {
+            return { ...obj, files: { items: newFilesResult } };
+          }
+          return obj;
+        });
+        setWitness(updateArrFiles);
+      }
     }
 
     setSelectedId(background_id);
@@ -518,70 +593,148 @@ const TableInfo = ({
     return new Date(date);
   };
 
+  const convertArrayToObject = (array) => {
+    const initialValue = {};
+    return array.reduce((obj, item) => {
+      return {
+        ...obj,
+        item: item,
+      };
+    }, initialValue);
+  };
+  const [createMew, setCreateMew] = useState([]);
   const handlePasteRow = (targetIndex) => {
-    let newList = newWitness.current;
+    let tempWitness = [...witness];
+    let arrCopyFiles = [];
+    let arrFileResult = [];
+    let createNewRows = [];
 
-    let result = newlist.filter(function (item) {
-      return newRow.indexOf(item.id) != -1;
-    });
+    setCheckedState(new Array(witness.length).fill(false));
+    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
-    setSelectRow(result);
+    storedItemRows.map(async function (x) {
+      const mCreateBackground = `
+          mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
+            backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+              createdAt
+              date
+              description
+              id
+              order
+            }
+          }
+      `;
 
-    const [newlist] = [...newList];
-
-    newList.splice(targetIndex, 0, newlist);
-
-    setPasteButton(false);
-    setShowDeleteButton(false);
-    const res = newList.map(myFunction);
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
-    }
-
-    res.map(async function (x) {
-      const mUpdateBackgroundOrder = `
-    mutation updateBackground($id: ID, $order: Int) {
-      backgroundUpdate(id: $id, order: $order) {
-        id
-        order
-      }
-    }`;
-      await API.graphql({
-        query: mUpdateBackgroundOrder,
+      const createBackgroundRow = await API.graphql({
+        query: mCreateBackground,
         variables: {
-          id: x.id,
-          order: x.order,
+          clientMatterId: matterId,
+          date: new Date(x.date).toISOString(),
+          description: x.details,
+          files: { items: [] },
         },
       });
-    });
-    getBackground();
 
+      arrFileResult = [
+        {
+          createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+          id: createBackgroundRow.data.backgroundCreate.id,
+          files: createBackgroundRow.data.backgroundCreate.files,
+          date: createBackgroundRow.data.backgroundCreate.date,
+          description: createBackgroundRow.data.backgroundCreate.description,
+          order: createBackgroundRow.data.backgroundCreate.order,
+        },
+      ];
+
+      arrCopyFiles = newWitness.map(({ id }) => ({
+        id: id,
+      }));
+
+      const request = await API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: createBackgroundRow.data.backgroundCreate.id,
+          files: arrCopyFiles,
+        },
+      });
+
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: createBackgroundRow.data.backgroundCreate.id,
+        },
+      });
+
+      const updateArrFiles = arrFileResult.map((obj) => {
+        if (obj.id === request.data.backgroundFileTag.id) {
+          return { ...obj, files: backgroundFilesOptReq.data.background.files };
+        }
+        return obj;
+      });
+
+      const newFiles = convertArrayToObject(updateArrFiles);
+
+      tempWitness.splice(targetIndex + 1, 0, newFiles.item);
+      setWitness(tempWitness);
+      setSelectRow(updateArrFiles);
+
+      const res = tempWitness.map(myFunction);
+
+      function myFunction(item, index) {
+        let data;
+        return (data = {
+          id: item.id,
+          order: index + 1,
+        });
+      }
+
+      res.map(async function (x) {
+        const mUpdateBackgroundOrder = `
+  mutation updateBackground($id: ID, $order: Int) {
+    backgroundUpdate(id: $id, order: $order) {
+      id
+      order
+    }
+  }`;
+        await API.graphql({
+          query: mUpdateBackgroundOrder,
+          variables: {
+            id: x.id,
+            order: x.order,
+          },
+        });
+      });
+    });
+
+    setShowDeleteButton(false);
+    setPasteButton(false);
     setTimeout(() => {
       setSelectRow([]);
-
       setNewRow([]);
       setSrcIndex("");
-    }, 4000);
+      localStorage.removeItem("selectedRows");
+    }, 10000);
   };
 
-  console.log(witness);
+  // const reOrderFiles = (array, tempWitness, targetIndex) => {
+  //   const df = convertArrayToObject(array);
 
+  //   tempWitness.splice(targetIndex + 1, 0, df.item);
+  //   return setWitness(tempWitness);
+  // };
   const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
       setLoading(true);
     }, 1500);
     setTimeout(() => {
-      loadMoreBackground();
+      /** Remove for now for lazy load */
+      //loadMoreBackground();
       setLoading(false);
     }, 2500);
   });
-
-  useBottomScrollListener(handleBottomScroll);
+  /** Remove for now for lazy load */
+  //useBottomScrollListener(handleBottomScroll);
 
   return (
     <>
@@ -597,19 +750,19 @@ const TableInfo = ({
               ) : (
                 <>
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="relative min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
                           <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             No
                           </th>
                           {checkDate && (
                             <th
                               scope="col"
-                              className="px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Date
                               <img
@@ -624,7 +777,7 @@ const TableInfo = ({
                           {checkDesc && (
                             <th
                               scope="col"
-                              className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Description of Background
                             </th>
@@ -632,7 +785,7 @@ const TableInfo = ({
                           {checkDocu && (
                             <th
                               scope="col"
-                              className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Document
                             </th>
@@ -656,6 +809,11 @@ const TableInfo = ({
                                 >
                                   {(provider, snapshot) => (
                                     <tr
+                                      className={
+                                        selectRow.find(
+                                          (x) => x.id === item.id
+                                        ) && "bg-green-300"
+                                      }
                                       key={item.id}
                                       index={index}
                                       {...provider.draggableProps}
@@ -773,20 +931,29 @@ const TableInfo = ({
                                           {...provider.dragHandleProps}
                                           className="py-2 px-3 w-80 text-sm text-gray-500"
                                         >
-                                          {/* {selectRow.find(
+                                          {selectRow.find(
                                             (x) => x.id === item.id
                                           ) && (
                                             <div class="separator">
                                               ROW SELECTED
                                             </div>
-                                          )} */}
+                                          )}
                                           {!activateButton ? (
-                                            <Link
-                                              className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                              to={`${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`}
-                                            >
-                                              File Bucket +
-                                            </Link>
+                                            !activateButton &&
+                                            selectRow.find(
+                                              (x) => x.id === item.id
+                                            ) ? (
+                                              <button></button>
+                                            ) : (
+                                              <button
+                                                className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                onClick={() =>
+                                                  (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`)
+                                                }
+                                              >
+                                                File Bucket +
+                                              </button>
+                                            )
                                           ) : (
                                             <span
                                               className={
@@ -807,7 +974,7 @@ const TableInfo = ({
                                             </span>
                                           )}
 
-                                          {files.length === 0 ? (
+                                          {item.files.items.length === 0 ? (
                                             <>
                                               <br />
                                               <p className="text-xs">
@@ -826,12 +993,14 @@ const TableInfo = ({
                                               </span>
                                               <br />
                                               <br />
-                                              {files
+                                              {/* {files
                                                 .filter(
                                                   (x) =>
                                                     x.backgroundId === item.id
                                                 )
-                                                .map((items, index) => (
+                                                .map((items, index) => ( */}
+                                              {item.files.items.map(
+                                                (items, index) => (
                                                   <>
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
@@ -842,9 +1011,10 @@ const TableInfo = ({
                                                           onChange={(event) =>
                                                             handleFilesCheckboxChange(
                                                               event,
-                                                              items.uniqueId,
+                                                              items.id +
+                                                                item.id,
                                                               items.id,
-                                                              items.backgroundId
+                                                              item.id
                                                             )
                                                           }
                                                         />
@@ -871,8 +1041,8 @@ const TableInfo = ({
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id,
+                                                              item.id
                                                             )
                                                           }
                                                         />
@@ -881,15 +1051,16 @@ const TableInfo = ({
                                                           className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id,
+                                                              item.id
                                                             )
                                                           }
                                                         />
                                                       )}
                                                     </p>
                                                   </>
-                                                ))}
+                                                )
+                                              )}
                                             </>
                                           )}
                                         </td>
@@ -897,7 +1068,7 @@ const TableInfo = ({
                                     </tr>
                                   )}
                                 </Draggable>
-                                {pasteButton && (
+                                {pasteButton && selectRow.length >= 0 && (
                                   <tr
                                     style={{
                                       border: "rgb(0, 204, 0) 2px dashed",
@@ -928,24 +1099,24 @@ const TableInfo = ({
           </div>
         </div>
         <div>
-          {maxLoading ? (
-              <div className="flex justify-center items-center mt-5">
-                <p>All data has been loaded.</p>
-              </div>
-            ) : witness.length >= 25 ? (
-              <div className="flex justify-center items-center mt-5">
-                <img src={imgLoading} width={50} height={100} />
-              </div>
-            ) : (
-              <span></span>
-            )
-          }
+          {/** Remove for now for lazy load */}
+          {/* {maxLoading ? (
+            <div className="flex justify-center items-center mt-5">
+              <p>All data has been loaded.</p>
+            </div>
+          ) : witness.length >= 25 ? (
+            <div className="flex justify-center items-center mt-5">
+              <img src={imgLoading} width={50} height={100} />
+            </div>
+          ) : (
+            <span></span>
+          )}
 
           {!maxLoading && loading ? (
             <span className="grid"></span>
           ) : (
             <span></span>
-          )}
+          )} */}
         </div>
       </div>
       {ShowModalParagraph && (

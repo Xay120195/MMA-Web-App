@@ -48,6 +48,8 @@ functions:
     handler: src/handlers/graphql/company/index.handler
   clientmatter-fn:
     handler: src/handlers/graphql/clientMatter/index.handler
+  background-fn:
+    handler: src/handlers/graphql/background/index.handler
 
 custom:
   dynamodb:
@@ -156,6 +158,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: matterFile
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matterFiles
         request: false
         response: false
       - dataSource: LambdaQueryDS
@@ -363,6 +370,11 @@ custom:
         field: backgrounds
         request: false
         response: false
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: rfis
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: columnSettings
@@ -373,6 +385,12 @@ custom:
         field: columnSettingsCreate
         request: false
         response: false
+      - dataSource: LambdaBackgroundDS
+        type: Background
+        field: files
+        request: false
+        response: false
+
     dataSources:
       - type: AWS_LAMBDA
         name: LambdaQueryDS
@@ -398,6 +416,10 @@ custom:
         name: DynamoDBMatterFileTableDS
         config:
           tableName: !Ref MatterFileTable
+      - type: AWS_LAMBDA
+        name: LambdaBackgroundDS
+        config:
+          functionName: background-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

@@ -68,6 +68,7 @@ export const getMatterList = async (dispatch, companyId) => {
       },
     });
 
+    console.log("action: getMatterList", clientMattersOpt);
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
 

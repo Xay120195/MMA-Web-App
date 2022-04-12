@@ -29,8 +29,8 @@ export default function Background() {
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [selectRow, setSelectRow] = useState([]);
-  const [newRow, setNewRow] = useState([]);
-  const newWitness = useRef();
+  const [newRow, setNewRow] = useState([{}]);
+  const [newWitness, setNewWitness] = useState([]);
 
   const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
@@ -119,6 +119,15 @@ export default function Background() {
             date
             createdAt
             order
+            files {
+              items {
+                id
+                downloadURL
+                details
+                name
+                type
+              }
+            }
           }
           nextToken
         }
@@ -147,57 +156,35 @@ export default function Background() {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      /** Remove for now for lazy load */
+      // variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      variables: { id: matterId },
     });
 
     setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
     if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-        ({ id, description, date, createdAt, order }) => ({
+        ({ id, description, date, createdAt, order, files }) => ({
           createdAt: createdAt,
           id: id,
           description: description,
           date: date,
           order: order,
+          files: files,
         })
       );
 
-      if (witness !== null) {
-        // setWitness(...witness, result);
-        // setWitness([...witness, result]);
-        setWitness(result);
-        setMaxLoading(false);
-      }
+      console.log(result);
 
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);
 
-      let mergeArrFiles = [];
-      let arrFileResult = [];
-      for (let i = 0; i < sortByOrder(result).length; i++) {
-        const backgroundFilesOpt = await API.graphql({
-          query: qlistBackgroundFiles,
-          variables: {
-            id: result[i].id,
-          },
-        });
-        if (backgroundFilesOpt.data.background.files !== null) {
-          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-            ({ id, downloadURL, name }) => ({
-              uniqueId: result[i].id + id,
-              backgroundId: result[i].id,
-              id: id,
-              downloadURL: downloadURL,
-              name: name,
-            })
-          );
-
-          mergeArrFiles.push(...arrFileResult);
-        }
+      if (witness !== null) {
+        setWitness(result);
+        setMaxLoading(false);
       }
-      setFiles(mergeArrFiles);
     }
   };
 
@@ -223,12 +210,13 @@ export default function Background() {
 
       if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
         result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-          ({ id, description, date, createdAt, order }) => ({
+          ({ id, description, date, createdAt, order, files }) => ({
             createdAt: createdAt,
             id: id,
             description: description,
             date: date,
             order: order,
+            files: files,
           })
         );
 
@@ -241,7 +229,7 @@ export default function Background() {
           }, 1500);
         }
 
-        let mergeArrFiles = [];
+        /*let mergeArrFiles = [];
         let arrFileResult = [];
         for (let i = 0; i < sortByOrder(result).length; i++) {
           const backgroundFilesOpt = await API.graphql({
@@ -265,9 +253,10 @@ export default function Background() {
           }
         }
         setFiles(mergeArrFiles);
+        */
       }
     } else {
-      console.log("NO MORE!");
+      console.log("Last Result!");
       setMaxLoading(true);
     }
   };
@@ -318,7 +307,6 @@ export default function Background() {
       setPageSize(pageSize - pageList);
     }
   };
-
   return (
     <>
       <div
@@ -384,6 +372,8 @@ export default function Background() {
                 newRow={newRow}
                 newWitness={newWitness}
                 setMaxLoading={setMaxLoading}
+                sortByOrder={sortByOrder}
+                setNewWitness={setNewWitness}
               />
             </div>
           </div>
@@ -449,6 +439,7 @@ export default function Background() {
         setLoading={setLoading}
         setMaxLoading={setMaxLoading}
         maxLoading={maxLoading}
+        sortByOrder={sortByOrder}
       />
     </>
   );
