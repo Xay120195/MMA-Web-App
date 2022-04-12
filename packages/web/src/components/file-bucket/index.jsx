@@ -443,8 +443,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 25,
-        nextToken: vNextToken,
+        /** Remove for now for lazy load */
+        //limit: 25,
+        //nextToken: vNextToken,
       },
     };
 
@@ -1604,7 +1605,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       </DragDropContext>
                     </div>
                     <div>
-                      {maxLoading ? (
+                      {/* {maxLoading ? (
                           <div className="flex justify-center items-center mt-5">
                             <p>All data has been loaded.</p>
                           </div>
@@ -1621,7 +1622,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                         <span className="grid"></span>
                       ) : (
                         <span></span>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 ) : (
