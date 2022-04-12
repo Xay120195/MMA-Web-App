@@ -87,6 +87,7 @@ const TableInfo = ({
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
+  const [sortByDate, setSortByDate] = useState([]);
 
   const location = useLocation();
   const history = useHistory();
@@ -441,24 +442,30 @@ const TableInfo = ({
     }
   }, 10000);
 
-  const SortBydate = () => {
+  const SortBydate = async () => {
     if (!ascDesc) {
+      console.log("f");
       setAscDesc(true);
-
-      witness.sort(
+      setWitness(witness.slice().sort(
         (a, b) =>
-          new Date(a.date) - new Date(b.date) ||
-          new Date(a.createdAt) - new Date(b.createdAt)
-      );
+          new Date(a.date) - new Date(b.date)
+      ));
+      console.log(witness.slice().sort(
+        (a, b) =>
+          new Date(a.date) - new Date(b.date)
+      ));
     } else {
+      console.log("t");
       setAscDesc(false);
-      witness.sort(
+      setWitness(witness.slice().sort(
         (a, b) =>
-          new Date(b.date) - new Date(a.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
-      );
+          new Date(b.date) - new Date(a.date)
+      ));
+      console.log(witness.slice().sort(
+        (a, b) =>
+          new Date(b.date) - new Date(a.date)
+      ))
     }
-    setWitness(witness);
   };
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
@@ -763,7 +770,7 @@ const TableInfo = ({
                             className="bg-white divide-y divide-gray-200"
                           >
                             {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
-                            {sortByOrder(witness).map((item, index) => (
+                            {witness.map((item, index) => (
                               <>
                                 <Draggable
                                   key={item.id}
