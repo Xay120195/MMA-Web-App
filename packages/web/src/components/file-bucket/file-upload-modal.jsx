@@ -163,23 +163,11 @@ export default function UploadLinkModal(props) {
 
     var tempArr= [];
     selectedFiles.map((uf) => {
-      console.log(uf);
-      var re = /(?:\.([^.]+))?$/;
-      var ext = re.exec(uf.data.name)[0];
-      const result = rejectFiles.find((item) => item.includes(ext));
-      console.log("ress", result);
-
-      if(result){
-        tempArr = tempArr;
-      }else if(uf.data.size > 2147483648){
-        tempArr = tempArr;
-      }else{
         tempArr = [...tempArr, uf];
-      }
     });
     setSelectedFiles(tempArr);
     _setSelectedFiles(tempArr);
-      tempArr.map(async (uf, index) => {
+    tempArr.map(async (uf, index) => {
         if (uf.data.name.split(".").pop() == "docx") {
           var name = uf.data.name,
             size = uf.data.size,
