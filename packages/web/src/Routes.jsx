@@ -54,12 +54,12 @@ const Routes = () => {
           />
           <Route
             exact
-            path={`${AppRoutes.MATTERSRFI}/:id`}
+            path={`${AppRoutes.MATTERSRFI}/:matter_id`}
             component={MattersRFI}
           />
           <Route
             exact
-            path={`${AppRoutes.RFIPAGE}/:id`}
+            path={`${AppRoutes.RFIPAGE}/:matter_id`}
             component={RFIPage}
           />
           <Route exact path={AppRoutes.CONTACTS} component={Contacts} />

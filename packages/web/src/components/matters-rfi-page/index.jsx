@@ -11,9 +11,12 @@ import AccessControl from "../../shared/accessControl";
 import { FaUserCircle } from "react-icons/fa";
 import {AiOutlineFolderOpen} from "react-icons/ai";
 import BlankList from "../../assets/images/RFI_Blank_List.svg";
+import { useParams } from "react-router-dom";
+import { API } from "aws-amplify";
 
 export default function MattersRFI() {
   let history = useHistory();
+  const { matter_id } = useParams();
 
   const modalRFIAlertMsg = "RFI Name successfully created.";
 
@@ -37,6 +40,60 @@ export default function MattersRFI() {
     setShowToast(false);
   };
 
+  const [RFI, setRFI] = useState(null);
+  
+
+  const listRFI = `
+    query listRFI($clientMatterId: ID) {
+      clientMatter(id: $clientMatterId) {
+        rfis {
+          items {
+            id
+            name
+            createdAt
+          }
+        }
+      }
+    }
+    `;
+
+  const getRFI = async () => {
+    console.log("matterid", matter_id );
+    // const RFIList = await API.graphql({
+    //   query: listRFI,
+    //   variables: {
+    //     clientMatterId: matter_id,
+    //   },
+    // });
+    // console.log("rfi", RFIList);
+    // const matterRFIList = RFIList.data.clientMatter.rfis.items;
+    // setRFI(matterRFIList);
+    const params = {
+      query: listRFI,
+      variables: {
+        clientMatterId: matter_id,
+      },
+    };
+
+    await API.graphql(params).then((rfi) => {
+      const matterFilesList = rfi.data.clientMatter.rfis.items;
+      console.log("mfl", matterFilesList);
+      setRFI(matterFilesList);
+    });
+
+    // console.log("rffiii",RFI);
+
+
+  }
+
+  useEffect(() => {
+    if (RFI === null) {
+      getRFI();
+    }
+  });
+
+
+
   const handleSaveRFI = (rfiname) => {
     console.log("RFI name:", rfiname);
     setalertMessage(modalRFIAlertMsg);
@@ -45,7 +102,7 @@ export default function MattersRFI() {
 
     setTimeout(() => {
       setShowToast(false);
-      history.push(`${AppRoutes.RFIPAGE}/000`);
+      history.push(`${AppRoutes.RFIPAGE}/${matter_id}`);
 
     }, 3000);
   };
@@ -79,42 +136,7 @@ export default function MattersRFI() {
     setSearchTable(e.target.value);
   };
 
-  useEffect(() => {
-    if (searchTable !== undefined) {
-      filter(searchTable);
-      console.log("L121" + searchTable);
-    }
-    featureAccessFilters();
-  }, [searchTable]);
 
-  const featureAccessFilters = async () => {
-    console.log("featureAccessFilters()");
-    const mattersOverviewAccess = await AccessControl("MATTERSRFI");
-
-    if (mattersOverviewAccess.status !== "restrict") {
-      console.log(mattersOverviewAccess);
-      setShowAddRow(mattersOverviewAccess.data.features.includes("ADDROW"));
-
-      setAllowUpdateQuestion(
-        mattersOverviewAccess.data.features.includes("UPDATEQUESTION")
-      );
-
-      setAllowUpdateResponse(
-        mattersOverviewAccess.data.features.includes("UPDATERESPONSE")
-      );
-    }
-
-  };
-
-  const filter = (v) => {
-    setQuestion(
-      questions.filter(
-        (x) =>
-          x.statement.toLowerCase().includes(v.toLowerCase()) ||
-          x.comments.toLowerCase().includes(v.toLowerCase())
-      )
-    );
-  };
 
   var dummyData = [
     // {id: 111, name: "RFI 1", datecreated: "Jan 01, 2022"},
@@ -179,7 +201,7 @@ export default function MattersRFI() {
               </div>
             </div>
           </div>
-          {dummyData.length === 0 ? (
+          {RFI === null  ? (
             <div className="p-5 px-5 py-1 left-0">
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
                 {/* <BlankState
@@ -188,7 +210,7 @@ export default function MattersRFI() {
                   handleClick={handleBlankStateClick}
                 /> */}
                 <BlankState
-                    displayText={"There are no questions to show in this view"}
+                    displayText={"There are no items to show in this view"}
                     txtLink={"add new RFI"}
                     iconDisplay={BlankList}
                 />
@@ -196,7 +218,7 @@ export default function MattersRFI() {
             </div>
           ) : (
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-          {dummyData.map((item) => (
+          {RFI.map((item) => (
                 <div
                   className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
                   key={item.id}
@@ -215,7 +237,7 @@ export default function MattersRFI() {
                             tabIndex="0"
                             className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                           >
-                            {item.datecreated}
+                            {item.createdAt}
                           </p>
                         </div>
                     </div>
