@@ -692,12 +692,13 @@ const TableInfo = ({
       setLoading(true);
     }, 1500);
     setTimeout(() => {
-      loadMoreBackground();
+      /** Remove for now for lazy load */
+      //loadMoreBackground();
       setLoading(false);
     }, 2500);
   });
-
-  useBottomScrollListener(handleBottomScroll);
+  /** Remove for now for lazy load */
+  //useBottomScrollListener(handleBottomScroll);
 
   return (
     <>
@@ -1059,7 +1060,8 @@ const TableInfo = ({
           </div>
         </div>
         <div>
-          {maxLoading ? (
+          {/** Remove for now for lazy load */}
+          {/* {maxLoading ? (
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
@@ -1075,7 +1077,7 @@ const TableInfo = ({
             <span className="grid"></span>
           ) : (
             <span></span>
-          )}
+          )} */}
         </div>
       </div>
       {ShowModalParagraph && (

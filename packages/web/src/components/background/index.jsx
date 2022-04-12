@@ -156,7 +156,9 @@ export default function Background() {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      /** Remove for now for lazy load */
+      // variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      variables: { id: matterId },
     });
 
     setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
