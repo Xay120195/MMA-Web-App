@@ -398,6 +398,8 @@ Resources:
           AttributeType: S
         - AttributeName: clientMatterId
           AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -412,6 +414,14 @@ Resources:
           KeySchema:
             - AttributeName: clientMatterId
               KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST

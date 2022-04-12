@@ -6,12 +6,22 @@ type Company {
   clients(limit: Int, nextToken: String): CompanyClientConn
   matters(limit: Int, nextToken: String): CompanyMatterConn
   clientMatters(limit: Int, nextToken: String): CompanyClientMatterConn
+  clientMattersV2(
+    limit: Int
+    nextToken: String
+    sortOrder: ClientMatterSortOrder
+  ): CompanyClientMatterConn
   phone: String
   email: AWSEmail
   representative: User
   logo: AWSURL
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+enum ClientMatterSortOrder {
+  CREATED_DESC
+  CREATED_ASC
 }
 
 type Address {
