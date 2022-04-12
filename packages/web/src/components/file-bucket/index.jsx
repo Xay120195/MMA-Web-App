@@ -1166,8 +1166,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setLoading(false);
     }, 2500);
   });
-
-  useBottomScrollListener(handleBottomScroll);
+  
+  /** Remove for now for lazy load */
+  //useBottomScrollListener(handleBottomScroll);
 
   return (
     <>
