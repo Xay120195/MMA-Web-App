@@ -33,34 +33,41 @@ async function listFileLabels(ctx) {
       marshall({ id: f.labelId })
     );
 
-    const labelsParams = {
-      RequestItems: {
-        LabelsTable: {
-          Keys: labelIds,
+    if (labelIds.length !== 0) {
+      const labelsParams = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
         },
-      },
-    };
+      };
 
-    const labelsCommand = new BatchGetItemCommand(labelsParams);
-    const labelsResult = await ddbClient.send(labelsCommand);
+      const labelsCommand = new BatchGetItemCommand(labelsParams);
+      const labelsResult = await ddbClient.send(labelsCommand);
 
-    const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
-      unmarshall(i)
-    );
-    const objFileLabels = fileLabelsResult.Items.map((i) => unmarshall(i));
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
+      );
+      const objFileLabels = fileLabelsResult.Items.map((i) => unmarshall(i));
 
-    const response = objFileLabels.map((item) => {
-      const filterLabel = objLabels.find((u) => u.id === item.labelId);
-      return { ...item, ...filterLabel };
-    });
-    return {
-      items: response,
-      nextToken: fileLabelsResult.LastEvaluatedKey
-        ? Buffer.from(
-            JSON.stringify(fileLabelsResult.LastEvaluatedKey)
-          ).toString("base64")
-        : null,
-    };
+      const response = objFileLabels.map((item) => {
+        const filterLabel = objLabels.find((u) => u.id === item.labelId);
+        return { ...item, ...filterLabel };
+      });
+      return {
+        items: response,
+        nextToken: fileLabelsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(fileLabelsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,

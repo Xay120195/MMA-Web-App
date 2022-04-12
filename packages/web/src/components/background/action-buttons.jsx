@@ -44,8 +44,9 @@ const ActionButtons = ({
   setPasteButton,
   setNewRow,
   newRow,
-  newWitness,
+  setNewWitness,
   setMaxLoading,
+  sortByOrder,
 }) => {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
@@ -124,13 +125,27 @@ const ActionButtons = ({
         description: "",
       },
     });
+
     if (createBackgroundRow) {
-      getBackground();
+      const result = {
+        createdAt: dateToday,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        description: "",
+        date: dateToday,
+        order: 0,
+        files: { items: [] },
+      };
+
+      setWitness((witness) => sortByOrder(witness.concat(result)));
+      witness.splice(0, 0, result);
+
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
       setMaxLoading(false);
+
+      setWitness(witness);
     }
   };
 
@@ -316,6 +331,21 @@ const ActionButtons = ({
   }
   `;
 
+  const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
   async function updateUserColumnSettings(id, data) {
     return new Promise((resolve, reject) => {
       try {
@@ -338,49 +368,30 @@ const ActionButtons = ({
 
   const handleCopyRow = () => {
     setPasteButton(true);
-    selectRow.map(async function (x) {
-      const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-        backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
-          createdAt
-          date
-          description
-          id
-          order
-        }
-      }
-  `;
+    localStorage.setItem("selectedRows", JSON.stringify(selectRow));
 
-      const createBackgroundRow = await API.graphql({
-        query: mCreateBackground,
+    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
+
+    storedItemRows.map(async function (x) {
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
         variables: {
-          clientMatterId: matterId,
-          date: new Date(x.date).toISOString(),
-          description: x.details,
+          id: x.id,
         },
       });
-      if (createBackgroundRow) {
-        const xs = witness;
-        xs.push({
-          id: createBackgroundRow.data.backgroundCreate.id,
-          date: createBackgroundRow.data.backgroundCreate.date,
-          description: createBackgroundRow.data.backgroundCreate.description,
-          createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-          order: 0,
-        });
-        newWitness.current = xs;
-      }
 
-      let x2 = newRow;
-      x2.push({
-        id: createBackgroundRow.data.backgroundCreate.id,
-        date: createBackgroundRow.data.backgroundCreate.date,
-        description: createBackgroundRow.data.backgroundCreate.description,
-        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-        order: 0,
-      });
-      setNewRow(x2);
-      // setCheckedState(new Array(witness.length).fill(false));
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+        setNewWitness(newFilesResult);
+      }
     });
   };
 
@@ -508,12 +519,13 @@ const ActionButtons = ({
           )}
           {showDeleteButton && (
             <>
-              {/* <button
+              <button
                 type="button"
                 onClick={handleCopyRow}
                 className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
               >
-                {pasteButton ? "PASTE" : "COPY"} {selectRow.length} ROW
+                {pasteButton ? "PASTE" : "COPY"} {selectRow.length}
+                &nbsp;{selectRow.length >= 2 ? "ROWS" : "ROW"}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -528,9 +540,10 @@ const ActionButtons = ({
                     d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
                   />
                 </svg>
-              </button> */}
+              </button>
               <button
                 type="button"
+                disabled={pasteButton ? true : false}
                 onClick={() => setshowRemoveFileModal(true)}
                 className="bg-red-400 hover:bg-red-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
               >

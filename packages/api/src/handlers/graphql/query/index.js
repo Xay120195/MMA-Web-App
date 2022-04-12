@@ -7,7 +7,11 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
-const { getMatterFile, getFile } = require("../../../services/MatterService");
+const {
+  getMatterFile,
+  getFile,
+  getMatterFiles,
+} = require("../../../services/MatterService");
 
 async function getCompany(data) {
   try {
@@ -182,6 +186,7 @@ async function listBackgrounds() {
   try {
     const param = {
       TableName: "BackgroundsTable",
+      ScanIndexForward: false,
     };
 
     const cmd = new ScanCommand(param);
@@ -397,53 +402,7 @@ async function getBackground(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-
-    const backgrounds = unmarshall(Item);
-
-    const backgroundFileParams = {
-      TableName: "BackgroundFileTable",
-      IndexName: "byBackground",
-      KeyConditionExpression: "backgroundId = :backgroundId",
-      ExpressionAttributeValues: marshall({
-        ":backgroundId": backgrounds.id,
-      }),
-    };
-
-    const backgroundFileCommand = new QueryCommand(backgroundFileParams);
-    const backgroundFileResult = await ddbClient.send(backgroundFileCommand);
-
-    const fileIds = backgroundFileResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.fileId })
-    );
-
-    if (fileIds.length != 0) {
-      const fileParams = {
-        RequestItems: {
-          MatterFileTable: {
-            Keys: fileIds,
-          },
-        },
-      };
-
-      const filesCommand = new BatchGetItemCommand(fileParams);
-      const filesResult = await ddbClient.send(filesCommand);
-
-      const objFiles = filesResult.Responses.MatterFileTable.map((i) =>
-        unmarshall(i)
-      );
-      const objBackgroundFiles = backgroundFileResult.Items.map((i) =>
-        unmarshall(i)
-      );
-
-      const extractFiles = objBackgroundFiles.map((item) => {
-        const filterFile = objFiles.find((u) => u.id === item.fileId);
-        return { ...filterFile };
-      });
-
-      backgrounds.files = { items: extractFiles };
-    }
-
-    resp = backgrounds ? backgrounds : {};
+    resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -480,6 +439,7 @@ async function getClientMatter(data) {
 }
 
 async function getUserColumnSettings(data) {
+  console.log("getUserColumnSettings()");
   const { userId, tableName } = data;
 
   let resp = {},
@@ -539,7 +499,9 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    resp = Object.keys(result).length !== 0 && result !== null ? result : [];
+    console.log(result);
+    resp = (Object.keys(result).length !== 0 && result !== null && result !== {}) ? result : [];
+    console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
@@ -655,6 +617,9 @@ const resolvers = {
     },
     matterFile: async (ctx) => {
       return getMatterFile(ctx.arguments);
+    },
+    matterFiles: async (ctx) => {
+      return getMatterFiles(ctx.arguments);
     },
     background: async (ctx) => {
       return getBackground(ctx.arguments);

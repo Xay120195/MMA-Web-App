@@ -98,6 +98,12 @@ export const clientMatterReducers = (state, action) => {
         listmatters: [],
         errorMatter: action.payload.error,
       };
+    default:
+      return {
+        loading: true,
+        listmatters: [],
+        errorMatter: {},
+      };
   }
-  return state;
+  // return state;
 };
