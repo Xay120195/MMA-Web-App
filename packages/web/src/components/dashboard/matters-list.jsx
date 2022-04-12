@@ -22,6 +22,8 @@ export function ClientMatters({}) {
     error,
   } = useContext(MatterContext);
 
+  console.log("List of Client/Matters",clientMatter);
+
   return (
     <>
       {view === "grid" ? (
@@ -29,7 +31,7 @@ export function ClientMatters({}) {
           {loading ? (
             <span>Please wait...</span>
           ) : clientMatter.length <= 0 ? (
-            <span>No results founds</span>
+            <span>No result found.</span>
           ) : (
             <>
               {clientMatter.map((item) => (
@@ -126,7 +128,7 @@ export function ClientMatters({}) {
           {loading ? (
             <span>Please wait...</span>
           ) : clientMatter.length <= 0 ? (
-            <span>No results found</span>
+            <span>No result found.</span>
           ) : (
             <>
               {clientMatter.map((item) => (
