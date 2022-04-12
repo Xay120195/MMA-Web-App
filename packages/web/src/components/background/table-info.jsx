@@ -232,36 +232,36 @@ const TableInfo = ({
         }, 1000);
       }, 1000);
     } else {
-        setDescAlert("");
-        setUpdateProgress(true);
-        setalertMessage(`Saving in progress..`);
-        setShowToast(true);
+      setDescAlert("");
+      setUpdateProgress(true);
+      setalertMessage(`Saving in progress..`);
+      setShowToast(true);
 
-        const updateArr = witness.map(obj => {
-          if (obj.id === id) {
-            return {...obj, description: e.target.innerHTML};
-          }
-          return obj;
-        });
-  
-        setWitness(updateArr);
+      const updateArr = witness.map((obj) => {
+        if (obj.id === id) {
+          return { ...obj, description: e.target.innerHTML };
+        }
+        return obj;
+      });
 
-        const data = {
-          description: e.target.innerHTML,
-          date: date,
-        };
-        await updateBackgroundDetails(id, data);
+      setWitness(updateArr);
+
+      const data = {
+        description: e.target.innerHTML,
+        date: date,
+      };
+      await updateBackgroundDetails(id, data);
+      setTimeout(() => {
         setTimeout(() => {
+          setTextDesc("");
+          setalertMessage(`Successfully updated`);
+          setShowToast(true);
           setTimeout(() => {
-            setTextDesc("");
-            setalertMessage(`Successfully updated`);
-            setShowToast(true);
-            setTimeout(() => {
-              setShowToast(false);
-              setUpdateProgress(false);
-            }, 1000);
+            setShowToast(false);
+            setUpdateProgress(false);
           }, 1000);
         }, 1000);
+      }, 1000);
     }
   };
 
@@ -365,7 +365,6 @@ const TableInfo = ({
   `;
 
   const handleDelete = async (item) => {
-
     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
@@ -391,27 +390,28 @@ const TableInfo = ({
       });
 
       setTimeout(async () => {
-       // list updated result files
+        // list updated result files
         const backgroundFilesOptReq = await API.graphql({
           query: qlistBackgroundFiles,
           variables: {
             id: item[0].backgroundId,
           },
         });
-    
-        if (backgroundFilesOptReq.data.background.files !== null) {
-          const newFilesResult = backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description, downloadURL }) => ({
-              id: id,
-              name: name,
-              description: description,
-              downloadURL: downloadURL
-            })
-          );
 
-          const updateArrFiles = witness.map(obj => {
+        if (backgroundFilesOptReq.data.background.files !== null) {
+          const newFilesResult =
+            backgroundFilesOptReq.data.background.files.items.map(
+              ({ id, name, description, downloadURL }) => ({
+                id: id,
+                name: name,
+                description: description,
+                downloadURL: downloadURL,
+              })
+            );
+
+          const updateArrFiles = witness.map((obj) => {
             if (obj.id === item[0].backgroundId) {
-              return {...obj, files: { items: newFilesResult }};
+              return { ...obj, files: { items: newFilesResult } };
             }
             return obj;
           });
@@ -558,20 +558,21 @@ const TableInfo = ({
           id: background_id,
         },
       });
-  
-      if (backgroundFilesOptReq.data.background.files !== null) {
-        const newFilesResult = backgroundFilesOptReq.data.background.files.items.map(
-          ({ id, name, description, downloadURL }) => ({
-            id: id,
-            name: name,
-            description: description,
-            downloadURL: downloadURL
-          })
-        );
 
-        const updateArrFiles = witness.map(obj => {
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+
+        const updateArrFiles = witness.map((obj) => {
           if (obj.id === background_id) {
-            return {...obj, files: { items: newFilesResult }};
+            return { ...obj, files: { items: newFilesResult } };
           }
           return obj;
         });
@@ -600,7 +601,11 @@ const TableInfo = ({
   };
 
   const handlePasteRow = (targetIndex) => {
-    console.log(targetIndex);
+    let tempWitness = [...witness];
+    let arrCopyFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
+
     setCheckedState(new Array(witness.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
@@ -623,67 +628,63 @@ const TableInfo = ({
           clientMatterId: matterId,
           date: new Date(x.date).toISOString(),
           description: x.details,
+          files: { items: [] },
         },
       });
 
-      if (createBackgroundRow) {
-        const xd = newRow;
-        xd.push({
-          createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-          date: createBackgroundRow.data.backgroundCreate.date,
-          description: createBackgroundRow.data.backgroundCreate.description,
+      const xd = newRow;
+      xd.push({
+        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        files: createBackgroundRow.data.backgroundCreate.files,
+        date: createBackgroundRow.data.backgroundCreate.date,
+        description: createBackgroundRow.data.backgroundCreate.description,
+        order: createBackgroundRow.data.backgroundCreate.order,
+      });
+      setNewRow(xd);
+
+      arrCopyFiles = newWitness.map(({ id }) => ({
+        id: id,
+      }));
+
+      const request = await API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: createBackgroundRow.data.backgroundCreate.id,
+          files: arrCopyFiles,
+        },
+      });
+
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
           id: createBackgroundRow.data.backgroundCreate.id,
-          order: 0,
-        });
-        setNewRow(xd);
+        },
+      });
 
-        const oaWitness = convertArrayToObject(newRow);
-
-        // newWitness.current = [...witness];
-
-        witness.splice(targetIndex + 1, 0, oaWitness.item);
-        setWitness(witness);
-        setSelectRow(newRow);
-        const res = witness.map(myFunction);
-
-        function myFunction(item, index) {
-          let data;
-          return (data = {
-            id: item.id,
-            order: index + 1,
-          });
+      const updateArrFiles = newRow.map((obj) => {
+        if (obj.id === createBackgroundRow.data.backgroundCreate.id) {
+          return { ...obj, files: backgroundFilesOptReq.data.background.files };
         }
+        return obj;
+      });
 
-        res.map(async function (x) {
-          const mUpdateBackgroundOrder = `
-      mutation updateBackground($id: ID, $order: Int) {
-        backgroundUpdate(id: $id, order: $order) {
-          id
-          order
-        }
-      }`;
-          await API.graphql({
-            query: mUpdateBackgroundOrder,
-            variables: {
-              id: x.id,
-              order: x.order,
-            },
-          });
-        });
-      }
+      const dt = convertArrayToObject(updateArrFiles);
+      tempWitness.splice(targetIndex + 1, 0, dt.item);
 
-      // setWitness(newWitness.current);
+      setWitness(tempWitness);
+      setSelectRow(updateArrFiles);
+
+      setShowDeleteButton(false);
+      setPasteButton(false);
+      setTimeout(() => {
+        setSelectRow([]);
+        setNewRow([]);
+        setSrcIndex("");
+
+        localStorage.removeItem("selectedRows");
+      }, 10000);
     });
-
-    setShowDeleteButton(false);
-    setPasteButton(false);
-    setTimeout(() => {
-      setSelectRow([]);
-      setNewRow([]);
-      setSrcIndex("");
-
-      localStorage.removeItem("selectedRows");
-    }, 10000);
   };
 
   const handleBottomScroll = useCallback(() => {
@@ -963,7 +964,8 @@ const TableInfo = ({
                                                     x.backgroundId === item.id
                                                 )
                                                 .map((items, index) => ( */}
-                                                {item.files.items.map((items, index) => (
+                                              {item.files.items.map(
+                                                (items, index) => (
                                                   <>
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
@@ -974,7 +976,8 @@ const TableInfo = ({
                                                           onChange={(event) =>
                                                             handleFilesCheckboxChange(
                                                               event,
-                                                              items.id+item.id,
+                                                              items.id +
+                                                                item.id,
                                                               items.id,
                                                               item.id
                                                             )
@@ -1021,7 +1024,8 @@ const TableInfo = ({
                                                       )}
                                                     </p>
                                                   </>
-                                                ))}
+                                                )
+                                              )}
                                             </>
                                           )}
                                         </td>

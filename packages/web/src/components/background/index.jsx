@@ -30,7 +30,7 @@ export default function Background() {
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [selectRow, setSelectRow] = useState([]);
   const [newRow, setNewRow] = useState([]);
-  const newWitness = useRef();
+  const [newWitness, setNewWitness] = useState([]);
 
   const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
@@ -171,7 +171,7 @@ export default function Background() {
           description: description,
           date: date,
           order: order,
-          files: files
+          files: files,
         })
       );
 
@@ -373,6 +373,7 @@ export default function Background() {
                 newWitness={newWitness}
                 setMaxLoading={setMaxLoading}
                 sortByOrder={sortByOrder}
+                setNewWitness={setNewWitness}
               />
             </div>
           </div>
