@@ -39,6 +39,7 @@ export const ModalParagraph = ({
           clientMatterId: matterId,
           date: dateToday,
           description: x,
+          files: { items: [] },
         },
       });
 
@@ -49,6 +50,7 @@ export const ModalParagraph = ({
         description: createBackgroundRow.data.backgroundCreate.description,
         id: createBackgroundRow.data.backgroundCreate.id,
         order: 0,
+        files: { items: [] },
       });
 
       if (newData.length >= 0) {
