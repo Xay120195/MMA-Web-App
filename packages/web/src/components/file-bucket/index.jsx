@@ -8,6 +8,7 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
+import DatePicker from "react-datepicker";
 import {
   AiOutlineDownload,
   AiFillTags,
@@ -36,6 +37,7 @@ import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
+import { format } from 'date-fns';
 
 export var selectedRows = [];
 export var pageSelectedLabels;
@@ -170,6 +172,15 @@ export default function FileBucket() {
       }
   `;
 
+  const mUpdateMatterFileDate = `
+      mutation updateMatterFile ($id: ID, $date: AWSDateTime) {
+        matterFileUpdate(id: $id, date: $date) {
+          id
+          date
+        }
+      }
+  `;
+
   const mSoftDeleteMatterFile = `
       mutation softDeleteMatterFile ($id: ID) {
         matterFileSoftDelete(id: $id) {
@@ -287,6 +298,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       id
       name
       details
+      date
       labels {
         items {
           id
@@ -727,6 +739,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   };
 
+  
   async function updateMatterFileName(id, data) {
     console.log("data:", data);
     console.groupEnd();
@@ -737,6 +750,36 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           variables: {
             id: id,
             name: data.name
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  //date saving
+  const handleChangeDate = async (selected, id) => {
+    const data = {
+      date: String(selected)
+    };
+    // alert(selected);
+    await updateMatterFileDate(id, data);
+    const updatedArray = matterFiles.map((p) =>
+      p.id === id ? { ...p, date: String(selected) } : p
+    );
+    setMatterFiles(sortByOrder(updatedArray));
+  };
+
+  async function updateMatterFileDate(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateMatterFileDate,
+          variables: {
+            id: id,
+            date: new Date(data.date).toISOString()
           },
         });
         resolve(request);
@@ -1170,6 +1213,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   /** Remove for now for lazy load */
   //useBottomScrollListener(handleBottomScroll);
 
+  
+
   return (
     <>
       <div
@@ -1335,6 +1380,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
                               </th>
+                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                                Date
+                              </th>
                               <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
                                 Name
                               </th>
@@ -1407,6 +1455,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               }
                                             />
                                             <span>{index + 1}</span>
+                                          </td>
+                                          <td>
+                                            <DatePicker
+                                              className="border w-28 rounded border-gray-300 mb-5"
+                                              selected={new Date(data.date)}
+                                              onChange={(selected) =>
+                                                handleChangeDate(
+                                                  selected,
+                                                  data.id
+                                                )
+                                              }
+                                            />
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
