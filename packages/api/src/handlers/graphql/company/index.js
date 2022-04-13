@@ -228,17 +228,20 @@ async function listCompanyClients(ctx) {
 }
 
 async function listCompanyClientMatters(ctx) {
+  console.log("listCompanyClientMatters");
+  console.log(ctx.source);
+  console.log(ctx.arguments);
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
   try {
     const compCMParam = {
       TableName: "CompanyClientMatterTable",
-      IndexName: "byCompany",
+      IndexName: "byCreatedAt",
       KeyConditionExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ScanIndexForward: false,
+      ScanIndexForward: sortOrder === "CREATED_DESC" ? false : true,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -316,7 +319,7 @@ const resolvers = {
     },
     clientMatters: async (ctx) => {
       return listCompanyClientMatters(ctx);
-    },
+    }
   },
 };
 
