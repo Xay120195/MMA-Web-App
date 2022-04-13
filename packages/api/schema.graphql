@@ -8,7 +8,7 @@ type Company {
   clientMatters(
     limit: Int
     nextToken: String
-    sortOrder: ClientMatterSortOrder
+    sortOrder: OrderBy
   ): CompanyClientMatterConn
   phone: String
   email: AWSEmail
@@ -18,7 +18,7 @@ type Company {
   updatedAt: AWSDateTime
 }
 
-enum ClientMatterSortOrder {
+enum OrderBy {
   CREATED_DESC
   CREATED_ASC
 }
@@ -133,7 +133,11 @@ type ClientMatter {
   id: ID!
   matter: Matter
   client: Client
-  backgrounds(limit: Int, nextToken: String): ClientMatterBackgroundConn
+  backgrounds(
+    limit: Int
+    nextToken: String
+    sortOrder: OrderBy
+  ): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
   rfis(limit: Int, nextToken: String): ClientMatterRFIConn
   createdAt: AWSDateTime

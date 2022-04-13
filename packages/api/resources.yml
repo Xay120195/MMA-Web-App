@@ -496,6 +496,8 @@ Resources:
           AttributeType: S
         - AttributeName: backgroundId
           AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -510,6 +512,14 @@ Resources:
           KeySchema:
             - AttributeName: backgroundId
               KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: clientMatterId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
