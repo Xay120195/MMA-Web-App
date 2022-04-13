@@ -193,17 +193,18 @@ type Query {
   clientMatter(id: ID): ClientMatter
   matters: [Matter]
   matter(id: ID): Matter
-  matterFile(
-    matterId: ID
-    isDeleted: Boolean
-    limit: Int
-    nextToken: String
-  ): [File]
+  # matterFile(
+  #   matterId: ID
+  #   isDeleted: Boolean
+  #   limit: Int
+  #   nextToken: String
+  # ): [File]
   matterFiles(
     matterId: ID
     isDeleted: Boolean
     limit: Int
     nextToken: String
+    sortOrder: OrderBy
   ): MatterFileConn
   file(id: ID): File
   files: [File]
@@ -255,7 +256,6 @@ type Mutation {
     type: String
     name: String
     details: String
-    date: AWSDateTime
   ): File
   matterFileUpdate(
     id: ID

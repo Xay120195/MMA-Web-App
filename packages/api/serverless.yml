@@ -155,11 +155,11 @@ custom:
         field: companyAccessTypeUpdate
         request: false
         response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: matterFile
-        request: false
-        response: false
+      # - dataSource: LambdaQueryDS
+      #   type: Query
+      #   field: matterFile
+      #   request: false
+      #   response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: matterFiles
