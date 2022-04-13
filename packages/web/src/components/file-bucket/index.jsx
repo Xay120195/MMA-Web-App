@@ -172,6 +172,15 @@ export default function FileBucket() {
       }
   `;
 
+  const mUpdateMatterFileDate = `
+      mutation updateMatterFile ($id: ID, $date: AWSDateTime) {
+        matterFileUpdate(id: $id, date: $date) {
+          id
+          date
+        }
+      }
+  `;
+
   const mSoftDeleteMatterFile = `
       mutation softDeleteMatterFile ($id: ID) {
         matterFileSoftDelete(id: $id) {
@@ -730,6 +739,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   };
 
+  
   async function updateMatterFileName(id, data) {
     console.log("data:", data);
     console.groupEnd();
@@ -740,6 +750,36 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           variables: {
             id: id,
             name: data.name
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  //date saving
+  const handleChangeDate = async (selected, id) => {
+    const data = {
+      date: String(selected)
+    };
+    // alert(selected);
+    await updateMatterFileDate(id, data);
+    const updatedArray = matterFiles.map((p) =>
+      p.id === id ? { ...p, date: String(selected) } : p
+    );
+    setMatterFiles(sortByOrder(updatedArray));
+  };
+
+  async function updateMatterFileDate(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateMatterFileDate,
+          variables: {
+            id: id,
+            date: new Date(data.date).toISOString()
           },
         });
         resolve(request);
@@ -1173,31 +1213,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   /** Remove for now for lazy load */
   //useBottomScrollListener(handleBottomScroll);
 
-  function formatDate(newDate) {
-    const months = {
-      0: 'January',
-      1: 'February',
-      2: 'March',
-      3: 'April',
-      4: 'May',
-      5: 'June',
-      6: 'July',
-      7: 'August',
-      8: 'September',
-      9: 'October',
-      10: 'November',
-      11: 'December',
-    }
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    const d = newDate;
-    const year = d.getFullYear();
-    const date = d.getDate();
-    const monthIndex = d.getMonth();
-    const monthName = months[d.getMonth()];
-    const dayName = days[d.getDay()]; // Thu
-    const formatted = `${dayName}, ${date} ${monthName} ${year}`;
-    return formatted.toString();
-  }
+  
 
   return (
     <>
@@ -1441,21 +1457,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <span>{index + 1}</span>
                                           </td>
                                           <td>
-                                            date : {data.date}
                                             <DatePicker
-                                              className="border w-28 rounded border-gray-300"
-                                              selected={data.date ? new Date(data.date) : null}
-                                              // onChange={(selected) =>
-                                              //   handleChangeDate(
-                                              //     selected,
-                                              //     item.id,
-                                              //     item.description
-                                              //   )
-                                              // }
+                                              className="border w-28 rounded border-gray-300 mb-5"
+                                              selected={new Date(data.date)}
+                                              onChange={(selected) =>
+                                                handleChangeDate(
+                                                  selected,
+                                                  data.id
+                                                )
+                                              }
                                             />
-                                          
-                                          
-                                          
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
