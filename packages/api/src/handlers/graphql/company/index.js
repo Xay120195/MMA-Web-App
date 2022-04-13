@@ -228,82 +228,9 @@ async function listCompanyClients(ctx) {
 }
 
 async function listCompanyClientMatters(ctx) {
-  const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
-  try {
-    const compCMParam = {
-      TableName: "CompanyClientMatterTable",
-      IndexName: "byCompany",
-      KeyConditionExpression: "companyId = :companyId",
-      ExpressionAttributeValues: marshall({
-        ":companyId": id,
-      }),
-      ScanIndexForward: false,
-      ExclusiveStartKey: nextToken
-        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
-    };
-
-    if (limit !== undefined) {
-      compCMParam.Limit = limit;
-    }
-
-    const compCMCmd = new QueryCommand(compCMParam);
-    const compCMResult = await client.send(compCMCmd);
-
-    const clientMatterIds = compCMResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.clientMatterId })
-    );
-
-    if (clientMatterIds !== 0) {
-      const clientmattersParam = {
-        RequestItems: {
-          ClientMatterTable: {
-            Keys: clientMatterIds,
-          },
-        },
-      };
-
-      const cmCmd = new BatchGetItemCommand(clientmattersParam);
-      const cmResult = await client.send(cmCmd);
-
-      const objCM = cmResult.Responses.ClientMatterTable.map((i) =>
-        unmarshall(i)
-      );
-      const objCompCM = compCMResult.Items.map((i) => unmarshall(i));
-
-      const response = objCompCM.map((item) => {
-        const filterClientMatter = objCM.find(
-          (u) => u.id === item.clientMatterId
-        );
-        return { ...item, ...filterClientMatter };
-      });
-
-      return {
-        items: response,
-        nextToken: compCMResult.LastEvaluatedKey
-          ? Buffer.from(JSON.stringify(compCMResult.LastEvaluatedKey)).toString(
-              "base64"
-            )
-          : null,
-      };
-    } else {
-      return {
-        items: [],
-        nextToken: null,
-      };
-    }
-  } catch (e) {
-    response = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(response);
-  }
-  return response;
-}
-
-async function listCompanyClientMattersV2(ctx) {
+  console.log("listCompanyClientMatters");
+  console.log(ctx.source);
+  console.log(ctx.arguments);
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
   try {
@@ -392,10 +319,7 @@ const resolvers = {
     },
     clientMatters: async (ctx) => {
       return listCompanyClientMatters(ctx);
-    },
-    clientMattersV2: async (ctx) => {
-      return listCompanyClientMattersV2(ctx);
-    },
+    }
   },
 };
 
