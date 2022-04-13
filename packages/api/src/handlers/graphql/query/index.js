@@ -615,9 +615,9 @@ const resolvers = {
     files: async () => {
       return listFiles();
     },
-    matterFile: async (ctx) => {
-      return getMatterFile(ctx.arguments);
-    },
+    // matterFile: async (ctx) => {
+    //   return getMatterFile(ctx.arguments);
+    // },
     matterFiles: async (ctx) => {
       return getMatterFiles(ctx.arguments);
     },
