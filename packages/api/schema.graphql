@@ -5,8 +5,7 @@ type Company {
   users(limit: Int, nextToken: String): CompanyUserConn
   clients(limit: Int, nextToken: String): CompanyClientConn
   matters(limit: Int, nextToken: String): CompanyMatterConn
-  clientMatters(limit: Int, nextToken: String): CompanyClientMatterConn
-  clientMattersV2(
+  clientMatters(
     limit: Int
     nextToken: String
     sortOrder: ClientMatterSortOrder
