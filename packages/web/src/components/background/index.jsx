@@ -112,7 +112,7 @@ export default function Background() {
     query listBackground($id: ID, $limit: Int, $nextToken: String) {
       clientMatter(id: $id) {
         id
-        backgrounds (limit: $limit, nextToken: $nextToken) {
+        backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:CREATED_DESC) {
           items {
             id
             description
@@ -156,9 +156,7 @@ export default function Background() {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      /** Remove for now for lazy load */
-      // variables: { id: matterId, limit: 25, nextToken: vNextToken },
-      variables: { id: matterId },
+      variables: { id: matterId, limit: 25, nextToken: vNextToken },
     });
 
     setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
