@@ -360,11 +360,6 @@ custom:
         field: clientMatters
         request: false
         response: false
-      - dataSource: LambdaCompanyDS
-        type: Company
-        field: clientMattersV2
-        request: false
-        response: false
       - dataSource: LambdaClientMatterDS
         type: ClientMatter
         field: labels
