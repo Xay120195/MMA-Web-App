@@ -68,7 +68,6 @@ export const getMatterList = async (dispatch, companyId) => {
       },
     });
 
-    console.log("action: getMatterList", clientMattersOpt);
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
 
@@ -80,7 +79,11 @@ export const getMatterList = async (dispatch, companyId) => {
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
@@ -150,7 +153,11 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
@@ -225,7 +232,11 @@ export const deleteMatterClient = async (
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
@@ -292,7 +303,11 @@ export const searchMatterClient = async (
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));

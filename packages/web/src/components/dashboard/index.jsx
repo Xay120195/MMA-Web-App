@@ -1,9 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  createContext,
-  useReducer,
-} from "react";
+import React, { useState, useEffect, createContext, useReducer } from "react";
 import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";
 import imgDocs from "../../assets/images/docs.svg";
