@@ -257,6 +257,8 @@ Resources:
           AttributeType: S
         - AttributeName: matterId
           AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -267,7 +269,14 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
-      # Set the capacity to auto-scale
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: matterId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
   ClientsTable:

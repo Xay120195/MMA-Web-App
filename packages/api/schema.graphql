@@ -204,6 +204,7 @@ type Query {
     isDeleted: Boolean
     limit: Int
     nextToken: String
+    sortOrder: OrderBy
   ): MatterFileConn
   file(id: ID): File
   files: [File]
