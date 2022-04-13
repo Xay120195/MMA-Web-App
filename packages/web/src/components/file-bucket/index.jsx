@@ -8,6 +8,7 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
+import DatePicker from "react-datepicker";
 import {
   AiOutlineDownload,
   AiFillTags,
@@ -36,6 +37,7 @@ import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
+import { format } from 'date-fns';
 
 export var selectedRows = [];
 export var pageSelectedLabels;
@@ -287,6 +289,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       id
       name
       details
+      date
       labels {
         items {
           id
@@ -1170,6 +1173,32 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   /** Remove for now for lazy load */
   //useBottomScrollListener(handleBottomScroll);
 
+  function formatDate(newDate) {
+    const months = {
+      0: 'January',
+      1: 'February',
+      2: 'March',
+      3: 'April',
+      4: 'May',
+      5: 'June',
+      6: 'July',
+      7: 'August',
+      8: 'September',
+      9: 'October',
+      10: 'November',
+      11: 'December',
+    }
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const d = newDate;
+    const year = d.getFullYear();
+    const date = d.getDate();
+    const monthIndex = d.getMonth();
+    const monthName = months[d.getMonth()];
+    const dayName = days[d.getDay()]; // Thu
+    const formatted = `${dayName}, ${date} ${monthName} ${year}`;
+    return formatted.toString();
+  }
+
   return (
     <>
       <div
@@ -1335,6 +1364,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
                               </th>
+                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                                Date
+                              </th>
                               <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
                                 Name
                               </th>
@@ -1407,6 +1439,23 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               }
                                             />
                                             <span>{index + 1}</span>
+                                          </td>
+                                          <td>
+                                            date : {data.date}
+                                            <DatePicker
+                                              className="border w-28 rounded border-gray-300"
+                                              selected={data.date ? new Date(data.date) : null}
+                                              // onChange={(selected) =>
+                                              //   handleChangeDate(
+                                              //     selected,
+                                              //     item.id,
+                                              //     item.description
+                                              //   )
+                                              // }
+                                            />
+                                          
+                                          
+                                          
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
