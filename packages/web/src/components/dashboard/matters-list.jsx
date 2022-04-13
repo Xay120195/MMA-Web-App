@@ -26,7 +26,7 @@ export function ClientMatters({}) {
 
   return (
     <>
-      {view === "grid" && (
+      {view === "grid" ? (
         <>
           {loading ? (
             <span>Please wait...</span>
@@ -117,6 +117,100 @@ export function ClientMatters({}) {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          {loading ? (
+            <span>Please wait...</span>
+          ) : clientMatter.length <= 0 ? (
+            <span>No result found.</span>
+          ) : (
+            <>
+              {clientMatter.map((item) => (
+                <div
+                  className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
+                  key={item.id}
+                >
+                  <div>
+                    {allowOpenFileBucket ||
+                    allowOpenBackground ||
+                    showDeleteMatter ? (
+                      <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
+                        <div className="dropdown">
+                          <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
+                            <FaIcons.FaEllipsisV />
+                          </button>
+                          <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
+                            {allowOpenFileBucket ? (
+                              <li className="p-2">
+                                <Link
+                                  to={`${AppRoutes.FILEBUCKET}/${item.id}/000`}
+                                >
+                                  File Bucket
+                                </Link>
+                              </li>
+                            ) : null}
+                            {allowOpenBackground ? (
+                              <li className="p-2">
+                                <Link to={`${AppRoutes.BACKGROUND}/${item.id}`}>
+                                  Background
+                                </Link>
+                              </li>
+                            ) : null}
+                            {showDeleteMatter && (
+                              <li
+                                className="p-2 cursor-pointer"
+                                onClick={() =>
+                                  setshowDeleteModal(true, item.id)
+                                }
+                              >
+                                Delete
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    ) : null}
+                    {/* <Link to={redirectToBackground}> */}
+                    <div className="grid grid-cols-4 gap-4">
+                      <div className="col-span-2">
+                        <h4
+                          tabIndex="0"
+                          className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1"
+                        >
+                          {item.matter.name}
+                        </h4>
+                        <p
+                          tabIndex="0"
+                          className="focus:outline-none text-xs text-gray-400"
+                        >
+                          {item.client.name}
+                        </p>
+                        <p
+                          tabIndex="0"
+                          className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
+                        >
+                          {dateFormat(
+                            item.createdAt,
+                            "dd mmmm yyyy, h:MM:ss TT"
+                          )}
+                        </p>
+                      </div>
+                      {/* <div className="col-span-2 grid place-self-end mb-2">
+              <img
+                className="relative z-30 inline object-cover w-8 h-8 border-2 border-white rounded-full"
+                src={clientMatter.substantially_responsible.profile_picture}
+                alt={clientMatter.substantially_responsible.name}
+                title={clientMatter.substantially_responsible.name}
+              />
+            </div> */}
+                    </div>
+                    {/* </Link> */}
                   </div>
                 </div>
               ))}
