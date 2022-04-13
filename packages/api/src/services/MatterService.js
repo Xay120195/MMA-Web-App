@@ -176,7 +176,7 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
-      date: data.date ? data.date : null, //set to null if date is not supplied
+      date: new Date().toISOString(),
       order: 0,
       createdAt: new Date().toISOString(),
     };
