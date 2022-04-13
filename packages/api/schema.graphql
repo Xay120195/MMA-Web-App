@@ -83,7 +83,7 @@ type File {
   type: String
   details: String
   order: Int
-  # labels: [Label]
+  date: AWSDateTime
   labels(limit: Int, nextToken: String): FileLabelConn
   downloadURL: String
   createdAt: AWSDateTime
@@ -242,12 +242,14 @@ type Mutation {
     type: String
     name: String
     details: String
+    date: AWSDateTime
   ): File
   matterFileUpdate(
     id: ID
     name: String
     details: String
     order: Int
+    date: AWSDateTime
     labels: [LabelInput]
   ): File
   matterFileSoftDelete(id: ID): File
