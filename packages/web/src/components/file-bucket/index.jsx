@@ -723,15 +723,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
   }
 
-  //date saving
   const handleChangeDate = async (selected, id) => {
     const data = {
-      date: String(selected),
+      date: selected !== null ? String(selected) : null,
     };
-    // alert(selected);
     await updateMatterFileDate(id, data);
     const updatedArray = matterFiles.map((p) =>
-      p.id === id ? { ...p, date: String(selected) } : p
+      p.id === id
+        ? { ...p, date: data.date }
+        : p
     );
     setMatterFiles(sortByOrder(updatedArray));
   };
@@ -743,7 +743,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           query: mUpdateMatterFileDate,
           variables: {
             id: id,
-            date: new Date(data.date).toISOString(),
+            date:
+              data.date !== null && data.date !== "null" && data.date !== ""
+                ? new Date(data.date).toISOString()
+                : null,
           },
         });
         resolve(request);
@@ -783,7 +786,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     if (isAllNotZero) {
       sort = arr.sort((a, b) => a.order - b.order);
     } else {
-       sort = arr
+      sort = arr;
     }
     return sort;
   }
@@ -1059,8 +1062,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-        backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+      mutation createBackground($clientMatterId: String, $description: String) {
+        backgroundCreate(clientMatterId: $clientMatterId,description: $description) {
           id
         }
       }
@@ -1076,9 +1079,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       details: details,
     }));
 
-    console.log(selectedRows);
-
-    const dateToday = new Date().toISOString();
     var counter = 0;
     for (let i = 0; i < arrFiles.length; i++) {
       counter++;
@@ -1086,7 +1086,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         query: mCreateBackground,
         variables: {
           clientMatterId: matter_id,
-          date: dateToday,
           description: arrFiles[i].details,
         },
       });
@@ -1460,8 +1459,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         <td>
                                           <DatePicker
                                             className="border w-28 rounded border-gray-300 mb-5"
-                                            selected={new Date(data.date)}
                                             dateFormat="dd MMM yyyy"
+                                            selected={
+                                              data.date !== null
+                                                ? new Date(data.date)
+                                                : null
+                                            }
+                                            placeholderText="No Date"
                                             onChange={(selected) =>
                                               handleChangeDate(
                                                 selected,
