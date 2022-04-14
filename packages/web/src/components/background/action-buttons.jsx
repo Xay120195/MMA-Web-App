@@ -11,7 +11,6 @@ import {
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
-  setWitness,
   witness,
   checkAllState,
   setcheckAllState,
@@ -42,8 +41,7 @@ const ActionButtons = ({
   setSelectRow,
   pasteButton,
   setPasteButton,
-  setNewRow,
-  newRow,
+  setWitness,
   setNewWitness,
   setMaxLoading,
   sortByOrder,

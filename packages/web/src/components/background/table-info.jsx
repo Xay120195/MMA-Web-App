@@ -760,7 +760,7 @@ const TableInfo = ({
       setLoading(false);
     }, 2500);
   });
-  
+
   useBottomScrollListener(handleBottomScroll);
 
   return (
@@ -819,7 +819,7 @@ const TableInfo = ({
                           )}
                         </tr>
                       </thead>
-                      <Droppable droppableId="droppable-1">
+                      <Droppable droppableId="characters">
                         {(provider) => (
                           <tbody
                             ref={provider.innerRef}
@@ -841,7 +841,6 @@ const TableInfo = ({
                                           (x) => x.id === item.id
                                         ) && "bg-green-300"
                                       }
-                                      key={item.id}
                                       index={index}
                                       {...provider.draggableProps}
                                       ref={provider.innerRef}
