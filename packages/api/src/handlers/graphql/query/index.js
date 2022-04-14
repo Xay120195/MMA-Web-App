@@ -439,7 +439,6 @@ async function getClientMatter(data) {
 }
 
 async function getUserColumnSettings(data) {
-  console.log("getUserColumnSettings()");
   const { userId, tableName } = data;
 
   let resp = {},

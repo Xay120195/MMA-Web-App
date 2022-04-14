@@ -898,6 +898,7 @@ const TableInfo = ({
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300"
                                               selected={new Date(item.date)}
+                                              dateFormat="dd MMM yyyy"
                                               onChange={(selected) =>
                                                 handleChangeDate(
                                                   selected,

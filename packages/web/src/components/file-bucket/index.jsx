@@ -190,8 +190,8 @@ export default function FileBucket() {
       }
   `;
 
-  const qGetMatterFiles = `
-  query getMatterFile($matterId: ID) {
+  const qGetMatterDetails = `
+  query getMatterDetails($matterId: ID) {
     clientMatter(id: $matterId) {
       matter {
         name
@@ -404,7 +404,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   let getMatterDetails = async () => {
     const params = {
-      query: qGetMatterFiles,
+      query: qGetMatterDetails,
       variables: {
         matterId: matter_id,
         isDeleted: false
@@ -1460,6 +1460,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300 mb-5"
                                               selected={new Date(data.date)}
+                                              dateFormat="dd MMM yyyy"
                                               onChange={(selected) =>
                                                 handleChangeDate(
                                                   selected,
