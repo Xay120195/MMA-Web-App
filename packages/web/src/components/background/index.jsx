@@ -270,7 +270,7 @@ const Background = () => {
     if (isAllZero) {
       sort = arr.sort((a, b) => a.order - b.order);
     } else {
-      return (sort = arr);
+      sort = arr;
     }
     return sort;
   }
