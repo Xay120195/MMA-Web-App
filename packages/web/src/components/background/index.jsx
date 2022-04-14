@@ -16,7 +16,7 @@ const mainGrid = {
   gridtemplatecolumn: "1fr auto",
 };
 
-export default function Background() {
+const Background = () => {
   const [matterList, setClientMattersList] = useState([]);
   const [witness, setWitness] = useState([]);
   const [files, setFiles] = useState([]);
@@ -173,14 +173,12 @@ export default function Background() {
         })
       );
 
-      console.log(result);
-
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);
 
       if (witness !== null) {
-        setWitness(result);
+        setWitness(sortByOrder(result));
         setMaxLoading(false);
       }
     }
@@ -267,23 +265,12 @@ export default function Background() {
   const matterName = cname[3];
 
   function sortByOrder(arr) {
-    const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
+    const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.date) - new Date(a.date));
+      sort = arr.sort((a, b) => a.order - b.order);
     } else {
-      if (selectRow.length <= 0) {
-        sort = arr.sort(
-          (a, b) =>
-            a.order - b.order ||
-            new Date(b.date) - new Date(a.date) ||
-            new Date(b.createdAt) - new Date(a.createdAt)
-        );
-      } else {
-        sort = arr.sort(
-          (a, b) => a.order - b.order || b.createdAt - a.createdAt
-        );
-      }
+      sort = arr;
     }
     return sort;
   }
@@ -321,8 +308,8 @@ export default function Background() {
               </span>
               <BreadCrumb matterId={matter_id} />
               <ActionButtons
-                setWitness={setWitness}
                 witness={witness}
+                setWitness={setWitness}
                 idList={idList}
                 checkAllState={checkAllState}
                 setcheckAllState={setcheckAllState}
@@ -441,4 +428,6 @@ export default function Background() {
       />
     </>
   );
-}
+};
+
+export default Background;

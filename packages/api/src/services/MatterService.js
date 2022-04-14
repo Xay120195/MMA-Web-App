@@ -128,8 +128,6 @@ export async function getMatterFiles(ctx) {
         : null,
     };
 
-    console.log({ resp });
-    // resp = request ? result : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -175,7 +173,7 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
-      date: new Date().toISOString(),
+      date: null,
       order: 0,
       createdAt: new Date().toISOString(),
     };
