@@ -22,7 +22,7 @@ export function ClientMatters({}) {
     error,
   } = useContext(MatterContext);
 
-  console.log("List of Client/Matters",clientMatter);
+  console.log("List of Client/Matters", clientMatter);
 
   return (
     <>
@@ -202,13 +202,13 @@ export function ClientMatters({}) {
                         </p>
                       </div>
                       {/* <div className="col-span-2 grid place-self-end mb-2">
-                  <img
-                    className="relative z-30 inline object-cover w-8 h-8 border-2 border-white rounded-full"
-                    src={clientMatter.substantially_responsible.profile_picture}
-                    alt={clientMatter.substantially_responsible.name}
-                    title={clientMatter.substantially_responsible.name}
-                  />
-                </div> */}
+              <img
+                className="relative z-30 inline object-cover w-8 h-8 border-2 border-white rounded-full"
+                src={clientMatter.substantially_responsible.profile_picture}
+                alt={clientMatter.substantially_responsible.name}
+                title={clientMatter.substantially_responsible.name}
+              />
+            </div> */}
                     </div>
                     {/* </Link> */}
                   </div>

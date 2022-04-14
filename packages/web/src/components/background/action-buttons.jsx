@@ -292,7 +292,10 @@ const ActionButtons = ({
         setCheckDesc(x.isVisible)
     );
 
-    if (userColumnSettings.data.userColumnSettings.length === 0) {
+    if (
+      tableColumnList === null &&
+      userColumnSettings.data.userColumnSettings.length === 0
+    ) {
       // no default user column settings
 
       const defaultColumnSettings = await API.graphql({
@@ -314,9 +317,9 @@ const ActionButtons = ({
             columnSettings: defaultColumnSettingsIds,
             userId: localStorage.getItem("userId"),
           },
+        }).then((data) => {
+          getColumnSettings();
         });
-
-        getColumnSettings();
       }
     } else {
       setTableColumnList(userColumnSettings.data.userColumnSettings);
