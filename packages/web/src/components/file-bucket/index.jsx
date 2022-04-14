@@ -191,7 +191,7 @@ export default function FileBucket() {
   `;
 
   const qGetMatterFiles = `
-  query getMatterFile($matterId: ID, $isDeleted: Boolean) {
+  query getMatterFile($matterId: ID) {
     clientMatter(id: $matterId) {
       matter {
         name
@@ -199,20 +199,6 @@ export default function FileBucket() {
       client {
         name
       }
-    }
-    matterFile(matterId: $matterId, isDeleted: $isDeleted) {
-      id
-      name
-      type
-      details
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      createdAt
-      order
     }
   }`;
 
@@ -271,26 +257,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
       }
     }
   `;
-
-  const mGetPaginateItems = `
-  query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-    matterFile(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit) {
-      id
-      name
-      type
-      details
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      createdAt
-      order
-      nextToken
-    }
-  }
-`;
 
 const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
@@ -1223,17 +1189,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const handleDuplicate = async () => {
     console.log(selectedCompleteDataRows);
 
-    selectedCompleteDataRows.map(async function (items) {
-
-      console.log(items.downloadURL);
-      /*const request = await API.graphql({
+    /*selectedCompleteDataRows.map(async function (items) {
+      const request = await API.graphql({
         query: mCreateMatterFile,
-        variables: { matterId: matter_id, s3ObjectKey: items.downloadURL, size: items.size, name: "Copy of "+items.name, type: items.type },
+        variables: { matterId: matter_id, s3ObjectKey: items.downloadURL, size: items.size, name: "Copy of "+items.fileName, type: items.type },
       });
 
-      console.log(request);*/
-    });
-
+      console.log(request);
+    });*/
+    selectedCompleteDataRows = [];
   };
 
   return (
@@ -1702,7 +1666,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       </DragDropContext>
                     </div>
                     <div>
-                      {/* {maxLoading ? (
+                      {maxLoading ? (
                           <div className="flex justify-center items-center mt-5">
                             <p>All data has been loaded.</p>
                           </div>
@@ -1719,7 +1683,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                         <span className="grid"></span>
                       ) : (
                         <span></span>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 ) : (
