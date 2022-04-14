@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
+import barsFilter from "../../assets/images/bars-filter.svg";
 import {
   AiOutlineDownload,
   AiFillTags,
@@ -70,6 +71,7 @@ export default function FileBucket() {
   const [vNextToken, setVnextToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
+  const [ascDesc, setAscDesc] = useState(false);
 
   let filterOptionsArray = [];
 
@@ -729,9 +731,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     };
     await updateMatterFileDate(id, data);
     const updatedArray = matterFiles.map((p) =>
-      p.id === id
-        ? { ...p, date: data.date }
-        : p
+      p.id === id ? { ...p, date: data.date } : p
     );
     setMatterFiles(sortByOrder(updatedArray));
   };
@@ -1200,6 +1200,33 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     selectedCompleteDataRows = [];
   };
 
+  const SortBydate = async () => {
+    const isAllZero = matterFiles.every(
+      (item) => item.order >= 0 && item.order !== 0
+    );
+    if (!ascDesc) {
+      console.log("f");
+      setAscDesc(true);
+      setMatterFiles(
+        matterFiles
+          .slice()
+          .sort((a, b) =>
+            isAllZero ? b.order - a.order : new Date(b.date) - new Date(a.date)
+          )
+      );
+    } else {
+      console.log("t");
+      setAscDesc(false);
+      setMatterFiles(
+        matterFiles
+          .slice()
+          .sort((a, b) =>
+            isAllZero ? a.order - b.order : new Date(a.date) - new Date(b.date)
+          )
+      );
+    }
+  };
+
   return (
     <>
       <div
@@ -1377,8 +1404,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
-                                Date
+                              <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
+                                <span>Date</span>
+
+                                <img
+                                  src={barsFilter}
+                                  className="mx-14"
+                                  alt="filter"
+                                  onClick={SortBydate}
+                                  style={{ cursor: "pointer" }}
+                                />
                               </th>
                               <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
                                 Name
