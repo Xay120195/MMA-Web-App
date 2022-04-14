@@ -37,9 +37,9 @@ import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import { format } from 'date-fns';
 
 export var selectedRows = [];
+export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
 
 export default function FileBucket() {
@@ -104,6 +104,7 @@ export default function FileBucket() {
   const handleUploadLink = (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
 
+    console.log(uploadedFiles);
     uploadedFiles.map(async (file) => {
       await createMatterFile(file).then(() => {
         setResultMessage(`File successfully uploaded!`);
@@ -189,8 +190,8 @@ export default function FileBucket() {
       }
   `;
 
-  const qGetMatterFiles = `
-  query getMatterFile($matterId: ID, $isDeleted: Boolean) {
+  const qGetMatterDetails = `
+  query getMatterDetails($matterId: ID) {
     clientMatter(id: $matterId) {
       matter {
         name
@@ -198,20 +199,6 @@ export default function FileBucket() {
       client {
         name
       }
-    }
-    matterFile(matterId: $matterId, isDeleted: $isDeleted) {
-      id
-      name
-      type
-      details
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      createdAt
-      order
     }
   }`;
 
@@ -271,29 +258,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   `;
 
-  const mGetPaginateItems = `
-  query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-    matterFile(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit) {
-      id
-      name
-      type
-      details
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      createdAt
-      order
-      nextToken
-    }
-  }
-`;
-
 const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
     items {
       id
       name
@@ -308,6 +275,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       createdAt
       order
       type
+      size
+      downloadURL
     }
     nextToken
   }
@@ -435,7 +404,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   let getMatterDetails = async () => {
     const params = {
-      query: qGetMatterFiles,
+      query: qGetMatterDetails,
       variables: {
         matterId: matter_id,
         isDeleted: false
@@ -455,9 +424,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        /** Remove for now for lazy load */
-        //limit: 25,
-        //nextToken: vNextToken,
+        limit: 25,
+        nextToken: vNextToken,
       },
     };
 
@@ -871,7 +839,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [isAllChecked, setIsAllChecked] = useState(false);
 
   //checking each row
-  function checked(id, fileName, details, idx) {
+  function checked(id, fileName, details, size, downloadURL, type, idx) {
     if (isAllChecked) {
       selectedRows.splice(
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
@@ -900,6 +868,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         selectedRows = [
           ...selectedRows,
           { id: id, fileName: fileName, details: details },
+        ];
+
+        selectedCompleteDataRows= [
+          ...selectedCompleteDataRows,
+          { id: id, fileName: fileName, details: details, size: size, type: type, downloadURL: downloadURL },
         ];
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
@@ -1210,10 +1183,22 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }, 2500);
   });
   
-  /** Remove for now for lazy load */
-  //useBottomScrollListener(handleBottomScroll);
-
   
+  useBottomScrollListener(handleBottomScroll);
+
+  const handleDuplicate = async () => {
+    console.log(selectedCompleteDataRows);
+
+    /*selectedCompleteDataRows.map(async function (items) {
+      const request = await API.graphql({
+        query: mCreateMatterFile,
+        variables: { matterId: matter_id, s3ObjectKey: items.downloadURL, size: items.size, name: "Copy of "+items.fileName, type: items.type },
+      });
+
+      console.log(request);
+    });*/
+    selectedCompleteDataRows = [];
+  };
 
   return (
     <>
@@ -1297,20 +1282,32 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 <FiCopy />
               </button>
             )}
+
+            {/* {matterFiles !== null &&
+              matterFiles.length !== 0 &&
+              showRemoveFileButton && (
+                <button
+                  className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                  onClick={() => handleDuplicate()}
+                >
+                  Duplicate &nbsp;
+                  <FiCopy />
+                </button>
+            )} */}
           </div>
           <div className=" grid justify-items-end mr-0">
             <div className="flex inline-flex mr-0">
               {matterFiles !== null &&
-                matterFiles.length !== 0 &&
-                showRemoveFileButton && (
-                  <button
-                    className="float-right mr-5 bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                    onClick={() => setshowRemoveFileModal(true)}
-                  >
-                    DELETE &nbsp;
-                    <BsFillTrashFill />
-                  </button>
-                )}
+              matterFiles.length !== 0 &&
+              showRemoveFileButton && (
+                <button
+                  className="float-right mr-5 bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                  onClick={() => setshowRemoveFileModal(true)}
+                >
+                  DELETE &nbsp;
+                  <BsFillTrashFill />
+                </button>
+              )}
 
               <button
                 className={
@@ -1447,6 +1444,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   data.id,
                                                   data.name,
                                                   data.details,
+                                                  data.size,
+                                                  data.downloadURL,
+                                                  data.type,
                                                   index
                                                 )
                                               }
@@ -1460,6 +1460,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300 mb-5"
                                               selected={new Date(data.date)}
+                                              dateFormat="dd MMM yyyy"
                                               onChange={(selected) =>
                                                 handleChangeDate(
                                                   selected,
@@ -1666,7 +1667,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       </DragDropContext>
                     </div>
                     <div>
-                      {/* {maxLoading ? (
+                      {maxLoading ? (
                           <div className="flex justify-center items-center mt-5">
                             <p>All data has been loaded.</p>
                           </div>
@@ -1683,7 +1684,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                         <span className="grid"></span>
                       ) : (
                         <span></span>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 ) : (

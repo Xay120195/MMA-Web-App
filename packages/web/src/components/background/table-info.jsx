@@ -756,13 +756,12 @@ const TableInfo = ({
       setLoading(true);
     }, 1500);
     setTimeout(() => {
-      /** Remove for now for lazy load */
-      //loadMoreBackground();
+      loadMoreBackground();
       setLoading(false);
     }, 2500);
   });
-  /** Remove for now for lazy load */
-  //useBottomScrollListener(handleBottomScroll);
+  
+  useBottomScrollListener(handleBottomScroll);
 
   return (
     <>
@@ -899,6 +898,7 @@ const TableInfo = ({
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300"
                                               selected={new Date(item.date)}
+                                              dateFormat="dd MMM yyyy"
                                               onChange={(selected) =>
                                                 handleChangeDate(
                                                   selected,
@@ -1127,8 +1127,7 @@ const TableInfo = ({
           </div>
         </div>
         <div>
-          {/** Remove for now for lazy load */}
-          {/* {maxLoading ? (
+          {maxLoading ? (
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
@@ -1144,7 +1143,7 @@ const TableInfo = ({
             <span className="grid"></span>
           ) : (
             <span></span>
-          )} */}
+          )}
         </div>
       </div>
       {ShowModalParagraph && (

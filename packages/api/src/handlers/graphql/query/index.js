@@ -439,7 +439,6 @@ async function getClientMatter(data) {
 }
 
 async function getUserColumnSettings(data) {
-  console.log("getUserColumnSettings()");
   const { userId, tableName } = data;
 
   let resp = {},
@@ -615,9 +614,9 @@ const resolvers = {
     files: async () => {
       return listFiles();
     },
-    matterFile: async (ctx) => {
-      return getMatterFile(ctx.arguments);
-    },
+    // matterFile: async (ctx) => {
+    //   return getMatterFile(ctx.arguments);
+    // },
     matterFiles: async (ctx) => {
       return getMatterFiles(ctx.arguments);
     },

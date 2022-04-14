@@ -228,9 +228,6 @@ async function listCompanyClients(ctx) {
 }
 
 async function listCompanyClientMatters(ctx) {
-  console.log("listCompanyClientMatters");
-  console.log(ctx.source);
-  console.log(ctx.arguments);
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
   try {
