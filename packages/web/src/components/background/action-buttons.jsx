@@ -128,6 +128,7 @@ const ActionButtons = ({
         createdAt: dateToday,
         id: createBackgroundRow.data.backgroundCreate.id,
         description: "",
+        date: null,
         order: 0,
         files: { items: [] },
       };
