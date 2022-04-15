@@ -17,7 +17,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import "./background.css";
+import "../../assets/styles/background.css";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -269,12 +269,12 @@ const TableInfo = ({
   const handleChangeDate = async (selected, id, description) => {
     const data = {
       description: !description ? "" : description,
-      date: String(selected),
+      date: selected !== null ? String(selected) : null,
     };
     await updateBackgroundDetails(id, data);
 
     const updatedOSArray = witness.map((p) =>
-      p.id === id ? { ...p, date: String(selected) } : p
+      p.id === id ? { ...p, date: data.date } : p
     );
 
     setWitness(updatedOSArray);
@@ -297,7 +297,7 @@ const TableInfo = ({
           query: mUpdateBackground,
           variables: {
             id: id,
-            date: new Date(data.date).toISOString(),
+            date: data.date !== null ? new Date(data.date).toISOString() : null,
             description: data.description,
           },
         });
@@ -613,8 +613,8 @@ const TableInfo = ({
 
     storedItemRows.map(async function (x) {
       const mCreateBackground = `
-          mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-            backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+          mutation createBackground($clientMatterId: String, $description: String) {
+            backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
               createdAt
               date
               description
@@ -628,7 +628,6 @@ const TableInfo = ({
         query: mCreateBackground,
         variables: {
           clientMatterId: matterId,
-          date: new Date(x.date).toISOString(),
           description: x.details,
           files: { items: [] },
         },
@@ -896,8 +895,13 @@ const TableInfo = ({
                                           <div>
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300"
-                                              selected={new Date(item.date)}
+                                              selected={
+                                                (item.date !== null && item.date !== "null" && item.date !== "")
+                                                  ? new Date(item.date)
+                                                  : null
+                                              }
                                               dateFormat="dd MMM yyyy"
+                                              placeholderText="No Date"
                                               onChange={(selected) =>
                                                 handleChangeDate(
                                                   selected,
