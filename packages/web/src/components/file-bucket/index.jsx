@@ -6,7 +6,7 @@ import BlankState from "../blank-state";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
-import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
+import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
 import barsFilter from "../../assets/images/bars-filter.svg";
@@ -1237,7 +1237,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       >
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
-            <div>
+              <div>
+              <Link to={AppRoutes.DASHBOARD}>
+                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
+                  <MdArrowBackIos />
+                  Back
+                </button>
+              </Link>
+
               <h1 className="font-bold text-3xl">
                 File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
                 <span className="font-semibold text-3xl">
@@ -1258,17 +1265,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                   </button>
                 </Link>
               )}
-              <Link to={AppRoutes.DASHBOARD}>
-                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                  Back &nbsp;
-                  <MdArrowForwardIos />
-                </button>
-              </Link>
             </div>
           </div>
         </div>
 
-        <div className="p-5 left-0"></div>
+        <div className="p-2 left-0"></div>
         {files !== null && files.length !== 0 && (
           <div className="w-full mb-3 pb-2">
             <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
