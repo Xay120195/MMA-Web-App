@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-
+import { Link } from "react-router-dom";
+import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
+import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
@@ -16,7 +18,7 @@ const mainGrid = {
   gridtemplatecolumn: "1fr auto",
 };
 
-export default function Background() {
+const Background = () => {
   const [matterList, setClientMattersList] = useState([]);
   const [witness, setWitness] = useState([]);
   const [files, setFiles] = useState([]);
@@ -173,14 +175,12 @@ export default function Background() {
         })
       );
 
-      console.log(result);
-
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);
 
       if (witness !== null) {
-        setWitness(result);
+        setWitness(sortByOrder(result));
         setMaxLoading(false);
       }
     }
@@ -267,23 +267,12 @@ export default function Background() {
   const matterName = cname[3];
 
   function sortByOrder(arr) {
-    const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
+    const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.date) - new Date(a.date));
+      sort = arr.sort((a, b) => a.order - b.order);
     } else {
-      if (selectRow.length <= 0) {
-        sort = arr.sort(
-          (a, b) =>
-            a.order - b.order ||
-            new Date(b.date) - new Date(a.date) ||
-            new Date(b.createdAt) - new Date(a.createdAt)
-        );
-      } else {
-        sort = arr.sort(
-          (a, b) => a.order - b.order || b.createdAt - a.createdAt
-        );
-      }
+      sort = arr;
     }
     return sort;
   }
@@ -316,13 +305,27 @@ export default function Background() {
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
-              <span className="text-lg mt-3 font-medium">
+            
+            
+            <Link to={AppRoutes.DASHBOARD}>
+                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
+                  <MdArrowBackIos />
+                  Back
+                </button>
+              </Link>
+              <h1 className="font-bold text-3xl">
+              Background&nbsp;<span className="text-3xl">of</span>&nbsp;
+                <span className="font-semibold text-3xl">
                 {clientName}/{matterName}
-              </span>
+                </span>
+              </h1>
+              {/* <span className="text-lg mt-3 font-medium">
+                Background&nbsp;<span className="text-3xl">of</span>&nbsp; {clientName}/{matterName}
+              </span> */}
               <BreadCrumb matterId={matter_id} />
               <ActionButtons
-                setWitness={setWitness}
                 witness={witness}
+                setWitness={setWitness}
                 idList={idList}
                 checkAllState={checkAllState}
                 setcheckAllState={setcheckAllState}
@@ -441,4 +444,6 @@ export default function Background() {
       />
     </>
   );
-}
+};
+
+export default Background;
