@@ -733,7 +733,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     const updatedArray = matterFiles.map((p) =>
       p.id === id ? { ...p, date: data.date } : p
     );
-    setMatterFiles(sortByOrder(updatedArray));
+    setMatterFiles(updatedArray);
   };
 
   async function updateMatterFileDate(id, data) {
@@ -1211,7 +1211,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         matterFiles
           .slice()
           .sort((a, b) =>
-            isAllZero ? b.order - a.order : new Date(b.date) - new Date(a.date)
+            //isAllZero ? b.order - a.order : 
+            new Date(b.date) - new Date(a.date)
           )
       );
     } else {
@@ -1221,7 +1222,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         matterFiles
           .slice()
           .sort((a, b) =>
-            isAllZero ? a.order - b.order : new Date(a.date) - new Date(b.date)
+            //isAllZero ? a.order - b.order : 
+            new Date(a.date) - new Date(b.date)
           )
       );
     }
