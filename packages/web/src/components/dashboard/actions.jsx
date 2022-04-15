@@ -17,7 +17,7 @@ import { API } from "aws-amplify";
 const listClientMatters = `
 query listClientMatters($companyId: String) {
   company(id: $companyId) {
-    clientMatters {
+    clientMatters (sortOrder: CREATED_DESC) {
       items {
         id
         createdAt
@@ -68,7 +68,6 @@ export const getMatterList = async (dispatch, companyId) => {
       },
     });
 
-    console.log("action: getMatterList", clientMattersOpt);
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
 
@@ -80,23 +79,20 @@ export const getMatterList = async (dispatch, companyId) => {
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
-      var apdMn = apdPr
-        .map((v) => ({
-          ...v,
-          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
-            -4
-          )}/${v.client.id.slice(-4)}}`,
-        }))
-        .sort((a, b) => {
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        })
-        .reverse();
+      var apdMn = apdPr.map((v) => ({
+        ...v,
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+          -4
+        )}/${v.client.id.slice(-4)}}`,
+      }));
     }
     //dispatch data to reducers
 
@@ -150,23 +146,20 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
-      var apdMn = apdPr
-        .map((v) => ({
-          ...v,
-          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
-            -4
-          )}/${v.client.id.slice(-4)}}`,
-        }))
-        .sort((a, b) => {
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        })
-        .reverse();
+      var apdMn = apdPr.map((v) => ({
+        ...v,
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+          -4
+        )}/${v.client.id.slice(-4)}}`,
+      }));
     }
     //dispatch data to reducers
     dispatch({
@@ -225,23 +218,20 @@ export const deleteMatterClient = async (
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
-      var apdMn = apdPr
-        .map((v) => ({
-          ...v,
-          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
-            -4
-          )}/${v.client.id.slice(-4)}}`,
-        }))
-        .sort((a, b) => {
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        })
-        .reverse();
+      var apdMn = apdPr.map((v) => ({
+        ...v,
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+          -4
+        )}/${v.client.id.slice(-4)}}`,
+      }));
     }
     //dispatch data to reducers
     dispatch({
@@ -292,22 +282,20 @@ export const searchMatterClient = async (
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };
 
-      var apdPr = result.map((v) => ({
+      var filtered = result.filter(function (el) {
+        return el.client != null;
+      });
+
+      var apdPr = filtered.map((v) => ({
         ...v,
         substantially_responsible: dummyPersonResponsible,
       }));
-      var allrecords = apdPr
-        .map((v) => ({
-          ...v,
-          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
-            -4
-          )}/${v.client.id.slice(-4)}}`,
-        }))
-        .sort((a, b) => {
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        });
+      var allrecords = apdPr.map((v) => ({
+        ...v,
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+          -4
+        )}/${v.client.id.slice(-4)}}`,
+      }));
     }
 
     const matterslists = listmatters.filter(

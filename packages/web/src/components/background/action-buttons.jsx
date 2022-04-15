@@ -11,7 +11,6 @@ import {
 //import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = ({
-  setWitness,
   witness,
   checkAllState,
   setcheckAllState,
@@ -42,8 +41,7 @@ const ActionButtons = ({
   setSelectRow,
   pasteButton,
   setPasteButton,
-  setNewRow,
-  newRow,
+  setWitness,
   setNewWitness,
   setMaxLoading,
   sortByOrder,
@@ -110,8 +108,8 @@ const ActionButtons = ({
     const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+        mutation createBackground($clientMatterId: String, $description: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
             id
           }
         }
@@ -121,7 +119,6 @@ const ActionButtons = ({
       query: mCreateBackground,
       variables: {
         clientMatterId: matterId,
-        date: dateToday,
         description: "",
       },
     });
@@ -131,7 +128,7 @@ const ActionButtons = ({
         createdAt: dateToday,
         id: createBackgroundRow.data.backgroundCreate.id,
         description: "",
-        date: dateToday,
+        date: null,
         order: 0,
         files: { items: [] },
       };
@@ -292,7 +289,10 @@ const ActionButtons = ({
         setCheckDesc(x.isVisible)
     );
 
-    if (userColumnSettings.data.userColumnSettings.length === 0) {
+    if (
+      tableColumnList === null &&
+      userColumnSettings.data.userColumnSettings.length === 0
+    ) {
       // no default user column settings
 
       const defaultColumnSettings = await API.graphql({
@@ -314,9 +314,9 @@ const ActionButtons = ({
             columnSettings: defaultColumnSettingsIds,
             userId: localStorage.getItem("userId"),
           },
+        }).then((data) => {
+          getColumnSettings();
         });
-
-        getColumnSettings();
       }
     } else {
       setTableColumnList(userColumnSettings.data.userColumnSettings);

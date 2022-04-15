@@ -659,7 +659,7 @@ async function createBackground(data) {
     const rawParams = {
       id: v4(),
       description: data.description,
-      date: data.date,
+      date: null,
       createdAt: new Date().toISOString(),
       order: 0,
     };
@@ -1001,7 +1001,7 @@ const resolvers = {
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
-      const { id, name, details, order } = ctx.arguments;
+      const { id, name, details, order, date } = ctx.arguments;
 
       const data = {
         updatedAt: new Date().toISOString(),
@@ -1012,6 +1012,8 @@ const resolvers = {
       if (details !== undefined) data.details = details;
 
       if (order !== undefined) data.order = order;
+
+      if (date !== undefined) data.date = date;
 
       return await updateMatterFile(id, data);
     },

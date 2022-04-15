@@ -17,7 +17,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import "./background.css";
+import "../../assets/styles/background.css";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -269,12 +269,12 @@ const TableInfo = ({
   const handleChangeDate = async (selected, id, description) => {
     const data = {
       description: !description ? "" : description,
-      date: String(selected),
+      date: selected !== null ? String(selected) : null,
     };
     await updateBackgroundDetails(id, data);
 
     const updatedOSArray = witness.map((p) =>
-      p.id === id ? { ...p, date: String(selected) } : p
+      p.id === id ? { ...p, date: data.date } : p
     );
 
     setWitness(updatedOSArray);
@@ -297,7 +297,7 @@ const TableInfo = ({
           query: mUpdateBackground,
           variables: {
             id: id,
-            date: new Date(data.date).toISOString(),
+            date: data.date !== null ? new Date(data.date).toISOString() : null,
             description: data.description,
           },
         });
@@ -607,15 +607,14 @@ const TableInfo = ({
     let tempWitness = [...witness];
     let arrCopyFiles = [];
     let arrFileResult = [];
-    let createNewRows = [];
 
     setCheckedState(new Array(witness.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
     storedItemRows.map(async function (x) {
       const mCreateBackground = `
-          mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-            backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+          mutation createBackground($clientMatterId: String, $description: String) {
+            backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
               createdAt
               date
               description
@@ -629,7 +628,6 @@ const TableInfo = ({
         query: mCreateBackground,
         variables: {
           clientMatterId: matterId,
-          date: new Date(x.date).toISOString(),
           description: x.details,
           files: { items: [] },
         },
@@ -639,7 +637,7 @@ const TableInfo = ({
         {
           createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
           id: createBackgroundRow.data.backgroundCreate.id,
-          files: createBackgroundRow.data.backgroundCreate.files,
+          files: { items: [] },
           date: createBackgroundRow.data.backgroundCreate.date,
           description: createBackgroundRow.data.backgroundCreate.description,
           order: createBackgroundRow.data.backgroundCreate.order,
@@ -650,60 +648,89 @@ const TableInfo = ({
         id: id,
       }));
 
-      const request = await API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: createBackgroundRow.data.backgroundCreate.id,
-          files: arrCopyFiles,
-        },
-      });
+      if (arrCopyFiles.length <= 0) {
+        const acdc = convertArrayToObject(arrFileResult);
+        tempWitness.splice(targetIndex + 1, 0, acdc.item);
+        setWitness(tempWitness);
 
-      const backgroundFilesOptReq = await API.graphql({
-        query: qlistBackgroundFiles,
-        variables: {
-          id: createBackgroundRow.data.backgroundCreate.id,
-        },
-      });
+        setSelectRow(arrFileResult);
 
-      const updateArrFiles = arrFileResult.map((obj) => {
-        if (obj.id === request.data.backgroundFileTag.id) {
-          return { ...obj, files: backgroundFilesOptReq.data.background.files };
+        const res = tempWitness.map(myFunction);
+        function myFunction(item, index) {
+          let data;
+          return (data = {
+            id: item.id,
+            order: index + 1,
+          });
         }
-        return obj;
-      });
-
-      const newFiles = convertArrayToObject(updateArrFiles);
-
-      tempWitness.splice(targetIndex + 1, 0, newFiles.item);
-      setWitness(tempWitness);
-      setSelectRow(updateArrFiles);
-
-      const res = tempWitness.map(myFunction);
-
-      function myFunction(item, index) {
-        let data;
-        return (data = {
-          id: item.id,
-          order: index + 1,
+        res.map(async function (x) {
+          const mUpdateBackgroundOrder = `
+      mutation updateBackground($id: ID, $order: Int) {
+        backgroundUpdate(id: $id, order: $order) {
+          id
+          order
+        }
+      }`;
+          await API.graphql({
+            query: mUpdateBackgroundOrder,
+            variables: {
+              id: x.id,
+              order: x.order,
+            },
+          });
         });
-      }
-
-      res.map(async function (x) {
-        const mUpdateBackgroundOrder = `
-  mutation updateBackground($id: ID, $order: Int) {
-    backgroundUpdate(id: $id, order: $order) {
-      id
-      order
-    }
-  }`;
-        await API.graphql({
-          query: mUpdateBackgroundOrder,
+      } else {
+        const request = await API.graphql({
+          query: mUpdateBackgroundFile,
           variables: {
-            id: x.id,
-            order: x.order,
+            backgroundId: createBackgroundRow.data.backgroundCreate.id,
+            files: arrCopyFiles,
           },
         });
-      });
+        const backgroundFilesOptReq = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: createBackgroundRow.data.backgroundCreate.id,
+          },
+        });
+        const updateArrFiles = arrFileResult.map((obj) => {
+          if (obj.id === request.data.backgroundFileTag.id) {
+            return {
+              ...obj,
+              files: backgroundFilesOptReq.data.background.files,
+            };
+          }
+          return obj;
+        });
+        const newFiles = convertArrayToObject(updateArrFiles);
+        tempWitness.splice(targetIndex + 1, 0, newFiles.item);
+        setWitness(tempWitness);
+        setSelectRow(updateArrFiles);
+        const res = tempWitness.map(myFunction);
+        function myFunction(item, index) {
+          let data;
+          return (data = {
+            id: item.id,
+            order: index + 1,
+          });
+        }
+        res.map(async function (x) {
+          const mUpdateBackgroundOrder = `
+      mutation updateBackground($id: ID, $order: Int) {
+        backgroundUpdate(id: $id, order: $order) {
+          id
+          order
+        }
+      }`;
+          await API.graphql({
+            query: mUpdateBackgroundOrder,
+            variables: {
+              id: x.id,
+              order: x.order,
+            },
+          });
+        });
+      }
     });
 
     setShowDeleteButton(false);
@@ -728,13 +755,12 @@ const TableInfo = ({
       setLoading(true);
     }, 1500);
     setTimeout(() => {
-      /** Remove for now for lazy load */
-      //loadMoreBackground();
+      loadMoreBackground();
       setLoading(false);
     }, 2500);
   });
-  /** Remove for now for lazy load */
-  //useBottomScrollListener(handleBottomScroll);
+
+  useBottomScrollListener(handleBottomScroll);
 
   return (
     <>
@@ -792,7 +818,7 @@ const TableInfo = ({
                           )}
                         </tr>
                       </thead>
-                      <Droppable droppableId="droppable-1">
+                      <Droppable droppableId="characters">
                         {(provider) => (
                           <tbody
                             ref={provider.innerRef}
@@ -814,7 +840,6 @@ const TableInfo = ({
                                           (x) => x.id === item.id
                                         ) && "bg-green-300"
                                       }
-                                      key={item.id}
                                       index={index}
                                       {...provider.draggableProps}
                                       ref={provider.innerRef}
@@ -870,7 +895,13 @@ const TableInfo = ({
                                           <div>
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300"
-                                              selected={new Date(item.date)}
+                                              selected={
+                                                (item.date !== null && item.date !== "null" && item.date !== "")
+                                                  ? new Date(item.date)
+                                                  : null
+                                              }
+                                              dateFormat="dd MMM yyyy"
+                                              placeholderText="No Date"
                                               onChange={(selected) =>
                                                 handleChangeDate(
                                                   selected,
@@ -1099,8 +1130,7 @@ const TableInfo = ({
           </div>
         </div>
         <div>
-          {/** Remove for now for lazy load */}
-          {/* {maxLoading ? (
+          {maxLoading ? (
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
@@ -1116,7 +1146,7 @@ const TableInfo = ({
             <span className="grid"></span>
           ) : (
             <span></span>
-          )} */}
+          )}
         </div>
       </div>
       {ShowModalParagraph && (
