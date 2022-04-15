@@ -108,8 +108,8 @@ const ActionButtons = ({
     const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+        mutation createBackground($clientMatterId: String, $description: String) {
+          backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
             id
           }
         }
@@ -119,7 +119,6 @@ const ActionButtons = ({
       query: mCreateBackground,
       variables: {
         clientMatterId: matterId,
-        date: dateToday,
         description: "",
       },
     });
@@ -129,7 +128,6 @@ const ActionButtons = ({
         createdAt: dateToday,
         id: createBackgroundRow.data.backgroundCreate.id,
         description: "",
-        date: dateToday,
         order: 0,
         files: { items: [] },
       };
