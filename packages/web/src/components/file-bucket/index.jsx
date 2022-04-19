@@ -605,6 +605,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleSaveDetails = async (e, details, id) => {
+    const updatedDesc = matterFiles.map((obj) => {
+      if (obj.id === id) {
+        return {
+          ...obj,
+          details: e.target.innerHTML,
+        };
+      }
+      return obj;
+    });
+    setMatterFiles(updatedDesc);
     if (textDetails.length <= 0) {
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
@@ -613,6 +623,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
+
       //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
@@ -622,11 +633,23 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }, 1000);
       }, 1000);
     } else {
+      const updatedDesc = matterFiles.map((obj) => {
+        if (obj.id === id) {
+          return {
+            ...obj,
+            details: e.target.innerHTML,
+          };
+        }
+        return obj;
+      });
+      setMatterFiles(updatedDesc);
+
       setDesAlert("");
       const data = {
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
+
       //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
@@ -1209,23 +1232,21 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       console.log("f");
       setAscDesc(true);
       setMatterFiles(
-        matterFiles
-          .slice()
-          .sort((a, b) =>
-            //isAllZero ? b.order - a.order : 
+        matterFiles.slice().sort(
+          (a, b) =>
+            //isAllZero ? b.order - a.order :
             new Date(b.date) - new Date(a.date)
-          )
+        )
       );
     } else {
       console.log("t");
       setAscDesc(false);
       setMatterFiles(
-        matterFiles
-          .slice()
-          .sort((a, b) =>
-            //isAllZero ? a.order - b.order : 
+        matterFiles.slice().sort(
+          (a, b) =>
+            //isAllZero ? a.order - b.order :
             new Date(a.date) - new Date(b.date)
-          )
+        )
       );
     }
   };
@@ -1233,8 +1254,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const style = {
     paddingLeft: "0rem",
   };
-  
- 
 
   return (
     <>
@@ -1246,14 +1265,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       >
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
-              <div>
+            <div>
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
                   <MdArrowBackIos />
                   Back
                 </button>
               </Link>
-              
 
               <h1 className="font-bold text-3xl">
                 File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
@@ -1269,7 +1287,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               >
                 <li>
                   <div className="flex items-center">
-                    <Link className="mr-2 text-sm font-medium text-gray-900" to={`${AppRoutes.DASHBOARD}`} >
+                    <Link
+                      className="mr-2 text-sm font-medium text-gray-900"
+                      to={`${AppRoutes.DASHBOARD}`}
+                    >
                       Dashboard
                     </Link>
                     <svg
@@ -1286,32 +1307,36 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                   </div>
                 </li>
                 <li className="text-sm">
-                  <Link aria-current="page" className="font-medium text-gray-900" to={`${AppRoutes.BACKGROUND}/${matter_id}`} >
+                  <Link
+                    aria-current="page"
+                    className="font-medium text-gray-900"
+                    to={`${AppRoutes.BACKGROUND}/${matter_id}`}
+                  >
                     Background
                   </Link>
                 </li>
                 <svg
-                      width="16"
-                      height="20"
-                      viewBox="0 0 16 20"
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                      className="w-4 h-5 text-gray-300"
-                    >
-                      <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                    </svg>
+                  width="16"
+                  height="20"
+                  viewBox="0 0 16 20"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="w-4 h-5 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
                 <li className="text-sm">
                   <Link
-                    aria-current="page" className="font-medium text-gray-500"
+                    aria-current="page"
+                    className="font-medium text-gray-500"
                     to={`${AppRoutes.FILEBUCKET}/${matter_id}/000`}
                   >
                     File Bucket
                   </Link>
                 </li>
               </ol>
-          </nav>
-          
+            </nav>
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
