@@ -1775,6 +1775,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 index
                                               )
                                             }
+                                            onClick={(options) => handleLabelChanged(
+                                              options,
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              index
+                                            )}
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
