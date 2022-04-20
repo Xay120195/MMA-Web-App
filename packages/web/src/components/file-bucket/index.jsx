@@ -261,9 +261,38 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   `;
 
+// WITH PAGINAGTION 
+/*
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
+    items {
+      id
+      name
+      details
+      date
+      labels {
+        items {
+          id
+          name
+        }
+      }
+      createdAt
+      order
+      type
+      size
+      downloadURL
+    }
+    nextToken
+  }
+}
+`;
+*/
+
+// WITHOUT PAGINAGTION 
+const mPaginationbyItems = `
+query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
     items {
       id
       name
@@ -1811,7 +1840,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       </DragDropContext>
                     </div>
                     <div>
-                      {maxLoading ? (
+                      {/* {maxLoading ? (
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
@@ -1821,7 +1850,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                         </div>
                       ) : (
                         <span></span>
-                      )}
+                      )} */}
 
                       {!maxLoading && loading ? (
                         <span className="grid"></span>
