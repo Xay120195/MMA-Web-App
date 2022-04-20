@@ -613,8 +613,8 @@ const TableInfo = ({
 
     storedItemRows.map(async function (x) {
       const mCreateBackground = `
-          mutation createBackground($clientMatterId: String, $description: String) {
-            backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
+          mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+            backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
               createdAt
               date
               description
@@ -629,6 +629,7 @@ const TableInfo = ({
         variables: {
           clientMatterId: matterId,
           description: x.details,
+          date: null,
           files: { items: [] },
         },
       });

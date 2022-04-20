@@ -659,7 +659,7 @@ async function createBackground(data) {
     const rawParams = {
       id: v4(),
       description: data.description,
-      date: null,
+      date: data.date,
       createdAt: new Date().toISOString(),
       order: 0,
     };
