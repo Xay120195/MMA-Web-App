@@ -262,6 +262,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   `;
 
 // WITH PAGINAGTION 
+/*
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
@@ -286,10 +287,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 }
 `;
-
+*/
 
 // WITHOUT PAGINAGTION 
-/** 
 const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
@@ -314,7 +314,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }
 }
 `;
-*/
 
   async function tagBackgroundFile() {
     let arrFiles = [];
@@ -1841,7 +1840,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       </DragDropContext>
                     </div>
                     <div>
-                      {maxLoading ? (
+                      {/* {maxLoading ? (
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
@@ -1851,7 +1850,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         </div>
                       ) : (
                         <span></span>
-                      )}
+                      )} */}
 
                       {!maxLoading && loading ? (
                         <span className="grid"></span>
