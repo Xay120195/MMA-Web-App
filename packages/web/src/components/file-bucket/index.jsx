@@ -106,7 +106,7 @@ export default function FileBucket() {
 
   const handleUploadLink = (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
-
+    var next = 1;
     console.log(uploadedFiles);
     uploadedFiles.map(async (file) => {
       await createMatterFile(file).then(() => {
@@ -115,10 +115,8 @@ export default function FileBucket() {
         handleModalClose();
         setTimeout(() => {
           setShowToast(false);
-          getMatterFiles();
-          tempArr = [];
-          nameArr = [];
-          descArr = [];
+          getMatterFiles(next);
+  
         }, 3000);
       });
     });
@@ -1004,6 +1002,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       await deleteMatterFile(id);
     });
     selectedRows = [];
+    var next = 1;
     setshowRemoveFileButton(false);
     setResultMessage(`Deleting File`);
     setShowToast(true);
@@ -1015,7 +1014,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setResultMessage(`Successfully Deleted!`);
       setShowToast(true);
       setTimeout(() => {
-        getMatterFiles();
+        getMatterFiles(next);
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
