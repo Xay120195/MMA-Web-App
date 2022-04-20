@@ -861,7 +861,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [isAllChecked, setIsAllChecked] = useState(false);
 
   //checking each row
-  function checked(id, fileName, details, size, downloadURL, type, idx) {
+  function checked(id, fileName, details, size, downloadURL, type, date, idx) {
     if (isAllChecked) {
       selectedRows.splice(
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
@@ -889,7 +889,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       } else {
         selectedRows = [
           ...selectedRows,
-          { id: id, fileName: fileName, details: details },
+          { id: id, fileName: fileName, details: details, date: date },
         ];
 
         selectedCompleteDataRows = [
@@ -898,6 +898,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             id: id,
             fileName: fileName,
             details: details,
+            date: date,
             size: size,
             type: type,
             downloadURL: downloadURL,
@@ -938,7 +939,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         (data) =>
           (selectedRows = [
             ...selectedRows,
-            { id: data.id, fileName: data.name, details: data.details },
+            {
+              id: data.id,
+              fileName: data.name,
+              details: data.details,
+              date: data.date,
+            },
           ])
       );
       const newArr = Array(files.length).fill(true);
@@ -1086,21 +1092,26 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $description: String) {
-        backgroundCreate(clientMatterId: $clientMatterId,description: $description) {
-          id
-        }
-      }
-  `;
+  mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+    backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
+      createdAt
+      date
+      description
+      id
+      order
+    }
+  }
+`;
 
   async function addFileBucketToBackground() {
     let arrFiles = [];
     setShowToast(true);
     setResultMessage(`Copying details to background..`);
 
-    arrFiles = selectedRows.map(({ id, details }) => ({
+    arrFiles = selectedRows.map(({ id, details, date }) => ({
       id: id,
       details: details,
+      date: date,
     }));
 
     var counter = 0;
@@ -1111,6 +1122,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         variables: {
           clientMatterId: matter_id,
           description: arrFiles[i].details,
+          date: new Date(arrFiles[i].date).toISOString(),
         },
       });
 
@@ -1568,6 +1580,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 data.size,
                                                 data.downloadURL,
                                                 data.type,
+                                                data.date,
                                                 index
                                               )
                                             }
@@ -1775,6 +1788,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 index
                                               )
                                             }
+                                            onClick={(options) => handleLabelChanged(
+                                              options,
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              index
+                                            )}
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
