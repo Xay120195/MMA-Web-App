@@ -13,6 +13,7 @@ const {
   createMatterFile,
   updateMatterFile,
   softDeleteMatterFile,
+  bulkUpdateMatterFileOrders,
 } = require("../../../services/MatterService");
 
 async function createCompany(data) {
@@ -1057,6 +1058,16 @@ const resolvers = {
 
       return await updateMatterFile(id, data);
     },
+
+    matterFileBulkUpdateOrders: async (ctx) => {
+      const { arrangement } = ctx.arguments; // id and order
+
+      const data = arrangement.map((item) => {
+        return { ...item, updatedAt: new Date().toISOString() };
+      });
+      return await bulkUpdateMatterFileOrders(data);
+    },
+
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
       const data = {

@@ -155,11 +155,6 @@ custom:
         field: companyAccessTypeUpdate
         request: false
         response: false
-      # - dataSource: LambdaQueryDS
-      #   type: Query
-      #   field: matterFile
-      #   request: false
-      #   response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: matterFiles
@@ -193,6 +188,11 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: matterFileUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterFileBulkUpdateOrders
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -325,7 +325,6 @@ custom:
         field: backgroundBulkUpdateOrders
         request: false
         response: false
-        
       - dataSource: LambdaMutationDS
         type: Mutation
         field: backgroundDelete
