@@ -38,6 +38,7 @@ import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
+import BreadCrumb from "../breadcrumb/breadcrumb";
 
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
@@ -260,7 +261,36 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   `;
 
+// WITH PAGINAGTION 
+/*
   const mPaginationbyItems = `
+query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
+    items {
+      id
+      name
+      details
+      date
+      labels {
+        items {
+          id
+          name
+        }
+      }
+      createdAt
+      order
+      type
+      size
+      downloadURL
+    }
+    nextToken
+  }
+}
+`;
+*/
+
+// WITHOUT PAGINAGTION 
+const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
     items {
@@ -378,8 +408,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("353 - newOptions", newOptions);
 
       data.labels = newOptions;
-      updateArr(newOptions, index);
-      await updateMatterFile(fileId, data);
+      updateArrLabels(newOptions, index);
+      //await updateMatterFile(fileId, data);
       tagFileLabel(fileId, newOptions);
     }
 
@@ -566,7 +596,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("No new labels found");
       console.log("data.labels.items", data.labels.items);
 
-      updateArr(data.labels.items, index);
+      updateArrLabels(data.labels.items, index);
       await updateMatterFile(fileId, data);
       tagFileLabel(fileId, data.labels.items);
     }
@@ -574,7 +604,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
-      getMatterFiles();
+      // getMatterFiles();
       setTimeout(() => {
         setTimeout(() => {
           setShowToast(false);
@@ -583,8 +613,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }, 1000);
   };
 
-  function updateArr(data, index) {
-    console.log("updateArr", data, index);
+  function updateArrLabels(data, index) {
+    console.log("updateArrLabels", data, index);
     tempArr[index] = data;
   }
 
@@ -604,6 +634,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const handleSaveDetails = async (e, details, id) => {
+    const updatedDesc = matterFiles.map((obj) => {
+      if (obj.id === id) {
+        return {
+          ...obj,
+          details: e.target.innerHTML,
+        };
+      }
+      return obj;
+    });
+    setMatterFiles(updatedDesc);
     if (textDetails.length <= 0) {
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
@@ -612,6 +652,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
+
       //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
@@ -621,11 +662,23 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         }, 1000);
       }, 1000);
     } else {
+      const updatedDesc = matterFiles.map((obj) => {
+        if (obj.id === id) {
+          return {
+            ...obj,
+            details: e.target.innerHTML,
+          };
+        }
+        return obj;
+      });
+      setMatterFiles(updatedDesc);
+
       setDesAlert("");
       const data = {
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
+
       //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
@@ -837,7 +890,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   const [isAllChecked, setIsAllChecked] = useState(false);
 
   //checking each row
-  function checked(id, fileName, details, size, downloadURL, type, idx) {
+  function checked(id, fileName, details, size, downloadURL, type, date, idx) {
     if (isAllChecked) {
       selectedRows.splice(
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
@@ -865,7 +918,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       } else {
         selectedRows = [
           ...selectedRows,
-          { id: id, fileName: fileName, details: details },
+          { id: id, fileName: fileName, details: details, date: date },
         ];
 
         selectedCompleteDataRows = [
@@ -874,6 +927,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             id: id,
             fileName: fileName,
             details: details,
+            date: date,
             size: size,
             type: type,
             downloadURL: downloadURL,
@@ -914,7 +968,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         (data) =>
           (selectedRows = [
             ...selectedRows,
-            { id: data.id, fileName: data.name, details: data.details },
+            {
+              id: data.id,
+              fileName: data.name,
+              details: data.details,
+              date: data.date,
+            },
           ])
       );
       const newArr = Array(files.length).fill(true);
@@ -1062,21 +1121,26 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $description: String) {
-        backgroundCreate(clientMatterId: $clientMatterId,description: $description) {
-          id
-        }
-      }
-  `;
+  mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+    backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
+      createdAt
+      date
+      description
+      id
+      order
+    }
+  }
+`;
 
   async function addFileBucketToBackground() {
     let arrFiles = [];
     setShowToast(true);
     setResultMessage(`Copying details to background..`);
 
-    arrFiles = selectedRows.map(({ id, details }) => ({
+    arrFiles = selectedRows.map(({ id, details, date }) => ({
       id: id,
       details: details,
+      date: date,
     }));
 
     var counter = 0;
@@ -1087,6 +1151,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         variables: {
           clientMatterId: matter_id,
           description: arrFiles[i].details,
+          date: new Date(arrFiles[i].date).toISOString(),
         },
       });
 
@@ -1208,25 +1273,27 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("f");
       setAscDesc(true);
       setMatterFiles(
-        matterFiles
-          .slice()
-          .sort((a, b) =>
-            //isAllZero ? b.order - a.order : 
+        matterFiles.slice().sort(
+          (a, b) =>
+            //isAllZero ? b.order - a.order :
             new Date(b.date) - new Date(a.date)
-          )
+        )
       );
     } else {
       console.log("t");
       setAscDesc(false);
       setMatterFiles(
-        matterFiles
-          .slice()
-          .sort((a, b) =>
-            //isAllZero ? a.order - b.order : 
+        matterFiles.slice().sort(
+          (a, b) =>
+            //isAllZero ? a.order - b.order :
             new Date(a.date) - new Date(b.date)
-          )
+        )
       );
     }
+  };
+
+  const style = {
+    paddingLeft: "0rem",
   };
 
   return (
@@ -1239,7 +1306,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       >
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
-              <div>
+            <div>
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
                   <MdArrowBackIos />
@@ -1254,6 +1321,63 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </span>
               </h1>
             </div>
+            <nav aria-label="Breadcrumb" style={style} className="mt-4">
+              <ol
+                role="list"
+                className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+              >
+                <li>
+                  <div className="flex items-center">
+                    <Link
+                      className="mr-2 text-sm font-medium text-gray-900"
+                      to={`${AppRoutes.DASHBOARD}`}
+                    >
+                      Dashboard
+                    </Link>
+                    <svg
+                      width="16"
+                      height="20"
+                      viewBox="0 0 16 20"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                      className="w-4 h-5 text-gray-300"
+                    >
+                      <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                    </svg>
+                  </div>
+                </li>
+                <li className="text-sm">
+                  <Link
+                    aria-current="page"
+                    className="font-medium text-gray-900"
+                    to={`${AppRoutes.BACKGROUND}/${matter_id}`}
+                  >
+                    Background
+                  </Link>
+                </li>
+                <svg
+                  width="16"
+                  height="20"
+                  viewBox="0 0 16 20"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="w-4 h-5 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+                <li className="text-sm">
+                  <Link
+                    aria-current="page"
+                    className="font-medium text-gray-500"
+                    to={`${AppRoutes.FILEBUCKET}/${matter_id}/000`}
+                  >
+                    File Bucket
+                  </Link>
+                </li>
+              </ol>
+            </nav>
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
@@ -1485,6 +1609,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 data.size,
                                                 data.downloadURL,
                                                 data.type,
+                                                data.date,
                                                 index
                                               )
                                             }
@@ -1692,6 +1817,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 index
                                               )
                                             }
+                                            onClick={(options) => handleLabelChanged(
+                                              options,
+                                              data.id,
+                                              data.name,
+                                              data.details,
+                                              index
+                                            )}
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
