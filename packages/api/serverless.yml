@@ -322,6 +322,12 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: backgroundBulkUpdateOrders
+        request: false
+        response: false
+        
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: backgroundDelete
         request: false
         response: false

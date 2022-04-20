@@ -846,6 +846,46 @@ async function updateBackground(id, data) {
   return resp;
 }
 
+async function bulkUpdateBackgroundOrders(data) {
+  let resp = [];
+  try {
+    data.map(async (items) => {
+      const id = items.id;
+      const arrangement = items;
+      delete arrangement.id;
+
+      resp.push({
+        id,
+        ...items,
+      });
+
+      const {
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+        UpdateExpression,
+      } = getUpdateExpressions(arrangement);
+
+      const cmd = new UpdateItemCommand({
+        TableName: "BackgroundsTable",
+        Key: marshall({ id }),
+        UpdateExpression,
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+      });
+
+      await client.send(cmd);
+    });
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 export function getUpdateExpressions(data) {
   const values = {};
   const names = {};
@@ -1081,6 +1121,16 @@ const resolvers = {
 
       return await updateBackground(id, data);
     },
+
+    backgroundBulkUpdateOrders: async (ctx) => {
+      const { arrangement } = ctx.arguments; // id and order
+
+      const data = arrangement.map((item) => {
+        return { ...item, updatedAt: new Date().toISOString() };
+      });
+      return await bulkUpdateBackgroundOrders(data);
+    },
+
     backgroundDelete: async (ctx) => {
       const { id } = ctx.arguments;
       return await deleteBackground(id);
