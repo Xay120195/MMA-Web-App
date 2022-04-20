@@ -290,6 +290,7 @@ type Mutation {
   ): Background
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
+  backgroundBulkUpdateOrders(arrangement: [BackgroundArrangementInput]): [Background]
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
   columnSettingsCreate(
     name: String
@@ -332,6 +333,11 @@ input MatterInput {
 input FileInput {
   id: ID
   name: String
+}
+
+input BackgroundArrangementInput {
+  id: ID
+  order: Int
 }
 
 input ClientInput {
