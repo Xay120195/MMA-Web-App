@@ -83,7 +83,13 @@ export async function generatePresignedUrl(Key, src) {
 // }
 
 export async function getMatterFiles(ctx) {
-  const { matterId, isDeleted = false, limit, nextToken, sortOrder = "CREATED_DESC" } = ctx;
+  const {
+    matterId,
+    isDeleted = false,
+    limit,
+    nextToken,
+    sortOrder = "CREATED_DESC",
+  } = ctx;
 
   let resp = {};
   try {
@@ -127,7 +133,6 @@ export async function getMatterFiles(ctx) {
           )
         : null,
     };
-
   } catch (e) {
     resp = {
       error: e.message,
@@ -261,6 +266,46 @@ export async function updateMatterFile(id, data) {
     };
     console.log(resp);
   }
+  return resp;
+}
+
+export async function bulkUpdateMatterFileOrders(data) {
+  let resp = [];
+  try {
+    data.map(async (items) => {
+      const id = items.id;
+      const arrangement = items;
+      delete arrangement.id;
+
+      resp.push({
+        id,
+        ...items,
+      });
+
+      const {
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+        UpdateExpression,
+      } = getUpdateExpressions(arrangement);
+
+      const cmd = new UpdateItemCommand({
+        TableName: "MatterFileTable",
+        Key: marshall({ id }),
+        UpdateExpression,
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+      });
+
+      await ddbClient.send(cmd);
+    });
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
   return resp;
 }
 
