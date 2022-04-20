@@ -22,8 +22,8 @@ export const ModalParagraph = ({
     const dateToday = new Date().toISOString();
     arrParagraph.map(async function (x) {
       const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $description: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, description: $description) {
+        mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+          backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
             id
             date
             description
@@ -38,6 +38,7 @@ export const ModalParagraph = ({
         variables: {
           clientMatterId: matterId,
           description: x,
+          date: null,
           files: { items: [] },
         },
       });
