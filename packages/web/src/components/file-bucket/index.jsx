@@ -452,21 +452,22 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     });
   };
 
-  let getMatterFiles = async () => {
+  
+  let getMatterFiles = async (next) => {
     const params = {
       query: mPaginationbyItems,
       variables: {
         matterId: matter_id,
         isDeleted: false,
         limit: 25,
-        nextToken: vNextToken,
+        nextToken: next === 1 ? null : vNextToken,
       },
     };
-
     await API.graphql(params).then((files) => {
       const matterFilesList = files.data.matterFiles.items;
+      console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      setFiles(matterFilesList);
+      setFiles(sortByOrder(matterFilesList));
       getMatterDetails();
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
@@ -487,13 +488,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       await API.graphql(params).then((files) => {
         const matterFilesList = files.data.matterFiles.items;
-        setFiles(matterFilesList);
+        console.log("Files", matterFilesList);
+        //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
         setMatterFiles((matterFiles) =>
           matterFiles.concat(sortByOrder(matterFilesList))
         );
         setMaxLoading(false);
-        console.log(matterFilesList);
+        console.log("error",matterFilesList);
       });
     } else {
       console.log("Last Result!");
@@ -1075,10 +1077,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const filterRecord = (v) => {
-    console.log("filter", v);
+    console.log("filter", v); 
+    var next = 1;
 
     if (v === "") {
-      getMatterFiles();
+      getMatterFiles(next);
     } else {
       const filterRecord = files.filter((x) =>
         x.name.toLowerCase().includes(v.toLowerCase())
@@ -1092,15 +1095,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   //filter function
   const handleFilter = (fileFilter) => {
     console.log("ff", fileFilter);
+    console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
+    var next = 1;
+    
     var filterRecord = [];
     if (
-      fileFilter == null ||
-      fileFilter == undefined ||
-      fileFilter.length == 0
+      fileFilter === null ||
+      fileFilter === undefined ||
+      fileFilter.length === 0
     ) {
-      setMatterFiles(sortByOrder(files));
+      getMatterFiles(next);
+      setMatterFiles(sortByOrder(matterFiles));
+      // setFiles(sortByOrder(matterFiles));
     } else {
+      // getMatterFiles(next);
       console.log("files", files);
       for (var i = 0; i < fileFilter.length; i++) {
         files.map((x) =>
@@ -1119,6 +1128,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       ];
       console.log(listFilter);
       setMatterFiles(sortByOrder(listFilter));
+      // setFiles(sortByOrder(listFilter));
     }
   };
 

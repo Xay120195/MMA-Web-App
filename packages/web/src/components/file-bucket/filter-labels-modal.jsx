@@ -16,6 +16,7 @@ export default function FilterLabels(props) {
 
   const handleFilter = async () => {
     if (filesToSend.length > 0) {
+      console.log("FTS",filesToSend);
       props.handleSave(filesToSend);
     } else {
       props.handleSave([]);
