@@ -261,8 +261,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   `;
 
-// WITH PAGINAGTION 
-/*
+  // WITH PAGINAGTION
+  /*
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
@@ -289,8 +289,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 `;
 */
 
-// WITHOUT PAGINAGTION 
-const mPaginationbyItems = `
+  // WITHOUT PAGINAGTION
+  const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
     items {
@@ -1151,7 +1151,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         variables: {
           clientMatterId: matter_id,
           description: arrFiles[i].details,
-          date: new Date(arrFiles[i].date).toISOString(),
+          date:
+            arrFiles[i].date !== null
+              ? new Date(arrFiles[i].date).toISOString()
+              : null,
         },
       });
 
@@ -1817,13 +1820,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 index
                                               )
                                             }
-                                            onClick={(options) => handleLabelChanged(
-                                              options,
-                                              data.id,
-                                              data.name,
-                                              data.details,
-                                              index
-                                            )}
+                                            onClick={(options) =>
+                                              handleLabelChanged(
+                                                options,
+                                                data.id,
+                                                data.name,
+                                                data.details,
+                                                index
+                                              )
+                                            }
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
