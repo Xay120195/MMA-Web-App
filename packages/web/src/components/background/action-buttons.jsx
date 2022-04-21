@@ -2,50 +2,43 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
-import {
-  AiFillFile,
-  AiFillEye,
-  AiOutlineLeft,
-  AiOutlineRight,
-} from "react-icons/ai";
+import { AiFillFile, AiFillEye } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
-const ActionButtons = ({
-  witness,
-  checkAllState,
-  setcheckAllState,
-  setCheckedState,
-  settotalChecked,
-  setId,
-  matterId,
-  getBackground,
-  selectedRowsBG,
-  setSelectedRowsBG,
-  setShowModalParagraph,
-  showDeleteButton,
-  setShowDeleteButton,
-  activateButton,
-  handleManageFiles,
-  checkDate,
-  setCheckDate,
-  checkDesc,
-  setCheckDesc,
-  checkDocu,
-  setCheckDocu,
-  checkedStateShowHide,
-  pageTotal,
-  pageIndex,
-  pageSize,
-  getPaginateItems,
-  selectRow,
-  setSelectRow,
-  pasteButton,
-  setPasteButton,
-  setWitness,
-  setNewWitness,
-  setMaxLoading,
-  sortByOrder,
-}) => {
+const ActionButtons = (props) => {
+  const {
+    witness,
+    checkAllState,
+    setcheckAllState,
+    setCheckedState,
+    settotalChecked,
+    setId,
+    matterId,
+    getBackground,
+    selectedRowsBG,
+    setSelectedRowsBG,
+    setShowModalParagraph,
+    showDeleteButton,
+    setShowDeleteButton,
+    activateButton,
+    handleManageFiles,
+    checkDate,
+    setCheckDate,
+    checkDesc,
+    setCheckDesc,
+    checkDocu,
+    setCheckDocu,
+    checkedStateShowHide,
+    selectRow,
+    setSelectRow,
+    pasteButton,
+    setPasteButton,
+    setWitness,
+    setNewWitness,
+    setMaxLoading,
+    sortByOrder,
+  } = props;
+
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
@@ -120,7 +113,7 @@ const ActionButtons = ({
       variables: {
         clientMatterId: matterId,
         description: "",
-        date: null
+        date: null,
       },
     });
 
@@ -171,24 +164,11 @@ const ActionButtons = ({
     }
   };
 
-  /** const handleSearchChange = (event) => {
-    setSearch(event.target.value);
-    var dm = event.target.value;
-    var str = dm.toString();
-    var result = witness.filter((x) => x.name.toLowerCase().includes(str));
-    if (result === []) {
-      setWitness(witness);
-      setShowSearch(true);
-    } else {
-      setWitness(result);
-    }
-  }; */
-
   useEffect(() => {
     if (tableColumnList === null) {
       getColumnSettings();
     }
-  }, [tableColumnList, witness]);
+  }, [tableColumnList]);
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
