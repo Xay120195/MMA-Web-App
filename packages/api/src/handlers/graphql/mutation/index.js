@@ -1061,11 +1061,7 @@ const resolvers = {
 
     matterFileBulkUpdateOrders: async (ctx) => {
       const { arrangement } = ctx.arguments; // id and order
-
-      const data = arrangement.map((item) => {
-        return { ...item, updatedAt: new Date().toISOString() };
-      });
-      return await bulkUpdateMatterFileOrders(data);
+      return await bulkUpdateMatterFileOrders(arrangement);
     },
 
     matterFileSoftDelete: async (ctx) => {
@@ -1135,11 +1131,7 @@ const resolvers = {
 
     backgroundBulkUpdateOrders: async (ctx) => {
       const { arrangement } = ctx.arguments; // id and order
-
-      const data = arrangement.map((item) => {
-        return { ...item, updatedAt: new Date().toISOString() };
-      });
-      return await bulkUpdateBackgroundOrders(data);
+      return await bulkUpdateBackgroundOrders(arrangement);
     },
 
     backgroundDelete: async (ctx) => {
