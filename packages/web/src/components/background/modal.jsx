@@ -77,7 +77,7 @@ export const ModalParagraph = ({
         <div className="relative w-auto my-6 mx-auto max-w-lg">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
             <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
-              <h3 className="text-3xl font-semibold">Add Paragaph</h3>
+              <h3 className="text-3xl font-semibold">Add Paragraph</h3>
 
               <svg
                 xmlns="http://www.w3.org/2000/svg"
