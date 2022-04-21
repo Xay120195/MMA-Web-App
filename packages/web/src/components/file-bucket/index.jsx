@@ -10,6 +10,7 @@ import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
 import barsFilter from "../../assets/images/bars-filter.svg";
+import ellipsis from "../../shared/ellipsis";
 import {
   AiOutlineDownload,
   AiFillTags,
@@ -275,6 +276,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           name
         }
       }
+      backgrounds {
+        items {
+          order
+          description
+        }
+      }
       createdAt
       order
       type
@@ -455,7 +462,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 25,
+        limit: 20,
         nextToken: next === 1 ? null : vNextToken,
       },
     };
@@ -477,7 +484,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         variables: {
           matterId: matter_id,
           isDeleted: false,
-          limit: 25,
+          limit: 20,
           nextToken: vNextToken,
         },
       };
@@ -1535,31 +1542,33 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   <div>
                     <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                       <DragDropContext onDragEnd={handleDragEnd}>
-                        <table className=" table-fixed min-w-full divide-y divide-gray-200">
+                        <table className=" table-fixed min-w-full divide-y divide-gray-200 text-xs">
                           <thead>
                             <tr>
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
                               </th>
                               <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
-                                <span>Date</span>
-
+                                <span className="ml-4">Date</span>
                                 <img
                                   src={barsFilter}
-                                  className="mx-14"
+                                  className="text-2xl w-4 mx-4"
                                   alt="filter"
                                   onClick={SortBydate}
                                   style={{ cursor: "pointer" }}
                                 />
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Name
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
                                 Description
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Labels
+                              </th>
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
+                                Page Reference
                               </th>
                             </tr>
                           </thead>
@@ -1627,11 +1636,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               deletingState ? true : false
                                             }
                                           />
-                                          <span>{index + 1}</span>
+                                          <span className="text-xs">{index + 1}</span>
                                         </td>
                                         <td>
                                           <DatePicker
-                                            className="border w-28 rounded border-gray-300 mb-5"
+                                            className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
                                             dateFormat="dd MMM yyyy"
                                             selected={
                                               data.date !== null
@@ -1841,6 +1850,25 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
                                         </td>
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                        >
+                                          {data.backgrounds.items.map(
+                                            (background, index) => (
+                                              <p
+                                                className="p-2 m-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                                key={index}
+                                              >
+                                                <b>{background.order + ". "}</b>
+                                                {ellipsis(
+                                                  clientMatterName +
+                                                    " Background"
+                                                )}
+                                              </p>
+                                            )
+                                          )}
+                                        </td>
                                       </tr>
                                     )}
                                   </Draggable>
@@ -1857,7 +1885,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : matterFiles.length >= 25 ? (
+                      ) : matterFiles.length >= 20 ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
