@@ -1811,6 +1811,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             isMulti
                                             isClearable
                                             isSearchable
+                                            openMenuOnClick
                                             onChange={(options) =>
                                               handleLabelChanged(
                                                 options,
@@ -1820,15 +1821,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 index
                                               )
                                             }
-                                            onClick={(options) =>
-                                              handleLabelChanged(
-                                                options,
-                                                data.id,
-                                                data.name,
-                                                data.details,
-                                                index
-                                              )
-                                            }
+                                            // onClick={(options) =>
+                                            //   handleLabelChanged(
+                                            //     options,
+                                            //     data.id,
+                                            //     data.name,
+                                            //     data.details,
+                                            //     index
+                                            //   )
+                                            // }
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
