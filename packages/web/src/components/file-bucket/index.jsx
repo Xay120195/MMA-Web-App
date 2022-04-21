@@ -116,7 +116,6 @@ export default function FileBucket() {
         setTimeout(() => {
           setShowToast(false);
           getMatterFiles(next);
-  
         }, 3000);
       });
     });
@@ -260,7 +259,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   `;
 
   // WITH PAGINAGTION
-  
+
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
@@ -285,7 +284,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 }
 `;
-
 
   // WITHOUT PAGINAGTION
   /** 
@@ -450,7 +448,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     });
   };
 
-  
   let getMatterFiles = async (next) => {
     const params = {
       query: mPaginationbyItems,
@@ -493,7 +490,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           matterFiles.concat(sortByOrder(matterFilesList))
         );
         setMaxLoading(false);
-        console.log("error",matterFilesList);
+        console.log("error", matterFilesList);
       });
     } else {
       console.log("Last Result!");
@@ -855,33 +852,25 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     tempMatter.splice(e.destination.index, 0, selectedRow);
     setMatterFiles(tempMatter);
 
-    const res = tempMatter.map(myFunction);
+    const result = tempMatter.map(({ id }, index) => ({
+      id: id,
+      order: index + 1,
+    }));
 
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
+    const mUpdateMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
     }
+    `;
 
-    res.map(async function (x) {
-      const mUpdateMatterFileOrder = `
-        mutation updateMatterFile ($id: ID, $order: Int) {
-          matterFileUpdate(id: $id, order: $order) {
-            id
-            order
-          }
-        }
-      `;
-
-      await API.graphql({
-        query: mUpdateMatterFileOrder,
-        variables: {
-          id: x.id,
-          order: x.order,
-        },
-      });
+    await API.graphql({
+      query: mUpdateMatterFileOrder,
+      variables: {
+        arrangement: result,
+      },
     });
   };
 
@@ -1076,7 +1065,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const filterRecord = (v) => {
-    console.log("filter", v); 
+    console.log("filter", v);
     var next = 1;
 
     if (v === "") {
@@ -1097,7 +1086,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
     var next = 1;
-    
+
     var filterRecord = [];
     if (
       fileFilter === null ||
@@ -1856,7 +1845,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       </DragDropContext>
                     </div>
                     <div>
-                       {maxLoading ? (
+                      {maxLoading ? (
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
@@ -1866,7 +1855,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         </div>
                       ) : (
                         <span></span>
-                      )} 
+                      )}
 
                       {!maxLoading && loading ? (
                         <span className="grid"></span>
