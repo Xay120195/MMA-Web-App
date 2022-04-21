@@ -1811,7 +1811,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             isMulti
                                             isClearable
                                             isSearchable
-                                            openMenuOnClick
+                                            openMenuOnClick={true}
                                             onChange={(options) =>
                                               handleLabelChanged(
                                                 options,
