@@ -38,7 +38,8 @@ import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import BreadCrumb from "../breadcrumb/breadcrumb";
+
+import ScrollToTop from "react-scroll-to-top";
 
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
@@ -1452,6 +1453,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </button>
             )} */}
           </div>
+
           <div className=" grid justify-items-end mr-0">
             <div className="flex inline-flex mr-0">
               {matterFiles !== null &&
@@ -1524,6 +1526,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
               </div>
             ) : (
               <>
+                <ScrollToTop
+                  smooth
+                  color="rgb(117, 117, 114);"
+                  style={{ padding: "0.4rem" }}
+                />
                 {matterFiles !== null && matterFiles.length !== 0 ? (
                   <div>
                     <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
@@ -1811,6 +1818,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             isMulti
                                             isClearable
                                             isSearchable
+                                            openMenuOnClick={true}
                                             onChange={(options) =>
                                               handleLabelChanged(
                                                 options,
@@ -1820,15 +1828,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 index
                                               )
                                             }
-                                            onClick={(options) =>
-                                              handleLabelChanged(
-                                                options,
-                                                data.id,
-                                                data.name,
-                                                data.details,
-                                                index
-                                              )
-                                            }
+                                            // onClick={(options) =>
+                                            //   handleLabelChanged(
+                                            //     options,
+                                            //     data.id,
+                                            //     data.name,
+                                            //     data.details,
+                                            //     index
+                                            //   )
+                                            // }
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />

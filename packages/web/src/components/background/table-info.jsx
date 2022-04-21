@@ -18,6 +18,7 @@ import barsFilter from "../../assets/images/bars-filter.svg";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
+import ScrollToTop from "react-scroll-to-top";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -776,6 +777,11 @@ const TableInfo = ({
                 <EmptyRow search={search} />
               ) : (
                 <>
+                  <ScrollToTop
+                    smooth
+                    color="rgb(117, 117, 114);"
+                    style={{ padding: "0.4rem" }}
+                  />
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="relative min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -897,7 +903,9 @@ const TableInfo = ({
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300"
                                               selected={
-                                                (item.date !== null && item.date !== "null" && item.date !== "")
+                                                item.date !== null &&
+                                                item.date !== "null" &&
+                                                item.date !== ""
                                                   ? new Date(item.date)
                                                   : null
                                               }
