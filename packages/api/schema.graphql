@@ -8,7 +8,7 @@ type Company {
   clientMatters(
     limit: Int
     nextToken: String
-    sortOrder: OrderBy
+    sortOrder: SortBy
   ): CompanyClientMatterConn
   phone: String
   email: AWSEmail
@@ -18,9 +18,11 @@ type Company {
   updatedAt: AWSDateTime
 }
 
-enum OrderBy {
+enum SortBy {
   CREATED_DESC
   CREATED_ASC
+  ORDER_DESC
+  ORDER_ASC
 }
 
 type Address {
@@ -136,7 +138,7 @@ type ClientMatter {
   backgrounds(
     limit: Int
     nextToken: String
-    sortOrder: OrderBy
+    sortOrder: SortBy
   ): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
   rfis(limit: Int, nextToken: String): ClientMatterRFIConn
@@ -198,7 +200,7 @@ type Query {
     isDeleted: Boolean
     limit: Int
     nextToken: String
-    sortOrder: OrderBy
+    sortOrder: SortBy
   ): MatterFileConn
   file(id: ID): File
   files: [File]
