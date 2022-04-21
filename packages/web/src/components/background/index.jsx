@@ -137,20 +137,20 @@ const Background = () => {
     }
   `;
 
-  const qlistBackgroundFiles = `
-  query getBackgroundByID($id: ID) {
-    background(id: $id) {
-      id
-      files {
-        items {
-          id
-          downloadURL
-          details
-          name
-        }
-      }
-    }
-  }`;
+  // const qlistBackgroundFiles = `
+  // query getBackgroundByID($id: ID) {
+  //   background(id: $id) {
+  //     id
+  //     files {
+  //       items {
+  //         id
+  //         downloadURL
+  //         details
+  //         name
+  //       }
+  //     }
+  //   }
+  // }`;
 
   const getBackground = async () => {
     let result = [];
