@@ -98,6 +98,7 @@ const ActionButtons = (props) => {
   };
 
   const handleAddRow = async () => {
+    console.log("handleAddRow");
     const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
@@ -129,6 +130,27 @@ const ActionButtons = (props) => {
 
       setWitness((witness) => sortByOrder(witness.concat(result)));
       witness.splice(0, 0, result);
+
+      const rowArrangement = witness.map(({ id }, index) => ({
+        id: id,
+        order: index + 1,
+      }));
+
+      const mUpdateBackgroundOrder = `
+        mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+          backgroundBulkUpdateOrders(arrangement: $arrangement) {
+            id
+            order
+          }
+        }`;
+      const response = await API.graphql({
+        query: mUpdateBackgroundOrder,
+        variables: {
+          arrangement: rowArrangement,
+        },
+      });
+      console.log(response);
+    
 
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));

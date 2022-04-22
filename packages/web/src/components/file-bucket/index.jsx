@@ -1856,7 +1856,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           {data.backgrounds.items.map(
                                             (background, index) => (
                                               <p
-                                                className="p-2 m-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                                className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
                                                 key={background.id}
                                                 index={index}
                                               >
