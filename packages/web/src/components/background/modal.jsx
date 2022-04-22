@@ -17,6 +17,8 @@ export const ModalParagraph = ({
   let buttonBg = "bg-green-500";
 
   const handleNewParagraph = async (e) => {
+
+    console.log("handleNewParagraph");
     const arrParagraph = paragraph.split("\n\n");
 
     const dateToday = new Date().toISOString();
@@ -61,6 +63,28 @@ export const ModalParagraph = ({
         setShowModalParagraph(false);
         setParagraph("");
 
+        console.log(witness);
+
+        const rowArrangement = witness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+  
+        const mUpdateBackgroundOrder = `
+          mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+            backgroundBulkUpdateOrders(arrangement: $arrangement) {
+              id
+              order
+            }
+          }`;
+        const response = await API.graphql({
+          query: mUpdateBackgroundOrder,
+          variables: {
+            arrangement: rowArrangement,
+          },
+        });
+        console.log(response);
+
         setcheckAllState(false);
 
         setCheckedState(new Array(witness.length).fill(false));
@@ -77,7 +101,7 @@ export const ModalParagraph = ({
         <div className="relative w-auto my-6 mx-auto max-w-lg">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
             <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
-              <h3 className="text-3xl font-semibold">Add Paragaph</h3>
+              <h3 className="text-3xl font-semibold">Add Paragraph</h3>
 
               <svg
                 xmlns="http://www.w3.org/2000/svg"

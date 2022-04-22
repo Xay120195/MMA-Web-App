@@ -94,6 +94,7 @@ type File {
   order: Int
   date: AWSDateTime
   labels(limit: Int, nextToken: String): FileLabelConn
+  backgrounds(limit: Int, nextToken: String): FileBackgroundConn
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -193,12 +194,6 @@ type Query {
   clientMatter(id: ID): ClientMatter
   matters: [Matter]
   matter(id: ID): Matter
-  # matterFile(
-  #   matterId: ID
-  #   isDeleted: Boolean
-  #   limit: Int
-  #   nextToken: String
-  # ): [File]
   matterFiles(
     matterId: ID
     isDeleted: Boolean
@@ -265,6 +260,7 @@ type Mutation {
     date: AWSDateTime
     labels: [LabelInput]
   ): File
+  matterFileBulkUpdateOrders(arrangement: [ArrangementInput]): [File]
   matterFileSoftDelete(id: ID): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(
@@ -290,6 +286,7 @@ type Mutation {
   ): Background
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
+  backgroundBulkUpdateOrders(arrangement: [ArrangementInput]): [Background]
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
   columnSettingsCreate(
     name: String
@@ -332,6 +329,11 @@ input MatterInput {
 input FileInput {
   id: ID
   name: String
+}
+
+input ArrangementInput {
+  id: ID
+  order: Int
 }
 
 input ClientInput {
@@ -413,6 +415,11 @@ type ClientMatterLabelConn {
 
 type FileLabelConn {
   items: [Label]
+  nextToken: String
+}
+
+type FileBackgroundConn {
+  items: [Background]
   nextToken: String
 }
 
