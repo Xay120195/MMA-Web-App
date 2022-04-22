@@ -257,6 +257,8 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   // WITH PAGINAGTION
 
+  
+  
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
@@ -288,10 +290,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 }
 `;
-
+  
   // WITHOUT PAGINAGTION
-  /** 
-  const mPaginationbyItems = `
+  
+  const mNoPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
     items {
@@ -315,7 +317,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }
 }
 `;
-*/
+  
 
   async function tagBackgroundFile() {
     let arrFiles = [];
@@ -454,8 +456,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   let getMatterFiles = async (next) => {
+
+    let q = mPaginationbyItems;
+    if(matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b"){
+      q = mNoPaginationbyItems;
+    }
+
     const params = {
-      query: mPaginationbyItems,
+      query: q,
       variables: {
         matterId: matter_id,
         isDeleted: false,
@@ -476,8 +484,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
+
+      let q = mPaginationbyItems;
+    if(matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b"){
+      q = mNoPaginationbyItems;
+    }
+
       const params = {
-        query: mPaginationbyItems,
+        query: q,
         variables: {
           matterId: matter_id,
           isDeleted: false,
@@ -1897,7 +1911,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : matterFiles.length >= 20 ? (
+                      ) : (matterFiles.length >= 20 && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b") ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
