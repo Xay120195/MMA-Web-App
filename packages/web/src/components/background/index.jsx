@@ -158,7 +158,7 @@ const Background = () => {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      variables: { id: matterId, limit: 20, nextToken: vNextToken },
     });
 
     setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
@@ -201,7 +201,7 @@ const Background = () => {
 
       const backgroundOpt = await API.graphql({
         query: qListBackground,
-        variables: { id: matterId, limit: 25, nextToken: vNextToken },
+        variables: { id: matterId, limit: 20, nextToken: vNextToken },
       });
 
       setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);

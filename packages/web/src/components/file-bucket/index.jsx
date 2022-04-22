@@ -11,12 +11,7 @@ import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
 import barsFilter from "../../assets/images/bars-filter.svg";
 import ellipsis from "../../shared/ellipsis";
-import {
-  AiOutlineDownload,
-  AiFillTags,
-  AiOutlineLeft,
-  AiOutlineRight,
-} from "react-icons/ai";
+import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
@@ -243,14 +238,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 }
 `;
 
-  const mUpdateMatterFileOrder = `
-    mutation updateMatterFile ($id: ID, $order: Int) {
-      matterFileUpdate(id: $id, order: $order) {
-        id
-        order
-      }
-    }
-`;
+  //   const mUpdateMatterFileOrder = `
+  //     mutation updateMatterFile ($id: ID, $order: Int) {
+  //       matterFileUpdate(id: $id, order: $order) {
+  //         id
+  //         order
+  //       }
+  //     }
+  // `;
 
   const mUpdateBackgroundFile = `
     mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
@@ -278,6 +273,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
       backgrounds {
         items {
+          id
           order
           description
         }
@@ -344,23 +340,23 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   }
 
-  async function updateMatterFileOrder(id, data) {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mUpdateMatterFileOrder,
-          variables: {
-            id: id,
-            order: data.order,
-          },
-        });
+  // async function updateMatterFileOrder(id, data) {
+  //   return new Promise((resolve, reject) => {
+  //     try {
+  //       const request = API.graphql({
+  //         query: mUpdateMatterFileOrder,
+  //         variables: {
+  //           id: id,
+  //           order: data.order,
+  //         },
+  //       });
 
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
-  }
+  //       resolve(request);
+  //     } catch (e) {
+  //       reject(e.errors[0].message);
+  //     }
+  //   });
+  // }
 
   const getLabels = async () => {
     let result = [];
@@ -423,6 +419,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   useEffect(() => {
+    getMatterDetails();
     if (matterFiles === null) {
       console.log("matterFiles is null");
       getMatterFiles();
@@ -471,7 +468,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
-      getMatterDetails();
+      
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -865,7 +862,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       order: index + 1,
     }));
 
-    const mUpdateMatterFileOrder = `
+    const mUpdateBulkMatterFileOrder = `
     mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
       matterFileBulkUpdateOrders(arrangement: $arrangement) {
         id
@@ -875,7 +872,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     `;
 
     await API.graphql({
-      query: mUpdateMatterFileOrder,
+      query: mUpdateBulkMatterFileOrder,
       variables: {
         arrangement: result,
       },
@@ -1636,7 +1633,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               deletingState ? true : false
                                             }
                                           />
-                                          <span className="text-xs">{index + 1}</span>
+                                          <span className="text-xs">
+                                            {index + 1}
+                                          </span>
                                         </td>
                                         <td>
                                           <DatePicker
@@ -1858,7 +1857,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             (background, index) => (
                                               <p
                                                 className="p-2 m-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
-                                                key={index}
+                                                key={background.id}
+                                                index={index}
                                               >
                                                 <b>{background.order + ". "}</b>
                                                 {ellipsis(

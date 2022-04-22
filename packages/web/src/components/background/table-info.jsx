@@ -1143,7 +1143,7 @@ const TableInfo = ({
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
-          ) : witness.length >= 25 ? (
+          ) : witness.length >= 20 ? (
             <div className="flex justify-center items-center mt-5">
               <img src={imgLoading} width={50} height={100} />
             </div>
