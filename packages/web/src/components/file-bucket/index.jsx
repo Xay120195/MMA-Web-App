@@ -468,7 +468,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
-      
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -846,6 +845,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       sort = arr;
     }
     return sort;
+  }
+
+  function sortArrayByKey(array, key) {
+    return array.sort((a, b) => {
+      let x = a[key];
+      let y = b[key];
+
+      return x < y ? -1 : x > y ? 1 : 0;
+    });
   }
 
   //drag and drop functions
@@ -1846,15 +1854,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             //   )
                                             // }
                                             placeholder="Labels"
-                                            className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                            className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
                                         </td>
                                         <td
                                           {...provider.dragHandleProps}
                                           className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
                                         >
-                                          {data.backgrounds.items.map(
-                                            (background, index) => (
+                                          {data.backgrounds.items
+                                            .sort((a, b) =>
+                                              a.order > b.order ? 1 : -1
+                                            )
+                                            .map((background, index) => (
                                               <p
                                                 className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
                                                 key={background.id}
@@ -1864,10 +1875,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 {ellipsis(
                                                   clientMatterName +
                                                     " Background"
-                                                )}
+                                                    , 40)}
                                               </p>
-                                            )
-                                          )}
+                                            ))
+                                            .sort()}
                                         </td>
                                       </tr>
                                     )}

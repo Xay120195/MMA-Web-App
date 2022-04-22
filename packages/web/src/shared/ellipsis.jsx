@@ -1,5 +1,5 @@
-const ellipsis = function (str) {
-  if (str.length > 25) str = str.substring(0, 25) + "...";
+const ellipsis = function (str, len) {
+  if (str.length > len) str = str.substring(0, len) + "...";
   return str;
 };
 
