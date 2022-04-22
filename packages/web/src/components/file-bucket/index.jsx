@@ -282,7 +282,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       order
       type
       size
-      downloadURL
     }
     nextToken
   }
@@ -305,11 +304,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           name
         }
       }
+      backgrounds {
+        items {
+          id
+          order
+          description
+        }
+      }
       createdAt
       order
       type
       size
-      downloadURL
     }
     nextToken
   }
@@ -1870,8 +1875,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           {...provider.dragHandleProps}
                                           className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
                                         >
-                                          {
-                                          (data.backgrounds.items !== undefined && data.backgrounds.items !== null) && data.backgrounds.items
+                                          {data.backgrounds.items
                                             .sort((a, b) =>
                                               a.order > b.order ? 1 : -1
                                             )
