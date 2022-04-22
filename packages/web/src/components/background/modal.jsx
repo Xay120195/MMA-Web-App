@@ -17,6 +17,8 @@ export const ModalParagraph = ({
   let buttonBg = "bg-green-500";
 
   const handleNewParagraph = async (e) => {
+
+    console.log("handleNewParagraph");
     const arrParagraph = paragraph.split("\n\n");
 
     const dateToday = new Date().toISOString();
@@ -60,6 +62,28 @@ export const ModalParagraph = ({
 
         setShowModalParagraph(false);
         setParagraph("");
+
+        console.log(witness);
+
+        const rowArrangement = witness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+  
+        const mUpdateBackgroundOrder = `
+          mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+            backgroundBulkUpdateOrders(arrangement: $arrangement) {
+              id
+              order
+            }
+          }`;
+        const response = await API.graphql({
+          query: mUpdateBackgroundOrder,
+          variables: {
+            arrangement: rowArrangement,
+          },
+        });
+        console.log(response);
 
         setcheckAllState(false);
 
