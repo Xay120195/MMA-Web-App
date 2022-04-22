@@ -181,6 +181,26 @@ const Background = () => {
 
       if (witness !== null) {
         setWitness(sortByOrder(result));
+        const res = result.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+        
+        const mUpdateBackgroundOrder = `
+          mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+            backgroundBulkUpdateOrders(arrangement: $arrangement) {
+              id
+              order
+            }
+          }`;
+        const response = await API.graphql({
+          query: mUpdateBackgroundOrder,
+          variables: {
+            arrangement: res,
+          },
+        });
+        console.log(response);
+
         setMaxLoading(false);
       }
     }
