@@ -257,8 +257,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   // WITH PAGINAGTION
 
-  
-  
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
@@ -290,9 +288,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 }
 `;
-  
+
   // WITHOUT PAGINAGTION
-  
+
   const mNoPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
@@ -317,7 +315,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }
 }
 `;
-  
 
   async function tagBackgroundFile() {
     let arrFiles = [];
@@ -421,7 +418,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   useEffect(() => {
-    
     if (matterFiles === null) {
       console.log("matterFiles is null");
       getMatterFiles();
@@ -456,9 +452,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   let getMatterFiles = async (next) => {
-
     let q = mPaginationbyItems;
-    if(matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b"){
+    if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
       q = mNoPaginationbyItems;
     }
 
@@ -484,11 +479,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
-
       let q = mPaginationbyItems;
-    if(matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b"){
-      q = mNoPaginationbyItems;
-    }
+      if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+        q = mNoPaginationbyItems;
+      }
 
       const params = {
         query: q,
@@ -1876,7 +1870,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           {...provider.dragHandleProps}
                                           className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
                                         >
-                                          {data.backgrounds.items
+                                          {
+                                          (data.backgrounds.items !== undefined && data.backgrounds.items !== null) && data.backgrounds.items
                                             .sort((a, b) =>
                                               a.order > b.order ? 1 : -1
                                             )
@@ -1889,8 +1884,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 <b>{background.order + ". "}</b>
                                                 {ellipsis(
                                                   clientMatterName +
-                                                    " Background"
-                                                    , 40)}
+                                                    " Background",
+                                                  40
+                                                )}
                                               </p>
                                             ))
                                             .sort()}
@@ -1911,7 +1907,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : (matterFiles.length >= 20 && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b") ? (
+                      ) : matterFiles.length >= 20 &&
+                        matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
