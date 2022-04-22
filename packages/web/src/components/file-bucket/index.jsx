@@ -419,7 +419,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   useEffect(() => {
-    getMatterDetails();
+    
     if (matterFiles === null) {
       console.log("matterFiles is null");
       getMatterFiles();
@@ -468,6 +468,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
+      getMatterDetails();
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
