@@ -94,6 +94,7 @@ type File {
   order: Int
   date: AWSDateTime
   labels(limit: Int, nextToken: String): FileLabelConn
+  backgrounds(limit: Int, nextToken: String): FileBackgroundConn
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -414,6 +415,11 @@ type ClientMatterLabelConn {
 
 type FileLabelConn {
   items: [Label]
+  nextToken: String
+}
+
+type FileBackgroundConn {
+  items: [Background]
   nextToken: String
 }
 

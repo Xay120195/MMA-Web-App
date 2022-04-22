@@ -10,12 +10,8 @@ import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
 import barsFilter from "../../assets/images/bars-filter.svg";
-import {
-  AiOutlineDownload,
-  AiFillTags,
-  AiOutlineLeft,
-  AiOutlineRight,
-} from "react-icons/ai";
+import ellipsis from "../../shared/ellipsis";
+import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
@@ -242,14 +238,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 }
 `;
 
-  const mUpdateMatterFileOrder = `
-    mutation updateMatterFile ($id: ID, $order: Int) {
-      matterFileUpdate(id: $id, order: $order) {
-        id
-        order
-      }
-    }
-`;
+  //   const mUpdateMatterFileOrder = `
+  //     mutation updateMatterFile ($id: ID, $order: Int) {
+  //       matterFileUpdate(id: $id, order: $order) {
+  //         id
+  //         order
+  //       }
+  //     }
+  // `;
 
   const mUpdateBackgroundFile = `
     mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
@@ -273,6 +269,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         items {
           id
           name
+        }
+      }
+      backgrounds {
+        items {
+          id
+          order
+          description
         }
       }
       createdAt
@@ -337,23 +340,23 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   }
 
-  async function updateMatterFileOrder(id, data) {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mUpdateMatterFileOrder,
-          variables: {
-            id: id,
-            order: data.order,
-          },
-        });
+  // async function updateMatterFileOrder(id, data) {
+  //   return new Promise((resolve, reject) => {
+  //     try {
+  //       const request = API.graphql({
+  //         query: mUpdateMatterFileOrder,
+  //         variables: {
+  //           id: id,
+  //           order: data.order,
+  //         },
+  //       });
 
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
-  }
+  //       resolve(request);
+  //     } catch (e) {
+  //       reject(e.errors[0].message);
+  //     }
+  //   });
+  // }
 
   const getLabels = async () => {
     let result = [];
@@ -416,6 +419,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   useEffect(() => {
+    getMatterDetails();
     if (matterFiles === null) {
       console.log("matterFiles is null");
       getMatterFiles();
@@ -455,7 +459,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 25,
+        limit: 20,
         nextToken: next === 1 ? null : vNextToken,
       },
     };
@@ -464,7 +468,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
-      getMatterDetails();
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -477,7 +480,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         variables: {
           matterId: matter_id,
           isDeleted: false,
-          limit: 25,
+          limit: 20,
           nextToken: vNextToken,
         },
       };
@@ -844,6 +847,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     return sort;
   }
 
+  function sortArrayByKey(array, key) {
+    return array.sort((a, b) => {
+      let x = a[key];
+      let y = b[key];
+
+      return x < y ? -1 : x > y ? 1 : 0;
+    });
+  }
+
   //drag and drop functions
   const handleDragEnd = async (e) => {
     let tempMatter = [...matterFiles];
@@ -858,7 +870,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       order: index + 1,
     }));
 
-    const mUpdateMatterFileOrder = `
+    const mUpdateBulkMatterFileOrder = `
     mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
       matterFileBulkUpdateOrders(arrangement: $arrangement) {
         id
@@ -868,7 +880,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     `;
 
     await API.graphql({
-      query: mUpdateMatterFileOrder,
+      query: mUpdateBulkMatterFileOrder,
       variables: {
         arrangement: result,
       },
@@ -1535,31 +1547,33 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   <div>
                     <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                       <DragDropContext onDragEnd={handleDragEnd}>
-                        <table className=" table-fixed min-w-full divide-y divide-gray-200">
+                        <table className=" table-fixed min-w-full divide-y divide-gray-200 text-xs">
                           <thead>
                             <tr>
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
                               </th>
                               <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
-                                <span>Date</span>
-
+                                <span className="ml-4">Date</span>
                                 <img
                                   src={barsFilter}
-                                  className="mx-14"
+                                  className="text-2xl w-4 mx-4"
                                   alt="filter"
                                   onClick={SortBydate}
                                   style={{ cursor: "pointer" }}
                                 />
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Name
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
                                 Description
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Labels
+                              </th>
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
+                                Page Reference
                               </th>
                             </tr>
                           </thead>
@@ -1627,11 +1641,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               deletingState ? true : false
                                             }
                                           />
-                                          <span>{index + 1}</span>
+                                          <span className="text-xs">
+                                            {index + 1}
+                                          </span>
                                         </td>
                                         <td>
                                           <DatePicker
-                                            className="border w-28 rounded border-gray-300 mb-5"
+                                            className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
                                             dateFormat="dd MMM yyyy"
                                             selected={
                                               data.date !== null
@@ -1838,8 +1854,31 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             //   )
                                             // }
                                             placeholder="Labels"
-                                            className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                            className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
+                                        </td>
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                        >
+                                          {data.backgrounds.items
+                                            .sort((a, b) =>
+                                              a.order > b.order ? 1 : -1
+                                            )
+                                            .map((background, index) => (
+                                              <p
+                                                className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                                key={background.id}
+                                                index={index}
+                                              >
+                                                <b>{background.order + ". "}</b>
+                                                {ellipsis(
+                                                  clientMatterName +
+                                                    " Background"
+                                                    , 40)}
+                                              </p>
+                                            ))
+                                            .sort()}
                                         </td>
                                       </tr>
                                     )}
@@ -1857,7 +1896,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : matterFiles.length >= 25 ? (
+                      ) : matterFiles.length >= 20 ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
