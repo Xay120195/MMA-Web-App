@@ -61,7 +61,7 @@ export default function PageReferenceModal(props) {
         </div><br/>
         <div
          contentEditable={updateProgess ? false : true } 
-         className="p-2 font-poppins overflow-auto h-4/6"
+         className="p-2 font-poppins overflow-auto h-3/5"
           style={{
             cursor: "auto",
             outlineColor:
