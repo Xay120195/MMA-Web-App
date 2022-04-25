@@ -498,9 +498,9 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    console.log(result);
+    //console.log(result);
     resp = (Object.keys(result).length !== 0 && result !== null && result !== {}) ? result : [];
-    console.log(resp);
+    //console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
