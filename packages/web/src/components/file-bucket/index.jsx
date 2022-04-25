@@ -458,9 +458,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
-    if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-      q = mNoPaginationbyItems;
-    }
+    // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+    //   q = mNoPaginationbyItems;
+    // }
 
     const params = {
       query: q,
@@ -485,9 +485,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
       let q = mPaginationbyItems;
-      if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-        q = mNoPaginationbyItems;
-      }
+      // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+      //   q = mNoPaginationbyItems;
+      // }
 
       const params = {
         query: q,
@@ -1911,8 +1911,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : matterFiles.length >= 20 &&
-                        matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" ? (
+                      ) : matterFiles.length >= 20 
+                        /** && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" */ ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
