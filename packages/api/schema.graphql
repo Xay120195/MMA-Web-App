@@ -251,6 +251,7 @@ type Mutation {
     type: String
     name: String
     details: String
+    order: Int
   ): File
   matterFileUpdate(
     id: ID

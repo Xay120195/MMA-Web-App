@@ -102,9 +102,9 @@ async function listFileBackgrounds(ctx) {
     const fileBackgroundsCommand = new QueryCommand(fileBackgroundsParams);
     const fileBackgroundsResult = await ddbClient.send(fileBackgroundsCommand);
 
-    const backgroundIds = fileBackgroundsResult.Items.map((i) => unmarshall(i)).map((f) =>
-      marshall({ id: f.backgroundId })
-    );
+    const backgroundIds = fileBackgroundsResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.backgroundId }));
 
     if (backgroundIds.length !== 0) {
       const backgroundsParams = {
@@ -118,13 +118,17 @@ async function listFileBackgrounds(ctx) {
       const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
       const backgroundsResult = await ddbClient.send(backgroundsCommand);
 
-      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map((i) =>
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
+      );
+      const objFileBackgrounds = fileBackgroundsResult.Items.map((i) =>
         unmarshall(i)
       );
-      const objFileBackgrounds = fileBackgroundsResult.Items.map((i) => unmarshall(i));
 
       const response = objFileBackgrounds.map((item) => {
-        const filterBackground = objBackgrounds.find((u) => u.id === item.backgroundId);
+        const filterBackground = objBackgrounds.find(
+          (u) => u.id === item.backgroundId
+        );
         return { ...item, ...filterBackground };
       });
       return {
@@ -151,10 +155,6 @@ async function listFileBackgrounds(ctx) {
   }
   return response;
 }
-
-
-
-
 
 const resolvers = {
   File: {
