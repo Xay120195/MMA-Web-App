@@ -45,12 +45,6 @@ export default function PageReferenceModal(props) {
 
   const handleDescChange = () => {
     props.description === valRef.current.innerHTML ? setChangeDescription(false) : setChangeDescription(true);
-    /*if(props.description === valRef.current.innerHTML){
-      setChangeDescription(false);
-    } else {
-      setChangeDescription(true);
-    }*/
-    console.log(changeDescription);
   }
 
   return (
