@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { API } from "aws-amplify";
 import { FiX } from "react-icons/fi";
-import { FaEdit, FaSave } from "react-icons/fa";
+import { FaEdit, FaSave, FaBan } from "react-icons/fa";
 import "../../assets/styles/pageReferenceModal.css";
 
 export default function PageReferenceModal(props) {
   const [updateProgess, setUpdateProgress] = useState(true);
+  const [changeDescription, setChangeDescription] = useState(false);
   let valRef = useRef();
 
   const handleModalClose = () => {
@@ -14,6 +15,10 @@ export default function PageReferenceModal(props) {
 
   const setUpdateDescription = () => {
     setUpdateProgress(false);
+  }
+
+  const setCancelDescription = () => {
+    setUpdateProgress(true);
   }
 
   const mUpdateBackgroundDescription = `
@@ -36,6 +41,16 @@ export default function PageReferenceModal(props) {
     });
     props.getMatterFiles(1);
     setUpdateProgress(true);
+  }
+
+  const handleDescChange = () => {
+    props.description === valRef.current.innerHTML ? setChangeDescription(false) : setChangeDescription(true);
+    /*if(props.description === valRef.current.innerHTML){
+      setChangeDescription(false);
+    } else {
+      setChangeDescription(true);
+    }*/
+    console.log(changeDescription);
   }
 
   return (
@@ -63,6 +78,7 @@ export default function PageReferenceModal(props) {
             __html: props.description,
           }}
           ref={valRef}
+          onInput={() => handleDescChange()}
         >
         </div><br/>
         
@@ -73,10 +89,18 @@ export default function PageReferenceModal(props) {
         </div>
         )}
 
-        {!updateProgess && (
-        <button className="h-10 px-5 m-2 text-green-100 transition-colors duration-150 bg-green-600 rounded-lg focus:shadow-outline hover:bg-green-700 float-right inline-block w-24"
+        {!updateProgess && !changeDescription &&  (
+        <div className="inline-block float-right"><button className="h-10 px-5 m-2 text-black transition-colors duration-150 bg-gray-200 rounded-lg focus:shadow-outline hover:bg-gray-300"
+        onClick={() => setCancelDescription()}
+        >Cancel <FaBan className="inline-block" /></button>
+        </div>
+        )}
+
+        {!updateProgess && changeDescription && (
+        <div className="inline-block float-right"><button className="h-10 px-5 m-2 text-green-100 transition-colors duration-150 bg-green-600 rounded-lg focus:shadow-outline hover:bg-green-700"
         onClick={() => saveDescription()}
         >Save <FaSave className="inline-block" /></button>
+        </div>
         )}
         
       </div>
