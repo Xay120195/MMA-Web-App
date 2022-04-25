@@ -327,7 +327,7 @@ const TableInfo = ({
       order: index + 1,
     }));
     console.log(res);
-    const mUpdateBackgroundOrder = `
+    const mBulkUpdateBackgroundOrder = `
       mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
         backgroundBulkUpdateOrders(arrangement: $arrangement) {
           id
@@ -335,7 +335,7 @@ const TableInfo = ({
         }
       }`;
     const response = await API.graphql({
-      query: mUpdateBackgroundOrder,
+      query: mBulkUpdateBackgroundOrder,
       variables: {
         arrangement: res,
       },
@@ -658,6 +658,8 @@ const TableInfo = ({
             order: index + 1,
           });
         }
+
+        // Do not use this - change to Bulk Update Background Order
         res.map(async function (x) {
           const mUpdateBackgroundOrder = `
       mutation updateBackground($id: ID, $order: Int) {
@@ -674,6 +676,8 @@ const TableInfo = ({
             },
           });
         });
+
+
       } else {
         const request = await API.graphql({
           query: mUpdateBackgroundFile,
@@ -709,6 +713,8 @@ const TableInfo = ({
             order: index + 1,
           });
         }
+
+        // Do not use this - change to Bulk Update Background Order
         res.map(async function (x) {
           const mUpdateBackgroundOrder = `
       mutation updateBackground($id: ID, $order: Int) {
@@ -781,14 +787,14 @@ const TableInfo = ({
                         <tr>
                           <th
                             scope="col"
-                            className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="sticky top-0 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                           >
                             No
                           </th>
                           {checkDate && (
                             <th
                               scope="col"
-                              className="sticky top-0 px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-center flex text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Date
                               <img
@@ -803,7 +809,7 @@ const TableInfo = ({
                           {checkDesc && (
                             <th
                               scope="col"
-                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Description of Background
                             </th>
@@ -811,14 +817,14 @@ const TableInfo = ({
                           {checkDocu && (
                             <th
                               scope="col"
-                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              className="sticky top-0 px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
                               Document
                             </th>
                           )}
                         </tr>
                       </thead>
-                      <Droppable droppableId="characters">
+                      <Droppable droppableId="tbl-backgrounds">
                         {(provider) => (
                           <tbody
                             ref={provider.innerRef}
@@ -829,8 +835,8 @@ const TableInfo = ({
                             {witness.map((item, index) => (
                               <>
                                 <Draggable
-                                  key={item.id}
-                                  draggableId={item.id}
+                                  key={item.id +"-"+index}
+                                  draggableId={item.id +"-"+index}
                                   index={index}
                                 >
                                   {(provider, snapshot) => (
@@ -841,6 +847,7 @@ const TableInfo = ({
                                         ) && "bg-green-300"
                                       }
                                       index={index}
+                                      key={item.id}
                                       {...provider.draggableProps}
                                       ref={provider.innerRef}
                                       style={{
@@ -854,7 +861,7 @@ const TableInfo = ({
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-3 py-3 w-10"
+                                        className="px-1 py-3"
                                       >
                                         <div className="flex items-center ">
                                           <MdDragIndicator
@@ -866,7 +873,7 @@ const TableInfo = ({
                                           <input
                                             type="checkbox"
                                             name={item.id}
-                                            className="cursor-pointer w-10"
+                                            className="cursor-pointer mr-1"
                                             checked={checkedState[index]}
                                             onChange={(event) =>
                                               handleCheckboxChange(
@@ -880,9 +887,10 @@ const TableInfo = ({
                                           />
                                           <label
                                             htmlFor="checkbox-1"
-                                            className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                            className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
-                                            {index + 1}
+                                            {index + 1} 
+                                            {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>
                                       </td>
@@ -890,11 +898,10 @@ const TableInfo = ({
                                       {checkDate && (
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="px-3 py-3"
                                         >
                                           <div>
                                             <DatePicker
-                                              className="border w-28 rounded border-gray-300"
+                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
                                               selected={
                                                 item.date !== null &&
                                                 item.date !== "null" &&
@@ -918,7 +925,8 @@ const TableInfo = ({
                                       {checkDesc && (
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="w-10/12 px-6 py-4"
+                                          className="w-10/12 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                          
                                         >
                                           <div
                                             className="p-2 w-full h-full font-poppins"
@@ -1034,7 +1042,7 @@ const TableInfo = ({
                                                 .map((items, index) => ( */}
                                               {item.files.items.map(
                                                 (items, index) => (
-                                                  <>
+                                                  <span key={items.id}>
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
                                                         <input
@@ -1091,7 +1099,7 @@ const TableInfo = ({
                                                         />
                                                       )}
                                                     </p>
-                                                  </>
+                                                  </span>
                                                 )
                                               )}
                                             </>
