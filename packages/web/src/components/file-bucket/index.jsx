@@ -17,7 +17,6 @@ import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
-import PageReferenceModal from "./page-reference-modal";
 //import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -71,12 +70,6 @@ export default function FileBucket() {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [ascDesc, setAscDesc] = useState(false);
-  const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
-  const [pageReferenceFileId, setPageReferenceFileId] = useState("");
-  const [pageReferenceBackgroundId, setPageReferenceBackgroundId] = useState("");
-  const [pageReferenceClientMatter, setPageReferenceClientMatter] = useState("");
-  const [pageReferenceDescription, setPageReferenceDescription] = useState("");
-  const [pageReferenceRowOrder, setPageReferenceRowOrder] = useState("");
 
   let filterOptionsArray = [];
 
@@ -129,7 +122,6 @@ export default function FileBucket() {
     setShowUploadModal(false);
     setshowRemoveFileModal(false);
     setFilterLabels(false);
-    setShowPageReferenceModal(false);
   };
 
   const contentDiv = {
@@ -1334,15 +1326,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     paddingLeft: "0rem",
   };
 
-  const showPageReference = async (fileId, backgroundId, clientMatter, description, rowOrder) => {
-    setShowPageReferenceModal(true);
-    setPageReferenceFileId(fileId);
-    setPageReferenceBackgroundId(backgroundId);
-    setPageReferenceClientMatter(clientMatter);
-    setPageReferenceDescription(description);
-    setPageReferenceRowOrder(rowOrder);
-  }
-
   return (
     <>
       <div
@@ -1901,13 +1884,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
                                                 key={background.id}
                                                 index={index}
-                                                onClick={() => showPageReference(
-                                                  data.id,
-                                                  background.id,
-                                                  clientMatterName, 
-                                                  background.description,
-                                                  background.order
-                                                )}
                                               >
                                                 <b>{background.order + ". "}</b>
                                                 {ellipsis(
@@ -1981,18 +1957,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           handleSave={handleUploadLink}
           bucketName={matter_id}
           handleModalClose={handleModalClose}
-        />
-      )}
-
-      {showPageReferenceModal && (
-        <PageReferenceModal
-          handleModalClose={handleModalClose}
-          fileId={pageReferenceFileId}
-          backgroundId={pageReferenceBackgroundId}
-          clientMatter={pageReferenceClientMatter}
-          description={pageReferenceDescription}
-          order={pageReferenceRowOrder}
-          getMatterFiles={getMatterFiles}
         />
       )}
 
