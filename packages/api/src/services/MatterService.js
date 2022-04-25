@@ -34,6 +34,8 @@ export async function generatePresignedUrl(Key, src) {
 }
 
 export async function getMatterFiles(ctx) {
+  console.log("getMatterFiles()");
+  console.log(ctx);
   const {
     matterId,
     isDeleted = false,
@@ -65,9 +67,9 @@ export async function getMatterFiles(ctx) {
 
     const cmd = new QueryCommand(param);
     const request = await ddbClient.send(cmd);
-
+    console.log("Result:", request);
     const result = request.Items.map((d) => unmarshall(d));
-
+    
     // if (request && request.Count !== 0) {
     //   result[0].nextToken = request.LastEvaluatedKey
     //     ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
