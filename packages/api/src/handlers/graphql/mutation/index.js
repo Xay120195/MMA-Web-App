@@ -662,7 +662,7 @@ async function createBackground(data) {
       description: data.description,
       date: data.date,
       createdAt: new Date().toISOString(),
-      order: 0,
+      order: data.order ? data.order : 0
     };
 
     const param = marshall(rawParams);

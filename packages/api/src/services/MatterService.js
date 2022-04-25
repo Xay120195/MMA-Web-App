@@ -33,55 +33,6 @@ export async function generatePresignedUrl(Key, src) {
   return getSignedUrl(s3Client, cmd, { expiresIn: 3600 });
 }
 
-// export async function getMatterFile(data) {
-//   const { matterId, isDeleted = false, limit, nextToken } = data;
-
-//   let resp = {};
-//   try {
-//     const param = {
-//       TableName: "MatterFileTable",
-//       IndexName: "byMatter",
-//       KeyConditionExpression: "matterId = :matterId",
-//       FilterExpression: "isDeleted = :isDeleted",
-//       //ConsistentRead:true,
-//       ScanIndexForward: false,
-//       ExpressionAttributeValues: marshall({
-//         ":matterId": matterId,
-//         ":isDeleted": isDeleted,
-//       }),
-//       ExclusiveStartKey: nextToken
-//         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-//         : undefined,
-//     };
-
-//     if (limit !== undefined) {
-//       param.Limit = limit;
-//     }
-
-//     const cmd = new QueryCommand(param);
-//     const request = await ddbClient.send(cmd);
-
-//     const result = request.Items.map((d) => unmarshall(d));
-//     if (request && request.Count !== 0) {
-//       result[0].nextToken = request.LastEvaluatedKey
-//         ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
-//             "base64"
-//           )
-//         : null;
-//     }
-
-//     resp = request ? result : {};
-//   } catch (e) {
-//     resp = {
-//       error: e.message,
-//       errorStack: e.stack,
-//     };
-//     console.log(resp);
-//   }
-
-//   return resp;
-// }
-
 export async function getMatterFiles(ctx) {
   const {
     matterId,
@@ -179,7 +130,7 @@ export async function createMatterFile(data) {
       name: data.name,
       isDeleted: false,
       date: null,
-      order: 0,
+      order: data.order ? data.order : 0,
       createdAt: new Date().toISOString(),
     };
 
