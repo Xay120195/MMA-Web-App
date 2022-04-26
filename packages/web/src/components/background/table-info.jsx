@@ -650,34 +650,26 @@ const TableInfo = ({
 
         setSelectRow(arrFileResult);
 
-        const res = tempWitness.map(myFunction);
-        function myFunction(item, index) {
-          let data;
-          return (data = {
-            id: item.id,
-            order: index + 1,
-          });
-        }
+        const result = tempWitness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
 
-        // Do not use this - change to Bulk Update Background Order
-        res.map(async function (x) {
-          const mUpdateBackgroundOrder = `
-      mutation updateBackground($id: ID, $order: Int) {
-        backgroundUpdate(id: $id, order: $order) {
-          id
-          order
-        }
-      }`;
-          await API.graphql({
-            query: mUpdateBackgroundOrder,
-            variables: {
-              id: x.id,
-              order: x.order,
-            },
-          });
+        const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+
+        await API.graphql({
+          query: mUpdateBulkMatterFileOrder,
+          variables: {
+            arrangement: result,
+          },
         });
-
-
       } else {
         const request = await API.graphql({
           query: mUpdateBackgroundFile,
@@ -705,31 +697,25 @@ const TableInfo = ({
         tempWitness.splice(targetIndex + 1, 0, newFiles.item);
         setWitness(tempWitness);
         setSelectRow(updateArrFiles);
-        const res = tempWitness.map(myFunction);
-        function myFunction(item, index) {
-          let data;
-          return (data = {
-            id: item.id,
-            order: index + 1,
-          });
-        }
+        const result = tempWitness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
 
-        // Do not use this - change to Bulk Update Background Order
-        res.map(async function (x) {
-          const mUpdateBackgroundOrder = `
-      mutation updateBackground($id: ID, $order: Int) {
-        backgroundUpdate(id: $id, order: $order) {
-          id
-          order
-        }
-      }`;
-          await API.graphql({
-            query: mUpdateBackgroundOrder,
-            variables: {
-              id: x.id,
-              order: x.order,
-            },
-          });
+        const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+
+        await API.graphql({
+          query: mUpdateBulkMatterFileOrder,
+          variables: {
+            arrangement: result,
+          },
         });
       }
     });
@@ -835,8 +821,8 @@ const TableInfo = ({
                             {witness.map((item, index) => (
                               <>
                                 <Draggable
-                                  key={item.id +"-"+index}
-                                  draggableId={item.id +"-"+index}
+                                  key={item.id + "-" + index}
+                                  draggableId={item.id + "-" + index}
                                   index={index}
                                 >
                                   {(provider, snapshot) => (
@@ -889,16 +875,14 @@ const TableInfo = ({
                                             htmlFor="checkbox-1"
                                             className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
-                                            {index + 1} 
+                                            {index + 1}
                                             {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>
                                       </td>
 
                                       {checkDate && (
-                                        <td
-                                          {...provider.dragHandleProps}
-                                        >
+                                        <td {...provider.dragHandleProps}>
                                           <div>
                                             <DatePicker
                                               className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
@@ -926,7 +910,6 @@ const TableInfo = ({
                                         <td
                                           {...provider.dragHandleProps}
                                           className="w-10/12 px-2 py-4 align-top place-items-center relative flex-wrap"
-                                          
                                         >
                                           <div
                                             className="p-2 w-full h-full font-poppins"
