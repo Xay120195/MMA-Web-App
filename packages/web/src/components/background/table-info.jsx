@@ -768,7 +768,7 @@ const TableInfo = ({
                   />
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                      <thead className="bg-gray-100 z-30" style={{position: "sticky", top: "68px"}} >
+                      <thead className="bg-gray-100 z-10" style={{position: "sticky", top: "68px"}} >
                         <tr>
                           <th
                             
