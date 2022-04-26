@@ -270,6 +270,13 @@ export const searchMatterClient = async (
         companyId: companyId,
       },
     });
+    const str = searchMatter.replace(/\s/g, "");
+    console.log(str);
+    const matterslists = listmatters.filter(
+      (x) =>
+        x.matter.name.toUpperCase().includes(str.toUpperCase()) ||
+        x.client.name.toUpperCase().includes(str.toUpperCase())
+    );
 
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
@@ -297,14 +304,6 @@ export const searchMatterClient = async (
         )}/${v.client.id.slice(-4)}}`,
       }));
     }
-
-    const str = searchMatter.replace(/\s/g, "");
-    console.log(str);
-    const matterslists = listmatters.filter(
-      (x) =>
-        x.matter.name.toUpperCase().includes(str.toUpperCase()) ||
-        x.client.name.toUpperCase().includes(str.toUpperCase())
-    );
 
     //dispatch data to reducers
     dispatch({
