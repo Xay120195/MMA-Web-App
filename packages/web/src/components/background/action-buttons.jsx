@@ -400,8 +400,8 @@ const ActionButtons = (props) => {
 
   return (
     <>
-      <div className="grid grid-rows grid-flow-col pt-5">
-        <div className="col-span-6 ">
+      <div className="pl-2 py-1 grid grid-cols-2 gap-4"  >
+        <div className="col-span-6" >
           <input
             name="check_all"
             id="check_all"
@@ -470,7 +470,7 @@ const ActionButtons = (props) => {
               </button>
             )}
             {showhideState && (
-              <div className="w-64 h-38 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+              <div className="w-64 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
                 <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                   TABLE COLUMN OPTIONS
                 </p>
@@ -566,30 +566,6 @@ const ActionButtons = (props) => {
               </button>
             </>
           )}
-
-          {/* <div className="px-2 py-0">
-            <p className={"text-sm mt-3 font-medium float-right inline-block"}>
-              <AiOutlineLeft
-                className={
-                  pageIndex === 1
-                    ? "text-gray-300 inline-block pointer-events-none"
-                    : "inline-block cursor-pointer"
-                }
-                onClick={() => getPaginateItems("prev")}
-              />
-              &nbsp;&nbsp;Showing {pageIndex} -{" "}
-              {pageSize >= pageTotal ? pageTotal : pageSize} of {pageTotal}
-              &nbsp;&nbsp;
-              <AiOutlineRight
-                className={
-                  pageSize >= pageTotal
-                    ? "text-gray-300 inline-block pointer-events-none"
-                    : "inline-block cursor-pointer"
-                }
-                onClick={() => getPaginateItems("next")}
-              />
-            </p>
-          </div> */}
         </div>
       </div>
       {showToast && (
