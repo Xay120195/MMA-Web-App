@@ -298,11 +298,14 @@ export const searchMatterClient = async (
       }));
     }
 
+    const str = searchMatter.replace(/\s/g, "");
+    console.log(str);
     const matterslists = listmatters.filter(
       (x) =>
-        x.matter.name.toLowerCase().includes(searchMatter.toLowerCase()) ||
-        x.client.name.toLowerCase().includes(searchMatter.toLowerCase())
+        x.matter.name.toUpperCase().includes(str.toUpperCase()) ||
+        x.client.name.toUpperCase().includes(str.toUpperCase())
     );
+
     //dispatch data to reducers
     dispatch({
       type: SEARCH_MATTER_SUCCESS,
