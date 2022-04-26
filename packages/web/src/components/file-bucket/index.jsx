@@ -626,10 +626,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       tagFileLabel(fileId, data.labels.items);
     }
 
+    var next = 1;
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
-      // getMatterFiles();
+      getMatterFiles(next);
       setTimeout(() => {
         setTimeout(() => {
           setShowToast(false);
