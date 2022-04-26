@@ -10,7 +10,7 @@ const BreadCrumb = ({
   matterId
 }) => {
   return (
-    <div className="pt-4">
+    <div className="pt-1">
       <nav aria-label="Breadcrumb" style={style}>
         <ol
           role="list"

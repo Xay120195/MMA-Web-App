@@ -754,9 +754,9 @@ const TableInfo = ({
       <div
         style={{ padding: "2rem", marginLeft: "4rem" }}
       >
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="shadow border-b border-gray-200 sm:rounded-lg">
               {witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
@@ -768,7 +768,7 @@ const TableInfo = ({
                   />
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                      <thead className="bg-gray-100 z-50" style={{position: "sticky", top: "0"}} >
+                      <thead className="bg-gray-100 z-30" style={{position: "sticky", top: "68px"}} >
                         <tr>
                           <th
                             
@@ -781,10 +781,10 @@ const TableInfo = ({
                               
                               className="px-2 py-4 text-center whitespace-nowrap"
                             >
-                              Date
+                              Date &nbsp;
                               <img
                                 src={barsFilter}
-                                className="mx-auto"
+                                className="mx-auto inline-block"
                                 alt="filter"
                                 onClick={SortBydate}
                                 style={{ cursor: "pointer" }}
@@ -884,7 +884,7 @@ const TableInfo = ({
                                         <td {...provider.dragHandleProps}>
                                           <div>
                                             <DatePicker
-                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
+                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-20"
                                               selected={
                                                 item.date !== null &&
                                                 item.date !== "null" &&
