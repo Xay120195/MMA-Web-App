@@ -49,7 +49,7 @@ export default function PageReferenceModal(props) {
 
   return (
     <>
-      <div className="reference-modal">
+      <div className="reference-modal z-50">
         <div className="title-grid">
           <p className="title-txt"><b>Row Number: {props.order}</b></p>
           <FiX
