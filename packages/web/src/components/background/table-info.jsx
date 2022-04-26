@@ -752,7 +752,6 @@ const TableInfo = ({
   return (
     <>
       <div
-        className="flex flex-col"
         style={{ padding: "2rem", marginLeft: "4rem" }}
       >
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -768,19 +767,19 @@ const TableInfo = ({
                     style={{ padding: "0.4rem" }}
                   />
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <table className="relative min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                      <thead className="bg-gray-100 z-50" style={{position: "sticky", top: "0"}} >
                         <tr>
                           <th
-                            scope="col"
-                            className="sticky top-0 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            
+                            className="px-2 py-4 text-center whitespace-nowrap"
                           >
                             No
                           </th>
                           {checkDate && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-center flex text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
                               Date
                               <img
@@ -794,16 +793,16 @@ const TableInfo = ({
                           )}
                           {checkDesc && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
                               Description of Background
                             </th>
                           )}
                           {checkDocu && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
                               Document
                             </th>

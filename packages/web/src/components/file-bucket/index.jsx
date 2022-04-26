@@ -1501,7 +1501,7 @@ const qlistBackgroundFiles = `
             />
           </div>
         )}
-        <div className="pl-2 py-1 grid grid-cols-2 gap-4">
+        <div className="pl-2 py-1 grid grid-cols-2 gap-4 bg-gray-100 z-50 " style={{position: "sticky", top: "0"}} >
           <div className="">
             {matterFiles !== null && matterFiles.length !== 0 && (
               <input
@@ -1623,8 +1623,8 @@ const qlistBackgroundFiles = `
                   <div>
                     <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                       <DragDropContext onDragEnd={handleDragEnd}>
-                        <table className=" table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                          <thead>
+                        <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                          <thead className="bg-gray-100 z-50" style={{position: "sticky", top: "35px"}} >
                             <tr>
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
