@@ -79,6 +79,83 @@ async function listFileLabels(ctx) {
   return response;
 }
 
+async function listFileBackgrounds(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+  try {
+    const fileBackgroundsParams = {
+      TableName: "BackgroundFileTable",
+      IndexName: "byFile",
+      KeyConditionExpression: "fileId = :fileId",
+      ExpressionAttributeValues: marshall({
+        ":fileId": id,
+      }),
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      fileBackgroundsParams.Limit = limit;
+    }
+
+    const fileBackgroundsCommand = new QueryCommand(fileBackgroundsParams);
+    const fileBackgroundsResult = await ddbClient.send(fileBackgroundsCommand);
+
+    const backgroundIds = fileBackgroundsResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.backgroundId }));
+
+    if (backgroundIds.length !== 0) {
+      const backgroundsParams = {
+        RequestItems: {
+          BackgroundsTable: {
+            Keys: backgroundIds,
+          },
+        },
+      };
+
+      const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
+      const backgroundsResult = await ddbClient.send(backgroundsCommand);
+
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
+      );
+      const objFileBackgrounds = fileBackgroundsResult.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objFileBackgrounds.map((item) => {
+        const filterBackground = objBackgrounds.find(
+          (u) => u.id === item.backgroundId
+        );
+        return { ...item, ...filterBackground };
+      });
+      return {
+        items: response,
+        nextToken: fileBackgroundsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(fileBackgroundsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+      statusCode: 500,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 const resolvers = {
   File: {
     downloadURL: async (ctx) => {
@@ -89,6 +166,9 @@ const resolvers = {
     },
     labels: async (ctx) => {
       return listFileLabels(ctx);
+    },
+    backgrounds: async (ctx) => {
+      return listFileBackgrounds(ctx);
     },
   },
 };

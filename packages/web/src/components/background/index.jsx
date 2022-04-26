@@ -137,20 +137,20 @@ const Background = () => {
     }
   `;
 
-  const qlistBackgroundFiles = `
-  query getBackgroundByID($id: ID) {
-    background(id: $id) {
-      id
-      files {
-        items {
-          id
-          downloadURL
-          details
-          name
-        }
-      }
-    }
-  }`;
+  // const qlistBackgroundFiles = `
+  // query getBackgroundByID($id: ID) {
+  //   background(id: $id) {
+  //     id
+  //     files {
+  //       items {
+  //         id
+  //         downloadURL
+  //         details
+  //         name
+  //       }
+  //     }
+  //   }
+  // }`;
 
   const getBackground = async () => {
     let result = [];
@@ -158,7 +158,7 @@ const Background = () => {
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      variables: { id: matterId, limit: 20, nextToken: vNextToken },
     });
 
     setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
@@ -181,6 +181,26 @@ const Background = () => {
 
       if (witness !== null) {
         setWitness(sortByOrder(result));
+        const res = result.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+        
+        const mUpdateBackgroundOrder = `
+          mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+            backgroundBulkUpdateOrders(arrangement: $arrangement) {
+              id
+              order
+            }
+          }`;
+        const response = await API.graphql({
+          query: mUpdateBackgroundOrder,
+          variables: {
+            arrangement: res,
+          },
+        });
+        console.log(response);
+
         setMaxLoading(false);
       }
     }
@@ -201,7 +221,7 @@ const Background = () => {
 
       const backgroundOpt = await API.graphql({
         query: qListBackground,
-        variables: { id: matterId, limit: 25, nextToken: vNextToken },
+        variables: { id: matterId, limit: 20, nextToken: vNextToken },
       });
 
       setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
@@ -305,18 +325,16 @@ const Background = () => {
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
-            
-            
-            <Link to={AppRoutes.DASHBOARD}>
+              <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
                   <MdArrowBackIos />
                   Back
                 </button>
               </Link>
               <h1 className="font-bold text-3xl">
-              Background&nbsp;<span className="text-3xl">of</span>&nbsp;
+                Background&nbsp;<span className="text-3xl">of</span>&nbsp;
                 <span className="font-semibold text-3xl">
-                {clientName}/{matterName}
+                  {clientName}/{matterName}
                 </span>
               </h1>
               {/* <span className="text-lg mt-3 font-medium">

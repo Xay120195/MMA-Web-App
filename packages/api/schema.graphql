@@ -96,6 +96,7 @@ type File {
   order: Int
   date: AWSDateTime
   labels(limit: Int, nextToken: String): FileLabelConn
+  backgrounds(limit: Int, nextToken: String): FileBackgroundConn
   downloadURL: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -252,6 +253,7 @@ type Mutation {
     type: String
     name: String
     details: String
+    order: Int
   ): File
   matterFileUpdate(
     id: ID
@@ -278,6 +280,7 @@ type Mutation {
     description: String
     date: AWSDateTime
     clientMatterId: String
+    order: Int
   ): Background
   backgroundUpdate(
     id: ID
@@ -416,6 +419,11 @@ type ClientMatterLabelConn {
 
 type FileLabelConn {
   items: [Label]
+  nextToken: String
+}
+
+type FileBackgroundConn {
+  items: [Background]
   nextToken: String
 }
 

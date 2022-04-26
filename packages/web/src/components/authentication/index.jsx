@@ -5,7 +5,6 @@ import {
   AmplifySignUp,
   AmplifySignIn,
   AmplifyForgotPassword,
-  AmplifyRequireNewPassword,
 } from "@aws-amplify/ui-react";
 import { I18n } from "aws-amplify";
 import {
@@ -46,7 +45,7 @@ const navigation = [
 const Authentication = () => {
   const [authState, setAuthState] = useState(AuthState.SignIn);
   const [prevAuthState, setPrevAuthState] = useState();
-  const [user, setUser] = useState();
+
   const [customCompanyName, setCustomCompanyName] = useState();
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
@@ -75,7 +74,7 @@ const Authentication = () => {
     //   }
     // }
 
-    return onAuthUIStateChange((nextAuthState, authData) => {
+    return onAuthUIStateChange((nextAuthState) => {
       console.log(authState, nextAuthState);
       if (authState !== nextAuthState) {
         setPrevAuthState(nextAuthState);
@@ -86,7 +85,6 @@ const Authentication = () => {
       }
 
       setAuthState(nextAuthState);
-      setUser(authData);
 
       if (prevAuthState === "confirmSignUp" && nextAuthState === "signedin") {
         history.push(AppRoutes.POSTREGISTRATION);
@@ -173,17 +171,6 @@ const Authentication = () => {
       label: "Password",
       autoComplete: "off",
       placeholder: "",
-      required: true,
-      hint: "Minimum of 8 characters, must include lowercase and uppercase characters, numerals and symbols",
-    },
-  ];
-
-  const requireNewPassword = [
-    {
-      type: "password",
-      label: "New Password",
-      autoComplete: "off",
-      placeholder: "Enter your new password",
       required: true,
       hint: "Minimum of 8 characters, must include lowercase and uppercase characters, numerals and symbols",
     },

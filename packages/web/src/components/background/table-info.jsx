@@ -18,6 +18,7 @@ import barsFilter from "../../assets/images/bars-filter.svg";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
+import ScrollToTop from "react-scroll-to-top";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -321,32 +322,25 @@ const TableInfo = ({
     tempWitness.splice(e.destination.index, 0, selectedRow);
     setWitness(tempWitness);
 
-    const res = tempWitness.map(myFunction);
-
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
-    }
-
-    res.map(async function (x) {
-      const mUpdateBackgroundOrder = `
-  mutation updateBackground($id: ID, $order: Int) {
-    backgroundUpdate(id: $id, order: $order) {
-      id
-      order
-    }
-  }`;
-      await API.graphql({
-        query: mUpdateBackgroundOrder,
-        variables: {
-          id: x.id,
-          order: x.order,
-        },
-      });
+    const res = tempWitness.map(({ id }, index) => ({
+      id: id,
+      order: index + 1,
+    }));
+    console.log(res);
+    const mUpdateBackgroundOrder = `
+      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        backgroundBulkUpdateOrders(arrangement: $arrangement) {
+          id
+          order
+        }
+      }`;
+    const response = await API.graphql({
+      query: mUpdateBackgroundOrder,
+      variables: {
+        arrangement: res,
+      },
     });
+    console.log(response);
   };
 
   const handleChageBackground = (id) => {
@@ -776,6 +770,11 @@ const TableInfo = ({
                 <EmptyRow search={search} />
               ) : (
                 <>
+                  <ScrollToTop
+                    smooth
+                    color="rgb(117, 117, 114);"
+                    style={{ padding: "0.4rem" }}
+                  />
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="relative min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -897,7 +896,9 @@ const TableInfo = ({
                                             <DatePicker
                                               className="border w-28 rounded border-gray-300"
                                               selected={
-                                                (item.date !== null && item.date !== "null" && item.date !== "")
+                                                item.date !== null &&
+                                                item.date !== "null" &&
+                                                item.date !== ""
                                                   ? new Date(item.date)
                                                   : null
                                               }
@@ -1135,7 +1136,7 @@ const TableInfo = ({
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
-          ) : witness.length >= 25 ? (
+          ) : witness.length >= 20 ? (
             <div className="flex justify-center items-center mt-5">
               <img src={imgLoading} width={50} height={100} />
             </div>
