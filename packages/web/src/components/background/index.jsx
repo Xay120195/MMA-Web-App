@@ -302,85 +302,81 @@ const Background = () => {
     <>
       <div
         className={
-          "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
+          "shadow-lg rounded bg-white z-30"
         }
-        style={contentDiv}
+        style={{margin: "0 0 0 65px"}}
       >
-        <div className="relative flex-grow flex-1">
-          <div style={mainGrid}>
-            <div>
-              <Link to={AppRoutes.DASHBOARD}>
-                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
-                  <MdArrowBackIos />
-                  Back
-                </button>
-              </Link>
-              <h1 className="font-bold text-3xl">
-                Background&nbsp;<span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">
-                  {clientName}/{matterName}
-                </span>
-              </h1>
-              {/* <span className="text-lg mt-3 font-medium">
-                Background&nbsp;<span className="text-3xl">of</span>&nbsp; {clientName}/{matterName}
-              </span> */}
-              <BreadCrumb matterId={matter_id} />
-              <ActionButtons
-                witness={witness}
-                setWitness={setWitness}
-                idList={idList}
-                checkAllState={checkAllState}
-                setcheckAllState={setcheckAllState}
-                checkedState={checkedState}
-                setCheckedState={setCheckedState}
-                totalChecked={totalChecked}
-                settotalChecked={settotalChecked}
-                setId={setId}
-                search={search}
-                setSearch={setSearch}
-                getId={getId}
-                matterId={matter_id}
-                getBackground={getBackground}
-                selectedRowsBG={selectedRowsBG}
-                setSelectedRowsBG={setSelectedRowsBG}
-                setShowModalParagraph={setShowModalParagraph}
-                paragraph={paragraph}
-                showDeleteButton={showDeleteButton}
-                setShowDeleteButton={setShowDeleteButton}
-                activateButton={activateButton}
-                setactivateButton={setActivateButton}
-                handleManageFiles={handleManageFiles}
-                checkNo={checkNo}
-                setCheckNo={setCheckNo}
-                checkDate={checkDate}
-                setCheckDate={setCheckDate}
-                checkDesc={checkDesc}
-                setCheckDesc={setCheckDesc}
-                checkDocu={checkDocu}
-                setCheckDocu={setCheckDocu}
-                checkedStateShowHide={checkedStateShowHide}
-                setCheckedStateShowHide={setCheckedStateShowHide}
-                pageTotal={pageTotal}
-                pageIndex={pageIndex}
-                pageSize={pageSize}
-                pageSizeConst={pageSizeConst}
-                getPaginateItems={getPaginateItems}
-                selectRow={selectRow}
-                setSelectRow={setSelectRow}
-                setPasteButton={setPasteButton}
-                pasteButton={pasteButton}
-                setSrcIndex={setSrcIndex}
-                srcIndex={srcIndex}
-                setNewRow={setNewRow}
-                newRow={newRow}
-                newWitness={newWitness}
-                setMaxLoading={setMaxLoading}
-                sortByOrder={sortByOrder}
-                setNewWitness={setNewWitness}
-              />
-            </div>
+        <div className="px-6 py-2">
+          <Link to={AppRoutes.DASHBOARD}>
+            <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
+              <MdArrowBackIos />
+              Back
+            </button>
+          </Link>
+          <h1 className="font-bold text-3xl">
+            Background&nbsp;<span className="text-3xl">of</span>&nbsp;
+            <span className="font-semibold text-3xl">
+              {clientName}/{matterName}
+            </span>
+          </h1>
           </div>
-        </div>
+      </div>
+
+      <div className="bg-white z-30" style={{position: "sticky", top: "0", margin: "0 0 0 85px"}} >
+      <BreadCrumb matterId={matter_id} />
+        <ActionButtons
+          witness={witness}
+          setWitness={setWitness}
+          idList={idList}
+          checkAllState={checkAllState}
+          setcheckAllState={setcheckAllState}
+          checkedState={checkedState}
+          setCheckedState={setCheckedState}
+          totalChecked={totalChecked}
+          settotalChecked={settotalChecked}
+          setId={setId}
+          search={search}
+          setSearch={setSearch}
+          getId={getId}
+          matterId={matter_id}
+          getBackground={getBackground}
+          selectedRowsBG={selectedRowsBG}
+          setSelectedRowsBG={setSelectedRowsBG}
+          setShowModalParagraph={setShowModalParagraph}
+          paragraph={paragraph}
+          showDeleteButton={showDeleteButton}
+          setShowDeleteButton={setShowDeleteButton}
+          activateButton={activateButton}
+          setactivateButton={setActivateButton}
+          handleManageFiles={handleManageFiles}
+          checkNo={checkNo}
+          setCheckNo={setCheckNo}
+          checkDate={checkDate}
+          setCheckDate={setCheckDate}
+          checkDesc={checkDesc}
+          setCheckDesc={setCheckDesc}
+          checkDocu={checkDocu}
+          setCheckDocu={setCheckDocu}
+          checkedStateShowHide={checkedStateShowHide}
+          setCheckedStateShowHide={setCheckedStateShowHide}
+          pageTotal={pageTotal}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          pageSizeConst={pageSizeConst}
+          getPaginateItems={getPaginateItems}
+          selectRow={selectRow}
+          setSelectRow={setSelectRow}
+          setPasteButton={setPasteButton}
+          pasteButton={pasteButton}
+          setSrcIndex={setSrcIndex}
+          srcIndex={srcIndex}
+          setNewRow={setNewRow}
+          newRow={newRow}
+          newWitness={newWitness}
+          setMaxLoading={setMaxLoading}
+          sortByOrder={sortByOrder}
+          setNewWitness={setNewWitness}
+        />
       </div>
       <TableInfo
         setPasteButton={setPasteButton}
