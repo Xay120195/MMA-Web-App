@@ -17,6 +17,7 @@ import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
+import PageReferenceModal from "./page-reference-modal";
 //import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -70,6 +71,12 @@ export default function FileBucket() {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [ascDesc, setAscDesc] = useState(false);
+  const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
+  const [pageReferenceFileId, setPageReferenceFileId] = useState("");
+  const [pageReferenceBackgroundId, setPageReferenceBackgroundId] = useState("");
+  const [pageReferenceClientMatter, setPageReferenceClientMatter] = useState("");
+  const [pageReferenceDescription, setPageReferenceDescription] = useState("");
+  const [pageReferenceRowOrder, setPageReferenceRowOrder] = useState("");
 
   let filterOptionsArray = [];
 
@@ -122,6 +129,7 @@ export default function FileBucket() {
     setShowUploadModal(false);
     setshowRemoveFileModal(false);
     setFilterLabels(false);
+    setShowPageReferenceModal(false);
   };
 
   const contentDiv = {
@@ -321,11 +329,54 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 }
 `;
 
+const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
   async function tagBackgroundFile() {
     let arrFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: background_id,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+    }
+
     arrFiles = selectedRows.map(({ id }) => ({
       id: id,
     }));
+
+
+    arrFiles.push(...arrFileResult);
+
+    const filteredArr = arrFiles.filter((el) => {
+      const duplicate = seen.has(el.id);
+      seen.add(el.id);
+      return !duplicate;
+    });
+
     if (background_id !== null) {
       return new Promise((resolve, reject) => {
         try {
@@ -333,10 +384,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             query: mUpdateBackgroundFile,
             variables: {
               backgroundId: background_id,
-              files: arrFiles,
+              files: filteredArr,
             },
           });
           resolve(request);
+          setTimeout(() => {
+            window.location.href=`${AppRoutes.BACKGROUND}/${matter_id}`;
+          }, 1000);
         } catch (e) {
           reject(e.errors[0].message);
         }
@@ -458,9 +512,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
-    // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-    //   q = mNoPaginationbyItems;
-    // }
+    if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+      q = mNoPaginationbyItems;
+    }
 
     const params = {
       query: q,
@@ -485,9 +539,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
       let q = mPaginationbyItems;
-      // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-      //   q = mNoPaginationbyItems;
-      // }
+      if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+        q = mNoPaginationbyItems;
+      }
 
       const params = {
         query: q,
@@ -618,10 +672,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       tagFileLabel(fileId, data.labels.items);
     }
 
+    var next = 1;
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
-      // getMatterFiles();
+      getMatterFiles(next);
       setTimeout(() => {
         setTimeout(() => {
           setShowToast(false);
@@ -1326,6 +1381,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     paddingLeft: "0rem",
   };
 
+  const showPageReference = async (fileId, backgroundId, clientMatter, description, rowOrder) => {
+    setShowPageReferenceModal(true);
+    setPageReferenceFileId(fileId);
+    setPageReferenceBackgroundId(backgroundId);
+    setPageReferenceClientMatter(clientMatter);
+    setPageReferenceDescription(description);
+    setPageReferenceRowOrder(rowOrder);
+  }
+
   return (
     <>
       <div
@@ -1351,79 +1415,68 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </span>
               </h1>
             </div>
-            <nav aria-label="Breadcrumb" style={style} className="mt-4">
-              <ol
-                role="list"
-                className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
-              >
-                <li>
-                  <div className="flex items-center">
-                    <Link
-                      className="mr-2 text-sm font-medium text-gray-900"
-                      to={`${AppRoutes.DASHBOARD}`}
-                    >
-                      Dashboard
-                    </Link>
-                    <svg
-                      width="16"
-                      height="20"
-                      viewBox="0 0 16 20"
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                      className="w-4 h-5 text-gray-300"
-                    >
-                      <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                    </svg>
-                  </div>
-                </li>
-                <li className="text-sm">
-                  <Link
-                    aria-current="page"
-                    className="font-medium text-gray-900"
-                    to={`${AppRoutes.BACKGROUND}/${matter_id}`}
-                  >
-                    Background
-                  </Link>
-                </li>
-                <svg
-                  width="16"
-                  height="20"
-                  viewBox="0 0 16 20"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  className="w-4 h-5 text-gray-300"
-                >
-                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                </svg>
-                <li className="text-sm">
-                  <Link
-                    aria-current="page"
-                    className="font-medium text-gray-500"
-                    to={`${AppRoutes.FILEBUCKET}/${matter_id}/000`}
-                  >
-                    File Bucket
-                  </Link>
-                </li>
-              </ol>
-            </nav>
-
-            <div className="absolute right-0">
-              {showAttachBackgroundButton && (
-                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`}>
-                  <button
-                    className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
-                    onClick={() => tagBackgroundFile()}
-                  >
-                    Attach to Background &nbsp;|
-                    <BsArrowLeft />
-                  </button>
-                </Link>
-              )}
-            </div>
           </div>
         </div>
+
+        <div className="bg-white z-50 " style={{position: "sticky", top: "0"}} >
+        <nav aria-label="Breadcrumb" style={style} className="mt-4">
+            <ol
+              role="list"
+              className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+            >
+              <li>
+                <div className="flex items-center">
+                  <Link
+                    className="mr-2 text-sm font-medium text-gray-900"
+                    to={`${AppRoutes.DASHBOARD}`}
+                  >
+                    Dashboard
+                  </Link>
+                  <svg
+                    width="16"
+                    height="20"
+                    viewBox="0 0 16 20"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    className="w-4 h-5 text-gray-300"
+                  >
+                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                  </svg>
+                </div>
+              </li>
+              <li className="text-sm">
+                <Link
+                  aria-current="page"
+                  className="font-medium text-gray-900"
+                  to={`${AppRoutes.BACKGROUND}/${matter_id}`}
+                >
+                  Background
+                </Link>
+              </li>
+              <svg
+                width="16"
+                height="20"
+                viewBox="0 0 16 20"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                className="w-4 h-5 text-gray-300"
+              >
+                <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+              </svg>
+              <li className="text-sm">
+                <Link
+                  aria-current="page"
+                  className="font-medium text-gray-500"
+                  to={`${AppRoutes.FILEBUCKET}/${matter_id}/000`}
+                >
+                  File Bucket
+                </Link>
+              </li>
+            </ol>
+          </nav>
+          
 
         <div className="p-2 left-0"></div>
         {files !== null && files.length !== 0 && (
@@ -1439,7 +1492,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             />
           </div>
         )}
-        <div className="pl-2 py-1 grid grid-cols-2 gap-4">
+        <div className="pl-2 py-1 grid grid-cols-1 gap-4" >
           <div className="">
             {matterFiles !== null && matterFiles.length !== 0 && (
               <input
@@ -1459,11 +1512,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
             {showRemoveFileButton && (
               <button
-                className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                 onClick={() => addFileBucketToBackground()}
               >
                 COPY TO BACKGROUND PAGE &nbsp;
                 <FiCopy />
+              </button>
+            )}
+
+            {showAttachBackgroundButton && (
+              <button
+                className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                onClick={() => tagBackgroundFile()}
+              >
+                Attach to Background &nbsp;|
+                <BsArrowLeft />
               </button>
             )}
 
@@ -1478,10 +1541,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   <FiCopy />
                 </button>
             )} */}
-          </div>
 
-          <div className=" grid justify-items-end mr-0">
-            <div className="flex inline-flex mr-0">
+            <div className="flex inline-flex mr-0 float-right">
               {matterFiles !== null &&
                 matterFiles.length !== 0 &&
                 showRemoveFileButton && (
@@ -1507,6 +1568,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
               </button>
             </div>
           </div>
+
+          <div className=" grid justify-items-end mr-0">
+            
+          </div>
+        </div>
         </div>
 
         <div className="px-2 py-0 left-0">
@@ -1561,8 +1627,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   <div>
                     <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                       <DragDropContext onDragEnd={handleDragEnd}>
-                        <table className=" table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                          <thead>
+                        <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                          <thead className="bg-gray-100 z-50" style={{position: "sticky", top: "153px"}} >
                             <tr>
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
@@ -1884,6 +1950,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
                                                 key={background.id}
                                                 index={index}
+                                                onClick={() => showPageReference(
+                                                  data.id,
+                                                  background.id,
+                                                  clientMatterName, 
+                                                  background.description,
+                                                  background.order
+                                                )}
                                               >
                                                 <b>{background.order + ". "}</b>
                                                 {ellipsis(
@@ -1912,7 +1985,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                           <p>All data has been loaded.</p>
                         </div>
                       ) : matterFiles.length >= 20 
-                        /** && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" */ ? (
+                        && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
@@ -1957,6 +2030,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           handleSave={handleUploadLink}
           bucketName={matter_id}
           handleModalClose={handleModalClose}
+        />
+      )}
+
+      {showPageReferenceModal && (
+        <PageReferenceModal
+          handleModalClose={handleModalClose}
+          fileId={pageReferenceFileId}
+          backgroundId={pageReferenceBackgroundId}
+          clientMatter={pageReferenceClientMatter}
+          description={pageReferenceDescription}
+          order={pageReferenceRowOrder}
+          getMatterFiles={getMatterFiles}
         />
       )}
 

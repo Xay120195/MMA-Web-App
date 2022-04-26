@@ -270,46 +270,56 @@ export const searchMatterClient = async (
         companyId: companyId,
       },
     });
-
-    if (clientMattersOpt.data.company.clientMatters.items !== null) {
-      result = clientMattersOpt.data.company.clientMatters.items;
-
-      const dummyPersonResponsible = {
-        id: 2,
-        name: "Adrian Silva",
-        email: "adrian.silva@lophils.com",
-        profile_picture:
-          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
-      };
-
-      var filtered = result.filter(function (el) {
-        return el.client != null;
+    if (searchMatter.length > 1) {
+      const str = searchMatter.replace(/\s/g, "");
+      console.log(str);
+      const matterslists = listmatters.filter(
+        (x) =>
+          x.matter.name.toUpperCase().includes(str.toUpperCase()) ||
+          x.client.name.toUpperCase().includes(str.toUpperCase())
+      );
+      dispatch({
+        type: SEARCH_MATTER_SUCCESS,
+        payload: {
+          matterlist: matterslists,
+        },
       });
+    } else {
+      if (clientMattersOpt.data.company.clientMatters.items !== null) {
+        result = clientMattersOpt.data.company.clientMatters.items;
 
-      var apdPr = filtered.map((v) => ({
-        ...v,
-        substantially_responsible: dummyPersonResponsible,
-      }));
-      var allrecords = apdPr.map((v) => ({
-        ...v,
-        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
-          -4
-        )}/${v.client.id.slice(-4)}}`,
-      }));
+        const dummyPersonResponsible = {
+          id: 2,
+          name: "Adrian Silva",
+          email: "adrian.silva@lophils.com",
+          profile_picture:
+            "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
+        };
+
+        var filtered = result.filter(function (el) {
+          return el.client != null;
+        });
+
+        var apdPr = filtered.map((v) => ({
+          ...v,
+          substantially_responsible: dummyPersonResponsible,
+        }));
+        var allrecords = apdPr.map((v) => ({
+          ...v,
+          matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+            -4
+          )}/${v.client.id.slice(-4)}}`,
+        }));
+      }
+      dispatch({
+        type: SEARCH_MATTER_SUCCESS,
+        payload: {
+          matterlist: allrecords,
+        },
+      });
     }
 
-    const matterslists = listmatters.filter(
-      (x) =>
-        x.matter.name.toLowerCase().includes(searchMatter.toLowerCase()) ||
-        x.client.name.toLowerCase().includes(searchMatter.toLowerCase())
-    );
     //dispatch data to reducers
-    dispatch({
-      type: SEARCH_MATTER_SUCCESS,
-      payload: {
-        matterlist: searchMatter.length <= 1 ? allrecords : matterslists,
-      },
-    });
   } catch (error) {
     dispatch({
       type: SEARCH_MATTER_ERROR,
