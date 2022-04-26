@@ -45,10 +45,16 @@ export async function getMatterFiles(ctx) {
   } = ctx;
 
   let resp = {};
+  let indexName;
+  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+    indexName = "byCreatedAt";
+  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+    indexName = "byOrder";
+  }
   try {
     const param = {
       TableName: "MatterFileTable",
-      IndexName: "byCreatedAt",
+      IndexName: indexName,
       KeyConditionExpression: "matterId = :matterId",
       FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
@@ -69,7 +75,7 @@ export async function getMatterFiles(ctx) {
     const request = await ddbClient.send(cmd);
     console.log("Result:", request);
     const result = request.Items.map((d) => unmarshall(d));
-    
+
     // if (request && request.Count !== 0) {
     //   result[0].nextToken = request.LastEvaluatedKey
     //     ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(

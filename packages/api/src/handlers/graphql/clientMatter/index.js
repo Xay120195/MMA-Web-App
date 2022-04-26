@@ -82,10 +82,19 @@ async function listClientMatterLabels(ctx) {
 async function listCompanyMatterBackgrounds(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+
+  let indexName;
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+    indexName = "byCreatedAt";
+  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+    indexName = "byOrder";
+  }
+
   try {
     const cmBackgroundsParam = {
       TableName: "ClientMatterBackgroundTable",
-      IndexName: "byCreatedAt",
+      IndexName: indexName,
       KeyConditionExpression: "clientMatterId = :clientMatterId",
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,

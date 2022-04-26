@@ -230,10 +230,17 @@ async function listCompanyClients(ctx) {
 async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+  let indexName;
+  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+    indexName = "byCreatedAt";
+  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+    indexName = "byOrder";
+  }
+
   try {
     const compCMParam = {
       TableName: "CompanyClientMatterTable",
-      IndexName: "byCreatedAt",
+      IndexName: indexName,
       KeyConditionExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
         ":companyId": id,
@@ -316,7 +323,7 @@ const resolvers = {
     },
     clientMatters: async (ctx) => {
       return listCompanyClientMatters(ctx);
-    }
+    },
   },
 };
 
