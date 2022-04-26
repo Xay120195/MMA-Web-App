@@ -329,11 +329,54 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 }
 `;
 
+const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
   async function tagBackgroundFile() {
     let arrFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: background_id,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+    }
+
     arrFiles = selectedRows.map(({ id }) => ({
       id: id,
     }));
+
+
+    arrFiles.push(...arrFileResult);
+
+    const filteredArr = arrFiles.filter((el) => {
+      const duplicate = seen.has(el.id);
+      seen.add(el.id);
+      return !duplicate;
+    });
+
     if (background_id !== null) {
       return new Promise((resolve, reject) => {
         try {
@@ -341,10 +384,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             query: mUpdateBackgroundFile,
             variables: {
               backgroundId: background_id,
-              files: arrFiles,
+              files: filteredArr,
             },
           });
           resolve(request);
+          setTimeout(() => {
+            window.location.href=`${AppRoutes.BACKGROUND}/${matter_id}`;
+          }, 1000);
         } catch (e) {
           reject(e.errors[0].message);
         }
@@ -1429,15 +1475,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
             <div className="absolute right-0">
               {showAttachBackgroundButton && (
-                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`}>
-                  <button
-                    className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
-                    onClick={() => tagBackgroundFile()}
-                  >
-                    Attach to Background &nbsp;|
-                    <BsArrowLeft />
-                  </button>
-                </Link>
+                <button
+                  className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
+                  onClick={() => tagBackgroundFile()}
+                >
+                  Attach to Background &nbsp;|
+                  <BsArrowLeft />
+                </button>
               )}
             </div>
           </div>
