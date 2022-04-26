@@ -327,7 +327,7 @@ const TableInfo = ({
       order: index + 1,
     }));
     console.log(res);
-    const mUpdateBackgroundOrder = `
+    const mBulkUpdateBackgroundOrder = `
       mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
         backgroundBulkUpdateOrders(arrangement: $arrangement) {
           id
@@ -335,7 +335,7 @@ const TableInfo = ({
         }
       }`;
     const response = await API.graphql({
-      query: mUpdateBackgroundOrder,
+      query: mBulkUpdateBackgroundOrder,
       variables: {
         arrangement: res,
       },
@@ -650,29 +650,25 @@ const TableInfo = ({
 
         setSelectRow(arrFileResult);
 
-        const res = tempWitness.map(myFunction);
-        function myFunction(item, index) {
-          let data;
-          return (data = {
-            id: item.id,
-            order: index + 1,
-          });
-        }
-        res.map(async function (x) {
-          const mUpdateBackgroundOrder = `
-      mutation updateBackground($id: ID, $order: Int) {
-        backgroundUpdate(id: $id, order: $order) {
-          id
-          order
-        }
-      }`;
-          await API.graphql({
-            query: mUpdateBackgroundOrder,
-            variables: {
-              id: x.id,
-              order: x.order,
-            },
-          });
+        const result = tempWitness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+
+        const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+
+        await API.graphql({
+          query: mUpdateBulkMatterFileOrder,
+          variables: {
+            arrangement: result,
+          },
         });
       } else {
         const request = await API.graphql({
@@ -701,29 +697,25 @@ const TableInfo = ({
         tempWitness.splice(targetIndex + 1, 0, newFiles.item);
         setWitness(tempWitness);
         setSelectRow(updateArrFiles);
-        const res = tempWitness.map(myFunction);
-        function myFunction(item, index) {
-          let data;
-          return (data = {
-            id: item.id,
-            order: index + 1,
-          });
-        }
-        res.map(async function (x) {
-          const mUpdateBackgroundOrder = `
-      mutation updateBackground($id: ID, $order: Int) {
-        backgroundUpdate(id: $id, order: $order) {
-          id
-          order
-        }
-      }`;
-          await API.graphql({
-            query: mUpdateBackgroundOrder,
-            variables: {
-              id: x.id,
-              order: x.order,
-            },
-          });
+        const result = tempWitness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+
+        const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+
+        await API.graphql({
+          query: mUpdateBulkMatterFileOrder,
+          variables: {
+            arrangement: result,
+          },
         });
       }
     });
@@ -760,12 +752,11 @@ const TableInfo = ({
   return (
     <>
       <div
-        className="flex flex-col"
         style={{ padding: "2rem", marginLeft: "4rem" }}
       >
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="shadow border-b border-gray-200 sm:rounded-lg">
               {witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
@@ -776,24 +767,24 @@ const TableInfo = ({
                     style={{ padding: "0.4rem" }}
                   />
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <table className="relative min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                      <thead className="bg-gray-100 z-10" style={{position: "sticky", top: "68px"}} >
                         <tr>
                           <th
-                            scope="col"
-                            className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            
+                            className="px-2 py-4 text-center whitespace-nowrap"
                           >
                             No
                           </th>
                           {checkDate && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
-                              Date
+                              Date &nbsp;
                               <img
                                 src={barsFilter}
-                                className="mx-auto"
+                                className="mx-auto inline-block"
                                 alt="filter"
                                 onClick={SortBydate}
                                 style={{ cursor: "pointer" }}
@@ -802,23 +793,23 @@ const TableInfo = ({
                           )}
                           {checkDesc && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
                               Description of Background
                             </th>
                           )}
                           {checkDocu && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
                               Document
                             </th>
                           )}
                         </tr>
                       </thead>
-                      <Droppable droppableId="characters">
+                      <Droppable droppableId="tbl-backgrounds">
                         {(provider) => (
                           <tbody
                             ref={provider.innerRef}
@@ -829,8 +820,8 @@ const TableInfo = ({
                             {witness.map((item, index) => (
                               <>
                                 <Draggable
-                                  key={item.id}
-                                  draggableId={item.id}
+                                  key={item.id + "-" + index}
+                                  draggableId={item.id + "-" + index}
                                   index={index}
                                 >
                                   {(provider, snapshot) => (
@@ -841,6 +832,7 @@ const TableInfo = ({
                                         ) && "bg-green-300"
                                       }
                                       index={index}
+                                      key={item.id}
                                       {...provider.draggableProps}
                                       ref={provider.innerRef}
                                       style={{
@@ -854,7 +846,7 @@ const TableInfo = ({
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-3 py-3 w-10"
+                                        className="px-1 py-3"
                                       >
                                         <div className="flex items-center ">
                                           <MdDragIndicator
@@ -866,7 +858,7 @@ const TableInfo = ({
                                           <input
                                             type="checkbox"
                                             name={item.id}
-                                            className="cursor-pointer w-10"
+                                            className="cursor-pointer mr-1"
                                             checked={checkedState[index]}
                                             onChange={(event) =>
                                               handleCheckboxChange(
@@ -880,21 +872,19 @@ const TableInfo = ({
                                           />
                                           <label
                                             htmlFor="checkbox-1"
-                                            className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                            className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
                                             {index + 1}
+                                            {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>
                                       </td>
 
                                       {checkDate && (
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="px-3 py-3"
-                                        >
+                                        <td {...provider.dragHandleProps}>
                                           <div>
                                             <DatePicker
-                                              className="border w-28 rounded border-gray-300"
+                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-20"
                                               selected={
                                                 item.date !== null &&
                                                 item.date !== "null" &&
@@ -918,7 +908,7 @@ const TableInfo = ({
                                       {checkDesc && (
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="w-10/12 px-6 py-4"
+                                          className="w-10/12 px-2 py-4 align-top place-items-center relative flex-wrap"
                                         >
                                           <div
                                             className="p-2 w-full h-full font-poppins"
@@ -1034,7 +1024,7 @@ const TableInfo = ({
                                                 .map((items, index) => ( */}
                                               {item.files.items.map(
                                                 (items, index) => (
-                                                  <>
+                                                  <span key={items.id}>
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
                                                         <input
@@ -1091,7 +1081,7 @@ const TableInfo = ({
                                                         />
                                                       )}
                                                     </p>
-                                                  </>
+                                                  </span>
                                                 )
                                               )}
                                             </>
