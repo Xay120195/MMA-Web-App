@@ -230,11 +230,16 @@ async function listCompanyClients(ctx) {
 async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
-  let indexName;
+  
+  let indexName,
+    isAscending;
+
   if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
     indexName = "byCreatedAt";
+    isAscending = false;
   } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
     indexName = "byOrder";
+    isAscending = true;
   }
 
   try {
@@ -245,7 +250,7 @@ async function listCompanyClientMatters(ctx) {
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ScanIndexForward: sortOrder === "CREATED_DESC" ? false : true,
+      ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,

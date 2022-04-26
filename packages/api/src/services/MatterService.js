@@ -45,12 +45,18 @@ export async function getMatterFiles(ctx) {
   } = ctx;
 
   let resp = {};
-  let indexName;
+  
+  let indexName,
+    isAscending;
+
   if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
     indexName = "byCreatedAt";
+    isAscending = false;
   } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
     indexName = "byOrder";
+    isAscending = true;
   }
+
   try {
     const param = {
       TableName: "MatterFileTable",
@@ -61,7 +67,7 @@ export async function getMatterFiles(ctx) {
         ":matterId": matterId,
         ":isDeleted": isDeleted,
       }),
-      ScanIndexForward: sortOrder === "CREATED_DESC" ? false : true,
+      ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
