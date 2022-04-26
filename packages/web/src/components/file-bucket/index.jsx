@@ -1501,7 +1501,7 @@ const qlistBackgroundFiles = `
             />
           </div>
         )}
-        <div className="pl-2 py-1 grid grid-cols-2 gap-4 bg-gray-100 z-50 " style={{position: "sticky", top: "0"}} >
+        <div className="pl-2 py-1 grid grid-cols-2 gap-4 bg-white z-50 " style={{position: "sticky", top: "0"}} >
           <div className="">
             {matterFiles !== null && matterFiles.length !== 0 && (
               <input
