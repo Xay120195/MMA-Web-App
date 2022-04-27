@@ -54,7 +54,7 @@ export function ClientMatters({}) {
                                 <Link
                                   to={`${AppRoutes.MATTERSRFI}/${item.id}`}
                                 >
-                                  RFI
+                                  RFI List
                                 </Link>
                               </li>
                             ) : null}
