@@ -1026,6 +1026,7 @@ const qlistBackgroundFiles = `
             size: size,
             type: type,
             downloadURL: downloadURL,
+            order: 0,
           },
         ];
         setIsAllChecked(false);
@@ -1361,14 +1362,14 @@ const qlistBackgroundFiles = `
   const handleDuplicate = async () => {
     console.log(selectedCompleteDataRows);
 
-    /*selectedCompleteDataRows.map(async function (items) {
+    selectedCompleteDataRows.map(async function (items) {
       const request = await API.graphql({
         query: mCreateMatterFile,
-        variables: { matterId: matter_id, s3ObjectKey: items.downloadURL, size: items.size, name: "Copy of "+items.fileName, type: items.type },
+        variables: { matterId: matter_id, s3ObjectKey: items.downloadURL, size: items.size, name: "Copy of "+items.fileName, type: items.type, order: items.order },
       });
 
       console.log(request);
-    });*/
+    });
     selectedCompleteDataRows = [];
   };
 
@@ -1552,7 +1553,7 @@ const qlistBackgroundFiles = `
               </button>
             )}
 
-            {/* {matterFiles !== null &&
+            {matterFiles !== null &&
               matterFiles.length !== 0 &&
               showRemoveFileButton && (
                 <button
@@ -1562,7 +1563,7 @@ const qlistBackgroundFiles = `
                   Duplicate &nbsp;
                   <FiCopy />
                 </button>
-            )} */}
+            )}
 
             <div className="flex inline-flex mr-0 float-right">
               {matterFiles !== null &&
@@ -1686,9 +1687,6 @@ const qlistBackgroundFiles = `
                                 {...provider.droppableProps}
                                 className="bg-white divide-y divide-gray-200"
                               >
-                                {/* {matterFiles
-                                  .slice(pageIndex - 1, pageSizeConst)
-                                  .map((data, index) => ( */}
                                 {matterFiles.map((data, index) => (
                                   <Draggable
                                     key={data.id}
@@ -1966,7 +1964,7 @@ const qlistBackgroundFiles = `
                                           {data.backgrounds.items
                                             .sort((a, b) =>
                                               a.order > b.order ? 1 : -1
-                                            )
+                                            ).filter(x => !Object.values(x).includes(null))
                                             .map((background, index) => (
                                               <p
                                                 className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
