@@ -112,7 +112,7 @@ export default function FileBucket() {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
     //adjust order of existing files
     let tempMatter = [...matterFiles];
-    tempMatter.sort((a, b) => b.order - a.order);
+    // tempMatter.sort((a, b) => b.order - a.order);
     const result = tempMatter.map(({ id }, index) => ({
       id: id,
       order: index + uploadedFiles.length,
@@ -140,14 +140,16 @@ export default function FileBucket() {
 
     sortedFiles.map((file) => {
       createMatterFile(file);
-        setResultMessage(`File successfully uploaded!`);
+        
+    });
+
+    setResultMessage(`File successfully uploaded!`);
         setShowToast(true);
         handleModalClose();
         setTimeout(() => {
           setShowToast(false);
           getMatterFiles(next);
         }, 3000);
-    });
   };
 
   const handleModalClose = () => {
