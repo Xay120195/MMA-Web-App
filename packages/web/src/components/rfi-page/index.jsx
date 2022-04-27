@@ -7,6 +7,8 @@ import { AiOutlineFolderOpen } from "react-icons/ai";
 import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import BlankQuestion from "../../assets/images/RFI_Blank_State.svg";
 import BlankAnswer from "../../assets/images/RFI_Blank_Answer.svg";
+import { Link } from "react-router-dom";
+import { AppRoutes } from "../../constants/AppRoutes";
 
 
 export default function RFIPage() {
@@ -58,12 +60,12 @@ export default function RFIPage() {
               </div>
 
               <div className="absolute right-0">
-                {/* <Link to={AppRoutes.DASHBOARD}> */}
+                <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                   Back &nbsp;
                   <MdArrowForwardIos />
                 </button>
-                {/* </Link> */}
+                </Link>
               </div>
             </div>
 
@@ -81,10 +83,13 @@ export default function RFIPage() {
           
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
             <table className="table-fixed divide-y divide-x border-slate-500 border flex-1 w-full">
+            <thead>
               <tr>
                   <th className="text-left py-4 px-4 border-slate-500 border">Question</th>
                   <th className="text-left py-4 px-4 border-slate-500 border"><IoIosArrowDropright className="h-8 w-8 absolute -ml-8 -mt-1"/> &nbsp; Answer</th>
               </tr>
+            </thead>
+            <tbody>
               <tr>
                 <td className="border-slate-500 border ">
                   <BlankState
@@ -101,6 +106,7 @@ export default function RFIPage() {
                   />
                 </td>
               </tr>
+            </tbody>
             </table>
           </div>
       </div>

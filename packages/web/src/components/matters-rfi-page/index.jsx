@@ -13,6 +13,7 @@ import {AiOutlineFolderOpen} from "react-icons/ai";
 import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import { useParams } from "react-router-dom";
 import { API } from "aws-amplify";
+import { Link } from "react-router-dom";
 
 export default function MattersRFI() {
   let history = useHistory();
@@ -172,12 +173,12 @@ export default function MattersRFI() {
               </div>
 
               <div className="absolute right-0">
-                {/* <Link to={AppRoutes.DASHBOARD}> */}
+                <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                   Back &nbsp;
                   <MdArrowForwardIos />
                 </button>
-                {/* </Link> */}
+                </Link>
               </div>
             </div>
 
@@ -201,7 +202,8 @@ export default function MattersRFI() {
               </div>
             </div>
           </div>
-          {RFI === null  ? (
+          {/* {RFI === null  ? ( */}
+          { dummyData.length === 0  ? (
             <div className="p-5 px-5 py-1 left-0">
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
                 {/* <BlankState
