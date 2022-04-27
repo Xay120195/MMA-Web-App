@@ -167,6 +167,7 @@ export default function UploadLinkModal(props) {
     });
     setSelectedFiles(tempArr);
     _setSelectedFiles(tempArr);
+    var idxx = 0;
     tempArr.map(async (uf, index) => {
         if (uf.data.name.split(".").pop() == "docx") {
           var name = uf.data.name,
@@ -175,16 +176,18 @@ export default function UploadLinkModal(props) {
               "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             key = `${props.bucketName}/${Number(new Date())}${name
               .replaceAll(/\s/g, "")
-              .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+              .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`
+              , orderSelected = idxx, order = idxx;
         } else {
           var name = uf.data.name,
             size = uf.data.size,
             type = uf.data.type,
             key = `${props.bucketName}/${Number(new Date())}${name
               .replaceAll(/\s/g, "")
-              .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`;
+              .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`
+              , orderSelected = idxx, order = idxx;
         }
-      
+        idxx = idxx+1;
 
         try {
           await Storage.put(key, uf.data, {
@@ -213,12 +216,14 @@ export default function UploadLinkModal(props) {
             },
             
           })
-            .then(async (fd) => {
+            .then((fd) => {
               var fileData = {
                 s3ObjectKey: fd.key,
                 size: parseInt(size),
                 type: type,
                 name: name.split(".").slice(0, -1).join("."),
+                oderSelected: orderSelected,
+                order: orderSelected
               };
 
               setUploadedFiles((prevState) => ({
