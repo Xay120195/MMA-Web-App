@@ -35,7 +35,7 @@ export const Switch = ({
         },
       ];
     }
-
+    console.log(newAccessPageSet);
     setAccessPages(newAccessPageSet);
     setisChecked(!isChecked);
     handleClick(!isChecked, default_access.id);
