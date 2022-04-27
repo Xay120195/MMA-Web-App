@@ -250,12 +250,7 @@ export const deleteMatterClient = async (
 };
 
 //search client matter
-export const searchMatterClient = async (
-  companyId,
-  listmatters,
-  searchMatter,
-  dispatch
-) => {
+export const searchMatterClient = async (companyId, searchMatter, dispatch) => {
   try {
     dispatch({
       type: SEARCH_MATTER_REQUEST,
@@ -298,12 +293,10 @@ export const searchMatterClient = async (
       }));
     }
 
-    const str = searchMatter.replace(/\s/g, "");
-    console.log(str);
     const matterslists = apdMn.filter(
       (x) =>
-        x.matter.name.toUpperCase().includes(str.toUpperCase()) ||
-        x.client.name.toUpperCase().includes(str.toUpperCase())
+        x.matter.name.toUpperCase().includes(searchMatter.toUpperCase()) ||
+        x.client.name.toUpperCase().includes(searchMatter.toUpperCase())
     );
 
     dispatch({
