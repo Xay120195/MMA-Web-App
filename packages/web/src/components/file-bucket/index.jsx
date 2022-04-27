@@ -1280,72 +1280,6 @@ const qlistBackgroundFiles = `
     }, 1000);
   }
 
-  /*const getPaginateItems = async (action, page) => {
-    let pageList = 20;
-    let pageResult = [];
-
-    const request = await API.graphql({
-      query: mGetPaginateItems,
-      variables: {
-        matterId: matter_id,
-        isDeleted: false,
-        nextToken: page,
-        limit: pageList,
-      },
-    });
-
-    if (request.data.matterFile !== null) {
-      pageResult = request.data.matterFile.map(({ id }) => ({
-        id: id,
-      }));
-    }
-
-    setFilteredFiles(pageResult);
-
-    if (action === "next") {
-      setPageIndex(pageIndex + pageList);
-      setPageSize(pageSize + pageList);
-      setPrevToken(prevToken);
-
-      for (let i = 0; i < request.data.matterFile.length; i++) {
-        if (request.data.matterFile[i].nextToken !== null) {
-          setNextToken(request.data.matterFile[i].nextToken);
-        }
-      }
-    } else if (action === "prev") {
-      setPageIndex(pageIndex - pageList);
-      setPageSize(pageSize - pageList);
-      setPrevToken(prevToken);
-
-      for (let i = 0; i < request.data.matterFile.length; i++) {
-        if (request.data.matterFile[i].nextToken !== null) {
-          setNextToken(request.data.matterFile[i].nextToken);
-        }
-      }
-    } else {
-      for (let i = 0; i < request.data.matterFile.length; i++) {
-        if (request.data.matterFile[i].nextToken !== null) {
-          setPrevToken(page);
-          setNextToken(request.data.matterFile[i].nextToken);
-        }
-      }
-    }
-  }*/
-
-  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
-
-  const getPaginateItems = async (action) => {
-    let pageList = 20;
-
-    if (action === "next") {
-      setPageIndex(pageIndex + pageList);
-      setPageSize(pageSize + pageList);
-    } else if (action === "prev") {
-      setPageIndex(pageIndex - pageList);
-      setPageSize(pageSize - pageList);
-    }
-  };
-
   const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
@@ -1601,30 +1535,6 @@ const qlistBackgroundFiles = `
         <div className="px-2 py-0 left-0">
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
-
-        {/* <div className="px-2 py-0">
-          <p className={"text-sm mt-3 font-medium float-right inline-block"}>
-            <AiOutlineLeft
-              className={
-                pageIndex === 1
-                  ? "text-gray-300 inline-block pointer-events-none"
-                  : "inline-block cursor-pointer"
-              }
-              onClick={() => getPaginateItems("prev", prevToken)}
-            />
-            &nbsp;&nbsp;Showing {pageIndex} -{" "}
-            {pageSize >= pageTotal ? pageTotal : pageSize} of {pageTotal}
-            &nbsp;&nbsp;
-            <AiOutlineRight
-              className={
-                pageSize >= pageTotal
-                  ? "text-gray-300 inline-block pointer-events-none"
-                  : "inline-block cursor-pointer"
-              }
-              onClick={() => getPaginateItems("next", nextToken)}
-            />
-          </p>
-        </div> */}
 
         {matterFiles !== null && (
           <>
@@ -1930,7 +1840,6 @@ const qlistBackgroundFiles = `
                                               labels,
                                               data.labels.items
                                             )}
-                                            // options={labels}
                                             isMulti
                                             isClearable
                                             isSearchable
@@ -1944,15 +1853,6 @@ const qlistBackgroundFiles = `
                                                 index
                                               )
                                             }
-                                            // onClick={(options) =>
-                                            //   handleLabelChanged(
-                                            //     options,
-                                            //     data.id,
-                                            //     data.name,
-                                            //     data.details,
-                                            //     index
-                                            //   )
-                                            // }
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
@@ -1999,6 +1899,7 @@ const qlistBackgroundFiles = `
                         </table>
                       </DragDropContext>
                     </div>
+                    <div className="p-2"></div>
                     <div>
                       {maxLoading ? (
                         <div className="flex justify-center items-center mt-5">
@@ -2052,7 +1953,6 @@ const qlistBackgroundFiles = `
           handleModalClose={handleModalClose}
         />
       )}
-
       {showPageReferenceModal && (
         <PageReferenceModal
           handleModalClose={handleModalClose}
@@ -2064,14 +1964,12 @@ const qlistBackgroundFiles = `
           getMatterFiles={getMatterFiles}
         />
       )}
-
       {filterLabels && (
         <FilterLabels
           handleSave={handleFilter}
           handleModalClose={handleModalClose}
         />
       )}
-
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
