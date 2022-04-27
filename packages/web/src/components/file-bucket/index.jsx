@@ -112,6 +112,7 @@ export default function FileBucket() {
 
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
+    window.scrollTo(0, 0);
     //adjust order of existing files
     let tempMatter = [...matterFiles];
     // tempMatter.sort((a, b) => b.order - a.order);
