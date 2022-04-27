@@ -230,15 +230,30 @@ async function listCompanyClients(ctx) {
 async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+
+  let indexName, isAscending;
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+    isAscending = false;
+  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
+    isAscending = true;
+  }
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+    indexName = "byCreatedAt";
+  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+    indexName = "byOrder";
+  }
+
   try {
     const compCMParam = {
       TableName: "CompanyClientMatterTable",
-      IndexName: "byCreatedAt",
+      IndexName: indexName,
       KeyConditionExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
         ":companyId": id,
       }),
-      ScanIndexForward: sortOrder === "CREATED_DESC" ? false : true,
+      ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -316,7 +331,7 @@ const resolvers = {
     },
     clientMatters: async (ctx) => {
       return listCompanyClientMatters(ctx);
-    }
+    },
   },
 };
 

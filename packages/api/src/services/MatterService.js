@@ -44,18 +44,33 @@ export async function getMatterFiles(ctx) {
     sortOrder = "CREATED_DESC",
   } = ctx;
 
-  let resp = {};
+  let resp = {},
+    indexName,
+    isAscending;
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+    isAscending = false;
+  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
+    isAscending = true;
+  }
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+    indexName = "byCreatedAt";
+  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+    indexName = "byOrder";
+  }
+
   try {
     const param = {
       TableName: "MatterFileTable",
-      IndexName: "byCreatedAt",
+      IndexName: indexName,
       KeyConditionExpression: "matterId = :matterId",
       FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
         ":matterId": matterId,
         ":isDeleted": isDeleted,
       }),
-      ScanIndexForward: sortOrder === "CREATED_DESC" ? false : true,
+      ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -69,7 +84,7 @@ export async function getMatterFiles(ctx) {
     const request = await ddbClient.send(cmd);
     console.log("Result:", request);
     const result = request.Items.map((d) => unmarshall(d));
-    
+
     // if (request && request.Count !== 0) {
     //   result[0].nextToken = request.LastEvaluatedKey
     //     ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(

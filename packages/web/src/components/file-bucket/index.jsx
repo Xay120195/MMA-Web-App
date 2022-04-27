@@ -541,10 +541,29 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     });
   };
 
+  const mInitializeOrders = `
+    mutation initializeOrder($clientMatterId: ID) {
+      matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+        id
+      }
+    }
+  `;
+
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
     if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
       q = mNoPaginationbyItems;
+    }
+
+    const initializeMatterFileOrder = await API.graphql({
+      query: mInitializeOrders,
+      variables: { clientMatterId: matter_id },
+    });
+
+    if (
+      initializeMatterFileOrder.data.matterFileBulkInitializeOrders !== null
+    ) {
+      console.log("Initial Sorting Successful!");
     }
 
     const params = {
@@ -749,8 +768,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
-
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
@@ -775,8 +792,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
-
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
@@ -831,7 +846,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         name: name,
       };
       await updateMatterFileName(id, data);
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
@@ -845,7 +859,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         name: textName,
       };
       await updateMatterFileName(id, data);
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
