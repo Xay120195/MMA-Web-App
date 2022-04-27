@@ -47,6 +47,7 @@ const Background = () => {
   const [activateButton, setActivateButton] = useState(false);
   const [pasteButton, setPasteButton] = useState(false);
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
+  const [wait, setWait] = useState(false);
   // let selectedRowsBG = [];
 
   const [checkNo, setCheckNo] = useState(true);
@@ -138,6 +139,7 @@ const Background = () => {
 
   const getBackground = async () => {
     let result = [];
+    setWait(false);
     const matterId = matter_id;
 
     const backgroundOpt = await API.graphql({
@@ -165,11 +167,12 @@ const Background = () => {
 
       if (witness !== null) {
         setWitness(sortByOrder(result));
+
         const res = result.map(({ id }, index) => ({
           id: id,
           order: index + 1,
         }));
-        
+
         const mUpdateBackgroundOrder = `
           mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
             backgroundBulkUpdateOrders(arrangement: $arrangement) {
@@ -184,7 +187,7 @@ const Background = () => {
           },
         });
         console.log(response);
-
+        setWait(true);
         setMaxLoading(false);
       }
     }
@@ -301,10 +304,8 @@ const Background = () => {
   return (
     <>
       <div
-        className={
-          "shadow-lg rounded bg-white z-30"
-        }
-        style={{margin: "0 0 0 65px"}}
+        className={"shadow-lg rounded bg-white z-30"}
+        style={{ margin: "0 0 0 65px" }}
       >
         <div className="px-6 py-2">
           <Link to={AppRoutes.DASHBOARD}>
@@ -319,11 +320,14 @@ const Background = () => {
               {clientName}/{matterName}
             </span>
           </h1>
-          </div>
+        </div>
       </div>
 
-      <div className="bg-white z-30" style={{position: "sticky", top: "0", margin: "0 0 0 85px"}} >
-      <BreadCrumb matterId={matter_id} />
+      <div
+        className="bg-white z-30"
+        style={{ position: "sticky", top: "0", margin: "0 0 0 85px" }}
+      >
+        <BreadCrumb matterId={matter_id} />
         <ActionButtons
           witness={witness}
           setWitness={setWitness}
@@ -379,6 +383,7 @@ const Background = () => {
         />
       </div>
       <TableInfo
+        wait={wait}
         setPasteButton={setPasteButton}
         setIdList={setIdList}
         witness={witness}
