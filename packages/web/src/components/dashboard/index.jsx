@@ -1,9 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  createContext,
-  useReducer,
-} from "react";
+import React, { useState, useEffect, createContext, useReducer } from "react";
 import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";
 import imgDocs from "../../assets/images/docs.svg";
@@ -303,7 +298,11 @@ mutation addMatter($companyId: String, $name: String) {
 
   const handleSearchMatterChange = (e) => {
     setSearchMatter(e.target.value);
-    searchMatterClient(companyId, listmatters, searchMatter, dispatch);
+    if (e.target.value.length >= 1) {
+      searchMatterClient(companyId, e.target.value, dispatch);
+    } else {
+      getMatterList(dispatch, companyId);
+    }
   };
 
   return userInfo ? (

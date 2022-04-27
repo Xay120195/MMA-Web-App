@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-
+import { Link } from "react-router-dom";
+import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
+import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
@@ -16,7 +18,7 @@ const mainGrid = {
   gridtemplatecolumn: "1fr auto",
 };
 
-export default function Background() {
+const Background = () => {
   const [matterList, setClientMattersList] = useState([]);
   const [witness, setWitness] = useState([]);
   const [files, setFiles] = useState([]);
@@ -29,8 +31,8 @@ export default function Background() {
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [selectRow, setSelectRow] = useState([]);
-  const [newRow, setNewRow] = useState([]);
-  const newWitness = useRef();
+  const [newRow, setNewRow] = useState([{}]);
+  const [newWitness, setNewWitness] = useState([]);
 
   const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
@@ -112,13 +114,21 @@ export default function Background() {
     query listBackground($id: ID, $limit: Int, $nextToken: String) {
       clientMatter(id: $id) {
         id
-        backgrounds (limit: $limit, nextToken: $nextToken) {
+        backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:CREATED_DESC) {
           items {
             id
             description
             date
             createdAt
             order
+            files {
+              items {
+                id
+                details
+                name
+                type
+              }
+            }
           }
           nextToken
         }
@@ -126,76 +136,57 @@ export default function Background() {
     }
   `;
 
-  const qlistBackgroundFiles = `
-  query getBackgroundByID($id: ID) {
-    background(id: $id) {
-      id
-      files {
-        items {
-          id
-          downloadURL
-          details
-          name
-        }
-      }
-    }
-  }`;
-
   const getBackground = async () => {
     let result = [];
     const matterId = matter_id;
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
-      variables: { id: matterId, limit: 25, nextToken: vNextToken },
+      variables: { id: matterId, limit: 20, nextToken: vNextToken },
     });
 
     setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
     if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
       result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-        ({ id, description, date, createdAt, order }) => ({
+        ({ id, description, date, createdAt, order, files }) => ({
           createdAt: createdAt,
           id: id,
           description: description,
           date: date,
           order: order,
+          files: files,
         })
       );
-
-      if (witness !== null) {
-        setWitness(result);
-        setMaxLoading(false);
-      }
 
       setPageTotal(result.length);
       setPageSize(20);
       setPageIndex(1);
 
-      let mergeArrFiles = [];
-      let arrFileResult = [];
-      for (let i = 0; i < sortByOrder(result).length; i++) {
-        const backgroundFilesOpt = await API.graphql({
-          query: qlistBackgroundFiles,
+      if (witness !== null) {
+        setWitness(sortByOrder(result));
+        const res = result.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+        
+        const mUpdateBackgroundOrder = `
+          mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+            backgroundBulkUpdateOrders(arrangement: $arrangement) {
+              id
+              order
+            }
+          }`;
+        const response = await API.graphql({
+          query: mUpdateBackgroundOrder,
           variables: {
-            id: result[i].id,
+            arrangement: res,
           },
         });
-        if (backgroundFilesOpt.data.background.files !== null) {
-          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-            ({ id, downloadURL, name }) => ({
-              uniqueId: result[i].id + id,
-              backgroundId: result[i].id,
-              id: id,
-              downloadURL: downloadURL,
-              name: name,
-            })
-          );
+        console.log(response);
 
-          mergeArrFiles.push(...arrFileResult);
-        }
+        setMaxLoading(false);
       }
-      setFiles(mergeArrFiles);
     }
   };
 
@@ -214,19 +205,20 @@ export default function Background() {
 
       const backgroundOpt = await API.graphql({
         query: qListBackground,
-        variables: { id: matterId, limit: 25, nextToken: vNextToken },
+        variables: { id: matterId, limit: 20, nextToken: vNextToken },
       });
 
       setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
       if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
         result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-          ({ id, description, date, createdAt, order }) => ({
+          ({ id, description, date, createdAt, order, files }) => ({
             createdAt: createdAt,
             id: id,
             description: description,
             date: date,
             order: order,
+            files: files,
           })
         );
 
@@ -239,7 +231,7 @@ export default function Background() {
           }, 1500);
         }
 
-        let mergeArrFiles = [];
+        /*let mergeArrFiles = [];
         let arrFileResult = [];
         for (let i = 0; i < sortByOrder(result).length; i++) {
           const backgroundFilesOpt = await API.graphql({
@@ -263,6 +255,7 @@ export default function Background() {
           }
         }
         setFiles(mergeArrFiles);
+        */
       }
     } else {
       console.log("Last Result!");
@@ -278,23 +271,12 @@ export default function Background() {
   const matterName = cname[3];
 
   function sortByOrder(arr) {
-    const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
+    const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.date) - new Date(a.date));
+      sort = arr.sort((a, b) => a.order - b.order);
     } else {
-      if (selectRow.length <= 0) {
-        sort = arr.sort(
-          (a, b) =>
-            a.order - b.order ||
-            new Date(b.date) - new Date(a.date) ||
-            new Date(b.createdAt) - new Date(a.createdAt)
-        );
-      } else {
-        sort = arr.sort(
-          (a, b) => a.order - b.order || b.createdAt - a.createdAt
-        );
-      }
+      sort = arr;
     }
     return sort;
   }
@@ -316,77 +298,85 @@ export default function Background() {
       setPageSize(pageSize - pageList);
     }
   };
-
   return (
     <>
       <div
         className={
-          "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
+          "shadow-lg rounded bg-white z-30"
         }
-        style={contentDiv}
+        style={{margin: "0 0 0 65px"}}
       >
-        <div className="relative flex-grow flex-1">
-          <div style={mainGrid}>
-            <div>
-              <span className="text-lg mt-3 font-medium">
-                {clientName}/{matterName}
-              </span>
-              <BreadCrumb matterId={matter_id} />
-              <ActionButtons
-                setWitness={setWitness}
-                witness={witness}
-                idList={idList}
-                checkAllState={checkAllState}
-                setcheckAllState={setcheckAllState}
-                checkedState={checkedState}
-                setCheckedState={setCheckedState}
-                totalChecked={totalChecked}
-                settotalChecked={settotalChecked}
-                setId={setId}
-                search={search}
-                setSearch={setSearch}
-                getId={getId}
-                matterId={matter_id}
-                getBackground={getBackground}
-                selectedRowsBG={selectedRowsBG}
-                setSelectedRowsBG={setSelectedRowsBG}
-                setShowModalParagraph={setShowModalParagraph}
-                paragraph={paragraph}
-                showDeleteButton={showDeleteButton}
-                setShowDeleteButton={setShowDeleteButton}
-                activateButton={activateButton}
-                setactivateButton={setActivateButton}
-                handleManageFiles={handleManageFiles}
-                checkNo={checkNo}
-                setCheckNo={setCheckNo}
-                checkDate={checkDate}
-                setCheckDate={setCheckDate}
-                checkDesc={checkDesc}
-                setCheckDesc={setCheckDesc}
-                checkDocu={checkDocu}
-                setCheckDocu={setCheckDocu}
-                checkedStateShowHide={checkedStateShowHide}
-                setCheckedStateShowHide={setCheckedStateShowHide}
-                pageTotal={pageTotal}
-                pageIndex={pageIndex}
-                pageSize={pageSize}
-                pageSizeConst={pageSizeConst}
-                getPaginateItems={getPaginateItems}
-                selectRow={selectRow}
-                setSelectRow={setSelectRow}
-                setPasteButton={setPasteButton}
-                pasteButton={pasteButton}
-                setSrcIndex={setSrcIndex}
-                srcIndex={srcIndex}
-                setNewRow={setNewRow}
-                newRow={newRow}
-                newWitness={newWitness}
-                setMaxLoading={setMaxLoading}
-                sortByOrder={sortByOrder}
-              />
-            </div>
+        <div className="px-6 py-2">
+          <Link to={AppRoutes.DASHBOARD}>
+            <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
+              <MdArrowBackIos />
+              Back
+            </button>
+          </Link>
+          <h1 className="font-bold text-3xl">
+            Background&nbsp;<span className="text-3xl">of</span>&nbsp;
+            <span className="font-semibold text-3xl">
+              {clientName}/{matterName}
+            </span>
+          </h1>
           </div>
-        </div>
+      </div>
+
+      <div className="bg-white z-30" style={{position: "sticky", top: "0", margin: "0 0 0 85px"}} >
+      <BreadCrumb matterId={matter_id} />
+        <ActionButtons
+          witness={witness}
+          setWitness={setWitness}
+          idList={idList}
+          checkAllState={checkAllState}
+          setcheckAllState={setcheckAllState}
+          checkedState={checkedState}
+          setCheckedState={setCheckedState}
+          totalChecked={totalChecked}
+          settotalChecked={settotalChecked}
+          setId={setId}
+          search={search}
+          setSearch={setSearch}
+          getId={getId}
+          matterId={matter_id}
+          getBackground={getBackground}
+          selectedRowsBG={selectedRowsBG}
+          setSelectedRowsBG={setSelectedRowsBG}
+          setShowModalParagraph={setShowModalParagraph}
+          paragraph={paragraph}
+          showDeleteButton={showDeleteButton}
+          setShowDeleteButton={setShowDeleteButton}
+          activateButton={activateButton}
+          setactivateButton={setActivateButton}
+          handleManageFiles={handleManageFiles}
+          checkNo={checkNo}
+          setCheckNo={setCheckNo}
+          checkDate={checkDate}
+          setCheckDate={setCheckDate}
+          checkDesc={checkDesc}
+          setCheckDesc={setCheckDesc}
+          checkDocu={checkDocu}
+          setCheckDocu={setCheckDocu}
+          checkedStateShowHide={checkedStateShowHide}
+          setCheckedStateShowHide={setCheckedStateShowHide}
+          pageTotal={pageTotal}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          pageSizeConst={pageSizeConst}
+          getPaginateItems={getPaginateItems}
+          selectRow={selectRow}
+          setSelectRow={setSelectRow}
+          setPasteButton={setPasteButton}
+          pasteButton={pasteButton}
+          setSrcIndex={setSrcIndex}
+          srcIndex={srcIndex}
+          setNewRow={setNewRow}
+          newRow={newRow}
+          newWitness={newWitness}
+          setMaxLoading={setMaxLoading}
+          sortByOrder={sortByOrder}
+          setNewWitness={setNewWitness}
+        />
       </div>
       <TableInfo
         setPasteButton={setPasteButton}
@@ -452,4 +442,6 @@ export default function Background() {
       />
     </>
   );
-}
+};
+
+export default Background;

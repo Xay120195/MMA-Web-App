@@ -6,19 +6,18 @@ import BlankState from "../blank-state";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
-import { MdArrowForwardIos, MdDragIndicator } from "react-icons/md";
+import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
-import {
-  AiOutlineDownload,
-  AiFillTags,
-  AiOutlineLeft,
-  AiOutlineRight,
-} from "react-icons/ai";
+import DatePicker from "react-datepicker";
+import barsFilter from "../../assets/images/bars-filter.svg";
+import ellipsis from "../../shared/ellipsis";
+import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
+import PageReferenceModal from "./page-reference-modal";
 //import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -37,7 +36,10 @@ import RemoveFileModal from "./remove-file-modal";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
 
+import ScrollToTop from "react-scroll-to-top";
+
 export var selectedRows = [];
+export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
 
 export default function FileBucket() {
@@ -68,6 +70,13 @@ export default function FileBucket() {
   const [vNextToken, setVnextToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
+  const [ascDesc, setAscDesc] = useState(false);
+  const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
+  const [pageReferenceFileId, setPageReferenceFileId] = useState("");
+  const [pageReferenceBackgroundId, setPageReferenceBackgroundId] = useState("");
+  const [pageReferenceClientMatter, setPageReferenceClientMatter] = useState("");
+  const [pageReferenceDescription, setPageReferenceDescription] = useState("");
+  const [pageReferenceRowOrder, setPageReferenceRowOrder] = useState("");
 
   let filterOptionsArray = [];
 
@@ -99,29 +108,55 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  const handleUploadLink = (uf) => {
+  const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
+    //adjust order of existing files
+    let tempMatter = [...matterFiles];
+    // tempMatter.sort((a, b) => b.order - a.order);
+    const result = tempMatter.map(({ id }, index) => ({
+      id: id,
+      order: index + uploadedFiles.length,
+    }));
 
-    uploadedFiles.map(async (file) => {
-      await createMatterFile(file).then(() => {
-        setResultMessage(`File successfully uploaded!`);
+    const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+
+    await API.graphql({
+      query: mUpdateBulkMatterFileOrder,
+      variables: {
+        arrangement: result,
+      },
+    });
+
+    //add order to new files
+    var next = 1;
+    var sortedFiles = uploadedFiles.sort((a, b) => b.oderSelected - a.oderSelected);
+
+    sortedFiles.map((file) => {
+      createMatterFile(file);
+        
+    });
+
+    setResultMessage(`File successfully uploaded!`);
         setShowToast(true);
         handleModalClose();
         setTimeout(() => {
           setShowToast(false);
-          getMatterFiles();
-          tempArr = [];
-          nameArr = [];
-          descArr = [];
+          getMatterFiles(next);
         }, 3000);
-      });
-    });
   };
 
   const handleModalClose = () => {
     setShowUploadModal(false);
     setshowRemoveFileModal(false);
     setFilterLabels(false);
+    setShowPageReferenceModal(false);
   };
 
   const contentDiv = {
@@ -133,11 +168,12 @@ export default function FileBucket() {
   };
 
   const mCreateMatterFile = `
-      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String) {
-        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name) {
+      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
+        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
           id
           name
           downloadURL
+          order
         }
       }
   `;
@@ -170,6 +206,15 @@ export default function FileBucket() {
       }
   `;
 
+  const mUpdateMatterFileDate = `
+      mutation updateMatterFile ($id: ID, $date: AWSDateTime) {
+        matterFileUpdate(id: $id, date: $date) {
+          id
+          date
+        }
+      }
+  `;
+
   const mSoftDeleteMatterFile = `
       mutation softDeleteMatterFile ($id: ID) {
         matterFileSoftDelete(id: $id) {
@@ -178,8 +223,8 @@ export default function FileBucket() {
       }
   `;
 
-  const qGetMatterFiles = `
-  query getMatterFile($matterId: ID, $isDeleted: Boolean) {
+  const qGetMatterDetails = `
+  query getMatterDetails($matterId: ID) {
     clientMatter(id: $matterId) {
       matter {
         name
@@ -187,20 +232,6 @@ export default function FileBucket() {
       client {
         name
       }
-    }
-    matterFile(matterId: $matterId, isDeleted: $isDeleted) {
-      id
-      name
-      type
-      details
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      createdAt
-      order
     }
   }`;
 
@@ -243,14 +274,14 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 }
 `;
 
-  const mUpdateMatterFileOrder = `
-    mutation updateMatterFile ($id: ID, $order: Int) {
-      matterFileUpdate(id: $id, order: $order) {
-        id
-        order
-      }
-    }
-`;
+  //   const mUpdateMatterFileOrder = `
+  //     mutation updateMatterFile ($id: ID, $order: Int) {
+  //       matterFileUpdate(id: $id, order: $order) {
+  //         id
+  //         order
+  //       }
+  //     }
+  // `;
 
   const mUpdateBackgroundFile = `
     mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
@@ -260,53 +291,120 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
     }
   `;
 
-  const mGetPaginateItems = `
-  query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-    matterFile(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit) {
-      id
-      name
-      type
-      details
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      createdAt
-      order
-      nextToken
-    }
-  }
-`;
+  // WITH PAGINAGTION
 
-const mPaginationbyItems = `
+  const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
     items {
       id
       name
       details
+      date
       labels {
         items {
           id
           name
         }
       }
+      backgrounds {
+        items {
+          id
+          order
+          description
+        }
+      }
       createdAt
       order
       type
+      size
     }
     nextToken
   }
 }
 `;
 
+  // WITHOUT PAGINAGTION
+
+  const mNoPaginationbyItems = `
+query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
+    items {
+      id
+      name
+      details
+      date
+      labels {
+        items {
+          id
+          name
+        }
+      }
+      backgrounds {
+        items {
+          id
+          order
+          description
+        }
+      }
+      createdAt
+      order
+      type
+      size
+    }
+    nextToken
+  }
+}
+`;
+
+const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
+
   async function tagBackgroundFile() {
     let arrFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: background_id,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+    }
+
     arrFiles = selectedRows.map(({ id }) => ({
       id: id,
     }));
+
+
+    arrFiles.push(...arrFileResult);
+
+    const filteredArr = arrFiles.filter((el) => {
+      const duplicate = seen.has(el.id);
+      seen.add(el.id);
+      return !duplicate;
+    });
+
     if (background_id !== null) {
       return new Promise((resolve, reject) => {
         try {
@@ -314,10 +412,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             query: mUpdateBackgroundFile,
             variables: {
               backgroundId: background_id,
-              files: arrFiles,
+              files: filteredArr,
             },
           });
           resolve(request);
+          setTimeout(() => {
+            window.location.href=`${AppRoutes.BACKGROUND}/${matter_id}`;
+          }, 1000);
         } catch (e) {
           reject(e.errors[0].message);
         }
@@ -325,23 +426,23 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   }
 
-  async function updateMatterFileOrder(id, data) {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mUpdateMatterFileOrder,
-          variables: {
-            id: id,
-            order: data.order,
-          },
-        });
+  // async function updateMatterFileOrder(id, data) {
+  //   return new Promise((resolve, reject) => {
+  //     try {
+  //       const request = API.graphql({
+  //         query: mUpdateMatterFileOrder,
+  //         variables: {
+  //           id: id,
+  //           order: data.order,
+  //         },
+  //       });
 
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
-  }
+  //       resolve(request);
+  //     } catch (e) {
+  //       reject(e.errors[0].message);
+  //     }
+  //   });
+  // }
 
   const getLabels = async () => {
     let result = [];
@@ -395,8 +496,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       console.log("353 - newOptions", newOptions);
 
       data.labels = newOptions;
-      updateArr(newOptions, index);
-      await updateMatterFile(fileId, data);
+      updateArrLabels(newOptions, index);
+      //await updateMatterFile(fileId, data);
       tagFileLabel(fileId, newOptions);
     }
 
@@ -423,10 +524,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   let getMatterDetails = async () => {
     const params = {
-      query: qGetMatterFiles,
+      query: qGetMatterDetails,
       variables: {
         matterId: matter_id,
-        isDeleted: false
+        isDeleted: false,
       },
     };
 
@@ -437,21 +538,26 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
   };
 
-  let getMatterFiles = async () => {
+  let getMatterFiles = async (next) => {
+    let q = mPaginationbyItems;
+    if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+      q = mNoPaginationbyItems;
+    }
+
     const params = {
-      query: mPaginationbyItems,
+      query: q,
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 25,
-        nextToken: vNextToken,
+        limit: 20,
+        nextToken: next === 1 ? null : vNextToken,
       },
     };
-
     await API.graphql(params).then((files) => {
       const matterFilesList = files.data.matterFiles.items;
+      console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      setFiles(matterFilesList);
+      setFiles(sortByOrder(matterFilesList));
       getMatterDetails();
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
@@ -460,43 +566,45 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
+      let q = mPaginationbyItems;
+      if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+        q = mNoPaginationbyItems;
+      }
+
       const params = {
-        query: mPaginationbyItems,
+        query: q,
         variables: {
           matterId: matter_id,
           isDeleted: false,
-          limit: 25,
+          limit: 20,
           nextToken: vNextToken,
         },
       };
 
       await API.graphql(params).then((files) => {
         const matterFilesList = files.data.matterFiles.items;
-        setFiles(matterFilesList);
+        console.log("Files", matterFilesList);
+        //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
-        setMatterFiles(matterFiles => matterFiles.concat(sortByOrder(matterFilesList)));
+        setMatterFiles((matterFiles) =>
+          matterFiles.concat(sortByOrder(matterFilesList))
+        );
         setMaxLoading(false);
-        console.log(matterFilesList);
+        console.log("error", matterFilesList);
       });
     } else {
-        console.log("Last Result!");
-        setMaxLoading(true);
+      console.log("Last Result!");
+      setMaxLoading(true);
     }
   };
 
-  async function createMatterFile(file) {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mCreateMatterFile,
-          variables: file,
-        });
+  function createMatterFile(file) {
+   const request = API.graphql({
+     query: mCreateMatterFile,
+     variables: file,
+   });
 
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
+   return request;
   }
 
   async function updateMatterFile(id, data) {
@@ -581,15 +689,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       console.log("No new labels found");
       console.log("data.labels.items", data.labels.items);
 
-      updateArr(data.labels.items, index);
+      updateArrLabels(data.labels.items, index);
       await updateMatterFile(fileId, data);
       tagFileLabel(fileId, data.labels.items);
     }
 
+    var next = 1;
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
-      getMatterFiles();
+      getMatterFiles(next);
       setTimeout(() => {
         setTimeout(() => {
           setShowToast(false);
@@ -598,12 +707,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }, 1000);
   };
 
-  function updateArr(data, index) {
-    console.log("updateArr", data, index);
+  function updateArrLabels(data, index) {
+    console.log("updateArrLabels", data, index);
     tempArr[index] = data;
   }
-
-
 
   //description saving
   const handleDetailsContent = (e, details, id) => {
@@ -621,36 +728,59 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleSaveDetails = async (e, details, id) => {
+    const updatedDesc = matterFiles.map((obj) => {
+      if (obj.id === id) {
+        return {
+          ...obj,
+          details: e.target.innerHTML,
+        };
+      }
+      return obj;
+    });
+    setMatterFiles(updatedDesc);
     if (textDetails.length <= 0) {
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
       setDesAlert("");
       const data = {
-        details: e.target.innerHTML
+        details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
+
       //   getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
         setTimeout(() => {
-          setResultMessage(`Successfully updated `);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 1000);
+          setShowToast(false);
         }, 1000);
+      }, 1000);
     } else {
+      const updatedDesc = matterFiles.map((obj) => {
+        if (obj.id === id) {
+          return {
+            ...obj,
+            details: e.target.innerHTML,
+          };
+        }
+        return obj;
+      });
+      setMatterFiles(updatedDesc);
+
       setDesAlert("");
       const data = {
-        details: e.target.innerHTML
+        details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
+
       //   getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
         setTimeout(() => {
-          setResultMessage(`Successfully updated `);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 1000);
+          setShowToast(false);
         }, 1000);
+      }, 1000);
       // }, 1000);
     }
   };
@@ -664,7 +794,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           query: mUpdateMatterFileDesc,
           variables: {
             id: id,
-            details: data.details
+            details: data.details,
           },
         });
         resolve(request);
@@ -673,7 +803,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     });
   }
-
 
   //filename saving
   const handleNameContent = (e, name, id) => {
@@ -693,36 +822,34 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const handleSaveName = async (e, name, id) => {
     if (textName.length <= 0) {
       setFileAlert("File name can't be empty");
-    } 
-    else if (textName === name) {
+    } else if (textName === name) {
       setFileAlert("");
       const data = {
-        name: name
+        name: name,
       };
       await updateMatterFileName(id, data);
       //   getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
         setTimeout(() => {
-          setResultMessage(`Successfully updated `);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 1000);
+          setShowToast(false);
         }, 1000);
-    } 
-    else {
+      }, 1000);
+    } else {
       setFileAlert("");
       const data = {
-        name: textName
+        name: textName,
       };
       await updateMatterFileName(id, data);
       //   getMatterFiles();
+      setTimeout(() => {
+        setResultMessage(`Successfully updated `);
+        setShowToast(true);
         setTimeout(() => {
-          setResultMessage(`Successfully updated `);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 1000);
+          setShowToast(false);
         }, 1000);
+      }, 1000);
     }
   };
 
@@ -735,7 +862,38 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           query: mUpdateMatterFileName,
           variables: {
             id: id,
-            name: data.name
+            name: data.name,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  const handleChangeDate = async (selected, id) => {
+    const data = {
+      date: selected !== null ? String(selected) : null,
+    };
+    await updateMatterFileDate(id, data);
+    const updatedArray = matterFiles.map((p) =>
+      p.id === id ? { ...p, date: data.date } : p
+    );
+    setMatterFiles(updatedArray);
+  };
+
+  async function updateMatterFileDate(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateMatterFileDate,
+          variables: {
+            id: id,
+            date:
+              data.date !== null && data.date !== "null" && data.date !== ""
+                ? new Date(data.date).toISOString()
+                : null,
           },
         });
         resolve(request);
@@ -768,17 +926,25 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   //sorting files function
   function sortByOrder(arr) {
-    const isAllZero = arr.every((item) => item.order <= 0 && item.order === 0);
+    // const isAllNotZero = arr.every(
+    //   (item) => item.order >= 0 && item.order !== 0
+    // );
     let sort;
-    if (isAllZero) {
-      sort = arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else {
-      sort = arr.sort(
-        (a, b) =>
-          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-      );
-    }
+    // if (isAllNotZero) {
+      sort = arr.sort((a, b) => a.order - b.order);
+    // } else {
+    //   sort = arr;
+    // }
     return sort;
+  }
+
+  function sortArrayByKey(array, key) {
+    return array.sort((a, b) => {
+      let x = a[key];
+      let y = b[key];
+
+      return x < y ? -1 : x > y ? 1 : 0;
+    });
   }
 
   //drag and drop functions
@@ -790,33 +956,25 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     tempMatter.splice(e.destination.index, 0, selectedRow);
     setMatterFiles(tempMatter);
 
-    const res = tempMatter.map(myFunction);
+    const result = tempMatter.map(({ id }, index) => ({
+      id: id,
+      order: index + 1,
+    }));
 
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
+    const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
     }
+    `;
 
-    res.map(async function (x) {
-      const mUpdateMatterFileOrder = `
-        mutation updateMatterFile ($id: ID, $order: Int) {
-          matterFileUpdate(id: $id, order: $order) {
-            id
-            order
-          }
-        }
-      `;
-
-      await API.graphql({
-        query: mUpdateMatterFileOrder,
-        variables: {
-          id: x.id,
-          order: x.order,
-        },
-      });
+    await API.graphql({
+      query: mUpdateBulkMatterFileOrder,
+      variables: {
+        arrangement: result,
+      },
     });
   };
 
@@ -827,7 +985,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [isAllChecked, setIsAllChecked] = useState(false);
 
   //checking each row
-  function checked(id, fileName, details, idx) {
+  function checked(id, fileName, details, size, downloadURL, type, date, idx) {
     if (isAllChecked) {
       selectedRows.splice(
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
@@ -855,7 +1013,21 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       } else {
         selectedRows = [
           ...selectedRows,
-          { id: id, fileName: fileName, details: details },
+          { id: id, fileName: fileName, details: details, date: date },
+        ];
+
+        selectedCompleteDataRows = [
+          ...selectedCompleteDataRows,
+          {
+            id: id,
+            fileName: fileName,
+            details: details,
+            date: date,
+            size: size,
+            type: type,
+            downloadURL: downloadURL,
+            order: 0,
+          },
         ];
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
@@ -892,7 +1064,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         (data) =>
           (selectedRows = [
             ...selectedRows,
-            { id: data.id, fileName: data.name, details: data.details },
+            {
+              id: data.id,
+              fileName: data.name,
+              details: data.details,
+              date: data.date,
+            },
           ])
       );
       const newArr = Array(files.length).fill(true);
@@ -919,6 +1096,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       await deleteMatterFile(id);
     });
     selectedRows = [];
+    var next = 1;
     setshowRemoveFileButton(false);
     setResultMessage(`Deleting File`);
     setShowToast(true);
@@ -930,7 +1108,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setResultMessage(`Successfully Deleted!`);
       setShowToast(true);
       setTimeout(() => {
-        getMatterFiles();
+        getMatterFiles(next);
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
@@ -993,9 +1171,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   const filterRecord = (v) => {
     console.log("filter", v);
+    var next = 1;
 
     if (v === "") {
-      getMatterFiles();
+      getMatterFiles(next);
     } else {
       const filterRecord = files.filter((x) =>
         x.name.toLowerCase().includes(v.toLowerCase())
@@ -1009,15 +1188,21 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   //filter function
   const handleFilter = (fileFilter) => {
     console.log("ff", fileFilter);
+    console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
+    var next = 1;
+
     var filterRecord = [];
     if (
-      fileFilter == null ||
-      fileFilter == undefined ||
-      fileFilter.length == 0
+      fileFilter === null ||
+      fileFilter === undefined ||
+      fileFilter.length === 0
     ) {
-      setMatterFiles(sortByOrder(files));
+      getMatterFiles(next);
+      setMatterFiles(sortByOrder(matterFiles));
+      // setFiles(sortByOrder(matterFiles));
     } else {
+      // getMatterFiles(next);
       console.log("files", files);
       for (var i = 0; i < fileFilter.length; i++) {
         files.map((x) =>
@@ -1036,30 +1221,33 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       ];
       console.log(listFilter);
       setMatterFiles(sortByOrder(listFilter));
+      // setFiles(sortByOrder(listFilter));
     }
   };
 
   const mCreateBackground = `
-      mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-        backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
-          id
-        }
-      }
-  `;
+  mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+    backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
+      createdAt
+      date
+      description
+      id
+      order
+    }
+  }
+`;
 
   async function addFileBucketToBackground() {
     let arrFiles = [];
     setShowToast(true);
     setResultMessage(`Copying details to background..`);
 
-    arrFiles = selectedRows.map(({ id, details }) => ({
+    arrFiles = selectedRows.map(({ id, details, date }) => ({
       id: id,
       details: details,
+      date: date,
     }));
 
-    console.log(selectedRows);
-
-    const dateToday = new Date().toISOString();
     var counter = 0;
     for (let i = 0; i < arrFiles.length; i++) {
       counter++;
@@ -1067,8 +1255,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         query: mCreateBackground,
         variables: {
           clientMatterId: matter_id,
-          date: dateToday,
           description: arrFiles[i].details,
+          date:
+            arrFiles[i].date !== null
+              ? new Date(arrFiles[i].date).toISOString()
+              : null,
         },
       });
 
@@ -1168,6 +1359,60 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   useBottomScrollListener(handleBottomScroll);
 
+  const handleDuplicate = async () => {
+    console.log(selectedCompleteDataRows);
+
+    selectedCompleteDataRows.map(async function (items) {
+      const request = await API.graphql({
+        query: mCreateMatterFile,
+        variables: { matterId: matter_id, s3ObjectKey: items.downloadURL, size: items.size, name: "Copy of "+items.fileName, type: items.type, order: items.order },
+      });
+
+      console.log(request);
+    });
+    selectedCompleteDataRows = [];
+  };
+
+  const SortBydate = async () => {
+    const isAllZero = matterFiles.every(
+      (item) => item.order >= 0 && item.order !== 0
+    );
+    if (!ascDesc) {
+      console.log("f");
+      setAscDesc(true);
+      setMatterFiles(
+        matterFiles.slice().sort(
+          (a, b) =>
+            //isAllZero ? b.order - a.order :
+            new Date(b.date) - new Date(a.date)
+        )
+      );
+    } else {
+      console.log("t");
+      setAscDesc(false);
+      setMatterFiles(
+        matterFiles.slice().sort(
+          (a, b) =>
+            //isAllZero ? a.order - b.order :
+            new Date(a.date) - new Date(b.date)
+        )
+      );
+    }
+  };
+
+  const style = {
+    paddingLeft: "0rem",
+  };
+
+  const showPageReference = async (fileId, backgroundId, clientMatter, description, rowOrder) => {
+    setShowPageReferenceModal(true);
+    setPageReferenceFileId(fileId);
+    setPageReferenceBackgroundId(backgroundId);
+    setPageReferenceClientMatter(clientMatter);
+    setPageReferenceDescription(description);
+    setPageReferenceRowOrder(rowOrder);
+  }
+
   return (
     <>
       <div
@@ -1179,6 +1424,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         <div className="relative flex-grow flex-1">
           <div style={mainGrid}>
             <div>
+              <Link to={AppRoutes.DASHBOARD}>
+                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
+                  <MdArrowBackIos />
+                  Back
+                </button>
+              </Link>
+
               <h1 className="font-bold text-3xl">
                 File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
                 <span className="font-semibold text-3xl">
@@ -1186,30 +1438,70 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 </span>
               </h1>
             </div>
-
-            <div className="absolute right-0">
-              {showAttachBackgroundButton && (
-                <Link to={`${AppRoutes.BACKGROUND}/${matter_id}`}>
-                  <button
-                    className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-2.5 px-4 rounded inline-flex border-0 shadow outline-none focus:outline-none focus:ring mr-1.5"
-                    onClick={() => tagBackgroundFile()}
-                  >
-                    Attach to Background &nbsp;|
-                    <BsArrowLeft />
-                  </button>
-                </Link>
-              )}
-              <Link to={AppRoutes.DASHBOARD}>
-                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                  Back &nbsp;
-                  <MdArrowForwardIos />
-                </button>
-              </Link>
-            </div>
           </div>
         </div>
 
-        <div className="p-5 left-0"></div>
+        <div className="bg-white z-50 " style={{position: "sticky", top: "0"}} >
+        <nav aria-label="Breadcrumb" style={style} className="mt-4">
+            <ol
+              role="list"
+              className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+            >
+              <li>
+                <div className="flex items-center">
+                  <Link
+                    className="mr-2 text-sm font-medium text-gray-900"
+                    to={`${AppRoutes.DASHBOARD}`}
+                  >
+                    Dashboard
+                  </Link>
+                  <svg
+                    width="16"
+                    height="20"
+                    viewBox="0 0 16 20"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    className="w-4 h-5 text-gray-300"
+                  >
+                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                  </svg>
+                </div>
+              </li>
+              <li className="text-sm">
+                <Link
+                  aria-current="page"
+                  className="font-medium text-gray-900"
+                  to={`${AppRoutes.BACKGROUND}/${matter_id}`}
+                >
+                  Background
+                </Link>
+              </li>
+              <svg
+                width="16"
+                height="20"
+                viewBox="0 0 16 20"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                className="w-4 h-5 text-gray-300"
+              >
+                <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+              </svg>
+              <li className="text-sm">
+                <Link
+                  aria-current="page"
+                  className="font-medium text-gray-500"
+                  to={`${AppRoutes.FILEBUCKET}/${matter_id}/000`}
+                >
+                  File Bucket
+                </Link>
+              </li>
+            </ol>
+          </nav>
+          
+
+        <div className="p-2 left-0"></div>
         {files !== null && files.length !== 0 && (
           <div className="w-full mb-3 pb-2">
             <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
@@ -1223,7 +1515,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             />
           </div>
         )}
-        <div className="pl-2 py-1 grid grid-cols-2 gap-4">
+        <div className="pl-2 py-1 grid grid-cols-1 gap-4" >
           <div className="">
             {matterFiles !== null && matterFiles.length !== 0 && (
               <input
@@ -1243,16 +1535,37 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
             {showRemoveFileButton && (
               <button
-                className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                 onClick={() => addFileBucketToBackground()}
               >
                 COPY TO BACKGROUND PAGE &nbsp;
                 <FiCopy />
               </button>
             )}
-          </div>
-          <div className=" grid justify-items-end mr-0">
-            <div className="flex inline-flex mr-0">
+
+            {showAttachBackgroundButton && (
+              <button
+                className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                onClick={() => tagBackgroundFile()}
+              >
+                Attach to Background &nbsp;|
+                <BsArrowLeft />
+              </button>
+            )}
+
+            {matterFiles !== null &&
+              matterFiles.length !== 0 &&
+              showRemoveFileButton && (
+                <button
+                  className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                  onClick={() => handleDuplicate()}
+                >
+                  Duplicate &nbsp;
+                  <FiCopy />
+                </button>
+            )}
+
+            <div className="flex inline-flex mr-0 float-right">
               {matterFiles !== null &&
                 matterFiles.length !== 0 &&
                 showRemoveFileButton && (
@@ -1278,6 +1591,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               </button>
             </div>
           </div>
+
+          <div className=" grid justify-items-end mr-0">
+            
+          </div>
+        </div>
         </div>
 
         <div className="px-2 py-0 left-0">
@@ -1323,24 +1641,42 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               </div>
             ) : (
               <>
+                <ScrollToTop
+                  smooth
+                  color="rgb(117, 117, 114);"
+                  style={{ padding: "0.4rem" }}
+                />
                 {matterFiles !== null && matterFiles.length !== 0 ? (
                   <div>
                     <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                       <DragDropContext onDragEnd={handleDragEnd}>
-                        <table className=" table-fixed min-w-full divide-y divide-gray-200">
-                          <thead>
+                        <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                          <thead className="bg-gray-100 z-50" style={{position: "sticky", top: "153px"}} >
                             <tr>
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
+                                <span className="ml-4">Date</span>
+                                <img
+                                  src={barsFilter}
+                                  className="text-2xl w-4 mx-4"
+                                  alt="filter"
+                                  onClick={SortBydate}
+                                  style={{ cursor: "pointer" }}
+                                />
+                              </th>
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Name
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
                                 Description
                               </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/4">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Labels
+                              </th>
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
+                                Page Reference
                               </th>
                             </tr>
                           </thead>
@@ -1351,251 +1687,311 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                 {...provider.droppableProps}
                                 className="bg-white divide-y divide-gray-200"
                               >
-                                {/* {matterFiles
-                                  .slice(pageIndex - 1, pageSizeConst)
-                                  .map((data, index) => ( */}
                                 {matterFiles.map((data, index) => (
-                                    <Draggable
-                                      key={data.id}
-                                      draggableId={data.id}
-                                      index={index}
-                                    >
-                                      {(provider, snapshot) => (
-                                        <tr
-                                          key={data.id}
-                                          index={index}
-                                          className="h-full"
-                                          {...provider.draggableProps}
-                                          ref={provider.innerRef}
-                                          style={{
-                                            ...provider.draggableProps.style,
-                                            backgroundColor:
-                                              snapshot.isDragging ||
-                                              (active && data.id === selected)
-                                                ? "rgba(255, 255, 239, 0.767)"
-                                                : "white",
-                                          }}
+                                  <Draggable
+                                    key={data.id}
+                                    draggableId={data.id}
+                                    index={index}
+                                  >
+                                    {(provider, snapshot) => (
+                                      <tr
+                                        key={data.id}
+                                        index={index}
+                                        className="h-full"
+                                        {...provider.draggableProps}
+                                        ref={provider.innerRef}
+                                        style={{
+                                          ...provider.draggableProps.style,
+                                          backgroundColor:
+                                            snapshot.isDragging ||
+                                            (active && data.id === selected)
+                                              ? "rgba(255, 255, 239, 0.767)"
+                                              : "white",
+                                        }}
+                                      >
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="px-2 py-6 inline-flex"
                                         >
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="px-2 py-6 inline-flex"
-                                          >
-                                            <MdDragIndicator
-                                              className="text-2xl"
-                                              onClick={() =>
-                                                handleChageBackground(data.id)
-                                              }
-                                            />
+                                          <MdDragIndicator
+                                            className="text-2xl"
+                                            onClick={() =>
+                                              handleChageBackground(data.id)
+                                            }
+                                          />
 
-                                            <input
-                                              type="checkbox"
-                                              name={data.id}
-                                              className="cursor-pointer w-10 mt-1"
-                                              checked={checkedState[index]}
-                                              onChange={() =>
-                                                checked(
-                                                  data.id,
-                                                  data.name,
-                                                  data.details,
-                                                  index
-                                                )
-                                              }
-                                              disabled={
-                                                deletingState ? true : false
-                                              }
-                                            />
-                                            <span>{index + 1}</span>
-                                          </td>
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
-                                          >
-                                            <div className="inline-flex">
-                                              {data.type
+                                          <input
+                                            type="checkbox"
+                                            name={data.id}
+                                            className="cursor-pointer w-10 mt-1"
+                                            checked={checkedState[index]}
+                                            onChange={() =>
+                                              checked(
+                                                data.id,
+                                                data.name,
+                                                data.details,
+                                                data.size,
+                                                data.downloadURL,
+                                                data.type,
+                                                data.date,
+                                                index
+                                              )
+                                            }
+                                            disabled={
+                                              deletingState ? true : false
+                                            }
+                                          />
+                                          <span className="text-xs">
+                                            {index + 1}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          <DatePicker
+                                            className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
+                                            dateFormat="dd MMM yyyy"
+                                            selected={
+                                              data.date !== null
+                                                ? new Date(data.date)
+                                                : null
+                                            }
+                                            placeholderText="No Date"
+                                            onChange={(selected) =>
+                                              handleChangeDate(
+                                                selected,
+                                                data.id
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                        >
+                                          <div className="inline-flex">
+                                            {data.type
+                                              .split("/")
+                                              .slice(0, -1)
+                                              .join("/") === "image" ? (
+                                              <GrDocumentImage className="text-2xl" />
+                                            ) : data.type
                                                 .split("/")
                                                 .slice(0, -1)
-                                                .join("/") === "image" ? (
-                                                <GrDocumentImage className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "audio" ? (
-                                                <FaRegFileAudio className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "video" ? (
-                                                <FaRegFileVideo className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "text" ? (
-                                                <GrDocumentTxt className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "application" &&
-                                                data.type.split(".").pop() ===
-                                                  "sheet" ? (
-                                                <GrDocumentExcel className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "application" &&
-                                                data.type.split(".").pop() ===
-                                                  "document" ? (
-                                                <GrDocumentWord className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "application" &&
-                                                data.type.split(".").pop() ===
-                                                  "text" ? (
-                                                <GrDocumentText className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "application" ? (
-                                                <GrDocumentPdf className="text-2xl" />
-                                              ) : (
-                                                <GrDocumentText className="text-2xl" />
-                                              )}
-                                              &nbsp;&nbsp;
-                                              <span
-                                                className="p-2 w-52 font-poppins"
-                                                style={{
-                                                  cursor: "auto",
-                                                  outlineColor:
-                                                    "rgb(204, 204, 204, 0.5)",
-                                                  outlineWidth: "thin",
-                                                }}
-                                                suppressContentEditableWarning={
-                                                  true
-                                                }
-                                                onClick={(event) =>
-                                                  handleNameContent(
-                                                    event,
-                                                    data.name,
-                                                    data.id
-                                                  )
-                                                }
-                                                onInput={(event) =>
-                                                  handleOnChangeName(event)
-                                                }
-                                                onBlur={(e) =>
-                                                  handleSaveName(
-                                                    e,
-                                                    data.name,
-                                                    data.id
-                                                  )
-                                                }
-                                                contentEditable={
-                                                  updateProgess ? false : true
-                                                }
-                                                
-                                            
-                                              >
-                                                {data.name}
-                                              </span>
-                                              <span>
-                                                <AiOutlineDownload
-                                                  className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
-                                                  onClick={() =>
-                                                    previewAndDownloadFile(
-                                                      data.id
-                                                    )
-                                                  }
-                                                />
-                                              </span>
-                                            </div>
-                                            <p className="text-red-400 filename-validation">
-                                              {data.id === fileId && fileAlert}
-                                            </p>{" "}
-                                            {/* do not change */}
-                                          </td>
-
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
-                                          >
-                                            <div className="flex">
-                                              <span
-                                                className="w-full p-2 font-poppins h-full mx-2"
-                                                style={{
-                                                  cursor: "auto",
-                                                  outlineColor:
-                                                    "rgb(204, 204, 204, 0.5)",
-                                                  outlineWidth: "thin",
-                                                }}
-                                                suppressContentEditableWarning={
-                                                  true
-                                                }
-                                                onClick={(event) =>
-                                                  handleDetailsContent(
-                                                    event,
-                                                    data.details,
-                                                    data.id
-                                                  )
-                                                }
-                                                onInput={(event) =>
-                                                  handleOnChangeDetails(event)
-                                                }
-                                                onBlur={(e) =>
-                                                  handleSaveDetails(
-                                                    e,
-                                                    data.details,
-                                                    data.id
-                                                  )
-                                                }
-                                                contentEditable={
-                                                  updateProgess ? false : true
-                                                }
-                                                dangerouslySetInnerHTML={{
-                                                  __html: data.details,
-                                                }}
-                                              ></span>
-                                            </div>
-                                            <br />
-                                            <span className="text-red-400 filename-validation">
-                                              {data.id === detId && descAlert}
-                                            </span>
-                                          </td>
-
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
-                                          >
-                                            <CreatableSelect
-                                              defaultValue={extractArray(
-                                                data.labels.items
-                                                  ? data.labels.items
-                                                  : { value: 0, label: "" }
-                                              )}
-                                              options={newOptions(
-                                                labels,
-                                                data.labels.items
-                                              )}
-                                              // options={labels}
-                                              isMulti
-                                              isClearable
-                                              isSearchable
-                                              onChange={(options) =>
-                                                handleLabelChanged(
-                                                  options,
-                                                  data.id,
+                                                .join("/") === "audio" ? (
+                                              <FaRegFileAudio className="text-2xl" />
+                                            ) : data.type
+                                                .split("/")
+                                                .slice(0, -1)
+                                                .join("/") === "video" ? (
+                                              <FaRegFileVideo className="text-2xl" />
+                                            ) : data.type
+                                                .split("/")
+                                                .slice(0, -1)
+                                                .join("/") === "text" ? (
+                                              <GrDocumentTxt className="text-2xl" />
+                                            ) : data.type
+                                                .split("/")
+                                                .slice(0, -1)
+                                                .join("/") === "application" &&
+                                              data.type.split(".").pop() ===
+                                                "sheet" ? (
+                                              <GrDocumentExcel className="text-2xl" />
+                                            ) : data.type
+                                                .split("/")
+                                                .slice(0, -1)
+                                                .join("/") === "application" &&
+                                              data.type.split(".").pop() ===
+                                                "document" ? (
+                                              <GrDocumentWord className="text-2xl" />
+                                            ) : data.type
+                                                .split("/")
+                                                .slice(0, -1)
+                                                .join("/") === "application" &&
+                                              data.type.split(".").pop() ===
+                                                "text" ? (
+                                              <GrDocumentText className="text-2xl" />
+                                            ) : data.type
+                                                .split("/")
+                                                .slice(0, -1)
+                                                .join("/") === "application" ? (
+                                              <GrDocumentPdf className="text-2xl" />
+                                            ) : (
+                                              <GrDocumentText className="text-2xl" />
+                                            )}
+                                            &nbsp;&nbsp;
+                                            <span
+                                              className="p-2 w-52 font-poppins"
+                                              style={{
+                                                cursor: "auto",
+                                                outlineColor:
+                                                  "rgb(204, 204, 204, 0.5)",
+                                                outlineWidth: "thin",
+                                              }}
+                                              suppressContentEditableWarning={
+                                                true
+                                              }
+                                              onClick={(event) =>
+                                                handleNameContent(
+                                                  event,
                                                   data.name,
-                                                  data.details,
-                                                  index
+                                                  data.id
                                                 )
                                               }
-                                              placeholder="Labels"
-                                              className="w-60 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                            />
-                                          </td>
-                                        </tr>
-                                      )}
-                                    </Draggable>
-                                  ))}
+                                              onInput={(event) =>
+                                                handleOnChangeName(event)
+                                              }
+                                              onBlur={(e) =>
+                                                handleSaveName(
+                                                  e,
+                                                  data.name,
+                                                  data.id
+                                                )
+                                              }
+                                              contentEditable={
+                                                updateProgess ? false : true
+                                              }
+                                            >
+                                              {data.name}
+                                            </span>
+                                            <span>
+                                              <AiOutlineDownload
+                                                className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
+                                                onClick={() =>
+                                                  previewAndDownloadFile(
+                                                    data.id
+                                                  )
+                                                }
+                                              />
+                                            </span>
+                                          </div>
+                                          <p className="text-red-400 filename-validation">
+                                            {data.id === fileId && fileAlert}
+                                          </p>{" "}
+                                          {/* do not change */}
+                                        </td>
+
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                        >
+                                          <div className="flex">
+                                            <span
+                                              className="w-full p-2 font-poppins h-full mx-2"
+                                              style={{
+                                                cursor: "auto",
+                                                outlineColor:
+                                                  "rgb(204, 204, 204, 0.5)",
+                                                outlineWidth: "thin",
+                                              }}
+                                              suppressContentEditableWarning={
+                                                true
+                                              }
+                                              onClick={(event) =>
+                                                handleDetailsContent(
+                                                  event,
+                                                  data.details,
+                                                  data.id
+                                                )
+                                              }
+                                              onInput={(event) =>
+                                                handleOnChangeDetails(event)
+                                              }
+                                              onBlur={(e) =>
+                                                handleSaveDetails(
+                                                  e,
+                                                  data.details,
+                                                  data.id
+                                                )
+                                              }
+                                              contentEditable={
+                                                updateProgess ? false : true
+                                              }
+                                              dangerouslySetInnerHTML={{
+                                                __html: data.details,
+                                              }}
+                                            ></span>
+                                          </div>
+                                          <br />
+                                          <span className="text-red-400 filename-validation">
+                                            {data.id === detId && descAlert}
+                                          </span>
+                                        </td>
+
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                        >
+                                          <CreatableSelect
+                                            defaultValue={extractArray(
+                                              data.labels.items
+                                                ? data.labels.items
+                                                : { value: 0, label: "" }
+                                            )}
+                                            options={newOptions(
+                                              labels,
+                                              data.labels.items
+                                            )}
+                                            // options={labels}
+                                            isMulti
+                                            isClearable
+                                            isSearchable
+                                            openMenuOnClick={true}
+                                            onChange={(options) =>
+                                              handleLabelChanged(
+                                                options,
+                                                data.id,
+                                                data.name,
+                                                data.details,
+                                                index
+                                              )
+                                            }
+                                            // onClick={(options) =>
+                                            //   handleLabelChanged(
+                                            //     options,
+                                            //     data.id,
+                                            //     data.name,
+                                            //     data.details,
+                                            //     index
+                                            //   )
+                                            // }
+                                            placeholder="Labels"
+                                            className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                          />
+                                        </td>
+                                        <td
+                                          {...provider.dragHandleProps}
+                                          className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                        >
+                                          {data.backgrounds.items
+                                            .sort((a, b) =>
+                                              a.order > b.order ? 1 : -1
+                                            ).filter(x => !Object.values(x).includes(null))
+                                            .map((background, index) => (
+                                              <p
+                                                className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                                key={background.id}
+                                                index={index}
+                                                onClick={() => showPageReference(
+                                                  data.id,
+                                                  background.id,
+                                                  clientMatterName, 
+                                                  background.description,
+                                                  background.order
+                                                )}
+                                              >
+                                                <b>{background.order + ". "}</b>
+                                                {ellipsis(
+                                                  clientMatterName +
+                                                    " Background",
+                                                  40
+                                                )}
+                                              </p>
+                                            ))
+                                            .sort()}
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </Draggable>
+                                ))}
                                 {provider.placeholder}
                               </tbody>
                             )}
@@ -1605,17 +2001,17 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                     </div>
                     <div>
                       {maxLoading ? (
-                          <div className="flex justify-center items-center mt-5">
-                            <p>All data has been loaded.</p>
-                          </div>
-                        ) : matterFiles.length >= 25 ? (
-                          <div className="flex justify-center items-center mt-5">
-                            <img src={imgLoading} width={50} height={100} />
-                          </div>
-                        ) : (
-                          <span></span>
-                        )
-                      }
+                        <div className="flex justify-center items-center mt-5">
+                          <p>All data has been loaded.</p>
+                        </div>
+                      ) : matterFiles.length >= 20 
+                        && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" ? (
+                        <div className="flex justify-center items-center mt-5">
+                          <img src={imgLoading} width={50} height={100} />
+                        </div>
+                      ) : (
+                        <span></span>
+                      )}
 
                       {!maxLoading && loading ? (
                         <span className="grid"></span>
@@ -1654,6 +2050,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           handleSave={handleUploadLink}
           bucketName={matter_id}
           handleModalClose={handleModalClose}
+        />
+      )}
+
+      {showPageReferenceModal && (
+        <PageReferenceModal
+          handleModalClose={handleModalClose}
+          fileId={pageReferenceFileId}
+          backgroundId={pageReferenceBackgroundId}
+          clientMatter={pageReferenceClientMatter}
+          description={pageReferenceDescription}
+          order={pageReferenceRowOrder}
+          getMatterFiles={getMatterFiles}
         />
       )}
 

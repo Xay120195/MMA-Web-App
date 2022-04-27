@@ -2,52 +2,43 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
-import {
-  AiFillFile,
-  AiFillEye,
-  AiOutlineLeft,
-  AiOutlineRight,
-} from "react-icons/ai";
+import { AiFillFile, AiFillEye } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
-const ActionButtons = ({
-  setWitness,
-  witness,
-  checkAllState,
-  setcheckAllState,
-  setCheckedState,
-  settotalChecked,
-  setId,
-  matterId,
-  getBackground,
-  selectedRowsBG,
-  setSelectedRowsBG,
-  setShowModalParagraph,
-  showDeleteButton,
-  setShowDeleteButton,
-  activateButton,
-  handleManageFiles,
-  checkDate,
-  setCheckDate,
-  checkDesc,
-  setCheckDesc,
-  checkDocu,
-  setCheckDocu,
-  checkedStateShowHide,
-  pageTotal,
-  pageIndex,
-  pageSize,
-  getPaginateItems,
-  selectRow,
-  setSelectRow,
-  pasteButton,
-  setPasteButton,
-  setNewRow,
-  newRow,
-  newWitness,
-  setMaxLoading,
-  sortByOrder,
-}) => {
+const ActionButtons = (props) => {
+  const {
+    witness,
+    checkAllState,
+    setcheckAllState,
+    setCheckedState,
+    settotalChecked,
+    setId,
+    matterId,
+    getBackground,
+    selectedRowsBG,
+    setSelectedRowsBG,
+    setShowModalParagraph,
+    showDeleteButton,
+    setShowDeleteButton,
+    activateButton,
+    handleManageFiles,
+    checkDate,
+    setCheckDate,
+    checkDesc,
+    setCheckDesc,
+    checkDocu,
+    setCheckDocu,
+    checkedStateShowHide,
+    selectRow,
+    setSelectRow,
+    pasteButton,
+    setPasteButton,
+    setWitness,
+    setNewWitness,
+    setMaxLoading,
+    sortByOrder,
+  } = props;
+
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
@@ -107,11 +98,12 @@ const ActionButtons = ({
   };
 
   const handleAddRow = async () => {
+    console.log("handleAddRow");
     const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-          backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+        mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+          backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
             id
           }
         }
@@ -121,8 +113,8 @@ const ActionButtons = ({
       query: mCreateBackground,
       variables: {
         clientMatterId: matterId,
-        date: dateToday,
         description: "",
+        date: null,
       },
     });
 
@@ -131,13 +123,35 @@ const ActionButtons = ({
         createdAt: dateToday,
         id: createBackgroundRow.data.backgroundCreate.id,
         description: "",
-        date: dateToday,
+        date: null,
         order: 0,
+        files: { items: [] },
       };
 
       setWitness((witness) => sortByOrder(witness.concat(result)));
       witness.splice(0, 0, result);
-      
+
+      const rowArrangement = witness.map(({ id }, index) => ({
+        id: id,
+        order: index + 1,
+      }));
+
+      const mUpdateBackgroundOrder = `
+        mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+          backgroundBulkUpdateOrders(arrangement: $arrangement) {
+            id
+            order
+          }
+        }`;
+      const response = await API.graphql({
+        query: mUpdateBackgroundOrder,
+        variables: {
+          arrangement: rowArrangement,
+        },
+      });
+      console.log(response);
+    
+
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
       setSelectedRowsBG([]);
@@ -172,24 +186,11 @@ const ActionButtons = ({
     }
   };
 
-  /** const handleSearchChange = (event) => {
-    setSearch(event.target.value);
-    var dm = event.target.value;
-    var str = dm.toString();
-    var result = witness.filter((x) => x.name.toLowerCase().includes(str));
-    if (result === []) {
-      setWitness(witness);
-      setShowSearch(true);
-    } else {
-      setWitness(result);
-    }
-  }; */
-
   useEffect(() => {
     if (tableColumnList === null) {
       getColumnSettings();
     }
-  }, [tableColumnList, witness]);
+  }, [tableColumnList]);
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
@@ -291,7 +292,10 @@ const ActionButtons = ({
         setCheckDesc(x.isVisible)
     );
 
-    if (userColumnSettings.data.userColumnSettings.length === 0) {
+    if (
+      tableColumnList === null &&
+      userColumnSettings.data.userColumnSettings.length === 0
+    ) {
       // no default user column settings
 
       const defaultColumnSettings = await API.graphql({
@@ -313,9 +317,9 @@ const ActionButtons = ({
             columnSettings: defaultColumnSettingsIds,
             userId: localStorage.getItem("userId"),
           },
+        }).then((data) => {
+          getColumnSettings();
         });
-
-        getColumnSettings();
       }
     } else {
       setTableColumnList(userColumnSettings.data.userColumnSettings);
@@ -329,6 +333,21 @@ const ActionButtons = ({
     }
   }
   `;
+
+  const qlistBackgroundFiles = `
+  query getBackgroundByID($id: ID) {
+    background(id: $id) {
+      id
+      files {
+        items {
+          id
+          downloadURL
+          details
+          name
+        }
+      }
+    }
+  }`;
 
   async function updateUserColumnSettings(id, data) {
     return new Promise((resolve, reject) => {
@@ -353,12 +372,36 @@ const ActionButtons = ({
   const handleCopyRow = () => {
     setPasteButton(true);
     localStorage.setItem("selectedRows", JSON.stringify(selectRow));
+
+    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
+
+    storedItemRows.map(async function (x) {
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: x.id,
+        },
+      });
+
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+        setNewWitness(newFilesResult);
+      }
+    });
   };
 
   return (
     <>
-      <div className="grid grid-rows grid-flow-col pt-5">
-        <div className="col-span-6 ">
+      <div className="pl-2 py-1 grid grid-cols-2 gap-4"  >
+        <div className="col-span-6" >
           <input
             name="check_all"
             id="check_all"
@@ -427,7 +470,7 @@ const ActionButtons = ({
               </button>
             )}
             {showhideState && (
-              <div className="w-64 h-38 z-100 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+              <div className="w-64 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
                 <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                   TABLE COLUMN OPTIONS
                 </p>
@@ -523,30 +566,6 @@ const ActionButtons = ({
               </button>
             </>
           )}
-
-          {/* <div className="px-2 py-0">
-            <p className={"text-sm mt-3 font-medium float-right inline-block"}>
-              <AiOutlineLeft
-                className={
-                  pageIndex === 1
-                    ? "text-gray-300 inline-block pointer-events-none"
-                    : "inline-block cursor-pointer"
-                }
-                onClick={() => getPaginateItems("prev")}
-              />
-              &nbsp;&nbsp;Showing {pageIndex} -{" "}
-              {pageSize >= pageTotal ? pageTotal : pageSize} of {pageTotal}
-              &nbsp;&nbsp;
-              <AiOutlineRight
-                className={
-                  pageSize >= pageTotal
-                    ? "text-gray-300 inline-block pointer-events-none"
-                    : "inline-block cursor-pointer"
-                }
-                onClick={() => getPaginateItems("next")}
-              />
-            </p>
-          </div> */}
         </div>
       </div>
       {showToast && (

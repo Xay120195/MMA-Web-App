@@ -81,17 +81,16 @@ async function listClientMatterLabels(ctx) {
 
 async function listCompanyMatterBackgrounds(ctx) {
   const { id } = ctx.source;
-
-  const { limit, nextToken } = ctx.arguments;
+  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
   try {
     const cmBackgroundsParam = {
       TableName: "ClientMatterBackgroundTable",
-      IndexName: "byClientMatter",
+      IndexName: "byCreatedAt",
       KeyConditionExpression: "clientMatterId = :clientMatterId",
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,
       }),
-      ScanIndexForward: false,
+      ScanIndexForward: sortOrder === "CREATED_DESC" ? false : true,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -107,12 +106,6 @@ async function listCompanyMatterBackgrounds(ctx) {
     const objCMBackgrounds = cmBackgroundsResult.Items.map((i) =>
       unmarshall(i)
     );
-
-    objCMBackgrounds.sort(function (a, b) {
-      return new Date(a.createdAt).getTime() < new Date(b.createdAt).getTime()
-        ? 1
-        : -1; // ? -1 : 1 for ascending/increasing order
-    });
 
     const backgroundIds = objCMBackgrounds.map((f) =>
       marshall({ id: f.backgroundId })

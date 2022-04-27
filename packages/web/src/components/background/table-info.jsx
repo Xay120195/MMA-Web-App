@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
@@ -17,7 +17,8 @@ import { useHistory, useLocation } from "react-router-dom";
 import barsFilter from "../../assets/images/bars-filter.svg";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import "./background.css";
+import "../../assets/styles/background.css";
+import ScrollToTop from "react-scroll-to-top";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -87,6 +88,7 @@ const TableInfo = ({
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
+  const [sortByDate, setSortByDate] = useState([]);
 
   const location = useLocation();
   const history = useHistory();
@@ -232,41 +234,48 @@ const TableInfo = ({
         }, 1000);
       }, 1000);
     } else {
-      {
-        setDescAlert("");
-        setUpdateProgress(true);
-        setalertMessage(`Saving in progress..`);
-        setShowToast(true);
+      setDescAlert("");
+      setUpdateProgress(true);
+      setalertMessage(`Saving in progress..`);
+      setShowToast(true);
 
-        const data = {
-          description: e.target.innerHTML,
-          date: date,
-        };
-        await updateBackgroundDetails(id, data);
+      const updateArr = witness.map((obj) => {
+        if (obj.id === id) {
+          return { ...obj, description: e.target.innerHTML };
+        }
+        return obj;
+      });
+
+      setWitness(updateArr);
+
+      const data = {
+        description: e.target.innerHTML,
+        date: date,
+      };
+      await updateBackgroundDetails(id, data);
+      setTimeout(() => {
         setTimeout(() => {
+          setTextDesc("");
+          setalertMessage(`Successfully updated`);
+          setShowToast(true);
           setTimeout(() => {
-            setTextDesc("");
-            setalertMessage(`Successfully updated `);
-            setShowToast(true);
-            setTimeout(() => {
-              setShowToast(false);
-              setUpdateProgress(false);
-            }, 1000);
+            setShowToast(false);
+            setUpdateProgress(false);
           }, 1000);
         }, 1000);
-      }
+      }, 1000);
     }
   };
 
   const handleChangeDate = async (selected, id, description) => {
     const data = {
       description: !description ? "" : description,
-      date: String(selected),
+      date: selected !== null ? String(selected) : null,
     };
     await updateBackgroundDetails(id, data);
 
     const updatedOSArray = witness.map((p) =>
-      p.id === id ? { ...p, date: String(selected) } : p
+      p.id === id ? { ...p, date: data.date } : p
     );
 
     setWitness(updatedOSArray);
@@ -289,7 +298,7 @@ const TableInfo = ({
           query: mUpdateBackground,
           variables: {
             id: id,
-            date: new Date(data.date).toISOString(),
+            date: data.date !== null ? new Date(data.date).toISOString() : null,
             description: data.description,
           },
         });
@@ -313,32 +322,25 @@ const TableInfo = ({
     tempWitness.splice(e.destination.index, 0, selectedRow);
     setWitness(tempWitness);
 
-    const res = tempWitness.map(myFunction);
-
-    function myFunction(item, index) {
-      let data;
-      return (data = {
-        id: item.id,
-        order: index + 1,
-      });
-    }
-
-    res.map(async function (x) {
-      const mUpdateBackgroundOrder = `
-  mutation updateBackground($id: ID, $order: Int) {
-    backgroundUpdate(id: $id, order: $order) {
-      id
-      order
-    }
-  }`;
-      await API.graphql({
-        query: mUpdateBackgroundOrder,
-        variables: {
-          id: x.id,
-          order: x.order,
-        },
-      });
+    const res = tempWitness.map(({ id }, index) => ({
+      id: id,
+      order: index + 1,
+    }));
+    console.log(res);
+    const mBulkUpdateBackgroundOrder = `
+      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        backgroundBulkUpdateOrders(arrangement: $arrangement) {
+          id
+          order
+        }
+      }`;
+    const response = await API.graphql({
+      query: mBulkUpdateBackgroundOrder,
+      variables: {
+        arrangement: res,
+      },
     });
+    console.log(response);
   };
 
   const handleChageBackground = (id) => {
@@ -358,26 +360,63 @@ const TableInfo = ({
   `;
 
   const handleDelete = async (item) => {
-    const filteredArrFiles = files.filter((i) => i.uniqueId !== item[0].id);
-    let arrFiles = [];
-    for (let i = 0; i < witness.length; i++) {
-      arrFiles = filteredArrFiles
-        .filter((element) => element.backgroundId === witness[i].id)
-        .map(({ id }) => ({
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: item[0].backgroundId,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      const arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
           id: id,
-        }));
-      console.log(arrFiles);
-      if (witness[i].id !== null) {
-        const request = API.graphql({
-          query: mUpdateBackgroundFile,
+        })
+      );
+
+      const filteredArrFiles = arrFileResult.filter((i) => i.id !== item[0].id);
+
+      const request = API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: item[0].backgroundId,
+          files: filteredArrFiles,
+        },
+      });
+
+      setTimeout(async () => {
+        // list updated result files
+        const backgroundFilesOptReq = await API.graphql({
+          query: qlistBackgroundFiles,
           variables: {
-            backgroundId: witness[i].id,
-            files: arrFiles,
+            id: item[0].backgroundId,
           },
         });
-      }
+
+        if (backgroundFilesOptReq.data.background.files !== null) {
+          const newFilesResult =
+            backgroundFilesOptReq.data.background.files.items.map(
+              ({ id, name, description, downloadURL }) => ({
+                id: id,
+                name: name,
+                description: description,
+                downloadURL: downloadURL,
+              })
+            );
+
+          const updateArrFiles = witness.map((obj) => {
+            if (obj.id === item[0].backgroundId) {
+              return { ...obj, files: { items: newFilesResult } };
+            }
+            return obj;
+          });
+
+          console.log(newFilesResult);
+          setWitness(updateArrFiles);
+        }
+      }, 1000);
     }
-    setFiles(filteredArrFiles);
+
     setshowRemoveFileModal(false);
     setalertMessage(`File successfully deleted!`);
     setShowToast(true);
@@ -397,24 +436,26 @@ const TableInfo = ({
     }
   }, 10000);
 
-  const SortBydate = () => {
+  const SortBydate = async () => {
     if (!ascDesc) {
+      console.log("f");
       setAscDesc(true);
-
-      witness.sort(
-        (a, b) =>
-          new Date(a.date) - new Date(b.date) ||
-          new Date(a.createdAt) - new Date(b.createdAt)
+      setWitness(
+        witness.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+      );
+      console.log(
+        witness.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
       );
     } else {
+      console.log("t");
       setAscDesc(false);
-      witness.sort(
-        (a, b) =>
-          new Date(b.date) - new Date(a.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
+      setWitness(
+        witness.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+      );
+      console.log(
+        witness.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
       );
     }
-    setWitness(witness);
   };
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
@@ -507,7 +548,33 @@ const TableInfo = ({
           files: filteredArr,
         },
       });
-      getBackground();
+
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: background_id,
+        },
+      });
+
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+
+        const updateArrFiles = witness.map((obj) => {
+          if (obj.id === background_id) {
+            return { ...obj, files: { items: newFilesResult } };
+          }
+          return obj;
+        });
+        setWitness(updateArrFiles);
+      }
     }
 
     setSelectedId(background_id);
@@ -529,16 +596,19 @@ const TableInfo = ({
       };
     }, initialValue);
   };
-
+  const [createMew, setCreateMew] = useState([]);
   const handlePasteRow = (targetIndex) => {
-    console.log(targetIndex);
+    let tempWitness = [...witness];
+    let arrCopyFiles = [];
+    let arrFileResult = [];
+
     setCheckedState(new Array(witness.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
     storedItemRows.map(async function (x) {
       const mCreateBackground = `
-          mutation createBackground($clientMatterId: String, $date: AWSDateTime, $description: String) {
-            backgroundCreate(clientMatterId: $clientMatterId, date: $date, description: $description) {
+          mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+            backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
               createdAt
               date
               description
@@ -552,58 +622,102 @@ const TableInfo = ({
         query: mCreateBackground,
         variables: {
           clientMatterId: matterId,
-          date: new Date(x.date).toISOString(),
           description: x.details,
+          date: null,
+          files: { items: [] },
         },
       });
 
-      if (createBackgroundRow) {
-        const xd = newRow;
-        xd.push({
+      arrFileResult = [
+        {
           createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+          id: createBackgroundRow.data.backgroundCreate.id,
+          files: { items: [] },
           date: createBackgroundRow.data.backgroundCreate.date,
           description: createBackgroundRow.data.backgroundCreate.description,
-          id: createBackgroundRow.data.backgroundCreate.id,
-          order: 0,
+          order: createBackgroundRow.data.backgroundCreate.order,
+        },
+      ];
+
+      arrCopyFiles = newWitness.map(({ id }) => ({
+        id: id,
+      }));
+
+      if (arrCopyFiles.length <= 0) {
+        const acdc = convertArrayToObject(arrFileResult);
+        tempWitness.splice(targetIndex + 1, 0, acdc.item);
+        setWitness(tempWitness);
+
+        setSelectRow(arrFileResult);
+
+        const result = tempWitness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
+
+        const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+
+        await API.graphql({
+          query: mUpdateBulkMatterFileOrder,
+          variables: {
+            arrangement: result,
+          },
         });
-        setNewRow(xd);
+      } else {
+        const request = await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackgroundRow.data.backgroundCreate.id,
+            files: arrCopyFiles,
+          },
+        });
+        const backgroundFilesOptReq = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: createBackgroundRow.data.backgroundCreate.id,
+          },
+        });
+        const updateArrFiles = arrFileResult.map((obj) => {
+          if (obj.id === request.data.backgroundFileTag.id) {
+            return {
+              ...obj,
+              files: backgroundFilesOptReq.data.background.files,
+            };
+          }
+          return obj;
+        });
+        const newFiles = convertArrayToObject(updateArrFiles);
+        tempWitness.splice(targetIndex + 1, 0, newFiles.item);
+        setWitness(tempWitness);
+        setSelectRow(updateArrFiles);
+        const result = tempWitness.map(({ id }, index) => ({
+          id: id,
+          order: index + 1,
+        }));
 
-        const oaWitness = convertArrayToObject(newRow);
+        const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
 
-        // newWitness.current = [...witness];
-
-        witness.splice(targetIndex + 1, 0, oaWitness.item);
-        setWitness(witness);
-        setSelectRow(newRow);
-        const res = witness.map(myFunction);
-
-        function myFunction(item, index) {
-          let data;
-          return (data = {
-            id: item.id,
-            order: index + 1,
-          });
-        }
-
-        res.map(async function (x) {
-          const mUpdateBackgroundOrder = `
-      mutation updateBackground($id: ID, $order: Int) {
-        backgroundUpdate(id: $id, order: $order) {
-          id
-          order
-        }
-      }`;
-          await API.graphql({
-            query: mUpdateBackgroundOrder,
-            variables: {
-              id: x.id,
-              order: x.order,
-            },
-          });
+        await API.graphql({
+          query: mUpdateBulkMatterFileOrder,
+          variables: {
+            arrangement: result,
+          },
         });
       }
-
-      // setWitness(newWitness.current);
     });
 
     setShowDeleteButton(false);
@@ -612,11 +726,16 @@ const TableInfo = ({
       setSelectRow([]);
       setNewRow([]);
       setSrcIndex("");
-
       localStorage.removeItem("selectedRows");
     }, 10000);
   };
 
+  // const reOrderFiles = (array, tempWitness, targetIndex) => {
+  //   const df = convertArrayToObject(array);
+
+  //   tempWitness.splice(targetIndex + 1, 0, df.item);
+  //   return setWitness(tempWitness);
+  // };
   const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
@@ -633,35 +752,39 @@ const TableInfo = ({
   return (
     <>
       <div
-        className="flex flex-col"
         style={{ padding: "2rem", marginLeft: "4rem" }}
       >
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="shadow border-b border-gray-200 sm:rounded-lg">
               {witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
                 <>
+                  <ScrollToTop
+                    smooth
+                    color="rgb(117, 117, 114);"
+                    style={{ padding: "0.4rem" }}
+                  />
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <table className="relative min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                      <thead className="bg-gray-100 z-10" style={{position: "sticky", top: "68px"}} >
                         <tr>
                           <th
-                            scope="col"
-                            className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            
+                            className="px-2 py-4 text-center whitespace-nowrap"
                           >
                             No
                           </th>
                           {checkDate && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-left flex text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
-                              Date
+                              Date &nbsp;
                               <img
                                 src={barsFilter}
-                                className="mx-auto"
+                                className="mx-auto inline-block"
                                 alt="filter"
                                 onClick={SortBydate}
                                 style={{ cursor: "pointer" }}
@@ -670,23 +793,23 @@ const TableInfo = ({
                           )}
                           {checkDesc && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
                               Description of Background
                             </th>
                           )}
                           {checkDocu && (
                             <th
-                              scope="col"
-                              className="sticky top-0 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              
+                              className="px-2 py-4 text-center whitespace-nowrap"
                             >
                               Document
                             </th>
                           )}
                         </tr>
                       </thead>
-                      <Droppable droppableId="droppable-1">
+                      <Droppable droppableId="tbl-backgrounds">
                         {(provider) => (
                           <tbody
                             ref={provider.innerRef}
@@ -694,11 +817,11 @@ const TableInfo = ({
                             className="bg-white divide-y divide-gray-200"
                           >
                             {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
-                            {sortByOrder(witness).map((item, index) => (
+                            {witness.map((item, index) => (
                               <>
                                 <Draggable
-                                  key={item.id}
-                                  draggableId={item.id}
+                                  key={item.id + "-" + index}
+                                  draggableId={item.id + "-" + index}
                                   index={index}
                                 >
                                   {(provider, snapshot) => (
@@ -708,8 +831,8 @@ const TableInfo = ({
                                           (x) => x.id === item.id
                                         ) && "bg-green-300"
                                       }
-                                      key={item.id}
                                       index={index}
+                                      key={item.id}
                                       {...provider.draggableProps}
                                       ref={provider.innerRef}
                                       style={{
@@ -723,7 +846,7 @@ const TableInfo = ({
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-3 py-3 w-10"
+                                        className="px-1 py-3"
                                       >
                                         <div className="flex items-center ">
                                           <MdDragIndicator
@@ -735,7 +858,7 @@ const TableInfo = ({
                                           <input
                                             type="checkbox"
                                             name={item.id}
-                                            className="cursor-pointer w-10"
+                                            className="cursor-pointer mr-1"
                                             checked={checkedState[index]}
                                             onChange={(event) =>
                                               handleCheckboxChange(
@@ -749,22 +872,28 @@ const TableInfo = ({
                                           />
                                           <label
                                             htmlFor="checkbox-1"
-                                            className="text-sm font-medium text-gray-900 dark:text-gray-300"
+                                            className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
                                             {index + 1}
+                                            {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>
                                       </td>
 
                                       {checkDate && (
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="px-3 py-3"
-                                        >
+                                        <td {...provider.dragHandleProps}>
                                           <div>
                                             <DatePicker
-                                              className="border w-28 rounded border-gray-300"
-                                              selected={new Date(item.date)}
+                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-20"
+                                              selected={
+                                                item.date !== null &&
+                                                item.date !== "null" &&
+                                                item.date !== ""
+                                                  ? new Date(item.date)
+                                                  : null
+                                              }
+                                              dateFormat="dd MMM yyyy"
+                                              placeholderText="No Date"
                                               onChange={(selected) =>
                                                 handleChangeDate(
                                                   selected,
@@ -779,7 +908,7 @@ const TableInfo = ({
                                       {checkDesc && (
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="w-10/12 px-6 py-4"
+                                          className="w-10/12 px-2 py-4 align-top place-items-center relative flex-wrap"
                                         >
                                           <div
                                             className="p-2 w-full h-full font-poppins"
@@ -868,7 +997,7 @@ const TableInfo = ({
                                             </span>
                                           )}
 
-                                          {files.length === 0 ? (
+                                          {item.files.items.length === 0 ? (
                                             <>
                                               <br />
                                               <p className="text-xs">
@@ -887,13 +1016,15 @@ const TableInfo = ({
                                               </span>
                                               <br />
                                               <br />
-                                              {files
+                                              {/* {files
                                                 .filter(
                                                   (x) =>
                                                     x.backgroundId === item.id
                                                 )
-                                                .map((items, index) => (
-                                                  <>
+                                                .map((items, index) => ( */}
+                                              {item.files.items.map(
+                                                (items, index) => (
+                                                  <span key={items.id}>
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
                                                         <input
@@ -903,9 +1034,10 @@ const TableInfo = ({
                                                           onChange={(event) =>
                                                             handleFilesCheckboxChange(
                                                               event,
-                                                              items.uniqueId,
+                                                              items.id +
+                                                                item.id,
                                                               items.id,
-                                                              items.backgroundId
+                                                              item.id
                                                             )
                                                           }
                                                         />
@@ -932,8 +1064,8 @@ const TableInfo = ({
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id,
+                                                              item.id
                                                             )
                                                           }
                                                         />
@@ -942,15 +1074,16 @@ const TableInfo = ({
                                                           className="text-gray-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                           onClick={() =>
                                                             showModal(
-                                                              items.uniqueId,
-                                                              items.backgroundId
+                                                              items.id,
+                                                              item.id
                                                             )
                                                           }
                                                         />
                                                       )}
                                                     </p>
-                                                  </>
-                                                ))}
+                                                  </span>
+                                                )
+                                              )}
                                             </>
                                           )}
                                         </td>
@@ -990,11 +1123,11 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading ? (
-            <div className="flex justify-center items-center mt-2">
+            <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
-          ) : witness.length >= 25 ? (
-            <div className="flex justify-center items-center mt-2">
+          ) : witness.length >= 20 ? (
+            <div className="flex justify-center items-center mt-5">
               <img src={imgLoading} width={50} height={100} />
             </div>
           ) : (

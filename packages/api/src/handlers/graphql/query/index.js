@@ -439,7 +439,6 @@ async function getClientMatter(data) {
 }
 
 async function getUserColumnSettings(data) {
-  console.log("getUserColumnSettings()");
   const { userId, tableName } = data;
 
   let resp = {},
@@ -499,9 +498,9 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    console.log(result);
+    //console.log(result);
     resp = (Object.keys(result).length !== 0 && result !== null && result !== {}) ? result : [];
-    console.log(resp);
+    //console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
@@ -615,9 +614,9 @@ const resolvers = {
     files: async () => {
       return listFiles();
     },
-    matterFile: async (ctx) => {
-      return getMatterFile(ctx.arguments);
-    },
+    // matterFile: async (ctx) => {
+    //   return getMatterFile(ctx.arguments);
+    // },
     matterFiles: async (ctx) => {
       return getMatterFiles(ctx.arguments);
     },

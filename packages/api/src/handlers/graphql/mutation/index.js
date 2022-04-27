@@ -13,6 +13,7 @@ const {
   createMatterFile,
   updateMatterFile,
   softDeleteMatterFile,
+  bulkUpdateMatterFileOrders,
 } = require("../../../services/MatterService");
 
 async function createCompany(data) {
@@ -661,7 +662,7 @@ async function createBackground(data) {
       description: data.description,
       date: data.date,
       createdAt: new Date().toISOString(),
-      order: 0,
+      order: data.order ? data.order : 0
     };
 
     const param = marshall(rawParams);
@@ -846,6 +847,46 @@ async function updateBackground(id, data) {
   return resp;
 }
 
+async function bulkUpdateBackgroundOrders(data) {
+  let resp = [];
+  try {
+    data.map(async (items) => {
+      const id = items.id;
+      const arrangement = items;
+      delete arrangement.id;
+
+      resp.push({
+        id,
+        ...items,
+      });
+
+      const {
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+        UpdateExpression,
+      } = getUpdateExpressions(arrangement);
+
+      const cmd = new UpdateItemCommand({
+        TableName: "BackgroundsTable",
+        Key: marshall({ id }),
+        UpdateExpression,
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+      });
+
+      await client.send(cmd);
+    });
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 export function getUpdateExpressions(data) {
   const values = {};
   const names = {};
@@ -1001,7 +1042,7 @@ const resolvers = {
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
-      const { id, name, details, order } = ctx.arguments;
+      const { id, name, details, order, date } = ctx.arguments;
 
       const data = {
         updatedAt: new Date().toISOString(),
@@ -1013,8 +1054,16 @@ const resolvers = {
 
       if (order !== undefined) data.order = order;
 
+      if (date !== undefined) data.date = date;
+
       return await updateMatterFile(id, data);
     },
+
+    matterFileBulkUpdateOrders: async (ctx) => {
+      const { arrangement } = ctx.arguments; // id and order
+      return await bulkUpdateMatterFileOrders(arrangement);
+    },
+
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
       const data = {
@@ -1079,6 +1128,12 @@ const resolvers = {
 
       return await updateBackground(id, data);
     },
+
+    backgroundBulkUpdateOrders: async (ctx) => {
+      const { arrangement } = ctx.arguments; // id and order
+      return await bulkUpdateBackgroundOrders(arrangement);
+    },
+
     backgroundDelete: async (ctx) => {
       const { id } = ctx.arguments;
       return await deleteBackground(id);
