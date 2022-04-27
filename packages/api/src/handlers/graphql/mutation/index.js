@@ -5,6 +5,7 @@ const {
   DeleteItemCommand,
   QueryCommand,
   BatchWriteItemCommand,
+  BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
@@ -662,7 +663,7 @@ async function createBackground(data) {
       description: data.description,
       date: data.date,
       createdAt: new Date().toISOString(),
-      order: data.order ? data.order : 0
+      order: data.order ? data.order : 0,
     };
 
     const param = marshall(rawParams);
@@ -709,8 +710,6 @@ async function createRFI(data) {
       createdAt: new Date().toISOString(),
       order: 0,
     };
-
-    console.log("rawParams", rawParams);
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
@@ -876,6 +875,112 @@ async function bulkUpdateBackgroundOrders(data) {
 
       await client.send(cmd);
     });
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function bulkInitializeBackgroundOrders(clientMatterId) {
+  let resp = [];
+  try {
+    const cmBackgroundsParam = {
+      TableName: "ClientMatterBackgroundTable",
+      IndexName: "byCreatedAt",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": clientMatterId,
+      }),
+      ProjectionExpression: "backgroundId",
+      ScanIndexForward: true,
+    };
+
+    const cmBackgroundsCmd = new QueryCommand(cmBackgroundsParam);
+    const cmBackgroundsResult = await client.send(cmBackgroundsCmd);
+
+    const backgroundIds = cmBackgroundsResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.backgroundId }));
+
+    if (backgroundIds.length !== 0) {
+      const backgroundsParam = {
+        RequestItems: {
+          BackgroundsTable: {
+            Keys: backgroundIds,
+          },
+        },
+      };
+
+      const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
+      const backgroundsResult = await client.send(backgroundsCommand);
+
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
+      );
+
+      objBackgrounds.sort(function (a, b) {
+        return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
+      });
+
+      const arrangement = objBackgrounds.map((data, index) => {
+        return {
+          id: data.id,
+          order: index + 1,
+        };
+      });
+
+      return bulkUpdateBackgroundOrders(arrangement);
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function bulkInitializeMatterFileOrders(clientMatterId) {
+  let resp = [];
+  try {
+    const matterFileParam = {
+      TableName: "MatterFileTable",
+      IndexName: "byCreatedAt",
+      KeyConditionExpression: "matterId = :matterId",
+      FilterExpression: "isDeleted = :isDeleted",
+      ExpressionAttributeValues: marshall({
+        ":matterId": clientMatterId,
+        ":isDeleted": false,
+      }),
+      ScanIndexForward: true,
+    };
+
+    const matterFileCmd = new QueryCommand(matterFileParam);
+    const matterFileResult = await client.send(matterFileCmd);
+
+    const objMatterFiles = matterFileResult.Items.map((d) => unmarshall(d));
+
+    if (objMatterFiles.length !== 0) {
+      objMatterFiles.sort(function (a, b) {
+        return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
+      });
+
+      const arrangement = objMatterFiles.map((data, index) => {
+        return {
+          id: data.id,
+          order: index + 1,
+        };
+      });
+
+      return bulkUpdateMatterFileOrders(arrangement);
+    }
   } catch (e) {
     resp = {
       error: e.message,
@@ -1064,6 +1169,11 @@ const resolvers = {
       return await bulkUpdateMatterFileOrders(arrangement);
     },
 
+    matterFileBulkInitializeOrders: async (ctx) => {
+      const { clientMatterId } = ctx.arguments; // id and order
+      return await bulkInitializeMatterFileOrders(clientMatterId);
+    },
+
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
       const data = {
@@ -1132,6 +1242,11 @@ const resolvers = {
     backgroundBulkUpdateOrders: async (ctx) => {
       const { arrangement } = ctx.arguments; // id and order
       return await bulkUpdateBackgroundOrders(arrangement);
+    },
+
+    backgroundBulkInitializeOrders: async (ctx) => {
+      const { clientMatterId } = ctx.arguments; // id and order
+      return await bulkInitializeBackgroundOrders(clientMatterId);
     },
 
     backgroundDelete: async (ctx) => {

@@ -332,6 +332,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: backgroundBulkInitializeOrders
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: backgroundDelete
         request: false
         response: false
@@ -398,6 +403,11 @@ custom:
       - dataSource: LambdaBackgroundDS
         type: Background
         field: files
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterFileBulkInitializeOrders
         request: false
         response: false
 
