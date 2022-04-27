@@ -299,7 +299,7 @@ mutation addMatter($companyId: String, $name: String) {
   const handleSearchMatterChange = (e) => {
     setSearchMatter(e.target.value);
     if (e.target.value.length >= 1) {
-      searchMatterClient(companyId, listmatters, e.target.value, dispatch);
+      searchMatterClient(companyId, e.target.value, dispatch);
     } else {
       getMatterList(dispatch, companyId);
     }
