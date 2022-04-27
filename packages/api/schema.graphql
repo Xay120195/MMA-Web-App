@@ -264,7 +264,7 @@ type Mutation {
     labels: [LabelInput]
   ): File
   matterFileBulkUpdateOrders(arrangement: [ArrangementInput]): [File]
-  matterFileBulkInitializeOrders(clientMatterId: String): [File]
+  matterFileBulkInitializeOrders(clientMatterId: ID): [File]
   matterFileSoftDelete(id: ID): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(
@@ -292,7 +292,7 @@ type Mutation {
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
   backgroundBulkUpdateOrders(arrangement: [ArrangementInput]): [Background]
-  backgroundBulkInitializeOrders(clientMatterId: String): [Background]
+  backgroundBulkInitializeOrders(clientMatterId: ID): [Background]
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
   columnSettingsCreate(
     name: String
