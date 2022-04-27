@@ -108,21 +108,48 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  const handleUploadLink = (uf) => {
+  const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
+    //adjust order of existing files
+    let tempMatter = [...matterFiles];
+    // tempMatter.sort((a, b) => b.order - a.order);
+    const result = tempMatter.map(({ id }, index) => ({
+      id: id,
+      order: index + uploadedFiles.length,
+    }));
+
+    const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+
+    await API.graphql({
+      query: mUpdateBulkMatterFileOrder,
+      variables: {
+        arrangement: result,
+      },
+    });
+
+    //add order to new files
     var next = 1;
-    console.log(uploadedFiles);
-    uploadedFiles.map(async (file) => {
-      await createMatterFile(file).then(() => {
-        setResultMessage(`File successfully uploaded!`);
+    var sortedFiles = uploadedFiles.sort((a, b) => b.oderSelected - a.oderSelected);
+
+    sortedFiles.map((file) => {
+      createMatterFile(file);
+        
+    });
+
+    setResultMessage(`File successfully uploaded!`);
         setShowToast(true);
         handleModalClose();
         setTimeout(() => {
           setShowToast(false);
           getMatterFiles(next);
         }, 3000);
-      });
-    });
   };
 
   const handleModalClose = () => {
@@ -141,11 +168,12 @@ export default function FileBucket() {
   };
 
   const mCreateMatterFile = `
-      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String) {
-        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name) {
+      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
+        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
           id
           name
           downloadURL
+          order
         }
       }
   `;
@@ -570,19 +598,13 @@ const qlistBackgroundFiles = `
     }
   };
 
-  async function createMatterFile(file) {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mCreateMatterFile,
-          variables: file,
-        });
+  function createMatterFile(file) {
+   const request = API.graphql({
+     query: mCreateMatterFile,
+     variables: file,
+   });
 
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
+   return request;
   }
 
   async function updateMatterFile(id, data) {
@@ -904,15 +926,15 @@ const qlistBackgroundFiles = `
 
   //sorting files function
   function sortByOrder(arr) {
-    const isAllNotZero = arr.every(
-      (item) => item.order >= 0 && item.order !== 0
-    );
+    // const isAllNotZero = arr.every(
+    //   (item) => item.order >= 0 && item.order !== 0
+    // );
     let sort;
-    if (isAllNotZero) {
+    // if (isAllNotZero) {
       sort = arr.sort((a, b) => a.order - b.order);
-    } else {
-      sort = arr;
-    }
+    // } else {
+    //   sort = arr;
+    // }
     return sort;
   }
 
