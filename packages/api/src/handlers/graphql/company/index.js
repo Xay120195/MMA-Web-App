@@ -230,16 +230,19 @@ async function listCompanyClients(ctx) {
 async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
-  
-  let indexName,
-    isAscending;
+
+  let indexName, isAscending;
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+    isAscending = false;
+  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
+    isAscending = true;
+  }
 
   if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
     indexName = "byCreatedAt";
-    isAscending = false;
   } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
     indexName = "byOrder";
-    isAscending = true;
   }
 
   try {

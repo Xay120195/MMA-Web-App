@@ -44,17 +44,20 @@ export async function getMatterFiles(ctx) {
     sortOrder = "CREATED_DESC",
   } = ctx;
 
-  let resp = {};
-  
-  let indexName,
+  let resp = {},
+    indexName,
     isAscending;
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+    isAscending = false;
+  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
+    isAscending = true;
+  }
 
   if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
     indexName = "byCreatedAt";
-    isAscending = false;
   } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
     indexName = "byOrder";
-    isAscending = true;
   }
 
   try {
