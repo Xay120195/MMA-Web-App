@@ -21,6 +21,8 @@ type Company {
 enum OrderBy {
   CREATED_DESC
   CREATED_ASC
+  ORDER_DESC
+  ORDER_ASC
 }
 
 type Address {
@@ -91,6 +93,7 @@ type File {
   size: Int
   type: String
   details: String
+  s3ObjectKey: String
   order: Int
   date: AWSDateTime
   labels(limit: Int, nextToken: String): FileLabelConn
@@ -262,6 +265,7 @@ type Mutation {
     labels: [LabelInput]
   ): File
   matterFileBulkUpdateOrders(arrangement: [ArrangementInput]): [File]
+  matterFileBulkInitializeOrders(clientMatterId: ID): [File]
   matterFileSoftDelete(id: ID): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(
@@ -289,6 +293,7 @@ type Mutation {
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
   backgroundBulkUpdateOrders(arrangement: [ArrangementInput]): [Background]
+  backgroundBulkInitializeOrders(clientMatterId: ID): [Background]
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
   columnSettingsCreate(
     name: String

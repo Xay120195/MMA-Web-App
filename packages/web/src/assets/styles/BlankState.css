@@ -28,6 +28,13 @@ span {
   justify-items: center;
 }
 
+.dynamic-main-content {
+
+  justify-items: center;
+  padding: 2rem;
+  width: 100%;
+}
+
 @media screen and (min-width: 800px) {
   .main-content {
     grid-template-columns: auto 1fr;

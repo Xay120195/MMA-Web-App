@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
   const [allowOpenFileBucket, setAllowOpenFileBucket] = useState(false);
+  const [allowOpenRFI, setAllowOpenRFI] = useState(false);
   const [allowOpenBackground, setAllowOpenBackground] = useState(false);
   const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
 
@@ -68,6 +69,7 @@ export default function Dashboard() {
         access: JSON.parse(localStorage.getItem("access")),
       };
       setuserInfo(ls);
+      console.log("ls",ls);
     }
 
     if (userInfo) {
@@ -108,6 +110,14 @@ export default function Dashboard() {
       setAllowOpenFileBucket(true);
     } else {
       console.log(fileBucketAccess.message);
+    }
+
+    const RFIAccess = await AccessControl("MATTERSRFI");
+
+    if (RFIAccess.status !== "restrict") {
+      setAllowOpenRFI(true);
+    } else {
+      console.log(RFIAccess.message);
     }
 
     const backgroundAccess = await AccessControl("BACKGROUND");
@@ -298,11 +308,10 @@ mutation addMatter($companyId: String, $name: String) {
 
   const handleSearchMatterChange = (e) => {
     setSearchMatter(e.target.value);
-
-    if (searchMatter.length <= 0) {
-      getMatterList(dispatch, companyId);
+    if (e.target.value.length >= 1) {
+      searchMatterClient(companyId, e.target.value, dispatch);
     } else {
-      searchMatterClient(companyId, listmatters, searchMatter, dispatch);
+      getMatterList(dispatch, companyId);
     }
   };
 
@@ -431,6 +440,7 @@ mutation addMatter($companyId: String, $name: String) {
               allowOpenMatter: allowOpenMatter,
               allowOpenFileBucket: allowOpenFileBucket,
               allowOpenBackground: allowOpenBackground,
+              allowOpenRFI: allowOpenRFI,
             }}
           >
             <ClientMatters />

@@ -18,6 +18,7 @@ export function ClientMatters({}) {
     allowOpenMatter,
     allowOpenFileBucket,
     allowOpenBackground,
+    allowOpenRFI,
     loading,
     error,
   } = useContext(MatterContext);
@@ -41,7 +42,7 @@ export function ClientMatters({}) {
                 >
                   <div>
                     {allowOpenFileBucket ||
-                    allowOpenBackground ||
+                    allowOpenBackground || allowOpenRFI ||
                     showDeleteMatter ? (
                       <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
                         <div className="dropdown">
@@ -49,6 +50,15 @@ export function ClientMatters({}) {
                             <FaIcons.FaEllipsisV />
                           </button>
                           <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded z-50">
+                            {allowOpenRFI ? (
+                              <li className="p-2">
+                                <Link
+                                  to={`${AppRoutes.MATTERSRFI}/${item.id}`}
+                                >
+                                  RFI List
+                                </Link>
+                              </li>
+                            ) : null}
                             {allowOpenFileBucket ? (
                               <li className="p-2">
                                 <Link
@@ -137,7 +147,7 @@ export function ClientMatters({}) {
                   key={item.id}
                 >
                   <div>
-                    {allowOpenFileBucket ||
+                    {allowOpenFileBucket || allowOpenRFI ||
                     allowOpenBackground ||
                     showDeleteMatter ? (
                       <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
@@ -146,6 +156,15 @@ export function ClientMatters({}) {
                             <FaIcons.FaEllipsisV />
                           </button>
                           <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
+                            {allowOpenRFI ? (
+                              <li className="p-2">
+                                <Link
+                                  to={`${AppRoutes.MATTERSRFI}/${item.id}`}
+                                >
+                                  RFI List
+                                </Link>
+                              </li>
+                            ) : null}
                             {allowOpenFileBucket ? (
                               <li className="p-2">
                                 <Link

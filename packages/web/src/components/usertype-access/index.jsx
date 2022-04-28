@@ -247,6 +247,7 @@ const UserTypeAccess = (props) => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
+                    
                     {defaultPages !== null
                       ? defaultPages.map((page, page_index) => (
                           <React.Fragment key={page_index}>

@@ -5,6 +5,7 @@ const {
   DeleteItemCommand,
   QueryCommand,
   BatchWriteItemCommand,
+  BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
@@ -297,9 +298,11 @@ async function createLabel(data) {
 }
 
 async function tagFileLabel(data) {
+  console.log("tagFileLabel", data.file.id);
   let resp = {};
   try {
-    const arrItems = [];
+    const arrDeleteItems = [],
+      arrCreateItems = [];
 
     const fileLabelIdParams = {
       TableName: "FileLabelTable",
@@ -315,15 +318,29 @@ async function tagFileLabel(data) {
 
     for (var a = 0; a < fileLabelIdResult.Items.length; a++) {
       var fileLabelId = { id: fileLabelIdResult.Items[a].id };
-      arrItems.push({
+      arrDeleteItems.push({
         DeleteRequest: {
           Key: fileLabelId,
         },
       });
     }
 
+    if (arrDeleteItems.length !== 0) {
+      const deleteFileLabelParams = {
+        RequestItems: {
+          FileLabelTable: arrDeleteItems,
+        },
+      };
+
+      const deleteFileLabelCommand = new BatchWriteItemCommand(
+        deleteFileLabelParams
+      );
+      const deleteFileLabelResult = await client.send(deleteFileLabelCommand);
+
+      console.log("deleteFileLabelResult", deleteFileLabelResult);
+    }
     for (var i = 0; i < data.label.length; i++) {
-      arrItems.push({
+      arrCreateItems.push({
         PutRequest: {
           Item: marshall({
             id: v4(),
@@ -334,16 +351,20 @@ async function tagFileLabel(data) {
       });
     }
 
-    const fileLabelParams = {
-      RequestItems: {
-        FileLabelTable: arrItems,
-      },
-    };
+    if (arrCreateItems.length !== 0) {
+      const createFileLabelParams = {
+        RequestItems: {
+          FileLabelTable: arrCreateItems,
+        },
+      };
 
-    const fileLabelCommand = new BatchWriteItemCommand(fileLabelParams);
-    const fileLabelResult = await client.send(fileLabelCommand);
-
-    resp = fileLabelResult ? { file: { id: data.file.id } } : {};
+      const createFileLabelCommand = new BatchWriteItemCommand(
+        createFileLabelParams
+      );
+      const createFileLabelResult = await client.send(createFileLabelCommand);
+      console.log("createFileLabelResult", createFileLabelResult);
+    }
+    resp = { file: { id: data.file.id } };
   } catch (e) {
     resp = {
       error: e.message,
@@ -359,7 +380,8 @@ async function tagBackgroundFile(data) {
   let resp = {};
 
   try {
-    const arrItems = [];
+    const arrDeleteItems = [],
+      arrCreateItems = [];
 
     const backgroundFileIdParams = {
       TableName: "BackgroundFileTable",
@@ -375,15 +397,32 @@ async function tagBackgroundFile(data) {
 
     for (var a = 0; a < backgroundFileIdResult.Items.length; a++) {
       var backgroundFileId = { id: backgroundFileIdResult.Items[a].id };
-      arrItems.push({
+      arrDeleteItems.push({
         DeleteRequest: {
           Key: backgroundFileId,
         },
       });
     }
 
+    if (arrDeleteItems.length !== 0) {
+      const deleteBackgroundFileParams = {
+        RequestItems: {
+          BackgroundFileTable: arrDeleteItems,
+        },
+      };
+
+      const deleteBackgroundFileCommand = new BatchWriteItemCommand(
+        deleteBackgroundFileParams
+      );
+      const deleteBackgroundFileResult = await client.send(
+        deleteBackgroundFileCommand
+      );
+
+      console.log("deleteBackgroundFileResult", deleteBackgroundFileResult);
+    }
+
     for (var i = 0; i < data.files.length; i++) {
-      arrItems.push({
+      arrCreateItems.push({
         PutRequest: {
           Item: marshall({
             id: v4(),
@@ -394,18 +433,22 @@ async function tagBackgroundFile(data) {
       });
     }
 
-    const backgroundFileParams = {
-      RequestItems: {
-        BackgroundFileTable: arrItems,
-      },
-    };
+    if (arrCreateItems.length !== 0) {
+      const createBackgroundFileParams = {
+        RequestItems: {
+          BackgroundFileTable: arrCreateItems,
+        },
+      };
 
-    const backgroundFileCommand = new BatchWriteItemCommand(
-      backgroundFileParams
-    );
-    const backgroundFileResult = await client.send(backgroundFileCommand);
-
-    resp = backgroundFileResult ? { id: data.backgroundId } : {};
+      const createBackgroundFileCommand = new BatchWriteItemCommand(
+        createBackgroundFileParams
+      );
+      const createBackgroundFileResult = await client.send(
+        createBackgroundFileCommand
+      );
+      console.log("createBackgroundFileResult", createBackgroundFileResult);
+    }
+    resp = { id: data.backgroundId };
   } catch (e) {
     resp = {
       error: e.message,
@@ -662,7 +705,7 @@ async function createBackground(data) {
       description: data.description,
       date: data.date,
       createdAt: new Date().toISOString(),
-      order: data.order ? data.order : 0
+      order: data.order ? data.order : 0,
     };
 
     const param = marshall(rawParams);
@@ -709,8 +752,6 @@ async function createRFI(data) {
       createdAt: new Date().toISOString(),
       order: 0,
     };
-
-    console.log("rawParams", rawParams);
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
@@ -876,6 +917,112 @@ async function bulkUpdateBackgroundOrders(data) {
 
       await client.send(cmd);
     });
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function bulkInitializeBackgroundOrders(clientMatterId) {
+  let resp = [];
+  try {
+    const cmBackgroundsParam = {
+      TableName: "ClientMatterBackgroundTable",
+      IndexName: "byCreatedAt",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": clientMatterId,
+      }),
+      ProjectionExpression: "backgroundId",
+      ScanIndexForward: true,
+    };
+
+    const cmBackgroundsCmd = new QueryCommand(cmBackgroundsParam);
+    const cmBackgroundsResult = await client.send(cmBackgroundsCmd);
+
+    const backgroundIds = cmBackgroundsResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.backgroundId }));
+
+    if (backgroundIds.length !== 0) {
+      const backgroundsParam = {
+        RequestItems: {
+          BackgroundsTable: {
+            Keys: backgroundIds,
+          },
+        },
+      };
+
+      const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
+      const backgroundsResult = await client.send(backgroundsCommand);
+
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
+      );
+
+      objBackgrounds.sort(function (a, b) {
+        return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
+      });
+
+      const arrangement = objBackgrounds.map((data, index) => {
+        return {
+          id: data.id,
+          order: index + 1,
+        };
+      });
+
+      return bulkUpdateBackgroundOrders(arrangement);
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function bulkInitializeMatterFileOrders(clientMatterId) {
+  let resp = [];
+  try {
+    const matterFileParam = {
+      TableName: "MatterFileTable",
+      IndexName: "byCreatedAt",
+      KeyConditionExpression: "matterId = :matterId",
+      FilterExpression: "isDeleted = :isDeleted",
+      ExpressionAttributeValues: marshall({
+        ":matterId": clientMatterId,
+        ":isDeleted": false,
+      }),
+      ScanIndexForward: true,
+    };
+
+    const matterFileCmd = new QueryCommand(matterFileParam);
+    const matterFileResult = await client.send(matterFileCmd);
+
+    const objMatterFiles = matterFileResult.Items.map((d) => unmarshall(d));
+
+    if (objMatterFiles.length !== 0) {
+      objMatterFiles.sort(function (a, b) {
+        return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
+      });
+
+      const arrangement = objMatterFiles.map((data, index) => {
+        return {
+          id: data.id,
+          order: index + 1,
+        };
+      });
+
+      return bulkUpdateMatterFileOrders(arrangement);
+    }
   } catch (e) {
     resp = {
       error: e.message,
@@ -1064,6 +1211,11 @@ const resolvers = {
       return await bulkUpdateMatterFileOrders(arrangement);
     },
 
+    matterFileBulkInitializeOrders: async (ctx) => {
+      const { clientMatterId } = ctx.arguments; // id and order
+      return await bulkInitializeMatterFileOrders(clientMatterId);
+    },
+
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
       const data = {
@@ -1132,6 +1284,11 @@ const resolvers = {
     backgroundBulkUpdateOrders: async (ctx) => {
       const { arrangement } = ctx.arguments; // id and order
       return await bulkUpdateBackgroundOrders(arrangement);
+    },
+
+    backgroundBulkInitializeOrders: async (ctx) => {
+      const { clientMatterId } = ctx.arguments; // id and order
+      return await bulkInitializeBackgroundOrders(clientMatterId);
     },
 
     backgroundDelete: async (ctx) => {
