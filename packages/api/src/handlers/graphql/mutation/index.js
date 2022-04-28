@@ -298,9 +298,11 @@ async function createLabel(data) {
 }
 
 async function tagFileLabel(data) {
+  console.log("tagFileLabel", data.file.id);
   let resp = {};
   try {
-    const arrItems = [];
+    const arrDeleteItems = [],
+      arrCreateItems = [];
 
     const fileLabelIdParams = {
       TableName: "FileLabelTable",
@@ -316,15 +318,28 @@ async function tagFileLabel(data) {
 
     for (var a = 0; a < fileLabelIdResult.Items.length; a++) {
       var fileLabelId = { id: fileLabelIdResult.Items[a].id };
-      arrItems.push({
+      arrDeleteItems.push({
         DeleteRequest: {
           Key: fileLabelId,
         },
       });
     }
 
+    const deleteFileLabelParams = {
+      RequestItems: {
+        FileLabelTable: arrDeleteItems,
+      },
+    };
+
+    const deleteFileLabelCommand = new BatchWriteItemCommand(
+      deleteFileLabelParams
+    );
+    const deleteFileLabelResult = await client.send(deleteFileLabelCommand);
+
+    console.log("deleteFileLabelResult", deleteFileLabelResult);
+
     for (var i = 0; i < data.label.length; i++) {
-      arrItems.push({
+      arrCreateItems.push({
         PutRequest: {
           Item: marshall({
             id: v4(),
@@ -335,16 +350,18 @@ async function tagFileLabel(data) {
       });
     }
 
-    const fileLabelParams = {
+    const createFileLabelParams = {
       RequestItems: {
-        FileLabelTable: arrItems,
+        FileLabelTable: arrCreateItems,
       },
     };
 
-    const fileLabelCommand = new BatchWriteItemCommand(fileLabelParams);
-    const fileLabelResult = await client.send(fileLabelCommand);
-
-    resp = fileLabelResult ? { file: { id: data.file.id } } : {};
+    const createFileLabelCommand = new BatchWriteItemCommand(
+      createFileLabelParams
+    );
+    const createFileLabelResult = await client.send(createFileLabelCommand);
+    console.log("createFileLabelResult", createFileLabelResult);
+    resp = createFileLabelResult ? { file: { id: data.file.id } } : {};
   } catch (e) {
     resp = {
       error: e.message,
