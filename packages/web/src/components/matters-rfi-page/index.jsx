@@ -32,6 +32,8 @@ export default function MattersRFI() {
   const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
+  const [clientMatterName, setClientMatterName] = useState("");
+
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
     setshowCreateRFIModal(true);
@@ -82,6 +84,7 @@ export default function MattersRFI() {
       const matterFilesList = rfi.data.clientMatter.rfis.items;
       console.log("mfl", matterFilesList);
       setRFI(matterFilesList);
+      getMatterDetails();
     });
   }
 
@@ -152,6 +155,34 @@ export default function MattersRFI() {
     history.push(`${AppRoutes.RFIPAGE}/${id}`);
   }
 
+  const qGetMatterDetails = `
+  query getMatterDetails($matterId: ID) {
+    clientMatter(id: $matterId) {
+      matter {
+        name
+      }
+      client {
+        name
+      }
+    }
+  }`;
+
+  let getMatterDetails = async () => {
+    const params = {
+      query: qGetMatterDetails,
+      variables: {
+        matterId: matter_id,
+        isDeleted: false,
+      },
+    };
+
+    await API.graphql(params).then((files) => {
+      setClientMatterName(
+        `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
+      );
+    });
+  };
+
 
 
   return (
@@ -165,10 +196,10 @@ export default function MattersRFI() {
           <div className="relative flex-grow flex-1">
             <div style={mainGrid}>
               <div>
-                <h1 className="text-3xl">
-                  <span className="font-bold text-3xl">Request For Information</span>{" "}
-                  <span className="text-gray-500 text-3xl ml-2">
-                    
+                <h1 className="font-bold text-3xl">
+                  Request For Information&nbsp;<span className="text-3xl">of</span>&nbsp;
+                  <span className="font-semibold text-3xl">
+                    {clientMatterName}
                   </span>
                 </h1>
                 
@@ -237,7 +268,7 @@ export default function MattersRFI() {
                   type="search"
                   placeholder="Search ..."
                   onChange={handleSearchChange}
-                  className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12"
+                  className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12 "
                 />
               </div>
             </div>
@@ -261,7 +292,7 @@ export default function MattersRFI() {
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
           {RFI.map((item) => (
                 <div
-                  className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
+                  className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4  cursor-pointer"
                   key={item.id}
                   onClick={() => visitRFI(item.id)}
                 >
