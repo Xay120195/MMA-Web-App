@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { Redirect, useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
 import { HiOutlinePlusCircle } from "react-icons/hi";
 import { MdArrowForwardIos, MdDownload } from "react-icons/md";
@@ -58,17 +58,19 @@ export default function MattersRFI() {
     }
     `;
 
+    const mCreateRFI = `
+    mutation createRFI($clientMatterId: String, $name: String) {
+        rfiCreate(clientMatterId:$clientMatterId, name:$name) {
+            id
+            name
+            createdAt
+        }
+    }
+    `;
+
   const getRFI = async () => {
     console.log("matterid", matter_id );
-    // const RFIList = await API.graphql({
-    //   query: listRFI,
-    //   variables: {
-    //     clientMatterId: matter_id,
-    //   },
-    // });
-    // console.log("rfi", RFIList);
-    // const matterRFIList = RFIList.data.clientMatter.rfis.items;
-    // setRFI(matterRFIList);
+   
     const params = {
       query: listRFI,
       variables: {
@@ -81,10 +83,6 @@ export default function MattersRFI() {
       console.log("mfl", matterFilesList);
       setRFI(matterFilesList);
     });
-
-    // console.log("rffiii",RFI);
-
-
   }
 
   useEffect(() => {
@@ -93,18 +91,27 @@ export default function MattersRFI() {
     }
   });
 
+  const handleSaveRFI = async (rfiname) => {
+    console.log("matterid", matter_id );
+    console.log("rfiname", rfiname );
 
+    const addRFI = await API.graphql({
+      query: mCreateRFI,
+      variables: {
+        clientMatterId: matter_id,
+        name: rfiname
+      },
+    });
 
-  const handleSaveRFI = (rfiname) => {
-    console.log("RFI name:", rfiname);
+    const getID = addRFI.data.rfiCreate.id;
+
+    console.log("RFI name:", addRFI);
     setalertMessage(modalRFIAlertMsg);
     handleModalClose();
     setShowToast(true);
-
     setTimeout(() => {
       setShowToast(false);
-      history.push(`${AppRoutes.RFIPAGE}/${matter_id}`);
-
+      history.push(`${AppRoutes.RFIPAGE}/${getID}`);
     }, 3000);
   };
 
@@ -137,15 +144,15 @@ export default function MattersRFI() {
     setSearchTable(e.target.value);
   };
 
+  const style = {
+    paddingLeft: "0rem",
+  };
+
+  function visitRFI(id){
+    history.push(`${AppRoutes.RFIPAGE}/${id}`);
+  }
 
 
-  var dummyData = [
-    // {id: 111, name: "RFI 1", datecreated: "Jan 01, 2022"},
-    // {id: 112, name: "RFI 2", datecreated: "Jan 02, 2022"},
-    // {id: 113, name: "RFI 3", datecreated: "Jan 03, 2022"},
-    // {id: 114, name: "RFI 4", datecreated: "Jan 04, 2022"},
-    // {id: 115, name: "RFI 5", datecreated: "Jan 05, 2022"},
-  ];
 
   return (
     <>
@@ -166,10 +173,43 @@ export default function MattersRFI() {
                 </h1>
                 
               </div>
-              <div className="py-3">
-                <span className="text-sm mt-3 py-2">CLAIRE GREEN</span>{" "}
-                / <span className="text-sm mt-3 py-2">MATTERNAME</span> /{" "}
-                <span className="font-medium py-2 flex"><AiOutlineFolderOpen/> &nbsp; RFI</span>
+              <div>
+                <nav aria-label="Breadcrumb" style={style} className="mt-4">
+                  <ol
+                    role="list"
+                    className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+                  >
+                    <li>
+                        <Link
+                          className="mr-2 text-sm font-medium text-gray-900"
+                          to={`${AppRoutes.DASHBOARD}`}
+                        >
+                          Dashboard
+                        </Link>
+                    </li>
+                   
+                    <svg
+                      width="16"
+                      height="20"
+                      viewBox="0 0 16 20"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                      className="w-4 h-5 text-gray-300"
+                    >
+                      <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                    </svg>
+                    <li className="text-sm">
+                      <Link
+                        aria-current="page"
+                        className="font-medium text-gray-500"
+                        to={`${AppRoutes.RFIPAGE}/${matter_id}`}
+                      >
+                        RFI
+                      </Link>
+                    </li>
+                  </ol>
+                </nav>  
               </div>
 
               <div className="absolute right-0">
@@ -202,8 +242,7 @@ export default function MattersRFI() {
               </div>
             </div>
           </div>
-          {/* {RFI === null  ? ( */}
-          { dummyData.length === 0  ? (
+          {RFI === null || RFI.length === 0 ? (
             <div className="p-5 px-5 py-1 left-0">
               <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
                 {/* <BlankState
@@ -224,6 +263,7 @@ export default function MattersRFI() {
                 <div
                   className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
                   key={item.id}
+                  onClick={() => visitRFI(item.id)}
                 >
                   <div>
                     <div className="grid grid-cols-4 gap-4">
@@ -231,6 +271,7 @@ export default function MattersRFI() {
                           <h4
                             tabIndex="0"
                             className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1"
+                            
                           >
                             {item.name}
                           </h4>
