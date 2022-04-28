@@ -428,7 +428,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           setTimeout(() => {
             setShowToast(false);
             window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
-          }, 2000);
+          }, 3000);
 
         } catch (e) {
           reject(e.errors[0].message);
