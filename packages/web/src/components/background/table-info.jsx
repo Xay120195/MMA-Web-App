@@ -26,7 +26,7 @@ export let selectedRowsBGPass = [],
 const TableInfo = ({
   witness,
   files,
-  setFiles,
+  wait,
   setIdList,
   setWitness,
   checkAllState,
@@ -324,7 +324,7 @@ const TableInfo = ({
 
     const res = tempWitness.map(({ id }, index) => ({
       id: id,
-      order: index + 1,
+      order: index,
     }));
     console.log(res);
     const mBulkUpdateBackgroundOrder = `
@@ -347,8 +347,17 @@ const TableInfo = ({
     setSelected(id);
   };
 
-  const previewAndDownloadFile = async (downloadURL) => {
-    window.open(downloadURL);
+  const previewAndDownloadFile = async (id) => {
+    const params = {
+      query: qGetFileDownloadLink,
+      variables: {
+        id: id,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      window.open(result.data.file.downloadURL);
+    });
   };
 
   const mUpdateBackgroundFile = `
@@ -508,6 +517,13 @@ const TableInfo = ({
     }
   }`;
 
+  const qGetFileDownloadLink = `
+  query getFileDownloadLink($id: ID) {
+    file(id: $id) {
+      downloadURL
+    }
+  }`;
+
   const pasteFilestoBackground = async (background_id) => {
     let arrCopyFiles = [];
     let arrFileResult = [];
@@ -596,7 +612,7 @@ const TableInfo = ({
       };
     }, initialValue);
   };
-  const [createMew, setCreateMew] = useState([]);
+
   const handlePasteRow = (targetIndex) => {
     let tempWitness = [...witness];
     let arrCopyFiles = [];
@@ -751,13 +767,13 @@ const TableInfo = ({
 
   return (
     <>
-      <div
-        style={{ padding: "2rem", marginLeft: "4rem" }}
-      >
+      <div style={{ padding: "2rem", marginLeft: "4rem" }}>
         <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow border-b border-gray-200 sm:rounded-lg">
-              {witness.length === 0 ? (
+              {wait === false ? (
+                <span className="py-5 px-5">Please wait...</span>
+              ) : witness.length === 0 ? (
                 <EmptyRow search={search} />
               ) : (
                 <>
@@ -768,19 +784,16 @@ const TableInfo = ({
                   />
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                      <thead className="bg-gray-100 z-10" style={{position: "sticky", top: "68px"}} >
+                      <thead
+                        className="bg-gray-100 z-10"
+                        style={{ position: "sticky", top: "68px" }}
+                      >
                         <tr>
-                          <th
-                            
-                            className="px-2 py-4 text-center whitespace-nowrap"
-                          >
+                          <th className="px-2 py-4 text-center whitespace-nowrap">
                             No
                           </th>
                           {checkDate && (
-                            <th
-                              
-                              className="px-2 py-4 text-center whitespace-nowrap"
-                            >
+                            <th className="px-2 py-4 text-center whitespace-nowrap">
                               Date &nbsp;
                               <img
                                 src={barsFilter}
@@ -792,18 +805,12 @@ const TableInfo = ({
                             </th>
                           )}
                           {checkDesc && (
-                            <th
-                              
-                              className="px-2 py-4 text-center whitespace-nowrap"
-                            >
+                            <th className="px-2 py-4 text-center whitespace-nowrap">
                               Description of Background
                             </th>
                           )}
                           {checkDocu && (
-                            <th
-                              
-                              className="px-2 py-4 text-center whitespace-nowrap"
-                            >
+                            <th className="px-2 py-4 text-center whitespace-nowrap">
                               Document
                             </th>
                           )}
@@ -874,7 +881,7 @@ const TableInfo = ({
                                             htmlFor="checkbox-1"
                                             className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
-                                            {index + 1}
+                                            {item.order}
                                             {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>
@@ -1055,7 +1062,7 @@ const TableInfo = ({
                                                         className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
                                                         onClick={() =>
                                                           previewAndDownloadFile(
-                                                            items.downloadURL
+                                                            items.id
                                                           )
                                                         }
                                                       />
