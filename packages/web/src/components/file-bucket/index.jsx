@@ -1323,9 +1323,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           order: items.order,
         },
       });
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+      setshowAttachBackgroundButton(false);
+      setshowRemoveFileButton(false);
       getMatterFiles(next);
     });
-    selectedCompleteDataRows = [];
   };
 
   const SortBydate = async () => {
