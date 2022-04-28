@@ -56,7 +56,7 @@ export default function RFIPage() {
                 
               </div>
               <div className="py-3">
-                <span className="font-medium py-2 flex"><AiOutlineFolderOpen/> &nbsp; RFI</span>
+                <span className="font-medium py-2 flex px-3"><AiOutlineFolderOpen/> &nbsp; RFI</span>
               </div>
 
               <div className="absolute right-0">
