@@ -137,10 +137,29 @@ const Background = () => {
     }
   `;
 
+  const mInitializeOrders = `
+    mutation initializeOrder($clientMatterId: ID) {
+      backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
+        id
+      }
+    }
+  `;
+
   const getBackground = async () => {
     let result = [];
     setWait(false);
     const matterId = matter_id;
+
+    const initializeBackgroundOrder = await API.graphql({
+      query: mInitializeOrders,
+      variables: { clientMatterId: matterId },
+    });
+
+    if (
+      initializeBackgroundOrder.data.backgroundBulkInitializeOrders !== null
+    ) {
+      console.log("Initial Sorting Successful!");
+    }
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
@@ -168,25 +187,25 @@ const Background = () => {
       if (witness !== null) {
         setWitness(sortByOrder(result));
 
-        const res = result.map(({ id }, index) => ({
-          id: id,
-          order: index + 1,
-        }));
+        // const res = result.map(({ id }, index) => ({
+        //   id: id,
+        //   order: index + 1,
+        // }));
 
-        const mUpdateBackgroundOrder = `
-          mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
-            backgroundBulkUpdateOrders(arrangement: $arrangement) {
-              id
-              order
-            }
-          }`;
-        const response = await API.graphql({
-          query: mUpdateBackgroundOrder,
-          variables: {
-            arrangement: res,
-          },
-        });
-        console.log(response);
+        // const mUpdateBackgroundOrder = `
+        //   mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        //     backgroundBulkUpdateOrders(arrangement: $arrangement) {
+        //       id
+        //       order
+        //     }
+        //   }`;
+        // const response = await API.graphql({
+        //   query: mUpdateBackgroundOrder,
+        //   variables: {
+        //     arrangement: res,
+        //   },
+        // });
+        // console.log(response);
         setWait(true);
         setMaxLoading(false);
       }
