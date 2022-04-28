@@ -218,7 +218,6 @@ export default function MattersRFI() {
                           Dashboard
                         </Link>
                     </li>
-                   
                     <svg
                       width="16"
                       height="20"
@@ -231,13 +230,7 @@ export default function MattersRFI() {
                       <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
                     </svg>
                     <li className="text-sm">
-                      <Link
-                        aria-current="page"
-                        className="font-medium text-gray-500"
-                        to={`${AppRoutes.RFIPAGE}/${matter_id}`}
-                      >
-                        RFI
-                      </Link>
+                      <span className="font-medium text-gray-500 px-1 flex"><AiOutlineFolderOpen/> &nbsp; RFI List  </span>
                     </li>
                   </ol>
                 </nav>  
