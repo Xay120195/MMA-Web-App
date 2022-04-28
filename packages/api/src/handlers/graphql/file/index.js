@@ -33,6 +33,9 @@ async function listFileLabels(ctx) {
       marshall({ id: f.labelId })
     );
 
+    console.log("labelIds", labelIds);
+    labelIds.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+    console.log("unique labelIds", labelIds);
     if (labelIds.length !== 0) {
       const labelsParams = {
         RequestItems: {

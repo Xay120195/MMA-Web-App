@@ -1310,8 +1310,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   useBottomScrollListener(handleBottomScroll);
 
   const handleDuplicate = async () => {
-    console.log(selectedCompleteDataRows);
-
+    let next = 1;
     selectedCompleteDataRows.map(async function (items) {
       const request = await API.graphql({
         query: mCreateMatterFile,
@@ -1324,8 +1323,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           order: items.order,
         },
       });
-
-      console.log(request);
+      getMatterFiles(next);
     });
     selectedCompleteDataRows = [];
   };

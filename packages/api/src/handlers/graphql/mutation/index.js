@@ -298,9 +298,11 @@ async function createLabel(data) {
 }
 
 async function tagFileLabel(data) {
+  console.log("tagFileLabel", data.file.id);
   let resp = {};
   try {
-    const arrItems = [];
+    const arrDeleteItems = [],
+      arrCreateItems = [];
 
     const fileLabelIdParams = {
       TableName: "FileLabelTable",
@@ -316,15 +318,29 @@ async function tagFileLabel(data) {
 
     for (var a = 0; a < fileLabelIdResult.Items.length; a++) {
       var fileLabelId = { id: fileLabelIdResult.Items[a].id };
-      arrItems.push({
+      arrDeleteItems.push({
         DeleteRequest: {
           Key: fileLabelId,
         },
       });
     }
 
+    if (arrDeleteItems.length !== 0) {
+      const deleteFileLabelParams = {
+        RequestItems: {
+          FileLabelTable: arrDeleteItems,
+        },
+      };
+
+      const deleteFileLabelCommand = new BatchWriteItemCommand(
+        deleteFileLabelParams
+      );
+      const deleteFileLabelResult = await client.send(deleteFileLabelCommand);
+
+      console.log("deleteFileLabelResult", deleteFileLabelResult);
+    }
     for (var i = 0; i < data.label.length; i++) {
-      arrItems.push({
+      arrCreateItems.push({
         PutRequest: {
           Item: marshall({
             id: v4(),
@@ -335,16 +351,20 @@ async function tagFileLabel(data) {
       });
     }
 
-    const fileLabelParams = {
-      RequestItems: {
-        FileLabelTable: arrItems,
-      },
-    };
+    if (arrCreateItems.length !== 0) {
+      const createFileLabelParams = {
+        RequestItems: {
+          FileLabelTable: arrCreateItems,
+        },
+      };
 
-    const fileLabelCommand = new BatchWriteItemCommand(fileLabelParams);
-    const fileLabelResult = await client.send(fileLabelCommand);
-
-    resp = fileLabelResult ? { file: { id: data.file.id } } : {};
+      const createFileLabelCommand = new BatchWriteItemCommand(
+        createFileLabelParams
+      );
+      const createFileLabelResult = await client.send(createFileLabelCommand);
+      console.log("createFileLabelResult", createFileLabelResult);
+    }
+    resp = { file: { id: data.file.id } };
   } catch (e) {
     resp = {
       error: e.message,
@@ -360,7 +380,8 @@ async function tagBackgroundFile(data) {
   let resp = {};
 
   try {
-    const arrItems = [];
+    const arrDeleteItems = [],
+      arrCreateItems = [];
 
     const backgroundFileIdParams = {
       TableName: "BackgroundFileTable",
@@ -376,15 +397,32 @@ async function tagBackgroundFile(data) {
 
     for (var a = 0; a < backgroundFileIdResult.Items.length; a++) {
       var backgroundFileId = { id: backgroundFileIdResult.Items[a].id };
-      arrItems.push({
+      arrDeleteItems.push({
         DeleteRequest: {
           Key: backgroundFileId,
         },
       });
     }
 
+    if (arrDeleteItems.length !== 0) {
+      const deleteBackgroundFileParams = {
+        RequestItems: {
+          BackgroundFileTable: arrDeleteItems,
+        },
+      };
+
+      const deleteBackgroundFileCommand = new BatchWriteItemCommand(
+        deleteBackgroundFileParams
+      );
+      const deleteBackgroundFileResult = await client.send(
+        deleteBackgroundFileCommand
+      );
+
+      console.log("deleteBackgroundFileResult", deleteBackgroundFileResult);
+    }
+
     for (var i = 0; i < data.files.length; i++) {
-      arrItems.push({
+      arrCreateItems.push({
         PutRequest: {
           Item: marshall({
             id: v4(),
@@ -395,18 +433,22 @@ async function tagBackgroundFile(data) {
       });
     }
 
-    const backgroundFileParams = {
-      RequestItems: {
-        BackgroundFileTable: arrItems,
-      },
-    };
+    if (arrCreateItems.length !== 0) {
+      const createBackgroundFileParams = {
+        RequestItems: {
+          BackgroundFileTable: arrCreateItems,
+        },
+      };
 
-    const backgroundFileCommand = new BatchWriteItemCommand(
-      backgroundFileParams
-    );
-    const backgroundFileResult = await client.send(backgroundFileCommand);
-
-    resp = backgroundFileResult ? { id: data.backgroundId } : {};
+      const createBackgroundFileCommand = new BatchWriteItemCommand(
+        createBackgroundFileParams
+      );
+      const createBackgroundFileResult = await client.send(
+        createBackgroundFileCommand
+      );
+      console.log("createBackgroundFileResult", createBackgroundFileResult);
+    }
+    resp = { id: data.backgroundId };
   } catch (e) {
     resp = {
       error: e.message,
