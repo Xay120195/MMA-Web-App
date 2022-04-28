@@ -347,8 +347,17 @@ const TableInfo = ({
     setSelected(id);
   };
 
-  const previewAndDownloadFile = async (downloadURL) => {
-    window.open(downloadURL);
+  const previewAndDownloadFile = async (id) => {
+    const params = {
+      query: qGetFileDownloadLink,
+      variables: {
+        id: id,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      window.open(result.data.file.downloadURL);
+    });
   };
 
   const mUpdateBackgroundFile = `
@@ -505,6 +514,13 @@ const TableInfo = ({
           name
         }
       }
+    }
+  }`;
+
+  const qGetFileDownloadLink = `
+  query getFileDownloadLink($id: ID) {
+    file(id: $id) {
+      downloadURL
     }
   }`;
 
@@ -1046,7 +1062,7 @@ const TableInfo = ({
                                                         className="text-blue-400 mx-1 text-2xl cursor-pointer inline-block"
                                                         onClick={() =>
                                                           previewAndDownloadFile(
-                                                            items.downloadURL
+                                                            items.id
                                                           )
                                                         }
                                                       />
