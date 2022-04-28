@@ -305,6 +305,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       name
       details
       date
+      s3ObjectKey
       labels {
         items {
           id
@@ -338,6 +339,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       name
       details
       date
+      s3ObjectKey
       labels {
         items {
           id
@@ -1001,7 +1003,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   const [isAllChecked, setIsAllChecked] = useState(false);
 
   //checking each row
-  function checked(id, fileName, details, size, downloadURL, type, date, idx) {
+  function checked(id, fileName, details, size, s3ObjectKey, type, date, idx) {
     if (isAllChecked) {
       selectedRows.splice(
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
@@ -1041,7 +1043,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             date: date,
             size: size,
             type: type,
-            downloadURL: downloadURL,
+            s3ObjectKey: s3ObjectKey,
             order: 0,
           },
         ];
@@ -1316,16 +1318,20 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         query: mCreateMatterFile,
         variables: {
           matterId: matter_id,
-          s3ObjectKey: items.downloadURL,
+          s3ObjectKey: items.s3ObjectKey,
           size: items.size,
           name: "Copy of " + items.fileName,
           type: items.type,
           order: items.order,
         },
       });
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+      setshowAttachBackgroundButton(false);
+      setshowRemoveFileButton(false);
       getMatterFiles(next);
     });
-    selectedCompleteDataRows = [];
   };
 
   const SortBydate = async () => {
@@ -1673,7 +1679,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                                 data.name,
                                                 data.details,
                                                 data.size,
-                                                data.downloadURL,
+                                                data.s3ObjectKey,
                                                 data.type,
                                                 data.date,
                                                 index
