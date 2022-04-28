@@ -380,6 +380,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     let arrFiles = [];
     let arrFileResult = [];
     const seen = new Set();
+    
+    setShowToast(true);
+    setResultMessage(`Copying attachment to background..`);
 
     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
@@ -419,9 +422,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             },
           });
           resolve(request);
+
           setTimeout(() => {
+            setShowToast(false);
             window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
-          }, 1000);
+          }, 2000);
+
         } catch (e) {
           reject(e.errors[0].message);
         }
