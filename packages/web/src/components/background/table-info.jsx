@@ -324,7 +324,7 @@ const TableInfo = ({
 
     const res = tempWitness.map(({ id }, index) => ({
       id: id,
-      order: index + 1,
+      order: index,
     }));
     console.log(res);
     const mBulkUpdateBackgroundOrder = `
@@ -596,7 +596,7 @@ const TableInfo = ({
       };
     }, initialValue);
   };
-  const [createMew, setCreateMew] = useState([]);
+
   const handlePasteRow = (targetIndex) => {
     let tempWitness = [...witness];
     let arrCopyFiles = [];
@@ -865,7 +865,7 @@ const TableInfo = ({
                                             htmlFor="checkbox-1"
                                             className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
-                                            {index + 1}
+                                            {item.order}
                                             {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>

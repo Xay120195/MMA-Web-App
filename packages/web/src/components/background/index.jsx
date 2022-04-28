@@ -296,7 +296,10 @@ const Background = () => {
     const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
     let sort;
     if (isAllZero) {
-      sort = arr.sort((a, b) => a.order - b.order);
+      sort = arr.sort(
+        (a, b) =>
+          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+      );
     } else {
       sort = arr;
     }
