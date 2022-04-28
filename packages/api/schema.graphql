@@ -93,6 +93,7 @@ type File {
   size: Int
   type: String
   details: String
+  s3ObjectKey: String
   order: Int
   date: AWSDateTime
   labels(limit: Int, nextToken: String): FileLabelConn
