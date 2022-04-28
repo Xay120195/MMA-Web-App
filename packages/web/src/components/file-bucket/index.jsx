@@ -73,8 +73,10 @@ export default function FileBucket() {
   const [ascDesc, setAscDesc] = useState(false);
   const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
   const [pageReferenceFileId, setPageReferenceFileId] = useState("");
-  const [pageReferenceBackgroundId, setPageReferenceBackgroundId] = useState("");
-  const [pageReferenceClientMatter, setPageReferenceClientMatter] = useState("");
+  const [pageReferenceBackgroundId, setPageReferenceBackgroundId] =
+    useState("");
+  const [pageReferenceClientMatter, setPageReferenceClientMatter] =
+    useState("");
   const [pageReferenceDescription, setPageReferenceDescription] = useState("");
   const [pageReferenceRowOrder, setPageReferenceRowOrder] = useState("");
 
@@ -110,6 +112,7 @@ export default function FileBucket() {
 
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
+    window.scrollTo(0, 0);
     //adjust order of existing files
     let tempMatter = [...matterFiles];
     // tempMatter.sort((a, b) => b.order - a.order);
@@ -136,20 +139,21 @@ export default function FileBucket() {
 
     //add order to new files
     var next = 1;
-    var sortedFiles = uploadedFiles.sort((a, b) => b.oderSelected - a.oderSelected);
+    var sortedFiles = uploadedFiles.sort(
+      (a, b) => b.oderSelected - a.oderSelected
+    );
 
     sortedFiles.map((file) => {
       createMatterFile(file);
-        
     });
 
     setResultMessage(`File successfully uploaded!`);
-        setShowToast(true);
-        handleModalClose();
-        setTimeout(() => {
-          setShowToast(false);
-          getMatterFiles(next);
-        }, 3000);
+    setShowToast(true);
+    handleModalClose();
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles(next);
+    }, 3000);
   };
 
   const handleModalClose = () => {
@@ -357,7 +361,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 }
 `;
 
-const qlistBackgroundFiles = `
+  const qlistBackgroundFiles = `
   query getBackgroundByID($id: ID) {
     background(id: $id) {
       id
@@ -396,7 +400,6 @@ const qlistBackgroundFiles = `
       id: id,
     }));
 
-
     arrFiles.push(...arrFileResult);
 
     const filteredArr = arrFiles.filter((el) => {
@@ -417,7 +420,7 @@ const qlistBackgroundFiles = `
           });
           resolve(request);
           setTimeout(() => {
-            window.location.href=`${AppRoutes.BACKGROUND}/${matter_id}`;
+            window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
           }, 1000);
         } catch (e) {
           reject(e.errors[0].message);
@@ -538,10 +541,29 @@ const qlistBackgroundFiles = `
     });
   };
 
+  const mInitializeOrders = `
+    mutation initializeOrder($clientMatterId: ID) {
+      matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+        id
+      }
+    }
+  `;
+
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
     if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
       q = mNoPaginationbyItems;
+    }
+
+    const initializeMatterFileOrder = await API.graphql({
+      query: mInitializeOrders,
+      variables: { clientMatterId: matter_id },
+    });
+
+    if (
+      initializeMatterFileOrder.data.matterFileBulkInitializeOrders !== null
+    ) {
+      console.log("Initial Sorting Successful!");
     }
 
     const params = {
@@ -599,12 +621,12 @@ const qlistBackgroundFiles = `
   };
 
   function createMatterFile(file) {
-   const request = API.graphql({
-     query: mCreateMatterFile,
-     variables: file,
-   });
+    const request = API.graphql({
+      query: mCreateMatterFile,
+      variables: file,
+    });
 
-   return request;
+    return request;
   }
 
   async function updateMatterFile(id, data) {
@@ -746,8 +768,6 @@ const qlistBackgroundFiles = `
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
-
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
@@ -772,8 +792,6 @@ const qlistBackgroundFiles = `
         details: e.target.innerHTML,
       };
       await updateMatterFileDesc(id, data);
-
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
@@ -828,7 +846,6 @@ const qlistBackgroundFiles = `
         name: name,
       };
       await updateMatterFileName(id, data);
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
@@ -842,7 +859,6 @@ const qlistBackgroundFiles = `
         name: textName,
       };
       await updateMatterFileName(id, data);
-      //   getMatterFiles();
       setTimeout(() => {
         setResultMessage(`Successfully updated `);
         setShowToast(true);
@@ -931,7 +947,7 @@ const qlistBackgroundFiles = `
     // );
     let sort;
     // if (isAllNotZero) {
-      sort = arr.sort((a, b) => a.order - b.order);
+    sort = arr.sort((a, b) => a.order - b.order);
     // } else {
     //   sort = arr;
     // }
@@ -1280,72 +1296,6 @@ const qlistBackgroundFiles = `
     }, 1000);
   }
 
-  /*const getPaginateItems = async (action, page) => {
-    let pageList = 20;
-    let pageResult = [];
-
-    const request = await API.graphql({
-      query: mGetPaginateItems,
-      variables: {
-        matterId: matter_id,
-        isDeleted: false,
-        nextToken: page,
-        limit: pageList,
-      },
-    });
-
-    if (request.data.matterFile !== null) {
-      pageResult = request.data.matterFile.map(({ id }) => ({
-        id: id,
-      }));
-    }
-
-    setFilteredFiles(pageResult);
-
-    if (action === "next") {
-      setPageIndex(pageIndex + pageList);
-      setPageSize(pageSize + pageList);
-      setPrevToken(prevToken);
-
-      for (let i = 0; i < request.data.matterFile.length; i++) {
-        if (request.data.matterFile[i].nextToken !== null) {
-          setNextToken(request.data.matterFile[i].nextToken);
-        }
-      }
-    } else if (action === "prev") {
-      setPageIndex(pageIndex - pageList);
-      setPageSize(pageSize - pageList);
-      setPrevToken(prevToken);
-
-      for (let i = 0; i < request.data.matterFile.length; i++) {
-        if (request.data.matterFile[i].nextToken !== null) {
-          setNextToken(request.data.matterFile[i].nextToken);
-        }
-      }
-    } else {
-      for (let i = 0; i < request.data.matterFile.length; i++) {
-        if (request.data.matterFile[i].nextToken !== null) {
-          setPrevToken(page);
-          setNextToken(request.data.matterFile[i].nextToken);
-        }
-      }
-    }
-  }*/
-
-  let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
-
-  const getPaginateItems = async (action) => {
-    let pageList = 20;
-
-    if (action === "next") {
-      setPageIndex(pageIndex + pageList);
-      setPageSize(pageSize + pageList);
-    } else if (action === "prev") {
-      setPageIndex(pageIndex - pageList);
-      setPageSize(pageSize - pageList);
-    }
-  };
-
   const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
@@ -1365,7 +1315,14 @@ const qlistBackgroundFiles = `
     selectedCompleteDataRows.map(async function (items) {
       const request = await API.graphql({
         query: mCreateMatterFile,
-        variables: { matterId: matter_id, s3ObjectKey: items.downloadURL, size: items.size, name: "Copy of "+items.fileName, type: items.type, order: items.order },
+        variables: {
+          matterId: matter_id,
+          s3ObjectKey: items.downloadURL,
+          size: items.size,
+          name: "Copy of " + items.fileName,
+          type: items.type,
+          order: items.order,
+        },
       });
 
       console.log(request);
@@ -1404,14 +1361,20 @@ const qlistBackgroundFiles = `
     paddingLeft: "0rem",
   };
 
-  const showPageReference = async (fileId, backgroundId, clientMatter, description, rowOrder) => {
+  const showPageReference = async (
+    fileId,
+    backgroundId,
+    clientMatter,
+    description,
+    rowOrder
+  ) => {
     setShowPageReferenceModal(true);
     setPageReferenceFileId(fileId);
     setPageReferenceBackgroundId(backgroundId);
     setPageReferenceClientMatter(clientMatter);
     setPageReferenceDescription(description);
     setPageReferenceRowOrder(rowOrder);
-  }
+  };
 
   return (
     <>
@@ -1441,8 +1404,11 @@ const qlistBackgroundFiles = `
           </div>
         </div>
 
-        <div className="bg-white z-50 " style={{position: "sticky", top: "0"}} >
-        <nav aria-label="Breadcrumb" style={style} className="mt-4">
+        <div
+          className="bg-white z-50 "
+          style={{ position: "sticky", top: "0" }}
+        >
+          <nav aria-label="Breadcrumb" style={style} className="mt-4">
             <ol
               role="list"
               className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
@@ -1499,134 +1465,109 @@ const qlistBackgroundFiles = `
               </li>
             </ol>
           </nav>
-          
 
-        <div className="p-2 left-0"></div>
-        {files !== null && files.length !== 0 && (
-          <div className="w-full mb-3 pb-2">
-            <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
-              <IoIcons.IoIosSearch />
-            </span>
-            <input
-              type="search"
-              placeholder="Type to search files in the File Bucket ..."
-              onChange={handleSearchFileChange}
-              className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-            />
-          </div>
-        )}
-        <div className="pl-2 py-1 grid grid-cols-1 gap-4" >
-          <div className="">
-            {matterFiles !== null && matterFiles.length !== 0 && (
+          <div className="p-2 left-0"></div>
+          {files !== null && files.length !== 0 && (
+            <div className="w-full mb-3 pb-2">
+              <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+                <IoIcons.IoIosSearch />
+              </span>
               <input
-                type="checkbox"
-                className="mt-1 mr-3 px-2"
-                onChange={() => checkAll(matterFiles)}
-                checked={isAllChecked}
+                type="search"
+                placeholder="Type to search files in the File Bucket ..."
+                onChange={handleSearchFileChange}
+                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
               />
-            )}
-            <button
-              className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-              onClick={() => setShowUploadModal(true)}
-            >
-              FILE UPLOAD &nbsp;
-              <FiUpload />
-            </button>
-
-            {showRemoveFileButton && (
+            </div>
+          )}
+          <div className="pl-2 py-1 grid grid-cols-1 gap-4">
+            <div className="">
+              {matterFiles !== null && matterFiles.length !== 0 && (
+                <input
+                  type="checkbox"
+                  className="mt-1 mr-3 px-2"
+                  onChange={() => checkAll(matterFiles)}
+                  checked={isAllChecked}
+                />
+              )}
               <button
-                className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-                onClick={() => addFileBucketToBackground()}
+                className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                onClick={() => setShowUploadModal(true)}
               >
-                COPY TO BACKGROUND PAGE &nbsp;
-                <FiCopy />
+                FILE UPLOAD &nbsp;
+                <FiUpload />
               </button>
-            )}
 
-            {showAttachBackgroundButton && (
-              <button
-                className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                onClick={() => tagBackgroundFile()}
-              >
-                Attach to Background &nbsp;|
-                <BsArrowLeft />
-              </button>
-            )}
-
-            {matterFiles !== null &&
-              matterFiles.length !== 0 &&
-              showRemoveFileButton && (
+              {showRemoveFileButton && (
                 <button
-                  className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                  onClick={() => handleDuplicate()}
+                  className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                  onClick={() => addFileBucketToBackground()}
                 >
-                  Duplicate &nbsp;
+                  COPY TO BACKGROUND PAGE &nbsp;
                   <FiCopy />
                 </button>
-            )}
+              )}
 
-            <div className="flex inline-flex mr-0 float-right">
+              {showAttachBackgroundButton && (
+                <button
+                  className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                  onClick={() => tagBackgroundFile()}
+                >
+                  Attach to Background &nbsp;|
+                  <BsArrowLeft />
+                </button>
+              )}
+
               {matterFiles !== null &&
                 matterFiles.length !== 0 &&
                 showRemoveFileButton && (
                   <button
-                    className="float-right mr-5 bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                    onClick={() => setshowRemoveFileModal(true)}
+                    className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                    onClick={() => handleDuplicate()}
                   >
-                    DELETE &nbsp;
-                    <BsFillTrashFill />
+                    Duplicate &nbsp;
+                    <FiCopy />
                   </button>
                 )}
 
-              <button
-                className={
-                  pageSelectedLabels
-                    ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                    : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                }
-                onClick={() => setFilterLabels(true)}
-                disabled={pageSelectedLabels ? false : true}
-              >
-                <AiFillTags />
-              </button>
-            </div>
-          </div>
+              <div className="flex inline-flex mr-0 float-right">
+                {matterFiles !== null &&
+                  matterFiles.length !== 0 &&
+                  showRemoveFileButton && (
+                    <button
+                      className="float-right mr-5 bg-red-400 hover:bg-red-500 text-white font-semibold py-1 px-5 ml-3 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                      onClick={() => setshowRemoveFileModal(true)}
+                    >
+                      DELETE &nbsp;
+                      <BsFillTrashFill />
+                    </button>
+                  )}
 
-          <div className=" grid justify-items-end mr-0">
-            
+                <button
+                  className={
+                    pageSelectedLabels
+                      ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                      : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                  }
+                  onClick={() => setFilterLabels(true)}
+                  disabled={pageSelectedLabels ? false : true}
+                >
+                  <AiFillTags />
+                </button>
+              </div>
+            </div>
+
+            <div className=" grid justify-items-end mr-0"></div>
           </div>
-        </div>
         </div>
 
         <div className="px-2 py-0 left-0">
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
-        {/* <div className="px-2 py-0">
-          <p className={"text-sm mt-3 font-medium float-right inline-block"}>
-            <AiOutlineLeft
-              className={
-                pageIndex === 1
-                  ? "text-gray-300 inline-block pointer-events-none"
-                  : "inline-block cursor-pointer"
-              }
-              onClick={() => getPaginateItems("prev", prevToken)}
-            />
-            &nbsp;&nbsp;Showing {pageIndex} -{" "}
-            {pageSize >= pageTotal ? pageTotal : pageSize} of {pageTotal}
-            &nbsp;&nbsp;
-            <AiOutlineRight
-              className={
-                pageSize >= pageTotal
-                  ? "text-gray-300 inline-block pointer-events-none"
-                  : "inline-block cursor-pointer"
-              }
-              onClick={() => getPaginateItems("next", nextToken)}
-            />
-          </p>
-        </div> */}
-
-        {matterFiles !== null && (
+        {matterFiles === null ? (
+          <span className="py-5 px-5">Please wait...</span>
+        ) : (
           <>
             {matterFiles.length === 0 &&
             (searchFile === undefined || searchFile === "") ? (
@@ -1651,7 +1592,10 @@ const qlistBackgroundFiles = `
                     <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                       <DragDropContext onDragEnd={handleDragEnd}>
                         <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                          <thead className="bg-gray-100 z-50" style={{position: "sticky", top: "153px"}} >
+                          <thead
+                            className="bg-gray-100 z-50"
+                            style={{ position: "sticky", top: "153px" }}
+                          >
                             <tr>
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Item No.
@@ -1930,7 +1874,6 @@ const qlistBackgroundFiles = `
                                               labels,
                                               data.labels.items
                                             )}
-                                            // options={labels}
                                             isMulti
                                             isClearable
                                             isSearchable
@@ -1944,15 +1887,6 @@ const qlistBackgroundFiles = `
                                                 index
                                               )
                                             }
-                                            // onClick={(options) =>
-                                            //   handleLabelChanged(
-                                            //     options,
-                                            //     data.id,
-                                            //     data.name,
-                                            //     data.details,
-                                            //     index
-                                            //   )
-                                            // }
                                             placeholder="Labels"
                                             className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                           />
@@ -1964,19 +1898,25 @@ const qlistBackgroundFiles = `
                                           {data.backgrounds.items
                                             .sort((a, b) =>
                                               a.order > b.order ? 1 : -1
-                                            ).filter(x => !Object.values(x).includes(null))
+                                            )
+                                            .filter(
+                                              (x) =>
+                                                !Object.values(x).includes(null)
+                                            )
                                             .map((background, index) => (
                                               <p
                                                 className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
                                                 key={background.id}
                                                 index={index}
-                                                onClick={() => showPageReference(
-                                                  data.id,
-                                                  background.id,
-                                                  clientMatterName, 
-                                                  background.description,
-                                                  background.order
-                                                )}
+                                                onClick={() =>
+                                                  showPageReference(
+                                                    data.id,
+                                                    background.id,
+                                                    clientMatterName,
+                                                    background.description,
+                                                    background.order
+                                                  )
+                                                }
                                               >
                                                 <b>{background.order + ". "}</b>
                                                 {ellipsis(
@@ -1999,13 +1939,14 @@ const qlistBackgroundFiles = `
                         </table>
                       </DragDropContext>
                     </div>
+                    <div className="p-2"></div>
                     <div>
                       {maxLoading ? (
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : matterFiles.length >= 20 
-                        && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" ? (
+                      ) : matterFiles.length >= 20 &&
+                        matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
@@ -2052,7 +1993,6 @@ const qlistBackgroundFiles = `
           handleModalClose={handleModalClose}
         />
       )}
-
       {showPageReferenceModal && (
         <PageReferenceModal
           handleModalClose={handleModalClose}
@@ -2064,14 +2004,12 @@ const qlistBackgroundFiles = `
           getMatterFiles={getMatterFiles}
         />
       )}
-
       {filterLabels && (
         <FilterLabels
           handleSave={handleFilter}
           handleModalClose={handleModalClose}
         />
       )}
-
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}

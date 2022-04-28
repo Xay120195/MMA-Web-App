@@ -13,4 +13,5 @@ export const AppRoutes = {
   BACKGROUND: "/background",
   INBOX: "/inbox",
   LABELS: "/labels",
+  RFIPAGE: "/rfi"
 };
