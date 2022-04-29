@@ -881,7 +881,7 @@ const TableInfo = ({
                                             htmlFor="checkbox-1"
                                             className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
-                                            {item.order}
+                                            {index + 1}
                                             {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>
