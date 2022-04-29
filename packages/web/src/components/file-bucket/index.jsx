@@ -68,6 +68,8 @@ export default function FileBucket() {
   const [pageSize, setPageSize] = useState(20);
   const [pageIndex, setPageIndex] = useState(1);
   const [vNextToken, setVnextToken] = useState(null);
+  const [matterFileCountResult, setMatterFileCountResult] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [ascDesc, setAscDesc] = useState(false);
@@ -382,7 +384,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     let arrFiles = [];
     let arrFileResult = [];
     const seen = new Set();
-    
+
     setShowToast(true);
     setResultMessage(`Copying attachment to background..`);
 
@@ -589,7 +591,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   let loadMoreMatterFiles = async () => {
-    if (vNextToken !== null && !loading) {
+    console.log("matterFileCountResult", matterFileCountResult);
+
+    if (vNextToken !== null && matterFileCountResult !== 0 && !loading) {
       let q = mPaginationbyItems;
       if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
         q = mNoPaginationbyItems;
@@ -610,16 +614,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         console.log("Files", matterFilesList);
         //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
+        setMatterFileCountResult(files.data.matterFiles.items.length);
 
         let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
-        setMatterFiles([...new Set(arrConcat)]);
+        setMatterFiles([...new Set(sortByOrder(arrConcat))]);
 
         setMaxLoading(false);
-        console.log("error", matterFilesList);
       });
     } else {
       console.log("Last Result!");
       setMaxLoading(true);
+      setMatterFileCountResult(null);
     }
   };
 
