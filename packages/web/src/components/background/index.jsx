@@ -245,11 +245,11 @@ const Background = () => {
         );
 
         if (witness !== "") {
-          goToBottom();
+          //goToBottom();
           setTimeout(() => {
             setLoading(false);
             setMaxLoading(false);
-            
+
             let arrConcat = witness.concat(result);
             setWitness([...new Set(arrConcat)]);
 
