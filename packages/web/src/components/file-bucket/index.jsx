@@ -382,7 +382,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     let arrFiles = [];
     let arrFileResult = [];
     const seen = new Set();
-    
+
     setShowToast(true);
     setResultMessage(`Copying attachment to background..`);
 
@@ -612,7 +612,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setVnextToken(files.data.matterFiles.nextToken);
 
         let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
-        setMatterFiles([...new Set(arrConcat)]);
+        setMatterFiles([...new Set(sortByOrder(arrConcat))]);
 
         setMaxLoading(false);
         console.log("error", matterFilesList);
