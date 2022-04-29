@@ -251,11 +251,9 @@ const Background = () => {
             setMaxLoading(false);
 
             let arrConcat = witness.concat(result);
-            setWitness([...new Set(arrConcat)]);
-
+            setWitness([...new Set(sortByOrder(arrConcat))]);
           }, 1000);
         }
-
       }
     } else {
       console.log("Last Result!");
