@@ -615,6 +615,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setMatterFiles([...new Set(sortByOrder(arrConcat))]);
 
         if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
+          console.log("result count: ",files.data.matterFiles.items.length);
+          console.log("next token: ",vNextToken);
           setMaxLoading(false);
         }
         console.log("error", matterFilesList);
