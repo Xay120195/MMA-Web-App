@@ -610,9 +610,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         console.log("Files", matterFilesList);
         //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
-        setMatterFiles((matterFiles) =>
-          matterFiles.concat(sortByOrder(matterFilesList))
-        );
+
+        let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
+        setMatterFiles([...new Set(arrConcat)]);
+
         setMaxLoading(false);
         console.log("error", matterFilesList);
       });
