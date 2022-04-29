@@ -245,39 +245,17 @@ const Background = () => {
         );
 
         if (witness !== "") {
-          goToBottom();
+          //goToBottom();
           setTimeout(() => {
             setLoading(false);
             setMaxLoading(false);
-            setWitness((witness) => witness.concat(result));
-          }, 1500);
+
+            let arrConcat = witness.concat(result);
+            setWitness([...new Set(arrConcat)]);
+
+          }, 1000);
         }
 
-        /*let mergeArrFiles = [];
-        let arrFileResult = [];
-        for (let i = 0; i < sortByOrder(result).length; i++) {
-          const backgroundFilesOpt = await API.graphql({
-            query: qlistBackgroundFiles,
-            variables: {
-              id: result[i].id,
-            },
-          });
-          if (backgroundFilesOpt.data.background.files !== null) {
-            arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-              ({ id, downloadURL, name }) => ({
-                uniqueId: result[i].id + id,
-                backgroundId: result[i].id,
-                id: id,
-                downloadURL: downloadURL,
-                name: name,
-              })
-            );
-
-            mergeArrFiles.push(...arrFileResult);
-          }
-        }
-        setFiles(mergeArrFiles);
-        */
       }
     } else {
       console.log("Last Result!");
