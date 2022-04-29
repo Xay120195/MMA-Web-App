@@ -756,11 +756,11 @@ const TableInfo = ({
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
       setLoading(true);
-    }, 1500);
+    }, 300);
     setTimeout(() => {
       loadMoreBackground();
       setLoading(false);
-    }, 2500);
+    }, 1000);
   });
 
   useBottomScrollListener(handleBottomScroll);
@@ -1147,6 +1147,7 @@ const TableInfo = ({
             <span></span>
           )}
         </div>
+        <div className="p-2"></div>
       </div>
       {ShowModalParagraph && (
         <ModalParagraph
