@@ -615,9 +615,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setMatterFiles([...new Set(sortByOrder(arrConcat))]);
 
         if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
+          console.log("result count: ",files.data.matterFiles.items.length);
+          console.log("next token: ",vNextToken);
           setMaxLoading(false);
+        } else {
+          setMaxLoading(true);
         }
-        console.log("error", matterFilesList);
       });
     } else {
       console.log("Last Result!");
