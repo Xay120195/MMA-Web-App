@@ -227,6 +227,18 @@ export default function FileBucket() {
       }
   `;
 
+  const qGetMatterDetails = `
+  query getMatterDetails($matterId: ID) {
+    clientMatter(id: $matterId) {
+      matter {
+        name
+      }
+      client {
+        name
+      }
+    }
+  }`;
+
   const qGetFileDownloadLink = `
   query getFileDownloadLink($id: ID) {
     file(id: $id) {
@@ -414,11 +426,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       setTimeout(() => {
         setShowToast(false);
-        window.location.href = `${
-          AppRoutes.BACKGROUND
-        }/${matter_id}/?matter_name=${b64EncodeUnicode(
-          matter_name
-        )}&client_name=${b64EncodeUnicode(client_name)}`;
+        window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
       }, 2000);
     }
   }
@@ -519,13 +527,29 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
 
-  // const mInitializeOrders = `
-  //   mutation initializeOrder($clientMatterId: ID) {
-  //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-  //       id
-  //     }
-  //   }
-  // `;
+  let getMatterDetails = async () => {
+    const params = {
+      query: qGetMatterDetails,
+      variables: {
+        matterId: matter_id,
+        isDeleted: false,
+      },
+    };
+
+    await API.graphql(params).then((files) => {
+      setClientMatterName(
+        `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
+      );
+    });
+  };
+
+  const mInitializeOrders = `
+    mutation initializeOrder($clientMatterId: ID) {
+      matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+        id
+      }
+    }
+  `;
 
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
@@ -533,16 +557,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       q = mNoPaginationbyItems;
     }
 
-    // const initializeMatterFileOrder = await API.graphql({
-    //   query: mInitializeOrders,
-    //   variables: { clientMatterId: matter_id },
-    // });
+    const initializeMatterFileOrder = await API.graphql({
+      query: mInitializeOrders,
+      variables: { clientMatterId: matter_id },
+    });
 
-    // if (
-    //   initializeMatterFileOrder.data.matterFileBulkInitializeOrders !== null
-    // ) {
-    //   console.log("Initial Sorting Successful!");
-    // }
+    if (
+      initializeMatterFileOrder.data.matterFileBulkInitializeOrders !== null
+    ) {
+      console.log("Initial Sorting Successful!");
+    }
 
     const params = {
       query: q,
@@ -558,7 +582,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
-
+      getMatterDetails();
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -591,8 +615,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setMatterFiles([...new Set(sortByOrder(arrConcat))]);
 
         if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
-          console.log("result count: ", files.data.matterFiles.items.length);
-          console.log("next token: ", vNextToken);
+          console.log("result count: ",files.data.matterFiles.items.length);
+          console.log("next token: ",vNextToken);
           setMaxLoading(false);
         } else {
           setMaxLoading(true);
@@ -1276,11 +1300,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     setTimeout(() => {
       setShowToast(false);
-      window.location.href = `${
-        AppRoutes.BACKGROUND
-      }/${matter_id}/?count=${counter}/?matter_name=${b64EncodeUnicode(
-        matter_name
-      )}&client_name=${b64EncodeUnicode(client_name)}`;
+      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/?count=${counter}`;
     }, 1000);
   }
 
@@ -1366,31 +1386,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     setPageReferenceRowOrder(rowOrder);
   };
 
-  function getQueryVariable(variable) {
-    var query = window.location.search.substring(1);
-    var vars = query.split("&");
-    for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split("=");
-      if (pair[0] == variable) {
-        return pair[1];
-      }
-    }
-    return false;
-  }
-
-  function UnicodeDecodeB64(str) {
-    return decodeURIComponent(atob(str));
-  }
-
-  const m_name = getQueryVariable("matter_name");
-  const c_name = getQueryVariable("client_name");
-  const matter_name = UnicodeDecodeB64(m_name);
-  const client_name = UnicodeDecodeB64(c_name);
-
-  function b64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str));
-  }
-
   return (
     <>
       <div
@@ -1411,15 +1406,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
               <h1 className="font-bold text-3xl">
                 File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">{client_name}</span>/
-                <span className="font-semibold text-3xl">{matter_name}</span>
+                <span className="font-semibold text-3xl">
+                  {clientMatterName}
+                </span>
               </h1>
             </div>
           </div>
         </div>
 
         <div
-          className="bg-white z-30 "
+          className="bg-white z-50 "
           style={{ position: "sticky", top: "0" }}
         >
           <nav aria-label="Breadcrumb" style={style} className="mt-4">
@@ -1452,11 +1448,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <Link
                   aria-current="page"
                   className="font-medium text-gray-900"
-                  to={`${
-                    AppRoutes.BACKGROUND
-                  }/${matter_id}/?matter_name=${b64EncodeUnicode(
-                    matter_name
-                  )}&client_name=${b64EncodeUnicode(client_name)}`}
+                  to={`${AppRoutes.BACKGROUND}/${matter_id}`}
                 >
                   Background
                 </Link>
@@ -1476,11 +1468,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <Link
                   aria-current="page"
                   className="font-medium text-gray-500"
-                  to={`${
-                    AppRoutes.FILEBUCKET
-                  }/${matter_id}/000/?matter_name=${b64EncodeUnicode(
-                    matter_name
-                  )}&client_name=${b64EncodeUnicode(client_name)}`}
+                  to={`${AppRoutes.FILEBUCKET}/${matter_id}/000`}
                 >
                   File Bucket
                 </Link>
@@ -1615,7 +1603,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       <DragDropContext onDragEnd={handleDragEnd}>
                         <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                           <thead
-                            className="bg-gray-100 z-30"
+                            className="bg-gray-100 z-50"
                             style={{ position: "sticky", top: "153px" }}
                           >
                             <tr>

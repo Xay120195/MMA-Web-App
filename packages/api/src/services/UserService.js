@@ -97,7 +97,6 @@ export async function createUser(data) {
 }
 
 export async function inviteUser(data) {
-  console.log(process.env);
   const user = await createCognitoUser({
     UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
     Username: data.email,
