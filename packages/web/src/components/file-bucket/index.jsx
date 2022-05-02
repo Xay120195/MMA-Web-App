@@ -382,7 +382,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     let arrFiles = [];
     let arrFileResult = [];
     const seen = new Set();
-    
+
     setShowToast(true);
     setResultMessage(`Copying attachment to background..`);
 
@@ -414,26 +414,20 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     });
 
     if (background_id !== null) {
-      return new Promise((resolve, reject) => {
-        try {
-          const request = API.graphql({
-            query: mUpdateBackgroundFile,
-            variables: {
-              backgroundId: background_id,
-              files: filteredArr,
-            },
-          });
-          resolve(request);
-
-          setTimeout(() => {
-            setShowToast(false);
-            window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
-          }, 3000);
-
-        } catch (e) {
-          reject(e.errors[0].message);
-        }
+      const request = API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: background_id,
+          files: filteredArr,
+        },
       });
+
+      console.log(filteredArr);
+
+      setTimeout(() => {
+        setShowToast(false);
+        window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
+      }, 2000);
     }
   }
 
@@ -616,11 +610,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         console.log("Files", matterFilesList);
         //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
-        setMatterFiles((matterFiles) =>
-          matterFiles.concat(sortByOrder(matterFilesList))
-        );
-        setMaxLoading(false);
-        console.log("error", matterFilesList);
+
+        let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
+        setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+
+        if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
+          console.log("result count: ",files.data.matterFiles.items.length);
+          console.log("next token: ",vNextToken);
+          setMaxLoading(false);
+        } else {
+          setMaxLoading(true);
+        }
       });
     } else {
       console.log("Last Result!");
@@ -1308,11 +1308,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
       setLoading(true);
-    }, 1500);
+    }, 300);
     setTimeout(() => {
       loadMoreMatterFiles();
       setLoading(false);
-    }, 2500);
+    }, 1000);
   });
 
   useBottomScrollListener(handleBottomScroll);
@@ -1949,7 +1949,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         </table>
                       </DragDropContext>
                     </div>
-                    <div className="p-2"></div>
                     <div>
                       {maxLoading ? (
                         <div className="flex justify-center items-center mt-5">
@@ -1970,6 +1969,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <span></span>
                       )}
                     </div>
+                    <div className="p-2"></div>
                   </div>
                 ) : (
                   <div className="p-5 px-5 py-1 left-0">

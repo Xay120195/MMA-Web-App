@@ -1,4 +1,4 @@
-const client = require("../../../lib/dynamodb-client");
+const ddbClient = require("../../../lib/dynamodb-client");
 const {
   PutItemCommand,
   UpdateItemCommand,
@@ -33,7 +33,7 @@ async function createCompany(data) {
       Item: param,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
   } catch (e) {
     resp = {
@@ -64,7 +64,7 @@ async function createPage(data) {
       Item: param,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
   } catch (e) {
     resp = {
@@ -94,7 +94,7 @@ async function createFeature(data) {
       Item: param,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
   } catch (e) {
     resp = {
@@ -133,7 +133,7 @@ async function createUserColumnSettings(data) {
     };
 
     const cmd = new BatchWriteItemCommand(param);
-    const result = await client.send(cmd);
+    const result = await ddbClient.send(cmd);
 
     resp = result ? data : {};
   } catch (e) {
@@ -164,7 +164,7 @@ async function createCompanyAccessType(data) {
       Item: param,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
   } catch (e) {
     resp = {
@@ -198,7 +198,7 @@ async function updateCompanyAccessType(id, data) {
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? param : {};
   } catch (e) {
     resp = {
@@ -225,7 +225,7 @@ async function createClient(data) {
       TableName: "ClientsTable",
       Item: param,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     const companyClientParams = {
       id: v4(),
@@ -239,7 +239,7 @@ async function createClient(data) {
       Item: marshall(companyClientParams),
     });
 
-    const companyClientRequest = await client.send(companyClientCommand);
+    const companyClientRequest = await ddbClient.send(companyClientCommand);
 
     resp = companyClientRequest ? rawParams : {};
   } catch (e) {
@@ -267,7 +267,7 @@ async function createLabel(data) {
       TableName: "LabelsTable",
       Item: param,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     const clientMatterLabelParams = {
       id: v4(),
@@ -281,7 +281,7 @@ async function createLabel(data) {
       Item: marshall(clientMatterLabelParams),
     });
 
-    const clientMatterLabelRequest = await client.send(
+    const clientMatterLabelRequest = await ddbClient.send(
       clientMatterLabelCommand
     );
 
@@ -298,11 +298,9 @@ async function createLabel(data) {
 }
 
 async function tagFileLabel(data) {
-  console.log("tagFileLabel", data.file.id);
   let resp = {};
   try {
-    const arrDeleteItems = [],
-      arrCreateItems = [];
+    const arrItems = [];
 
     const fileLabelIdParams = {
       TableName: "FileLabelTable",
@@ -313,34 +311,20 @@ async function tagFileLabel(data) {
       }),
     };
 
-    const fileLabelIdCommand = new QueryCommand(fileLabelIdParams);
-    const fileLabelIdResult = await client.send(fileLabelIdCommand);
+    const fileLabelIdCmd = new QueryCommand(fileLabelIdParams);
+    const fileLabelIdRes = await ddbClient.send(fileLabelIdCmd);
 
-    for (var a = 0; a < fileLabelIdResult.Items.length; a++) {
-      var fileLabelId = { id: fileLabelIdResult.Items[a].id };
-      arrDeleteItems.push({
+    for (var a = 0; a < fileLabelIdRes.Items.length; a++) {
+      var fileLabelId = { id: fileLabelIdRes.Items[a].id };
+      arrItems.push({
         DeleteRequest: {
           Key: fileLabelId,
         },
       });
     }
 
-    if (arrDeleteItems.length !== 0) {
-      const deleteFileLabelParams = {
-        RequestItems: {
-          FileLabelTable: arrDeleteItems,
-        },
-      };
-
-      const deleteFileLabelCommand = new BatchWriteItemCommand(
-        deleteFileLabelParams
-      );
-      const deleteFileLabelResult = await client.send(deleteFileLabelCommand);
-
-      console.log("deleteFileLabelResult", deleteFileLabelResult);
-    }
     for (var i = 0; i < data.label.length; i++) {
-      arrCreateItems.push({
+      arrItems.push({
         PutRequest: {
           Item: marshall({
             id: v4(),
@@ -351,19 +335,37 @@ async function tagFileLabel(data) {
       });
     }
 
-    if (arrCreateItems.length !== 0) {
-      const createFileLabelParams = {
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const fileLabelParams = {
         RequestItems: {
-          FileLabelTable: arrCreateItems,
+          FileLabelTable: data,
         },
       };
 
-      const createFileLabelCommand = new BatchWriteItemCommand(
-        createFileLabelParams
-      );
-      const createFileLabelResult = await client.send(createFileLabelCommand);
-      console.log("createFileLabelResult", createFileLabelResult);
-    }
+      const fileLabelCmd = new BatchWriteItemCommand(fileLabelParams);
+      await ddbClient.send(fileLabelCmd);
+    });
+
     resp = { file: { id: data.file.id } };
   } catch (e) {
     resp = {
@@ -380,8 +382,7 @@ async function tagBackgroundFile(data) {
   let resp = {};
 
   try {
-    const arrDeleteItems = [],
-      arrCreateItems = [];
+    const arrItems = [];
 
     const backgroundFileIdParams = {
       TableName: "BackgroundFileTable",
@@ -392,37 +393,20 @@ async function tagBackgroundFile(data) {
       }),
     };
 
-    const backgroundFileIdCommand = new QueryCommand(backgroundFileIdParams);
-    const backgroundFileIdResult = await client.send(backgroundFileIdCommand);
+    const backgroundFileIdCmd = new QueryCommand(backgroundFileIdParams);
+    const backgroundFileIdRes = await ddbClient.send(backgroundFileIdCmd);
 
-    for (var a = 0; a < backgroundFileIdResult.Items.length; a++) {
-      var backgroundFileId = { id: backgroundFileIdResult.Items[a].id };
-      arrDeleteItems.push({
+    for (var a = 0; a < backgroundFileIdRes.Items.length; a++) {
+      var backgroundFileId = { id: backgroundFileIdRes.Items[a].id };
+      arrItems.push({
         DeleteRequest: {
           Key: backgroundFileId,
         },
       });
     }
 
-    if (arrDeleteItems.length !== 0) {
-      const deleteBackgroundFileParams = {
-        RequestItems: {
-          BackgroundFileTable: arrDeleteItems,
-        },
-      };
-
-      const deleteBackgroundFileCommand = new BatchWriteItemCommand(
-        deleteBackgroundFileParams
-      );
-      const deleteBackgroundFileResult = await client.send(
-        deleteBackgroundFileCommand
-      );
-
-      console.log("deleteBackgroundFileResult", deleteBackgroundFileResult);
-    }
-
     for (var i = 0; i < data.files.length; i++) {
-      arrCreateItems.push({
+      arrItems.push({
         PutRequest: {
           Item: marshall({
             id: v4(),
@@ -433,21 +417,36 @@ async function tagBackgroundFile(data) {
       });
     }
 
-    if (arrCreateItems.length !== 0) {
-      const createBackgroundFileParams = {
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const backgroundFileParams = {
         RequestItems: {
-          BackgroundFileTable: arrCreateItems,
+          BackgroundFileTable: data,
         },
       };
 
-      const createBackgroundFileCommand = new BatchWriteItemCommand(
-        createBackgroundFileParams
-      );
-      const createBackgroundFileResult = await client.send(
-        createBackgroundFileCommand
-      );
-      console.log("createBackgroundFileResult", createBackgroundFileResult);
-    }
+      const backgroundFileCmd = new BatchWriteItemCommand(backgroundFileParams);
+      await ddbClient.send(backgroundFileCmd);
+    });
     resp = { id: data.backgroundId };
   } catch (e) {
     resp = {
@@ -481,7 +480,7 @@ async function tagUserColumnSettings(id, data) {
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? param : {};
   } catch (e) {
     resp = {
@@ -499,7 +498,7 @@ async function bulkDeleteBackground(data) {
   try {
     let backgroundId = data.id;
     const arrBackgroundItems = [];
-    const arrCompanyBackgroundItems = [];
+    const arrCompBackgroundItems = [];
     const arrBackgroundIds = [];
 
     for (var a = 0; a < backgroundId.length; a++) {
@@ -513,7 +512,7 @@ async function bulkDeleteBackground(data) {
         },
       });
 
-      const companyBackgroundParams = {
+      const compBackgroundParams = {
         TableName: "ClientMatterBackgroundTable",
         IndexName: "byBackground",
         KeyConditionExpression: "backgroundId = :backgroundId",
@@ -522,18 +521,14 @@ async function bulkDeleteBackground(data) {
         }),
       };
 
-      const companyBackgroundCommand = new QueryCommand(
-        companyBackgroundParams
-      );
-      const companyBackgroundResult = await client.send(
-        companyBackgroundCommand
-      );
+      const compBackgroundCmd = new QueryCommand(compBackgroundParams);
+      const compBackgroundRes = await ddbClient.send(compBackgroundCmd);
 
-      for (var b = 0; b < companyBackgroundResult.Items.length; b++) {
-        var companyBackgroundId = { id: companyBackgroundResult.Items[b].id };
-        arrCompanyBackgroundItems.push({
+      for (var b = 0; b < compBackgroundRes.Items.length; b++) {
+        var compBackgroundId = { id: compBackgroundRes.Items[b].id };
+        arrCompBackgroundItems.push({
           DeleteRequest: {
-            Key: companyBackgroundId,
+            Key: compBackgroundId,
           },
         });
       }
@@ -546,23 +541,23 @@ async function bulkDeleteBackground(data) {
     };
 
     const backgroundCommand = new BatchWriteItemCommand(backgroundParams);
-    const backgroundResult = await client.send(backgroundCommand);
+    const backgroundResult = await ddbClient.send(backgroundCommand);
 
     if (backgroundResult) {
-      const deleteCompanyBackgroundParams = {
+      const deleteCompBackgroundParams = {
         RequestItems: {
-          ClientMatterBackgroundTable: arrCompanyBackgroundItems,
+          ClientMatterBackgroundTable: arrCompBackgroundItems,
         },
       };
 
-      const deleteCompanyBackgroundCommand = new BatchWriteItemCommand(
-        deleteCompanyBackgroundParams
+      const deleteCompBackgroundCmd = new BatchWriteItemCommand(
+        deleteCompBackgroundParams
       );
-      const deleteCompanyBackgroundResult = await client.send(
-        deleteCompanyBackgroundCommand
+      const deleteCompBackgroundRes = await ddbClient.send(
+        deleteCompBackgroundCmd
       );
 
-      resp = deleteCompanyBackgroundResult ? arrBackgroundIds : {};
+      resp = deleteCompBackgroundRes ? arrBackgroundIds : {};
     }
   } catch (e) {
     resp = {
@@ -596,7 +591,7 @@ async function updateLabel(id, data) {
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? param : {};
   } catch (e) {
     resp = {
@@ -624,7 +619,7 @@ async function createClientMatter(data) {
       TableName: "ClientMatterTable",
       Item: param,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     const companyClientMatterParams = {
       id: v4(),
@@ -633,16 +628,14 @@ async function createClientMatter(data) {
       createdAt: new Date().toISOString(),
     };
 
-    const companyClientMatterCommand = new PutItemCommand({
+    const companyClientMatterCmd = new PutItemCommand({
       TableName: "CompanyClientMatterTable",
       Item: marshall(companyClientMatterParams),
     });
 
-    const companyClientMatterRequest = await client.send(
-      companyClientMatterCommand
-    );
+    const companyClientMatterRes = await ddbClient.send(companyClientMatterCmd);
 
-    resp = companyClientMatterRequest ? rawParams : {};
+    resp = companyClientMatterRes ? rawParams : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -669,7 +662,7 @@ async function createMatter(data) {
       Item: param,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     const companyMatterParams = {
       id: v4(),
@@ -683,7 +676,7 @@ async function createMatter(data) {
       Item: marshall(companyMatterParams),
     });
 
-    const companyMatterRequest = await client.send(companyMatterCommand);
+    const companyMatterRequest = await ddbClient.send(companyMatterCommand);
 
     resp = companyMatterRequest ? rawParams : {};
   } catch (e) {
@@ -713,7 +706,7 @@ async function createBackground(data) {
       TableName: "BackgroundsTable",
       Item: param,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     const clientMatterBackgroundParams = {
       id: v4(),
@@ -722,16 +715,16 @@ async function createBackground(data) {
       createdAt: new Date().toISOString(),
     };
 
-    const clientMatterBackgroundCommand = new PutItemCommand({
+    const clientMatterBackgroundCmd = new PutItemCommand({
       TableName: "ClientMatterBackgroundTable",
       Item: marshall(clientMatterBackgroundParams),
     });
 
-    const clientMatterBackgroundRequest = await client.send(
-      clientMatterBackgroundCommand
+    const clientMatterBackgroundRes = await ddbClient.send(
+      clientMatterBackgroundCmd
     );
 
-    resp = clientMatterBackgroundRequest ? rawParams : {};
+    resp = clientMatterBackgroundRes ? rawParams : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -758,7 +751,7 @@ async function createRFI(data) {
       TableName: "RFITable",
       Item: param,
     });
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     const clientMatterRFIParams = {
       id: v4(),
@@ -772,7 +765,7 @@ async function createRFI(data) {
       Item: marshall(clientMatterRFIParams),
     });
 
-    const clientMatterRFIRequest = await client.send(clientMatterRFICommand);
+    const clientMatterRFIRequest = await ddbClient.send(clientMatterRFICommand);
 
     resp = clientMatterRFIRequest ? rawParams : {};
   } catch (e) {
@@ -803,7 +796,7 @@ async function createColumnSettings(data) {
       Item: param,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
   } catch (e) {
     resp = {
@@ -838,7 +831,7 @@ async function updateUserColumnSettings(id, data) {
       ExpressionAttributeValues,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     resp = request ? param : {};
   } catch (e) {
@@ -874,7 +867,7 @@ async function updateBackground(id, data) {
       ExpressionAttributeValues,
     });
 
-    const request = await client.send(cmd);
+    const request = await ddbClient.send(cmd);
 
     resp = request ? param : {};
   } catch (e) {
@@ -915,7 +908,7 @@ async function bulkUpdateBackgroundOrders(data) {
         ExpressionAttributeValues,
       });
 
-      await client.send(cmd);
+      await ddbClient.send(cmd);
     });
   } catch (e) {
     resp = {
@@ -943,7 +936,7 @@ async function bulkInitializeBackgroundOrders(clientMatterId) {
     };
 
     const cmBackgroundsCmd = new QueryCommand(cmBackgroundsParam);
-    const cmBackgroundsResult = await client.send(cmBackgroundsCmd);
+    const cmBackgroundsResult = await ddbClient.send(cmBackgroundsCmd);
 
     const backgroundIds = cmBackgroundsResult.Items.map((i) =>
       unmarshall(i)
@@ -959,7 +952,7 @@ async function bulkInitializeBackgroundOrders(clientMatterId) {
       };
 
       const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
-      const backgroundsResult = await client.send(backgroundsCommand);
+      const backgroundsResult = await ddbClient.send(backgroundsCommand);
 
       const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
         (i) => unmarshall(i)
@@ -1005,7 +998,7 @@ async function bulkInitializeMatterFileOrders(clientMatterId) {
     };
 
     const matterFileCmd = new QueryCommand(matterFileParam);
-    const matterFileResult = await client.send(matterFileCmd);
+    const matterFileResult = await ddbClient.send(matterFileCmd);
 
     const objMatterFiles = matterFileResult.Items.map((d) => unmarshall(d));
 
@@ -1065,11 +1058,11 @@ export async function deleteBackground(id) {
       }),
     };
 
-    const clientMatterBackgroundCommand = new QueryCommand(
+    const clientMatterBackgroundCmd = new QueryCommand(
       clientMatterBackgroundParams
     );
-    const clientMatterBackgroundResult = await client.send(
-      clientMatterBackgroundCommand
+    const clientMatterBackgroundResult = await ddbClient.send(
+      clientMatterBackgroundCmd
     );
 
     const clientMatterBackgroundId = clientMatterBackgroundResult.Items.map(
@@ -1083,7 +1076,7 @@ export async function deleteBackground(id) {
       Key: { id: filterClientMatterBackgroundId },
     });
 
-    const deleteClientMatterBackgroundResult = await client.send(
+    const deleteClientMatterBackgroundResult = await ddbClient.send(
       deleteClientMatterBackgroundCommand
     );
 
@@ -1092,7 +1085,7 @@ export async function deleteBackground(id) {
         TableName: "BackgroundsTable",
         Key: marshall({ id }),
       });
-      const request = await client.send(cmd);
+      const request = await ddbClient.send(cmd);
 
       resp = request ? { id: id } : {};
     }
@@ -1120,11 +1113,9 @@ export async function deleteClientMatter(id) {
       }),
     };
 
-    const companyClientMatterCommand = new QueryCommand(
-      companyClientMatterParams
-    );
-    const companyClientMatterResult = await client.send(
-      companyClientMatterCommand
+    const companyClientMatterCmd = new QueryCommand(companyClientMatterParams);
+    const companyClientMatterResult = await ddbClient.send(
+      companyClientMatterCmd
     );
 
     const companyClientMatterId = companyClientMatterResult.Items.map(
@@ -1138,7 +1129,7 @@ export async function deleteClientMatter(id) {
       Key: { id: filterCompanyClientMatterId },
     });
 
-    const deleteCompanyClientMatterResult = await client.send(
+    const deleteCompanyClientMatterResult = await ddbClient.send(
       deleteCompanyClientMatterCommand
     );
 
@@ -1147,7 +1138,7 @@ export async function deleteClientMatter(id) {
         TableName: "ClientMatterTable",
         Key: marshall({ id }),
       });
-      const request = await client.send(cmd);
+      const request = await ddbClient.send(cmd);
 
       resp = request ? { id: id } : {};
     }

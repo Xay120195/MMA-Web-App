@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste } from "react-icons/fa";
-import { BsFillTrashFill, BsFillBucketFill } from "react-icons/bs";
+import { FaPaste, FaSync } from "react-icons/fa";
+import { BsFillTrashFill, BsFillBucketFill} from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
@@ -771,11 +771,11 @@ const TableInfo = ({
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
       setLoading(true);
-    }, 1500);
+    }, 300);
     setTimeout(() => {
       loadMoreBackground();
       setLoading(false);
-    }, 2500);
+    }, 1000);
   });
 
   useBottomScrollListener(handleBottomScroll);
@@ -946,6 +946,54 @@ const TableInfo = ({
   function attachFiles(id){
     setShowUploadModal(true);
     setSelectedRowID(id);
+  const mUpdateMatterFileDesc = `
+      mutation updateMatterFile ($id: ID, $details: String) {
+        matterFileUpdate(id: $id, details: $details) {
+          id
+          details
+        }
+      }
+  `;
+
+  const mUpdateMatterFileDate = `
+      mutation updateMatterFile ($id: ID, $date: AWSDateTime) {
+        matterFileUpdate(id: $id, date: $date) {
+          id
+          date
+        }
+      }
+  `;
+
+  const handleSyncData = async (backgroundId, fileId) => {
+    var filteredWitness = witness.filter(function (item) {
+      return item.id === backgroundId;
+    });
+
+    const dateRequest = API.graphql({
+      query: mUpdateMatterFileDate,
+      variables: {
+        id: fileId,
+        date:
+        filteredWitness[0].date !== null && filteredWitness[0].date !== "null" && filteredWitness[0].date !== ""
+            ? new Date(filteredWitness[0].date).toISOString()
+            : null,
+      },
+    });
+
+    const descRequest = API.graphql({
+      query: mUpdateMatterFileDesc,
+      variables: {
+        id: fileId,
+        details: filteredWitness[0].description,
+      },
+    });
+
+    setalertMessage(`Successfully synced to File Bucket `);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+
   }
 
   return (
@@ -1064,7 +1112,7 @@ const TableInfo = ({
                                             htmlFor="checkbox-1"
                                             className="text-sm font-medium text-gray-900 dark:text-gray-300 ml-1"
                                           >
-                                            {item.order}
+                                            {index + 1}
                                             {/* &nbsp;&mdash;&nbsp; {item.order} */}
                                           </label>
                                         </div>
@@ -1255,6 +1303,7 @@ const TableInfo = ({
                                                           )
                                                         }
                                                       />
+
                                                       {activateButton ? (
                                                         <BsFillTrashFill
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
@@ -1276,6 +1325,15 @@ const TableInfo = ({
                                                           }
                                                         />
                                                       )}
+
+                                                      <FaSync className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right" title="Sync Date and Description to File Bucket" 
+                                                      onClick={() =>
+                                                        handleSyncData(
+                                                          item.id,
+                                                          items.id
+                                                        )
+                                                      }
+                                                      > </FaSync>
                                                     </p>
                                                   </span>
                                                 )
@@ -1336,6 +1394,7 @@ const TableInfo = ({
             <span></span>
           )}
         </div>
+        <div className="p-2"></div>
       </div>
       {showUploadModal && (
         <UploadLinkModal
