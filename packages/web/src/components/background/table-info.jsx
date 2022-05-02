@@ -209,10 +209,9 @@ const TableInfo = ({
     console.log(e.target.innerHTML);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
-      setUpdateProgress(false);
     } else if (textDesc === description) {
       setDescAlert("");
-      setUpdateProgress(true);
+
       setalertMessage(`Saving in progress..`);
       setShowToast(true);
 
@@ -220,6 +219,15 @@ const TableInfo = ({
         description: e.target.innerHTML,
         date: date,
       };
+
+      const updateArr = witness.map((obj) => {
+        if (obj.id === id) {
+          return { ...obj, description: e.target.innerHTML };
+        }
+        return obj;
+      });
+
+      setWitness(updateArr);
 
       await updateBackgroundDetails(id, data);
       setTimeout(() => {
@@ -235,7 +243,7 @@ const TableInfo = ({
       }, 1000);
     } else {
       setDescAlert("");
-      setUpdateProgress(true);
+
       setalertMessage(`Saving in progress..`);
       setShowToast(true);
 
@@ -1002,9 +1010,7 @@ const TableInfo = ({
                                                 item.id
                                               )
                                             }
-                                            contentEditable={
-                                              updateProgess ? false : true
-                                            }
+                                            contentEditable={true}
                                           ></div>
                                           <span className="text-red-400 filename-validation">
                                             {item.id === descId && descAlert}
