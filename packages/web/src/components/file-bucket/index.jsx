@@ -519,13 +519,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
 
-  const mInitializeOrders = `
-    mutation initializeOrder($clientMatterId: ID) {
-      matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-        id
-      }
-    }
-  `;
+  // const mInitializeOrders = `
+  //   mutation initializeOrder($clientMatterId: ID) {
+  //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+  //       id
+  //     }
+  //   }
+  // `;
 
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
@@ -533,16 +533,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       q = mNoPaginationbyItems;
     }
 
-    const initializeMatterFileOrder = await API.graphql({
-      query: mInitializeOrders,
-      variables: { clientMatterId: matter_id },
-    });
+    // const initializeMatterFileOrder = await API.graphql({
+    //   query: mInitializeOrders,
+    //   variables: { clientMatterId: matter_id },
+    // });
 
-    if (
-      initializeMatterFileOrder.data.matterFileBulkInitializeOrders !== null
-    ) {
-      console.log("Initial Sorting Successful!");
-    }
+    // if (
+    //   initializeMatterFileOrder.data.matterFileBulkInitializeOrders !== null
+    // ) {
+    //   console.log("Initial Sorting Successful!");
+    // }
 
     const params = {
       query: q,

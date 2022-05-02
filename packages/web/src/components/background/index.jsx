@@ -93,29 +93,29 @@ const Background = () => {
     }
   `;
 
-  const mInitializeOrders = `
-    mutation initializeOrder($clientMatterId: ID) {
-      backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-        id
-      }
-    }
-  `;
+  // const mInitializeOrders = `
+  //   mutation initializeOrder($clientMatterId: ID) {
+  //     backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
+  //       id
+  //     }
+  //   }
+  // `;
 
   const getBackground = async () => {
     let result = [];
     setWait(false);
     const matterId = matter_id;
 
-    const initializeBackgroundOrder = await API.graphql({
-      query: mInitializeOrders,
-      variables: { clientMatterId: matterId },
-    });
+    // const initializeBackgroundOrder = await API.graphql({
+    //   query: mInitializeOrders,
+    //   variables: { clientMatterId: matterId },
+    // });
 
-    if (
-      initializeBackgroundOrder.data.backgroundBulkInitializeOrders !== null
-    ) {
-      console.log("Initial Sorting Successful!");
-    }
+    // if (
+    //   initializeBackgroundOrder.data.backgroundBulkInitializeOrders !== null
+    // ) {
+    //   console.log("Initial Sorting Successful!");
+    // }
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
