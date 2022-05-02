@@ -40,13 +40,16 @@ export async function getMatterFiles(ctx) {
     matterId,
     isDeleted = false,
     limit,
-    nextToken,
     sortOrder = "CREATED_DESC",
   } = ctx;
 
   let resp = {},
     indexName,
-    isAscending;
+    isAscending,
+    read = true,
+    nextToken = ctx.nextToken,
+    itemCount = 0,
+    result = [];
 
   if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
     isAscending = false;
@@ -80,26 +83,40 @@ export async function getMatterFiles(ctx) {
       param.Limit = limit;
     }
 
-    const cmd = new QueryCommand(param);
-    const request = await ddbClient.send(cmd);
-    console.log("Result:", request);
-    const result = request.Items.map((d) => unmarshall(d));
+    while (read === true) {
+      const cmd = new QueryCommand(param);
+      const { Items, LastEvaluatedKey } = await ddbClient.send(cmd);
+      nextToken = LastEvaluatedKey;
 
-    // if (request && request.Count !== 0) {
-    //   result[0].nextToken = request.LastEvaluatedKey
-    //     ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
-    //         "base64"
-    //       )
-    //     : null;
-    // }
+      itemCount += Items.length;
+      result.push(...Items);
+
+      console.log("nextToken:", { nextToken });
+      console.log("itemCount:", { itemCount });
+
+      if (LastEvaluatedKey && Items.length === 0) {
+        read = false;
+        console.log("Inconsistent Read. Continue...");
+        console.log("Items:", { Items });
+      }
+
+      if (!LastEvaluatedKey) {
+        read = false;
+        console.log("Done: ", nextToken, " is undefined");
+      }
+
+      if (itemCount === limit) {
+        console.log(limit, " limit is reached.");
+        console.log("Result:", result);
+        read = false;
+      }
+    }
 
     resp = {
-      items: request ? result : [],
-      nextToken: request.LastEvaluatedKey
-        ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
-            "base64"
-          )
-        : null,
+      items: result.map((d) => unmarshall(d)),
+      nextToken: nextToken
+        ? Buffer.from(JSON.stringify(nextToken)).toString("base64")
+        : undefined,
     };
   } catch (e) {
     resp = {
