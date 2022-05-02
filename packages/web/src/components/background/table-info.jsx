@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste } from "react-icons/fa";
+import { FaPaste, FaSync } from "react-icons/fa";
 import { BsFillTrashFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
@@ -60,8 +60,8 @@ const TableInfo = ({
   checkDocu,
   pasteButton,
   setSrcIndex,
-  srcIndex,
-  pageTotal,
+  client_name,
+  matter_name,
   pageIndex,
   pageSize,
   pageSizeConst,
@@ -209,10 +209,9 @@ const TableInfo = ({
     console.log(e.target.innerHTML);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
-      setUpdateProgress(false);
     } else if (textDesc === description) {
       setDescAlert("");
-      setUpdateProgress(true);
+
       setalertMessage(`Saving in progress..`);
       setShowToast(true);
 
@@ -220,6 +219,15 @@ const TableInfo = ({
         description: e.target.innerHTML,
         date: date,
       };
+
+      const updateArr = witness.map((obj) => {
+        if (obj.id === id) {
+          return { ...obj, description: e.target.innerHTML };
+        }
+        return obj;
+      });
+
+      setWitness(updateArr);
 
       await updateBackgroundDetails(id, data);
       setTimeout(() => {
@@ -235,7 +243,7 @@ const TableInfo = ({
       }, 1000);
     } else {
       setDescAlert("");
-      setUpdateProgress(true);
+
       setalertMessage(`Saving in progress..`);
       setShowToast(true);
 
@@ -765,6 +773,61 @@ const TableInfo = ({
 
   useBottomScrollListener(handleBottomScroll);
 
+  const mUpdateMatterFileDesc = `
+      mutation updateMatterFile ($id: ID, $details: String) {
+        matterFileUpdate(id: $id, details: $details) {
+          id
+          details
+        }
+      }
+  `;
+
+  const mUpdateMatterFileDate = `
+      mutation updateMatterFile ($id: ID, $date: AWSDateTime) {
+        matterFileUpdate(id: $id, date: $date) {
+          id
+          date
+        }
+      }
+  `;
+
+  const handleSyncData = async (backgroundId, fileId) => {
+    var filteredWitness = witness.filter(function (item) {
+      return item.id === backgroundId;
+    });
+
+    const dateRequest = API.graphql({
+      query: mUpdateMatterFileDate,
+      variables: {
+        id: fileId,
+        date:
+          filteredWitness[0].date !== null &&
+          filteredWitness[0].date !== "null" &&
+          filteredWitness[0].date !== ""
+            ? new Date(filteredWitness[0].date).toISOString()
+            : null,
+      },
+    });
+
+    const descRequest = API.graphql({
+      query: mUpdateMatterFileDesc,
+      variables: {
+        id: fileId,
+        details: filteredWitness[0].description,
+      },
+    });
+
+    setalertMessage(`Successfully synced to File Bucket `);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+  };
+
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str));
+  }
+
   return (
     <>
       <div style={{ padding: "2rem", marginLeft: "4rem" }}>
@@ -947,9 +1010,7 @@ const TableInfo = ({
                                                 item.id
                                               )
                                             }
-                                            contentEditable={
-                                              updateProgess ? false : true
-                                            }
+                                            contentEditable={true}
                                           ></div>
                                           <span className="text-red-400 filename-validation">
                                             {item.id === descId && descAlert}
@@ -978,7 +1039,15 @@ const TableInfo = ({
                                               <button
                                                 className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 onClick={() =>
-                                                  (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`)
+                                                  (window.location = `${
+                                                    AppRoutes.FILEBUCKET
+                                                  }/${matterId}/${
+                                                    item.id
+                                                  }?matter_name=${b64EncodeUnicode(
+                                                    client_name
+                                                  )}&client_name=${b64EncodeUnicode(
+                                                    matter_name
+                                                  )}`)
                                                 }
                                               >
                                                 File Bucket +
@@ -1087,6 +1156,18 @@ const TableInfo = ({
                                                           }
                                                         />
                                                       )}
+                                                      <FaSync
+                                                        className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right"
+                                                        title="Sync Date and Description to File Bucket"
+                                                        onClick={() =>
+                                                          handleSyncData(
+                                                            item.id,
+                                                            items.id
+                                                          )
+                                                        }
+                                                      >
+                                                        {" "}
+                                                      </FaSync>
                                                     </p>
                                                   </span>
                                                 )
