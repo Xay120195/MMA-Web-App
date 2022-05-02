@@ -1419,7 +1419,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         </div>
 
         <div
-          className="bg-white z-50 "
+          className="bg-white z-30 "
           style={{ position: "sticky", top: "0" }}
         >
           <nav aria-label="Breadcrumb" style={style} className="mt-4">
@@ -1615,7 +1615,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       <DragDropContext onDragEnd={handleDragEnd}>
                         <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                           <thead
-                            className="bg-gray-100 z-50"
+                            className="bg-gray-100 z-30"
                             style={{ position: "sticky", top: "153px" }}
                           >
                             <tr>
