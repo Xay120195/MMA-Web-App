@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste } from "react-icons/fa";
+import { FaPaste, FaSync } from "react-icons/fa";
 import { BsFillTrashFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
@@ -765,6 +765,56 @@ const TableInfo = ({
 
   useBottomScrollListener(handleBottomScroll);
 
+  const mUpdateMatterFileDesc = `
+      mutation updateMatterFile ($id: ID, $details: String) {
+        matterFileUpdate(id: $id, details: $details) {
+          id
+          details
+        }
+      }
+  `;
+
+  const mUpdateMatterFileDate = `
+      mutation updateMatterFile ($id: ID, $date: AWSDateTime) {
+        matterFileUpdate(id: $id, date: $date) {
+          id
+          date
+        }
+      }
+  `;
+
+  const handleSyncData = async (backgroundId, fileId) => {
+    var filteredWitness = witness.filter(function (item) {
+      return item.id === backgroundId;
+    });
+
+    const dateRequest = API.graphql({
+      query: mUpdateMatterFileDate,
+      variables: {
+        id: fileId,
+        date:
+        filteredWitness[0].date !== null && filteredWitness[0].date !== "null" && filteredWitness[0].date !== ""
+            ? new Date(filteredWitness[0].date).toISOString()
+            : null,
+      },
+    });
+
+    const descRequest = API.graphql({
+      query: mUpdateMatterFileDesc,
+      variables: {
+        id: fileId,
+        details: filteredWitness[0].description,
+      },
+    });
+
+    setalertMessage(`Successfully synced to File Bucket `);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+
+  }
+
   return (
     <>
       <div style={{ padding: "2rem", marginLeft: "4rem" }}>
@@ -1066,6 +1116,7 @@ const TableInfo = ({
                                                           )
                                                         }
                                                       />
+
                                                       {activateButton ? (
                                                         <BsFillTrashFill
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
@@ -1087,6 +1138,15 @@ const TableInfo = ({
                                                           }
                                                         />
                                                       )}
+
+                                                      <FaSync className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right" title="Sync Date and Description to File Bucket" 
+                                                      onClick={() =>
+                                                        handleSyncData(
+                                                          item.id,
+                                                          items.id
+                                                        )
+                                                      }
+                                                      > </FaSync>
                                                     </p>
                                                   </span>
                                                 )
