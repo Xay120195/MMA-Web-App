@@ -32,8 +32,6 @@ export default function MattersRFI() {
   const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
 
-  const [clientMatterName, setClientMatterName] = useState("");
-
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
     setshowCreateRFIModal(true);
@@ -83,7 +81,6 @@ export default function MattersRFI() {
       const matterFilesList = rfi.data.clientMatter.rfis.items;
       console.log("mfl", matterFilesList);
       setRFI(matterFilesList);
-      getMatterDetails();
     });
   };
 
@@ -153,34 +150,6 @@ export default function MattersRFI() {
   function visitRFI(id) {
     history.push(`${AppRoutes.RFIPAGE}/${id}`);
   }
-
-  const qGetMatterDetails = `
-  query getMatterDetails($matterId: ID) {
-    clientMatter(id: $matterId) {
-      matter {
-        name
-      }
-      client {
-        name
-      }
-    }
-  }`;
-
-  let getMatterDetails = async () => {
-    const params = {
-      query: qGetMatterDetails,
-      variables: {
-        matterId: matter_id,
-        isDeleted: false,
-      },
-    };
-
-    await API.graphql(params).then((files) => {
-      setClientMatterName(
-        `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
-      );
-    });
-  };
 
   function getQueryVariable(variable) {
     var query = window.location.search.substring(1);

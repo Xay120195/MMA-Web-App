@@ -64,52 +64,8 @@ const Background = () => {
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
   useEffect(() => {
-    ClientMatterList();
     getBackground();
   }, []);
-
-  const listClientMatters = `
-  query listClientMatters($companyId: String) {
-    company(id: $companyId) {
-      clientMatters {
-        items {
-          id
-          createdAt
-          client {
-            id
-            name
-          }
-          matter {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-  `;
-
-  const ClientMatterList = async () => {
-    let result = [];
-
-    const companyId = localStorage.getItem("companyId");
-    const clientMattersOpt = await API.graphql({
-      query: listClientMatters,
-      variables: {
-        companyId: companyId,
-      },
-    });
-
-    if (clientMattersOpt.data.company.clientMatters.items !== null) {
-      result = clientMattersOpt.data.company.clientMatters.items;
-
-      var apdPr = result.map((v) => ({
-        ...v,
-      }));
-
-      setClientMattersList(apdPr);
-    }
-  };
 
   const qListBackground = `
     query listBackground($id: ID, $limit: Int, $nextToken: String) {

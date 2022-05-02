@@ -426,7 +426,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       setTimeout(() => {
         setShowToast(false);
-        window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}`;
+        window.location.href = `${
+          AppRoutes.BACKGROUND
+        }/${matter_id}/?matter_name=${b64EncodeUnicode(
+          matter_name
+        )}&client_name=${b64EncodeUnicode(client_name)}`;
       }, 2000);
     }
   }
@@ -527,22 +531,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
 
-  let getMatterDetails = async () => {
-    const params = {
-      query: qGetMatterDetails,
-      variables: {
-        matterId: matter_id,
-        isDeleted: false,
-      },
-    };
-
-    await API.graphql(params).then((files) => {
-      setClientMatterName(
-        `${files.data.clientMatter.client.name}/${files.data.clientMatter.matter.name}`
-      );
-    });
-  };
-
   const mInitializeOrders = `
     mutation initializeOrder($clientMatterId: ID) {
       matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
@@ -582,7 +570,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
-      getMatterDetails();
+
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
