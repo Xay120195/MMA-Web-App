@@ -227,18 +227,6 @@ export default function FileBucket() {
       }
   `;
 
-  const qGetMatterDetails = `
-  query getMatterDetails($matterId: ID) {
-    clientMatter(id: $matterId) {
-      matter {
-        name
-      }
-      client {
-        name
-      }
-    }
-  }`;
-
   const qGetFileDownloadLink = `
   query getFileDownloadLink($id: ID) {
     file(id: $id) {
