@@ -299,6 +299,28 @@ const Background = () => {
       setPageSize(pageSize - pageList);
     }
   };
+
+  function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split("=");
+      if (pair[0] == variable) {
+        return pair[1];
+      }
+    }
+    return false;
+  }
+
+  function UnicodeDecodeB64(str) {
+    return decodeURIComponent(atob(str));
+  }
+
+  const m_name = getQueryVariable("matter_name");
+  const c_name = getQueryVariable("client_name");
+  const matter_name = UnicodeDecodeB64(m_name);
+  const client_name = UnicodeDecodeB64(c_name);
+
   return (
     <>
       <div
@@ -315,7 +337,7 @@ const Background = () => {
           <h1 className="font-bold text-3xl">
             Background&nbsp;<span className="text-3xl">of</span>&nbsp;
             <span className="font-semibold text-3xl">
-              {clientName}/{matterName}
+              {client_name}/{matter_name}
             </span>
           </h1>
         </div>
@@ -325,7 +347,11 @@ const Background = () => {
         className="bg-white z-30"
         style={{ position: "sticky", top: "0", margin: "0 0 0 85px" }}
       >
-        <BreadCrumb matterId={matter_id} />
+        <BreadCrumb
+          matterId={matter_id}
+          client_name={client_name}
+          matter_name={matter_name}
+        />
         <ActionButtons
           witness={witness}
           setWitness={setWitness}
@@ -381,6 +407,8 @@ const Background = () => {
         />
       </div>
       <TableInfo
+        client_name={client_name}
+        matter_name={matter_name}
         wait={wait}
         setPasteButton={setPasteButton}
         setIdList={setIdList}
