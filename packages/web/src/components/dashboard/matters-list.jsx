@@ -25,6 +25,10 @@ export function ClientMatters({}) {
 
   console.log("List of Client/Matters", clientMatter);
 
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str));
+  }
+
   return (
     <>
       {view === "grid" ? (
@@ -42,7 +46,8 @@ export function ClientMatters({}) {
                 >
                   <div>
                     {allowOpenFileBucket ||
-                    allowOpenBackground || allowOpenRFI ||
+                    allowOpenBackground ||
+                    allowOpenRFI ||
                     showDeleteMatter ? (
                       <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
                         <div className="dropdown">
@@ -53,7 +58,13 @@ export function ClientMatters({}) {
                             {allowOpenRFI ? (
                               <li className="p-2">
                                 <Link
-                                  to={`${AppRoutes.MATTERSRFI}/${item.id}`}
+                                  to={`${AppRoutes.MATTERSRFI}/${
+                                    item.id
+                                  }/?matter_name=${b64EncodeUnicode(
+                                    item.matter.name
+                                  )}&client_name=${b64EncodeUnicode(
+                                    item.client.name
+                                  )}`}
                                 >
                                   RFI List
                                 </Link>
@@ -62,7 +73,13 @@ export function ClientMatters({}) {
                             {allowOpenFileBucket ? (
                               <li className="p-2">
                                 <Link
-                                  to={`${AppRoutes.FILEBUCKET}/${item.id}/000`}
+                                  to={`${AppRoutes.FILEBUCKET}/${
+                                    item.id
+                                  }/000/?matter_name=${b64EncodeUnicode(
+                                    item.matter.name
+                                  )}&client_name=${b64EncodeUnicode(
+                                    item.client.name
+                                  )}`}
                                 >
                                   File Bucket
                                 </Link>
@@ -70,7 +87,15 @@ export function ClientMatters({}) {
                             ) : null}
                             {allowOpenBackground ? (
                               <li className="p-2">
-                                <Link to={`${AppRoutes.BACKGROUND}/${item.id}`}>
+                                <Link
+                                  to={`${AppRoutes.BACKGROUND}/${
+                                    item.id
+                                  }/?matter_name=${b64EncodeUnicode(
+                                    item.matter.name
+                                  )}&client_name=${b64EncodeUnicode(
+                                    item.client.name
+                                  )}`}
+                                >
                                   Background
                                 </Link>
                               </li>
@@ -147,7 +172,8 @@ export function ClientMatters({}) {
                   key={item.id}
                 >
                   <div>
-                    {allowOpenFileBucket || allowOpenRFI ||
+                    {allowOpenFileBucket ||
+                    allowOpenRFI ||
                     allowOpenBackground ||
                     showDeleteMatter ? (
                       <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
@@ -158,9 +184,7 @@ export function ClientMatters({}) {
                           <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
                             {allowOpenRFI ? (
                               <li className="p-2">
-                                <Link
-                                  to={`${AppRoutes.MATTERSRFI}/${item.id}`}
-                                >
+                                <Link to={`${AppRoutes.MATTERSRFI}/${item.id}`}>
                                   RFI List
                                 </Link>
                               </li>
