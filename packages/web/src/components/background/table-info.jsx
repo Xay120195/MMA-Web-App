@@ -6,7 +6,7 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync } from "react-icons/fa";
-import { BsFillTrashFill, BsFillBucketFill} from "react-icons/bs";
+import { BsFillTrashFill, BsFillBucketFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
@@ -818,16 +818,6 @@ const TableInfo = ({
       }
     `;
 
-    // const request = API.graphql({
-    //   query: mUpdateBackgroundFile,
-    //   variables: {
-    //     backgroundId: selectedRowId,
-    //     files: uploadedFiles,
-    //   },
-    // });
-
-    
-  
     //add order to new files
     var next = 1;
     var sortedFiles = uploadedFiles.sort(
@@ -946,6 +936,7 @@ const TableInfo = ({
   function attachFiles(id){
     setShowUploadModal(true);
     setSelectedRowID(id);
+  }
   const mUpdateMatterFileDesc = `
       mutation updateMatterFile ($id: ID, $details: String) {
         matterFileUpdate(id: $id, details: $details) {
@@ -965,36 +956,37 @@ const TableInfo = ({
   `;
 
   const handleSyncData = async (backgroundId, fileId) => {
-    var filteredWitness = witness.filter(function (item) {
-      return item.id === backgroundId;
-    });
+      var filteredWitness = witness.filter(function (item) {
+        return item.id === backgroundId;
+      });
 
-    const dateRequest = API.graphql({
-      query: mUpdateMatterFileDate,
-      variables: {
-        id: fileId,
-        date:
-        filteredWitness[0].date !== null && filteredWitness[0].date !== "null" && filteredWitness[0].date !== ""
-            ? new Date(filteredWitness[0].date).toISOString()
-            : null,
-      },
-    });
+      const dateRequest = API.graphql({
+        query: mUpdateMatterFileDate,
+        variables: {
+          id: fileId,
+          date:
+          filteredWitness[0].date !== null && filteredWitness[0].date !== "null" && filteredWitness[0].date !== ""
+              ? new Date(filteredWitness[0].date).toISOString()
+              : null,
+        },
+      });
 
-    const descRequest = API.graphql({
-      query: mUpdateMatterFileDesc,
-      variables: {
-        id: fileId,
-        details: filteredWitness[0].description,
-      },
-    });
+      const descRequest = API.graphql({
+        query: mUpdateMatterFileDesc,
+        variables: {
+          id: fileId,
+          details: filteredWitness[0].description,
+        },
+      });
 
-    setalertMessage(`Successfully synced to File Bucket `);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
+      setalertMessage(`Successfully synced to File Bucket `);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 2000);
 
-  }
+  };
+
 
   return (
     <>
