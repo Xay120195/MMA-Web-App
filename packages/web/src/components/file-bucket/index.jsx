@@ -176,7 +176,6 @@ export default function FileBucket() {
         matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
           id
           name
-          downloadURL
           order
         }
       }
@@ -358,7 +357,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       files {
         items {
           id
-          downloadURL
           details
           name
         }

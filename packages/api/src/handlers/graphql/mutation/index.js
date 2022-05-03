@@ -15,6 +15,7 @@ const {
   updateMatterFile,
   softDeleteMatterFile,
   bulkUpdateMatterFileOrders,
+  bulkCreateMatterFile
 } = require("../../../services/MatterService");
 
 async function createCompany(data) {
@@ -1195,6 +1196,11 @@ const resolvers = {
       if (date !== undefined) data.date = date;
 
       return await updateMatterFile(id, data);
+    },
+
+    matterFileBulkCreate: async (ctx) => {
+      const { files } = ctx.arguments; // id and order
+      return await bulkCreateMatterFile(files);
     },
 
     matterFileBulkUpdateOrders: async (ctx) => {

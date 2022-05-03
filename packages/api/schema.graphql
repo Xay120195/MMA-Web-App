@@ -265,6 +265,7 @@ type Mutation {
     labels: [LabelInput]
   ): File
   matterFileBulkUpdateOrders(arrangement: [ArrangementInput]): [File]
+  matterFileBulkCreate(files: [MatterFileInput]): [File]
   matterFileBulkInitializeOrders(clientMatterId: ID): [File]
   matterFileSoftDelete(id: ID): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
@@ -336,6 +337,16 @@ input MatterInput {
 input FileInput {
   id: ID
   name: String
+}
+
+input MatterFileInput {
+  matterId: ID
+  s3ObjectKey: String
+  size: Int
+  type: String
+  name: String
+  details: String
+  order: Int
 }
 
 input ArrangementInput {
