@@ -877,9 +877,8 @@ const TableInfo = ({
     );
 
     //insert in matter file list
-    sortedFiles.map(async (file) => {
-      await createMatterFile(file);
-    });
+
+    await bulkCreateMatterFile(sortedFiles);
 
     console.log("idtag", idTag);
 
@@ -895,7 +894,7 @@ const TableInfo = ({
       // if (backgroundFilesOptReq.data.background.files !== null) {
       const newFilesResult =
         backgroundFilesOptReq.data.background.files.items.map(
-          ({ id, name, description, }) => ({
+          ({ id, name, description }) => ({
             id: id,
             name: name,
             description: description,
@@ -925,9 +924,9 @@ const TableInfo = ({
     }, 5000);
   };
 
-  const mCreateMatterFile = `
-        mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
-          matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
+  const mBulkCreateMatterFile = `
+        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+          matterFileBulkCreate(files: $files) {
             id
             name
             order
@@ -935,13 +934,28 @@ const TableInfo = ({
         }
     `;
 
-  async function createMatterFile(file) {
-    const request = await API.graphql({
-      query: mCreateMatterFile,
-      variables: file,
+  async function bulkCreateMatterFile(param) {
+    console.log("bulkCreateMatterFile");
+
+    param.forEach(function (i) {
+      delete i.oderSelected; // remove orderSelected
     });
 
-    idTag = [...idTag, { id: request.data.matterFileCreate.id }];
+    const request = await API.graphql({
+      query: mBulkCreateMatterFile,
+      variables: {
+        files: param,
+      },
+    });
+
+    console.log("result", request);
+
+    if (request.data.matterFileBulkCreate !== null) {
+      request.data.matterFileBulkCreate.map((i) => {
+        return (idTag = [...idTag, { id: i.id }]);
+      });
+    }
+
     console.log("iDTag", idTag);
 
     const mUpdateBackgroundFile = `
@@ -1015,7 +1029,7 @@ const TableInfo = ({
       });
     }
 
-    return request;
+    //return request;
   }
   const mPaginationbyItems = `
   query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
@@ -1270,7 +1284,7 @@ const TableInfo = ({
                                           {selectRow.find(
                                             (x) => x.id === item.id
                                           ) && (
-                                            <div class="separator">
+                                            <div className="separator">
                                               ROW SELECTED
                                             </div>
                                           )}
@@ -1281,7 +1295,7 @@ const TableInfo = ({
                                             ) ? (
                                               <button></button>
                                             ) : (
-                                              <span class="flex">
+                                              <span className="flex">
                                                 <button
                                                   className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-white hover:text-green-500 hover:border-green-500 focus:outline-none "
                                                   onClick={() =>
@@ -1326,8 +1340,8 @@ const TableInfo = ({
                                               <FaPaste />
                                             </span>
                                           )}
-
-                                          {item.files.items.length === 0 ? (
+                                          {item.files.items === null ||
+                                          item.files.items.length === 0 ? (
                                             <>
                                               <br />
                                               <p className="text-xs">
