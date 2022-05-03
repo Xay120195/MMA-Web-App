@@ -532,7 +532,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     //     }
     //   }
     // `;
-    
+
     // const initializeMatterFileOrder = await API.graphql({
     //   query: mInitializeOrders,
     //   variables: { clientMatterId: matter_id },
@@ -700,7 +700,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         }, 1000);
       }, 1000);
     }, 1000);
-    
+
     if (isNewCtr === 0) {
       console.log("No new labels found");
       console.log("data.labels.items", data.labels.items);
@@ -708,7 +708,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       await updateMatterFile(fileId, data);
       tagFileLabel(fileId, data.labels.items);
     }
-    
   };
 
   function updateArrLabels(data, index) {
@@ -1276,7 +1275,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setShowToast(false);
       window.location.href = `${
         AppRoutes.BACKGROUND
-      }/${matter_id}/?count=${counter}/?matter_name=${b64EncodeUnicode(
+      }/${matter_id}/?count=${counter}&matter_name=${b64EncodeUnicode(
         matter_name
       )}&client_name=${b64EncodeUnicode(client_name)}`;
     }, 1000);
@@ -1964,9 +1963,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : matterFiles.length >= 20 
-                      // && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" 
-                        ? (
+                      ) : matterFiles.length >= 20 ? (
+                        // && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b"
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>
