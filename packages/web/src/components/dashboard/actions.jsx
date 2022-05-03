@@ -71,55 +71,10 @@ export const getMatterList = async (dispatch, companyId) => {
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
 
-      // Initialize filebucket/background orders
-      const mInitMatterFileOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
-
-      const mInitBackgroundOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
-
-      let x = 0;
-
-      result.map(async (i) => {
-        x++;
-        let matterId = i.id;
-
-        if (x <= result.length) {
-          await API.graphql({
-            query: mInitMatterFileOrders,
-            variables: { clientMatterId: matterId },
-          }).then((res) => {
-            console.log(matterId, "File Bucket: Initial Sorting Successful!");
-            console.log(res);
-          });
-
-          await API.graphql({
-            query: mInitBackgroundOrders,
-            variables: { clientMatterId: matterId },
-          }).then((res) => {
-            console.log(matterId, "Background: Initial Sorting Successful!");
-            console.log(res);
-          });
-        }
-      });
-
       const dummyPersonResponsible = {
-        id: localStorage.getItem("userId"),
-        name:
-          localStorage.getItem("firstName") +
-          " " +
-          localStorage.getItem("lastName"),
-        email: localStorage.getItem("email"),
+        id: 2,
+        name: "Adrian Silva",
+        email: "adrian.silva@lophils.com",
         profile_picture:
           "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
       };

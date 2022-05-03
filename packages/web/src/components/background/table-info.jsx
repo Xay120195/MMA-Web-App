@@ -6,10 +6,10 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync } from "react-icons/fa";
-import { BsFillTrashFill } from "react-icons/bs";
+import { BsFillTrashFill, BsFillBucketFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
-import { API } from "aws-amplify";
+import { API, sectionFooterPrimaryContent } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
@@ -19,6 +19,8 @@ import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
 import ScrollToTop from "react-scroll-to-top";
+import UploadLinkModal from "../file-bucket/file-upload-modal";
+import { useParams } from "react-router-dom";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -60,8 +62,8 @@ const TableInfo = ({
   checkDocu,
   pasteButton,
   setSrcIndex,
-  client_name,
-  matter_name,
+  srcIndex,
+  pageTotal,
   pageIndex,
   pageSize,
   pageSizeConst,
@@ -90,6 +92,16 @@ const TableInfo = ({
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
   const [sortByDate, setSortByDate] = useState([]);
 
+  const [matterFiles, setMatterFiles] = useState(null);
+  const [resultMessage, setResultMessage] = useState("");
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const [selectedRowId, setSelectedRowID] = useState(null);
+  const [test, setTest] = useState(null);
+  const [goToFileBucket, setGoToFileBucket] = useState(false);
+
+  const { background_id } = useParams();
+
   const location = useLocation();
   const history = useHistory();
 
@@ -114,7 +126,10 @@ const TableInfo = ({
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
+    setShowUploadModal(false);
   };
+
+  
 
   const handleCheckboxChange = (position, event, id, date, details) => {
     const checkedId = selectRow.some((x) => x.id === id);
@@ -189,6 +204,11 @@ const TableInfo = ({
     }, 1000);
 
     setIdList(getId);
+
+    if (matterFiles === null) {
+      console.log("matterFiles is null");
+      getMatterFiles();
+    }
   }, [getId]);
 
   const handleDescContent = (e, description, id) => {
@@ -206,18 +226,22 @@ const TableInfo = ({
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
-    console.log(e.target.innerHTML);
+    const updateArr = witness.map((obj) => {
+      if (obj.id === id) {
+        return { ...obj, description: e.target.innerHTML };
+      }
+      return obj;
+    });
+
+    setWitness(updateArr);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
+      setUpdateProgress(false);
     } else if (textDesc === description) {
       setDescAlert("");
 
-      setalertMessage(`Saving in progress..`);
-      setShowToast(true);
-
       const data = {
         description: e.target.innerHTML,
-        date: date,
       };
 
       const updateArr = witness.map((obj) => {
@@ -229,48 +253,28 @@ const TableInfo = ({
 
       setWitness(updateArr);
 
-      await updateBackgroundDetails(id, data);
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setShowToast(true);
+        setalertMessage(`Successfully updated`);
+      }
       setTimeout(() => {
-        setTimeout(() => {
-          setTextDesc("");
-          setalertMessage(`Successfully updated `);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-            setUpdateProgress(false);
-          }, 1000);
-        }, 1000);
+        setShowToast(false);
       }, 1000);
     } else {
       setDescAlert("");
 
-      setalertMessage(`Saving in progress..`);
-      setShowToast(true);
-
-      const updateArr = witness.map((obj) => {
-        if (obj.id === id) {
-          return { ...obj, description: e.target.innerHTML };
-        }
-        return obj;
-      });
-
-      setWitness(updateArr);
-
       const data = {
         description: e.target.innerHTML,
         date: date,
       };
-      await updateBackgroundDetails(id, data);
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setShowToast(true);
+        setalertMessage(`Successfully updated`);
+      }
       setTimeout(() => {
-        setTimeout(() => {
-          setTextDesc("");
-          setalertMessage(`Successfully updated`);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-            setUpdateProgress(false);
-          }, 1000);
-        }, 1000);
+        setShowToast(false);
       }, 1000);
     }
   };
@@ -280,7 +284,7 @@ const TableInfo = ({
       description: !description ? "" : description,
       date: selected !== null ? String(selected) : null,
     };
-    await updateBackgroundDetails(id, data);
+    await updateBackgroundDate(id, data);
 
     const updatedOSArray = witness.map((p) =>
       p.id === id ? { ...p, date: data.date } : p
@@ -289,24 +293,48 @@ const TableInfo = ({
     setWitness(updatedOSArray);
   };
 
-  const mUpdateBackground = `
-    mutation updateBackground($id: ID, $description: String, $date: AWSDateTime) {
-      backgroundUpdate(id: $id, description: $description, date: $date) {
+  const mUpdateBackgroundDesc = `
+    mutation updateBackground($id: ID, $description: String) {
+      backgroundUpdate(id: $id, description: $description) {
         id
         description
+      }
+    }
+  `;
+
+  const mUpdateBackgroundDate = `
+    mutation updateBackground($id: ID, $date: AWSDateTime) {
+      backgroundUpdate(id: $id, date: $date) {
+        id
         date
       }
     }
   `;
 
-  async function updateBackgroundDetails(id, data) {
+  async function updateBackgroundDate(id, data) {
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
-          query: mUpdateBackground,
+          query: mUpdateBackgroundDate,
           variables: {
             id: id,
             date: data.date !== null ? new Date(data.date).toISOString() : null,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  async function updateBackgroundDesc(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackgroundDesc,
+          variables: {
+            id: id,
             description: data.description,
           },
         });
@@ -532,6 +560,38 @@ const TableInfo = ({
     }
   }`;
 
+  const mPaginationbyItems = `
+  query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+    matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
+      items {
+        id
+        name
+        details
+        date
+        s3ObjectKey
+        labels {
+          items {
+            id
+            name
+          }
+        }
+        backgrounds {
+          items {
+            id
+            order
+            description
+          }
+        }
+        createdAt
+        order
+        type
+        size
+      }
+      nextToken
+    }
+  }
+  `;
+
   const pasteFilestoBackground = async (background_id) => {
     let arrCopyFiles = [];
     let arrFileResult = [];
@@ -590,6 +650,9 @@ const TableInfo = ({
               downloadURL: downloadURL,
             })
           );
+
+
+        
 
         const updateArrFiles = witness.map((obj) => {
           if (obj.id === background_id) {
@@ -773,6 +836,193 @@ const TableInfo = ({
 
   useBottomScrollListener(handleBottomScroll);
 
+  var idTag = [];
+  //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
+  const handleUploadLink = async (uf) => {
+
+
+    var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
+    window.scrollTo(0, 0);
+    //adjust order of existing files
+    let tempMatter = [...matterFiles];
+    const result = tempMatter.map(({ id }, index) => ({
+      id: id,
+      order: index + uploadedFiles.length,
+    }));
+    const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+    await API.graphql({
+      query: mUpdateBulkMatterFileOrder,
+      variables: {
+        arrangement: result,
+      },
+    });
+
+    //Add order to new files
+    var sortedFiles = uploadedFiles.sort(
+      (a, b) => b.oderSelected - a.oderSelected
+    );
+
+    //insert in matter file list
+    sortedFiles.map(async (file) => {
+      await createMatterFile(file);
+    });
+
+    console.log("idtag",idTag);
+
+    //set witness content
+    setTimeout(async () => {
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: selectedRowId,
+        },
+      });
+
+      // if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+
+        const updateArrFiles = witness.map((obj) => {
+          if (obj.id === selectedRowId) {
+            return { ...obj, files: { items: newFilesResult } };
+          }
+          return obj;
+        });
+
+        console.log("new filess",newFilesResult);
+        setWitness(updateArrFiles);
+      // }
+    }, 3000);
+
+
+    setalertMessage(`File has been added! Go to File bucket`);
+    setShowToast(true);
+    setGoToFileBucket(true);
+
+    handleModalClose();
+    setTimeout(() => {
+      setShowToast(false);
+      setGoToFileBucket(false);
+    },5000);    
+  };
+
+  const mCreateMatterFile = `
+        mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
+          matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
+            id
+            name
+            downloadURL
+            order
+          }
+        }
+    `;
+
+
+
+  async function createMatterFile(file) {
+    const request = await API.graphql({
+      query: mCreateMatterFile,
+      variables: file,
+    });
+
+    idTag = [...idTag, {id: request.data.matterFileCreate.id}];
+    console.log("iDTag",idTag);
+    
+    const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+    //append in existing
+    const qlistBackgroundFiles = `
+    query getBackgroundByID($id: ID) {
+      background(id: $id) {
+        id
+        files {
+          items {
+            id
+            downloadURL
+            details
+            name
+          }
+        }
+      }
+    }`;
+
+    let arrFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
+
+    console.log("MID/BID", background_id);
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: selectedRowId,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+
+      idTag.push(...arrFileResult);
+      console.log("updatedidtag", idTag);
+
+      const filteredArr = idTag.filter((el) => {
+      const duplicate = seen.has(el.id);
+        seen.add(el.id);
+        return !duplicate;
+      });
+
+      console.log("no duplicate file",filteredArr);
+
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: filteredArr,
+        }
+     });
+
+    }else{
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: idTag,
+        }
+     });
+    }
+
+    return request;
+  }
+
+  function attachFiles(id){
+    setShowUploadModal(true);
+    setSelectedRowID(id);
+  }
+
   const mUpdateMatterFileDesc = `
       mutation updateMatterFile ($id: ID, $details: String) {
         matterFileUpdate(id: $id, details: $details) {
@@ -791,42 +1041,62 @@ const TableInfo = ({
       }
   `;
 
-  const handleSyncData = async (backgroundId, fileId) => {
-    var filteredWitness = witness.filter(function (item) {
-      return item.id === backgroundId;
-    });
-
-    const dateRequest = API.graphql({
-      query: mUpdateMatterFileDate,
+  let getMatterFiles = async (next) => {
+    let q = mPaginationbyItems;
+    const params = {
+      query: q,
       variables: {
-        id: fileId,
-        date:
-          filteredWitness[0].date !== null &&
-          filteredWitness[0].date !== "null" &&
-          filteredWitness[0].date !== ""
-            ? new Date(filteredWitness[0].date).toISOString()
-            : null,
+        matterId: matterId,
+        isDeleted: false,
+        limit: 20,
+        nextToken: null,
       },
+    };
+    await API.graphql(params).then((files) => {
+      const matterFilesList = files.data.matterFiles.items;
+      console.log("checkthis", matterFilesList);
+      setMatterFiles(sortByFileOrder(matterFilesList));
     });
-
-    const descRequest = API.graphql({
-      query: mUpdateMatterFileDesc,
-      variables: {
-        id: fileId,
-        details: filteredWitness[0].description,
-      },
-    });
-
-    setalertMessage(`Successfully synced to File Bucket `);
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
   };
 
-  function b64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str));
+  function sortByFileOrder(arr) {
+    let sort;
+    sort = arr.sort((a, b) => a.order - b.order);
+    return sort;
   }
+
+  const handleSyncData = async (backgroundId, fileId) => {
+      var filteredWitness = witness.filter(function (item) {
+        return item.id === backgroundId;
+      });
+
+      const dateRequest = API.graphql({
+        query: mUpdateMatterFileDate,
+        variables: {
+          id: fileId,
+          date:
+          filteredWitness[0].date !== null && filteredWitness[0].date !== "null" && filteredWitness[0].date !== ""
+              ? new Date(filteredWitness[0].date).toISOString()
+              : null,
+        },
+      });
+
+      const descRequest = API.graphql({
+        query: mUpdateMatterFileDesc,
+        variables: {
+          id: fileId,
+          details: filteredWitness[0].description,
+        },
+      });
+
+      setalertMessage(`Successfully synced to File Bucket `);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 2000);
+
+  };
+
 
   return (
     <>
@@ -1010,7 +1280,9 @@ const TableInfo = ({
                                                 item.id
                                               )
                                             }
-                                            contentEditable={true}
+                                            contentEditable={
+                                              updateProgess ? false : true
+                                            }
                                           ></div>
                                           <span className="text-red-400 filename-validation">
                                             {item.id === descId && descAlert}
@@ -1036,27 +1308,25 @@ const TableInfo = ({
                                             ) ? (
                                               <button></button>
                                             ) : (
+                                              <span class="flex">
+                                              <button className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-white hover:text-green-500 hover:border-green-500 focus:outline-none "
+                                              onClick={() => attachFiles(item.id)}
+                                              >Upload File +</button>
+                                              
                                               <button
-                                                className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className=" w-15 bg-white border border-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-green-400 font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 onClick={() =>
-                                                  (window.location = `${
-                                                    AppRoutes.FILEBUCKET
-                                                  }/${matterId}/${
-                                                    item.id
-                                                  }?matter_name=${b64EncodeUnicode(
-                                                    client_name
-                                                  )}&client_name=${b64EncodeUnicode(
-                                                    matter_name
-                                                  )}`)
+                                                  (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`)
                                                 }
                                               >
-                                                File Bucket +
+                                               <BsFillBucketFill/>
                                               </button>
+                                              </span>
                                             )
                                           ) : (
                                             <span
                                               className={
-                                                selectedId === item.id
+                                                selectedId === item.id 
                                                   ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                   : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                               }
@@ -1135,6 +1405,7 @@ const TableInfo = ({
                                                           )
                                                         }
                                                       />
+
                                                       {activateButton ? (
                                                         <BsFillTrashFill
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
@@ -1156,18 +1427,15 @@ const TableInfo = ({
                                                           }
                                                         />
                                                       )}
-                                                      <FaSync
-                                                        className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right"
-                                                        title="Sync Date and Description to File Bucket"
-                                                        onClick={() =>
-                                                          handleSyncData(
-                                                            item.id,
-                                                            items.id
-                                                          )
-                                                        }
-                                                      >
-                                                        {" "}
-                                                      </FaSync>
+
+                                                      <FaSync className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right" title="Sync Date and Description to File Bucket" 
+                                                      onClick={() =>
+                                                        handleSyncData(
+                                                          item.id,
+                                                          items.id
+                                                        )
+                                                      }
+                                                      > </FaSync>
                                                     </p>
                                                   </span>
                                                 )
@@ -1230,6 +1498,15 @@ const TableInfo = ({
         </div>
         <div className="p-2"></div>
       </div>
+      {showUploadModal && (
+        <UploadLinkModal
+          title={""}
+          handleSave={handleUploadLink}
+          bucketName={matterId}
+          handleModalClose={handleModalClose}
+        />
+      )}
+
       {ShowModalParagraph && (
         <ModalParagraph
           setShowModalParagraph={setShowModalParagraph}
@@ -1253,8 +1530,14 @@ const TableInfo = ({
         />
       )}
       {showToast && (
+        <div onClick={goToFileBucket ? () =>
+          (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/000`)
+          : null
+        }>
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+        </div>
       )}
+
     </>
   );
 };
