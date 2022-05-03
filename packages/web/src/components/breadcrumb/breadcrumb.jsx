@@ -44,7 +44,7 @@ const BreadCrumb = ({ matterId, client_name, matter_name }) => {
               className="font-medium text-gray-500"
               to={`${
                 AppRoutes.BACKGROUND
-              }/${matterId}?matter_name=${b64EncodeUnicode(
+              }/${matterId}/?matter_name=${b64EncodeUnicode(
                 matter_name
               )}&client_name=${b64EncodeUnicode(client_name)}`}
             >
@@ -68,7 +68,7 @@ const BreadCrumb = ({ matterId, client_name, matter_name }) => {
               className="font-medium text-gray-900"
               to={`${
                 AppRoutes.FILEBUCKET
-              }/${matterId}/000?matter_name=${b64EncodeUnicode(
+              }/${matterId}/000/?matter_name=${b64EncodeUnicode(
                 matter_name
               )}&client_name=${b64EncodeUnicode(client_name)}`}
             >
