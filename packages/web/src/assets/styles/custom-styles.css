@@ -3,3 +3,7 @@
 .invalid{
     background-color: rgb(240, 238, 215) !important;
 }
+
+.react-datepicker-popper {
+    z-index: 40 !important;
+}
