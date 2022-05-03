@@ -98,6 +98,7 @@ const TableInfo = ({
 
   const [selectedRowId, setSelectedRowID] = useState(null);
   const [test, setTest] = useState(null);
+  const [goToFileBucket, setGoToFileBucket] = useState(false);
 
   const { background_id } = useParams();
 
@@ -822,6 +823,8 @@ const TableInfo = ({
   var idTag = [];
   //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
   const handleUploadLink = async (uf) => {
+
+
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
     window.scrollTo(0, 0);
     //adjust order of existing files
@@ -846,19 +849,17 @@ const TableInfo = ({
     });
 
     //Add order to new files
-    var next = 1;
     var sortedFiles = uploadedFiles.sort(
       (a, b) => b.oderSelected - a.oderSelected
     );
 
-    //get existing datas attached
-    console.log("SID", selectedRowId);
-
+    //insert in matter file list
     sortedFiles.map(async (file) => {
       await createMatterFile(file);
     });
 
     console.log("idtag",idTag);
+
     //set witness content
     setTimeout(async () => {
       const backgroundFilesOptReq = await API.graphql({
@@ -868,7 +869,7 @@ const TableInfo = ({
         },
       });
 
-      if (backgroundFilesOptReq.data.background.files !== null) {
+      // if (backgroundFilesOptReq.data.background.files !== null) {
         const newFilesResult =
           backgroundFilesOptReq.data.background.files.items.map(
             ({ id, name, description, downloadURL }) => ({
@@ -888,16 +889,19 @@ const TableInfo = ({
 
         console.log("new filess",newFilesResult);
         setWitness(updateArrFiles);
-      }
+      // }
     }, 3000);
 
-    setResultMessage(`File successfully uploaded!`);
+
+    setalertMessage(`File has been added! Go to File bucket`);
     setShowToast(true);
+    setGoToFileBucket(true);
 
     handleModalClose();
     setTimeout(() => {
       setShowToast(false);
-    }, 3000);    
+      setGoToFileBucket(false);
+    },5000);    
   };
 
   const mCreateMatterFile = `
@@ -960,8 +964,6 @@ const TableInfo = ({
     });
 
     if (backgroundFilesOpt.data.background.files !== null) {
-      console.log("valid id");
-      console.log(backgroundFilesOpt);
       arrFileResult = backgroundFilesOpt.data.background.files.items.map(
         ({ id }) => ({
           id: id,
@@ -988,8 +990,6 @@ const TableInfo = ({
      });
 
     }else{
-      console.log("invalid id");
-
       API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
@@ -998,6 +998,7 @@ const TableInfo = ({
         }
      });
     }
+
     return request;
   }
 
@@ -1311,7 +1312,7 @@ const TableInfo = ({
                                           ) : (
                                             <span
                                               className={
-                                                selectedId === item.id
+                                                selectedId === item.id 
                                                   ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                   : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                               }
@@ -1515,7 +1516,12 @@ const TableInfo = ({
         />
       )}
       {showToast && (
+        <div onClick={goToFileBucket ? () =>
+          (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/000`)
+          : null
+        }>
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+        </div>
       )}
 
     </>
