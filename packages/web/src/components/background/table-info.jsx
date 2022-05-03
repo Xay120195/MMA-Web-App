@@ -205,10 +205,6 @@ const TableInfo = ({
 
     setIdList(getId);
 
-    if (matterFiles === null) {
-      console.log("matterFiles is null");
-      getMatterFiles();
-    }
   }, [getId]);
 
   const handleDescContent = (e, description, id) => {
@@ -1037,29 +1033,6 @@ const TableInfo = ({
         }
       }
   `;
-
-
-
-  let getMatterFiles = async (next) => {
-    let q = mPaginationbyItems;
-    const params = {
-      query: q,
-      variables: {
-        id: fileId,
-        date:
-          filteredWitness[0].date !== null &&
-          filteredWitness[0].date !== "null" &&
-          filteredWitness[0].date !== ""
-            ? new Date(filteredWitness[0].date).toISOString()
-            : null,
-      },
-    };
-    await API.graphql(params).then((files) => {
-      const matterFilesList = files.data.matterFiles.items;
-      console.log("checkthis", matterFilesList);
-      setMatterFiles(sortByFileOrder(matterFilesList));
-    });
-  };
 
   function sortByFileOrder(arr) {
     let sort;
