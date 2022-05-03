@@ -6,7 +6,7 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync } from "react-icons/fa";
-import { BsFillTrashFill } from "react-icons/bs";
+import { BsFillTrashFill, BsFillBucketFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
@@ -19,6 +19,7 @@ import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
 import ScrollToTop from "react-scroll-to-top";
+import UploadLinkModal from "../file-bucket/file-upload-modal";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -90,6 +91,11 @@ const TableInfo = ({
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
   const [sortByDate, setSortByDate] = useState([]);
 
+  const [selectedRowId, setSelectedRowID] = useState(null);
+  const [goToFileBucket, setGoToFileBucket] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [matterFiles, setMatterFiles] = useState(null);
+
   const location = useLocation();
   const history = useHistory();
 
@@ -114,6 +120,7 @@ const TableInfo = ({
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
+    setShowUploadModal(false);
   };
 
   const handleCheckboxChange = (position, event, id, date, details) => {
@@ -189,6 +196,11 @@ const TableInfo = ({
     }, 1000);
 
     setIdList(getId);
+
+    if (matterFiles === null) {
+      console.log("matterFiles is null");
+      getMatterFiles();
+    }
   }, [getId]);
 
   const handleDescContent = (e, description, id) => {
@@ -828,6 +840,246 @@ const TableInfo = ({
     return btoa(encodeURIComponent(str));
   }
 
+  //UPLOADING FILE THROUGH BG
+  function attachFiles(id){
+    setShowUploadModal(true);
+    setSelectedRowID(id);
+  }
+
+  var idTag = [];
+  //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
+  const handleUploadLink = async (uf) => {
+    var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
+    window.scrollTo(0, 0);
+    //adjust order of existing files
+    let tempMatter = [...matterFiles];
+    const result = tempMatter.map(({ id }, index) => ({
+      id: id,
+      order: index + uploadedFiles.length,
+    }));
+    const mUpdateBulkMatterFileOrder = `
+    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+      matterFileBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }
+    `;
+    await API.graphql({
+      query: mUpdateBulkMatterFileOrder,
+      variables: {
+        arrangement: result,
+      },
+    });
+
+    //Add order to new files
+    var sortedFiles = uploadedFiles.sort(
+      (a, b) => b.oderSelected - a.oderSelected
+    );
+
+    //insert in matter file list
+    sortedFiles.map(async (file) => {
+      await createMatterFile(file);
+    });
+
+    console.log("idtag",idTag);
+
+    //set witness content
+    setTimeout(async () => {
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: selectedRowId,
+        },
+      });
+
+      // if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+
+        const updateArrFiles = witness.map((obj) => {
+          if (obj.id === selectedRowId) {
+            return { ...obj, files: { items: newFilesResult } };
+          }
+          return obj;
+        });
+
+        console.log("new filess",newFilesResult);
+        setWitness(updateArrFiles);
+      // }
+    }, 3000);
+
+    setalertMessage(`File has been added! Go to File bucket`);
+    setShowToast(true);
+    setGoToFileBucket(true);
+
+    handleModalClose();
+    setTimeout(() => {
+      setShowToast(false);
+      setGoToFileBucket(false);
+    },5000);    
+  };
+
+  const mCreateMatterFile = `
+        mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
+          matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
+            id
+            name
+            downloadURL
+            order
+          }
+        }
+    `;
+
+
+
+  async function createMatterFile(file) {
+    const request = await API.graphql({
+      query: mCreateMatterFile,
+      variables: file,
+    });
+
+    idTag = [...idTag, {id: request.data.matterFileCreate.id}];
+    console.log("iDTag",idTag);
+    
+    const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+    //append in existing
+    const qlistBackgroundFiles = `
+    query getBackgroundByID($id: ID) {
+      background(id: $id) {
+        id
+        files {
+          items {
+            id
+            downloadURL
+            details
+            name
+          }
+        }
+      }
+    }`;
+
+    let arrFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
+
+    // console.log("MID/BID", background_id);
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: selectedRowId,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+
+      idTag.push(...arrFileResult);
+      console.log("updatedidtag", idTag);
+
+      const filteredArr = idTag.filter((el) => {
+      const duplicate = seen.has(el.id);
+        seen.add(el.id);
+        return !duplicate;
+      });
+
+      console.log("no duplicate file",filteredArr);
+
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: filteredArr,
+        }
+     });
+
+    }else{
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: idTag,
+        }
+     });
+    }
+
+    return request;
+  }
+  const mPaginationbyItems = `
+  query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+    matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
+      items {
+        id
+        name
+        details
+        date
+        s3ObjectKey
+        labels {
+          items {
+            id
+            name
+          }
+        }
+        backgrounds {
+          items {
+            id
+            order
+            description
+          }
+        }
+        createdAt
+        order
+        type
+        size
+      }
+      nextToken
+    }
+  }
+  `;
+
+  let getMatterFiles = async (next) => {
+    let q = mPaginationbyItems;
+    const params = {
+      query: q,
+      variables: {
+        matterId: matterId,
+        isDeleted: false,
+        limit: 20,
+        nextToken: null,
+      },
+    };
+    await API.graphql(params).then((files) => {
+      const matterFilesList = files.data.matterFiles.items;
+      console.log("checkthis", matterFilesList);
+      setMatterFiles(sortByFileOrder(matterFilesList));
+    });
+  };
+
+  function sortByFileOrder(arr) {
+    let sort;
+    sort = arr.sort((a, b) => a.order - b.order);
+    return sort;
+  }
+
   return (
     <>
       <div style={{ padding: "2rem", marginLeft: "4rem" }}>
@@ -1036,22 +1288,20 @@ const TableInfo = ({
                                             ) ? (
                                               <button></button>
                                             ) : (
-                                              <button
-                                                className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                                onClick={() =>
-                                                  (window.location = `${
-                                                    AppRoutes.FILEBUCKET
-                                                  }/${matterId}/${
-                                                    item.id
-                                                  }?matter_name=${b64EncodeUnicode(
-                                                    client_name
-                                                  )}&client_name=${b64EncodeUnicode(
-                                                    matter_name
-                                                  )}`)
-                                                }
-                                              >
-                                                File Bucket +
-                                              </button>
+                                              <span class="flex">
+                                                <button className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-white hover:text-green-500 hover:border-green-500 focus:outline-none "
+                                                onClick={() => attachFiles(item.id)}
+                                                >Upload File +</button>
+                                                
+                                                <button
+                                                  className=" w-15 bg-white border border-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-green-400 font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                  onClick={() =>
+                                                    (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/000`)
+                                                  }
+                                                >
+                                                <BsFillBucketFill/>
+                                                </button>
+                                              </span>
                                             )
                                           ) : (
                                             <span
@@ -1230,6 +1480,14 @@ const TableInfo = ({
         </div>
         <div className="p-2"></div>
       </div>
+      {showUploadModal && (
+        <UploadLinkModal
+          title={""}
+          handleSave={handleUploadLink}
+          bucketName={matterId}
+          handleModalClose={handleModalClose}
+        />
+      )}
       {ShowModalParagraph && (
         <ModalParagraph
           setShowModalParagraph={setShowModalParagraph}
@@ -1253,7 +1511,12 @@ const TableInfo = ({
         />
       )}
       {showToast && (
+        <div onClick={goToFileBucket ? () =>
+          (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/000`)
+          : null
+        }>
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+        </div>
       )}
     </>
   );

@@ -691,26 +691,24 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       }
     });
 
-    if (isNewCtr === 0) {
-      console.log("No new labels found");
-      console.log("data.labels.items", data.labels.items);
-
-      updateArrLabels(data.labels.items, index);
-      await updateMatterFile(fileId, data);
-      tagFileLabel(fileId, data.labels.items);
-    }
-
-    var next = 1;
     setResultMessage(`Updating labels..`);
     setShowToast(true);
     setTimeout(() => {
-      getMatterFiles(next);
       setTimeout(() => {
         setTimeout(() => {
           setShowToast(false);
         }, 1000);
       }, 1000);
     }, 1000);
+    
+    if (isNewCtr === 0) {
+      console.log("No new labels found");
+      console.log("data.labels.items", data.labels.items);
+      updateArrLabels(data.labels.items, index);
+      await updateMatterFile(fileId, data);
+      tagFileLabel(fileId, data.labels.items);
+    }
+    
   };
 
   function updateArrLabels(data, index) {
