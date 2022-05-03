@@ -519,20 +519,20 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
 
-  // const mInitializeOrders = `
-  //   mutation initializeOrder($clientMatterId: ID) {
-  //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-  //       id
-  //     }
-  //   }
-  // `;
-
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
     // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
     //   q = mNoPaginationbyItems;
     // }
 
+    // const mInitializeOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
+    
     // const initializeMatterFileOrder = await API.graphql({
     //   query: mInitializeOrders,
     //   variables: { clientMatterId: matter_id },
