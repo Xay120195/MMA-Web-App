@@ -226,38 +226,23 @@ const TableInfo = ({
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
-    console.log(e.target.innerHTML);
+    const updateArr = witness.map((obj) => {
+      if (obj.id === id) {
+        return { ...obj, description: e.target.innerHTML };
+      }
+      return obj;
+    });
+
+    setWitness(updateArr);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
       setUpdateProgress(false);
     } else if (textDesc === description) {
       setDescAlert("");
-      setUpdateProgress(true);
-      setalertMessage(`Saving in progress..`);
-      setShowToast(true);
 
       const data = {
         description: e.target.innerHTML,
-        date: date,
       };
-
-      await updateBackgroundDetails(id, data);
-      setTimeout(() => {
-        setTimeout(() => {
-          setTextDesc("");
-          setalertMessage(`Successfully updated `);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-            setUpdateProgress(false);
-          }, 1000);
-        }, 1000);
-      }, 1000);
-    } else {
-      setDescAlert("");
-      setUpdateProgress(true);
-      setalertMessage(`Saving in progress..`);
-      setShowToast(true);
 
       const updateArr = witness.map((obj) => {
         if (obj.id === id) {
@@ -268,21 +253,28 @@ const TableInfo = ({
 
       setWitness(updateArr);
 
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setShowToast(true);
+        setalertMessage(`Successfully updated`);
+      }
+      setTimeout(() => {
+        setShowToast(false);
+      }, 1000);
+    } else {
+      setDescAlert("");
+
       const data = {
         description: e.target.innerHTML,
         date: date,
       };
-      await updateBackgroundDetails(id, data);
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setShowToast(true);
+        setalertMessage(`Successfully updated`);
+      }
       setTimeout(() => {
-        setTimeout(() => {
-          setTextDesc("");
-          setalertMessage(`Successfully updated`);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-            setUpdateProgress(false);
-          }, 1000);
-        }, 1000);
+        setShowToast(false);
       }, 1000);
     }
   };
@@ -292,7 +284,7 @@ const TableInfo = ({
       description: !description ? "" : description,
       date: selected !== null ? String(selected) : null,
     };
-    await updateBackgroundDetails(id, data);
+    await updateBackgroundDate(id, data);
 
     const updatedOSArray = witness.map((p) =>
       p.id === id ? { ...p, date: data.date } : p
@@ -301,24 +293,48 @@ const TableInfo = ({
     setWitness(updatedOSArray);
   };
 
-  const mUpdateBackground = `
-    mutation updateBackground($id: ID, $description: String, $date: AWSDateTime) {
-      backgroundUpdate(id: $id, description: $description, date: $date) {
+  const mUpdateBackgroundDesc = `
+    mutation updateBackground($id: ID, $description: String) {
+      backgroundUpdate(id: $id, description: $description) {
         id
         description
+      }
+    }
+  `;
+
+  const mUpdateBackgroundDate = `
+    mutation updateBackground($id: ID, $date: AWSDateTime) {
+      backgroundUpdate(id: $id, date: $date) {
+        id
         date
       }
     }
   `;
 
-  async function updateBackgroundDetails(id, data) {
+  async function updateBackgroundDate(id, data) {
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
-          query: mUpdateBackground,
+          query: mUpdateBackgroundDate,
           variables: {
             id: id,
             date: data.date !== null ? new Date(data.date).toISOString() : null,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  async function updateBackgroundDesc(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackgroundDesc,
+          variables: {
+            id: id,
             description: data.description,
           },
         });
