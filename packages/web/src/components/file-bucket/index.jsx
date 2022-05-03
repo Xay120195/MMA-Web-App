@@ -1710,6 +1710,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                         </td>
                                         <td>
                                           <DatePicker
+                                            popperProps={{positionFixed: true}} 
                                             className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
                                             dateFormat="dd MMM yyyy"
                                             selected={
