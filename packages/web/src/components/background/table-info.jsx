@@ -422,11 +422,10 @@ const TableInfo = ({
         if (backgroundFilesOptReq.data.background.files !== null) {
           const newFilesResult =
             backgroundFilesOptReq.data.background.files.items.map(
-              ({ id, name, description, downloadURL }) => ({
+              ({ id, name, description }) => ({
                 id: id,
                 name: name,
                 description: description,
-                downloadURL: downloadURL,
               })
             );
 
@@ -531,7 +530,6 @@ const TableInfo = ({
       files {
         items {
           id
-          downloadURL
           details
           name
         }
@@ -597,11 +595,10 @@ const TableInfo = ({
       if (backgroundFilesOptReq.data.background.files !== null) {
         const newFilesResult =
           backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description, downloadURL }) => ({
+            ({ id, name, description }) => ({
               id: id,
               name: name,
               description: description,
-              downloadURL: downloadURL,
             })
           );
 
@@ -898,11 +895,10 @@ const TableInfo = ({
       // if (backgroundFilesOptReq.data.background.files !== null) {
       const newFilesResult =
         backgroundFilesOptReq.data.background.files.items.map(
-          ({ id, name, description, downloadURL }) => ({
+          ({ id, name, description, }) => ({
             id: id,
             name: name,
             description: description,
-            downloadURL: downloadURL,
           })
         );
 
@@ -934,7 +930,6 @@ const TableInfo = ({
           matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
             id
             name
-            downloadURL
             order
           }
         }
@@ -965,7 +960,6 @@ const TableInfo = ({
         files {
           items {
             id
-            downloadURL
             details
             name
           }

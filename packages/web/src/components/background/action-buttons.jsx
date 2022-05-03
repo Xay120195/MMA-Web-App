@@ -341,7 +341,6 @@ const ActionButtons = (props) => {
       files {
         items {
           id
-          downloadURL
           details
           name
         }
@@ -386,11 +385,10 @@ const ActionButtons = (props) => {
       if (backgroundFilesOptReq.data.background.files !== null) {
         const newFilesResult =
           backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description, downloadURL }) => ({
+            ({ id, name, description }) => ({
               id: id,
               name: name,
               description: description,
-              downloadURL: downloadURL,
             })
           );
         setNewWitness(newFilesResult);
