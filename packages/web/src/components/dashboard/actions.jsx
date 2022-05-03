@@ -71,47 +71,48 @@ export const getMatterList = async (dispatch, companyId) => {
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
 
-      // Initialize filebucket/background orders
-      const mInitMatterFileOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
+    // Initialize filebucket/background orders
+    
+    //   const mInitMatterFileOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
 
-      const mInitBackgroundOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
+    //   const mInitBackgroundOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
 
-      let x = 0;
+    //   let x = 0;
 
-      result.map(async (i) => {
-        x++;
-        let matterId = i.id;
+    //   result.map(async (i) => {
+    //     x++;
+    //     let matterId = i.id;
 
-        if (x <= result.length) {
-          await API.graphql({
-            query: mInitMatterFileOrders,
-            variables: { clientMatterId: matterId },
-          }).then((res) => {
-            console.log(matterId, "File Bucket: Initial Sorting Successful!");
-            console.log(res);
-          });
+    //     if (x <= result.length) {
+    //       await API.graphql({
+    //         query: mInitMatterFileOrders,
+    //         variables: { clientMatterId: matterId },
+    //       }).then((res) => {
+    //         console.log(matterId, "File Bucket: Initial Sorting Successful!");
+    //         console.log(res);
+    //       });
 
-          await API.graphql({
-            query: mInitBackgroundOrders,
-            variables: { clientMatterId: matterId },
-          }).then((res) => {
-            console.log(matterId, "Background: Initial Sorting Successful!");
-            console.log(res);
-          });
-        }
-      });
+    //       await API.graphql({
+    //         query: mInitBackgroundOrders,
+    //         variables: { clientMatterId: matterId },
+    //       }).then((res) => {
+    //         console.log(matterId, "Background: Initial Sorting Successful!");
+    //         console.log(res);
+    //       });
+    //     }
+    //   });
 
       const dummyPersonResponsible = {
         id: localStorage.getItem("userId"),
