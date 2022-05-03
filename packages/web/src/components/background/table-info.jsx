@@ -205,6 +205,10 @@ const TableInfo = ({
 
     setIdList(getId);
 
+    if (matterFiles === null) {
+      console.log("matterFiles is null");
+      getMatterFiles();
+    }
   }, [getId]);
 
   const handleDescContent = (e, description, id) => {
@@ -1021,10 +1025,6 @@ const TableInfo = ({
       }
   `;
 
-<<<<<<< HEAD
-=======
-
-
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
     const params = {
@@ -1043,7 +1043,6 @@ const TableInfo = ({
     });
   };
 
->>>>>>> parent of 7492d6e (Merge branch 'develop' into feature/upload-files-background)
   function sortByFileOrder(arr) {
     let sort;
     sort = arr.sort((a, b) => a.order - b.order);
