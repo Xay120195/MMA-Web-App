@@ -200,6 +200,11 @@ custom:
         field: matterFileSoftDelete
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterFileBulkCreate
+        request: false
+        response: false  
       - dataSource: LambdaFileDS
         type: File
         field: downloadURL
