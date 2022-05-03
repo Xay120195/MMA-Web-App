@@ -9,7 +9,7 @@ import { FaPaste, FaSync } from "react-icons/fa";
 import { BsFillTrashFill, BsFillBucketFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
-import { API } from "aws-amplify";
+import { API, sectionFooterPrimaryContent } from "aws-amplify";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { MdDragIndicator } from "react-icons/md";
 import RemoveModal from "../delete-prompt-modal";
@@ -97,6 +97,7 @@ const TableInfo = ({
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const [selectedRowId, setSelectedRowID] = useState(null);
+  const [test, setTest] = useState(null);
 
   const { background_id } = useParams();
 
@@ -542,6 +543,38 @@ const TableInfo = ({
     }
   }`;
 
+  const mPaginationbyItems = `
+  query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+    matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
+      items {
+        id
+        name
+        details
+        date
+        s3ObjectKey
+        labels {
+          items {
+            id
+            name
+          }
+        }
+        backgrounds {
+          items {
+            id
+            order
+            description
+          }
+        }
+        createdAt
+        order
+        type
+        size
+      }
+      nextToken
+    }
+  }
+  `;
+
   const pasteFilestoBackground = async (background_id) => {
     let arrCopyFiles = [];
     let arrFileResult = [];
@@ -600,6 +633,9 @@ const TableInfo = ({
               downloadURL: downloadURL,
             })
           );
+
+
+        
 
         const updateArrFiles = witness.map((obj) => {
           if (obj.id === background_id) {
@@ -783,19 +819,17 @@ const TableInfo = ({
 
   useBottomScrollListener(handleBottomScroll);
 
+  var idTag = [];
   //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
     window.scrollTo(0, 0);
     //adjust order of existing files
     let tempMatter = [...matterFiles];
-    console.log("TM", tempMatter);
-    // tempMatter.sort((a, b) => b.order - a.order);
     const result = tempMatter.map(({ id }, index) => ({
       id: id,
       order: index + uploadedFiles.length,
     }));
-
     const mUpdateBulkMatterFileOrder = `
     mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
       matterFileBulkUpdateOrders(arrangement: $arrangement) {
@@ -804,7 +838,6 @@ const TableInfo = ({
       }
     }
     `;
-
     await API.graphql({
       query: mUpdateBulkMatterFileOrder,
       variables: {
@@ -812,84 +845,62 @@ const TableInfo = ({
       },
     });
 
-    //add order to new files
+    //Add order to new files
     var next = 1;
     var sortedFiles = uploadedFiles.sort(
       (a, b) => b.oderSelected - a.oderSelected
     );
 
     //get existing datas attached
+    console.log("SID", selectedRowId);
 
-    sortedFiles.map((file) => {
-      createMatterFile(file);
+    sortedFiles.map(async (file) => {
+      await createMatterFile(file);
     });
+
+    console.log("idtag",idTag);
+    //set witness content
+    setTimeout(async () => {
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: selectedRowId,
+        },
+      });
+
+      if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description, downloadURL }) => ({
+              id: id,
+              name: name,
+              description: description,
+              downloadURL: downloadURL,
+            })
+          );
+
+        const updateArrFiles = witness.map((obj) => {
+          if (obj.id === selectedRowId) {
+            return { ...obj, files: { items: newFilesResult } };
+          }
+          return obj;
+        });
+
+        console.log("new filess",newFilesResult);
+        setWitness(updateArrFiles);
+      }
+    }, 3000);
 
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
+
     handleModalClose();
     setTimeout(() => {
       setShowToast(false);
     }, 3000);    
   };
 
-  const mPaginationbyItems = `
-  query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-    matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
-      items {
-        id
-        name
-        details
-        date
-        s3ObjectKey
-        labels {
-          items {
-            id
-            name
-          }
-        }
-        backgrounds {
-          items {
-            id
-            order
-            description
-          }
-        }
-        createdAt
-        order
-        type
-        size
-      }
-      nextToken
-    }
-  }
-  `;
-
-  let getMatterFiles = async (next) => {
-    let q = mPaginationbyItems;
-    const params = {
-      query: q,
-      variables: {
-        matterId: matterId,
-        isDeleted: false,
-        limit: 20,
-        nextToken: null,
-      },
-    };
-    await API.graphql(params).then((files) => {
-      const matterFilesList = files.data.matterFiles.items;
-      console.log("checkthis", matterFilesList);
-      setMatterFiles(sortByFileOrder(matterFilesList));
-    });
-  };
-
-  function sortByFileOrder(arr) {
-    let sort;
-    sort = arr.sort((a, b) => a.order - b.order);
-    return sort;
-  }
-
-  async function createMatterFile(file) {
-    const mCreateMatterFile = `
+  const mCreateMatterFile = `
         mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
           matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
             id
@@ -900,16 +911,17 @@ const TableInfo = ({
         }
     `;
 
+
+
+  async function createMatterFile(file) {
     const request = await API.graphql({
       query: mCreateMatterFile,
       variables: file,
     });
 
-    var idTag = [];
-    console.log("sss", request.data.matterFileCreate.id);
     idTag = [...idTag, {id: request.data.matterFileCreate.id}];
     console.log("iDTag",idTag);
-
+    
     const mUpdateBackgroundFile = `
     mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
       backgroundFileTag(backgroundId: $backgroundId, files: $files) {
@@ -917,21 +929,6 @@ const TableInfo = ({
       }
     }
   `;
-
-        // const request1 = await API.graphql({
-        //   query: mUpdateBackgroundFile,
-        //   variables: {
-        //     backgroundId: selectedRowId,
-        //     files: idTag,
-        //   },
-        // });
- 
-    //  console.log("rows", witness);
-    //  console.log("created",request);
-
-    //  const updatedArray = witness.map((p) =>
-    //     p.id === id ? { ...p, date: data.date } : p
-    //   );
 
     //append in existing
     const qlistBackgroundFiles = `
@@ -980,7 +977,7 @@ const TableInfo = ({
         return !duplicate;
       });
 
-      console.log("no dupli",filteredArr);
+      console.log("no duplicate file",filteredArr);
 
       API.graphql({
         query: mUpdateBackgroundFile,
@@ -989,6 +986,7 @@ const TableInfo = ({
           files: filteredArr,
         }
      });
+
     }else{
       console.log("invalid id");
 
@@ -1000,37 +998,6 @@ const TableInfo = ({
         }
      });
     }
-
-
-    // if (backgroundFilesOpt.data.background.files !== null) {
-    //   arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-    //     ({ id }) => ({
-    //       id: id,
-    //     })
-    //   );
-    // }
-
-
-  
-
-    // const filteredArr = arrFiles.filter((el) => {
-    //   const duplicate = seen.has(el.id);
-    //   seen.add(el.id);
-    //   return !duplicate;
-    // });
-
-    // console.log("arrtobereplaced", filteredArr);
-
-    
-      // const request1 = await API.graphql({
-      //   query: mUpdateBackgroundFile,
-      //   variables: {
-      //     backgroundId: selectedRowId,
-      //     files: filteredArr,
-      //   },
-      // });
-
-
     return request;
   }
 
@@ -1038,6 +1005,7 @@ const TableInfo = ({
     setShowUploadModal(true);
     setSelectedRowID(id);
   }
+
   const mUpdateMatterFileDesc = `
       mutation updateMatterFile ($id: ID, $details: String) {
         matterFileUpdate(id: $id, details: $details) {
@@ -1055,6 +1023,32 @@ const TableInfo = ({
         }
       }
   `;
+
+
+
+  let getMatterFiles = async (next) => {
+    let q = mPaginationbyItems;
+    const params = {
+      query: q,
+      variables: {
+        matterId: matterId,
+        isDeleted: false,
+        limit: 20,
+        nextToken: null,
+      },
+    };
+    await API.graphql(params).then((files) => {
+      const matterFilesList = files.data.matterFiles.items;
+      console.log("checkthis", matterFilesList);
+      setMatterFiles(sortByFileOrder(matterFilesList));
+    });
+  };
+
+  function sortByFileOrder(arr) {
+    let sort;
+    sort = arr.sort((a, b) => a.order - b.order);
+    return sort;
+  }
 
   const handleSyncData = async (backgroundId, fileId) => {
       var filteredWitness = witness.filter(function (item) {
