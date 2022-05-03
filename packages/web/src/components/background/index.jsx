@@ -93,18 +93,18 @@ const Background = () => {
     }
   `;
 
-  // const mInitializeOrders = `
-  //   mutation initializeOrder($clientMatterId: ID) {
-  //     backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-  //       id
-  //     }
-  //   }
-  // `;
-
   const getBackground = async () => {
     let result = [];
     setWait(false);
     const matterId = matter_id;
+
+    // const mInitializeOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
 
     // const initializeBackgroundOrder = await API.graphql({
     //   query: mInitializeOrders,

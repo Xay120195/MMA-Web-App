@@ -519,20 +519,20 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
 
-  // const mInitializeOrders = `
-  //   mutation initializeOrder($clientMatterId: ID) {
-  //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-  //       id
-  //     }
-  //   }
-  // `;
-
   let getMatterFiles = async (next) => {
     let q = mPaginationbyItems;
-    if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-      q = mNoPaginationbyItems;
-    }
+    // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+    //   q = mNoPaginationbyItems;
+    // }
 
+    // const mInitializeOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
+    
     // const initializeMatterFileOrder = await API.graphql({
     //   query: mInitializeOrders,
     //   variables: { clientMatterId: matter_id },
@@ -567,9 +567,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
       let q = mPaginationbyItems;
-      if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-        q = mNoPaginationbyItems;
-      }
+      // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
+      //   q = mNoPaginationbyItems;
+      // }
 
       const params = {
         query: q,
@@ -1419,7 +1419,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         </div>
 
         <div
-          className="bg-white z-50 "
+          className="bg-white z-30 "
           style={{ position: "sticky", top: "0" }}
         >
           <nav aria-label="Breadcrumb" style={style} className="mt-4">
@@ -1615,7 +1615,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       <DragDropContext onDragEnd={handleDragEnd}>
                         <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                           <thead
-                            className="bg-gray-100 z-50"
+                            className="bg-gray-100 z-30"
                             style={{ position: "sticky", top: "153px" }}
                           >
                             <tr>
@@ -1966,8 +1966,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
-                      ) : matterFiles.length >= 20 &&
-                        matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" ? (
+                      ) : matterFiles.length >= 20 
+                      // && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b" 
+                        ? (
                         <div className="flex justify-center items-center mt-5">
                           <img src={imgLoading} width={50} height={100} />
                         </div>

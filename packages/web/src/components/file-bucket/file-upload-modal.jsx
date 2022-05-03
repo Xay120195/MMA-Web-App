@@ -267,7 +267,7 @@ export default function UploadLinkModal(props) {
 
   return (
     <>
-      <div className="main-upload">
+      <div className="main-upload z-50">
         <div className="title-grid">
           <p className="title-txt">{props.title}</p>
           <FiMinus
