@@ -1525,7 +1525,11 @@ const TableInfo = ({
           onClick={
             goToFileBucket
               ? () =>
-                  (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/000`)
+                  (window.location = `${
+                    AppRoutes.FILEBUCKET
+                  }/${matterId}/000/?matter_name=${b64EncodeUnicode(
+                    matter_name
+                  )}&client_name=${b64EncodeUnicode(client_name)}`)
               : null
           }
         >
