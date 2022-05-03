@@ -62,8 +62,8 @@ const TableInfo = ({
   checkDocu,
   pasteButton,
   setSrcIndex,
-  client_name,
-  matter_name,
+  srcIndex,
+  pageTotal,
   pageIndex,
   pageSize,
   pageSizeConst,
@@ -225,9 +225,10 @@ const TableInfo = ({
     console.log(e.target.innerHTML);
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
+      setUpdateProgress(false);
     } else if (textDesc === description) {
       setDescAlert("");
-
+      setUpdateProgress(true);
       setalertMessage(`Saving in progress..`);
       setShowToast(true);
 
@@ -235,15 +236,6 @@ const TableInfo = ({
         description: e.target.innerHTML,
         date: date,
       };
-
-      const updateArr = witness.map((obj) => {
-        if (obj.id === id) {
-          return { ...obj, description: e.target.innerHTML };
-        }
-        return obj;
-      });
-
-      setWitness(updateArr);
 
       await updateBackgroundDetails(id, data);
       setTimeout(() => {
@@ -259,7 +251,7 @@ const TableInfo = ({
       }, 1000);
     } else {
       setDescAlert("");
-
+      setUpdateProgress(true);
       setalertMessage(`Saving in progress..`);
       setShowToast(true);
 
@@ -462,15 +454,10 @@ const TableInfo = ({
     setHighlightRows("bg-white");
 
     if (queryParams.has("count")) {
-      // queryParams.delete("count");
-      // history.replace({
-      //   search: queryParams.toString(),
-      // });
-      history.push(
-        `${AppRoutes.BACKGROUND}/${matterId}/?matter_name=${b64EncodeUnicode(
-          matter_name
-        )}&client_name=${b64EncodeUnicode(client_name)}`
-      );
+      queryParams.delete("count");
+      history.replace({
+        search: queryParams.toString(),
+      });
     }
   }, 10000);
 
@@ -1034,14 +1021,33 @@ const TableInfo = ({
       }
   `;
 
+<<<<<<< HEAD
+=======
+
+
+  let getMatterFiles = async (next) => {
+    let q = mPaginationbyItems;
+    const params = {
+      query: q,
+      variables: {
+        matterId: matterId,
+        isDeleted: false,
+        limit: 20,
+        nextToken: null,
+      },
+    };
+    await API.graphql(params).then((files) => {
+      const matterFilesList = files.data.matterFiles.items;
+      console.log("checkthis", matterFilesList);
+      setMatterFiles(sortByFileOrder(matterFilesList));
+    });
+  };
+
+>>>>>>> parent of 7492d6e (Merge branch 'develop' into feature/upload-files-background)
   function sortByFileOrder(arr) {
     let sort;
     sort = arr.sort((a, b) => a.order - b.order);
     return sort;
-  }
-
-  function b64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str));
   }
 
   const handleSyncData = async (backgroundId, fileId) => {
@@ -1067,12 +1073,13 @@ const TableInfo = ({
           details: filteredWitness[0].description,
         },
       });
-  
+
       setalertMessage(`Successfully synced to File Bucket `);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
       }, 2000);
+
   };
 
 
@@ -1258,7 +1265,9 @@ const TableInfo = ({
                                                 item.id
                                               )
                                             }
-                                            contentEditable={true}
+                                            contentEditable={
+                                              updateProgess ? false : true
+                                            }
                                           ></div>
                                           <span className="text-red-400 filename-validation">
                                             {item.id === descId && descAlert}
@@ -1292,15 +1301,7 @@ const TableInfo = ({
                                               <button
                                                 className=" w-15 bg-white border border-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-green-400 font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 onClick={() =>
-                                                  (window.location = `${
-                                                    AppRoutes.FILEBUCKET
-                                                  }/${matterId}/${
-                                                    item.id
-                                                  }?matter_name=${b64EncodeUnicode(
-                                                    matter_name
-                                                  )}&client_name=${b64EncodeUnicode(
-                                                    client_name
-                                                  )}`)
+                                                  (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`)
                                                 }
                                               >
                                                <BsFillBucketFill/>
@@ -1389,6 +1390,7 @@ const TableInfo = ({
                                                           )
                                                         }
                                                       />
+
                                                       {activateButton ? (
                                                         <BsFillTrashFill
                                                           className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
@@ -1410,18 +1412,15 @@ const TableInfo = ({
                                                           }
                                                         />
                                                       )}
-                                                      <FaSync
-                                                        className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right"
-                                                        title="Sync Date and Description to File Bucket"
-                                                        onClick={() =>
-                                                          handleSyncData(
-                                                            item.id,
-                                                            items.id
-                                                          )
-                                                        }
-                                                      >
-                                                        {" "}
-                                                      </FaSync>
+
+                                                      <FaSync className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right" title="Sync Date and Description to File Bucket" 
+                                                      onClick={() =>
+                                                        handleSyncData(
+                                                          item.id,
+                                                          items.id
+                                                        )
+                                                      }
+                                                      > </FaSync>
                                                     </p>
                                                   </span>
                                                 )
