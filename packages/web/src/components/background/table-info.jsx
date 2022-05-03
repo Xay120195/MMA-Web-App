@@ -446,10 +446,15 @@ const TableInfo = ({
     setHighlightRows("bg-white");
 
     if (queryParams.has("count")) {
-      queryParams.delete("count");
-      history.replace({
-        search: queryParams.toString(),
-      });
+      // queryParams.delete("count");
+      // history.replace({
+      //   search: queryParams.toString(),
+      // });
+      history.push(
+        `${AppRoutes.BACKGROUND}/${matterId}/?matter_name=${b64EncodeUnicode(
+          matter_name
+        )}&client_name=${b64EncodeUnicode(client_name)}`
+      );
     }
   }, 10000);
 
@@ -1044,9 +1049,9 @@ const TableInfo = ({
                                                   }/${matterId}/${
                                                     item.id
                                                   }?matter_name=${b64EncodeUnicode(
-                                                    client_name
-                                                  )}&client_name=${b64EncodeUnicode(
                                                     matter_name
+                                                  )}&client_name=${b64EncodeUnicode(
+                                                    client_name
                                                   )}`)
                                                 }
                                               >
