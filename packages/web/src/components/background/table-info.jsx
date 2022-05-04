@@ -94,7 +94,6 @@ const TableInfo = ({
   const [selectedRowId, setSelectedRowID] = useState(null);
   const [goToFileBucket, setGoToFileBucket] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [matterFiles, setMatterFiles] = useState(null);
 
   const location = useLocation();
   const history = useHistory();
@@ -197,10 +196,10 @@ const TableInfo = ({
 
     setIdList(getId);
 
-    if (matterFiles === null) {
-      console.log("matterFiles is null");
-      getMatterFiles();
-    }
+    // if (matterFiles === null) {
+    //   console.log("matterFiles is null");
+    //   getMatterFiles();
+    // }
   }, [getId]);
 
   const handleDescContent = (e, description, id) => {
@@ -422,11 +421,10 @@ const TableInfo = ({
         if (backgroundFilesOptReq.data.background.files !== null) {
           const newFilesResult =
             backgroundFilesOptReq.data.background.files.items.map(
-              ({ id, name, description, downloadURL }) => ({
+              ({ id, name, description }) => ({
                 id: id,
                 name: name,
                 description: description,
-                downloadURL: downloadURL,
               })
             );
 
@@ -531,7 +529,6 @@ const TableInfo = ({
       files {
         items {
           id
-          downloadURL
           details
           name
         }
@@ -597,11 +594,10 @@ const TableInfo = ({
       if (backgroundFilesOptReq.data.background.files !== null) {
         const newFilesResult =
           backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description, downloadURL }) => ({
+            ({ id, name, description }) => ({
               id: id,
               name: name,
               description: description,
-              downloadURL: downloadURL,
             })
           );
 
@@ -852,37 +848,18 @@ const TableInfo = ({
   //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
-    window.scrollTo(0, 0);
-    //adjust order of existing files
-    let tempMatter = [...matterFiles];
-    const result = tempMatter.map(({ id }, index) => ({
-      id: id,
-      order: index + uploadedFiles.length,
-    }));
-    const mUpdateBulkMatterFileOrder = `
-    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
-      matterFileBulkUpdateOrders(arrangement: $arrangement) {
-        id
-        order
-      }
-    }
-    `;
-    await API.graphql({
-      query: mUpdateBulkMatterFileOrder,
-      variables: {
-        arrangement: result,
-      },
-    });
-
+    
     //Add order to new files
     var sortedFiles = uploadedFiles.sort(
       (a, b) => b.oderSelected - a.oderSelected
     );
 
+    var addOrder = sortedFiles.map((x) => ({ ...x, order: 0 }));
+    // console.log("SF",sortedFiles);
+    // console.log("AO",addOrder);
+
     //insert in matter file list
-    sortedFiles.map(async (file) => {
-      await createMatterFile(file);
-    });
+    await bulkCreateMatterFile(addOrder);
 
     console.log("idtag", idTag);
 
@@ -898,11 +875,10 @@ const TableInfo = ({
       // if (backgroundFilesOptReq.data.background.files !== null) {
       const newFilesResult =
         backgroundFilesOptReq.data.background.files.items.map(
-          ({ id, name, description, downloadURL }) => ({
+          ({ id, name, description }) => ({
             id: id,
             name: name,
             description: description,
-            downloadURL: downloadURL,
           })
         );
 
@@ -929,24 +905,38 @@ const TableInfo = ({
     }, 5000);
   };
 
-  const mCreateMatterFile = `
-        mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
-          matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
+  const mBulkCreateMatterFile = `
+        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+          matterFileBulkCreate(files: $files) {
             id
             name
-            downloadURL
             order
           }
         }
     `;
 
-  async function createMatterFile(file) {
-    const request = await API.graphql({
-      query: mCreateMatterFile,
-      variables: file,
+  async function bulkCreateMatterFile(param) {
+    console.log("bulkCreateMatterFile");
+
+    param.forEach(function (i) {
+      delete i.oderSelected; // remove orderSelected
     });
 
-    idTag = [...idTag, { id: request.data.matterFileCreate.id }];
+    const request = await API.graphql({
+      query: mBulkCreateMatterFile,
+      variables: {
+        files: param,
+      },
+    });
+
+    console.log("result", request);
+
+    if (request.data.matterFileBulkCreate !== null) {
+      request.data.matterFileBulkCreate.map((i) => {
+        return (idTag = [...idTag, { id: i.id }]);
+      });
+    }
+
     console.log("iDTag", idTag);
 
     const mUpdateBackgroundFile = `
@@ -965,7 +955,6 @@ const TableInfo = ({
         files {
           items {
             id
-            downloadURL
             details
             name
           }
@@ -1021,63 +1010,10 @@ const TableInfo = ({
       });
     }
 
-    return request;
+    //return request;
   }
-  const mPaginationbyItems = `
-  query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-    matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
-      items {
-        id
-        name
-        details
-        date
-        s3ObjectKey
-        labels {
-          items {
-            id
-            name
-          }
-        }
-        backgrounds {
-          items {
-            id
-            order
-            description
-          }
-        }
-        createdAt
-        order
-        type
-        size
-      }
-      nextToken
-    }
-  }
-  `;
+  
 
-  let getMatterFiles = async (next) => {
-    let q = mPaginationbyItems;
-    const params = {
-      query: q,
-      variables: {
-        matterId: matterId,
-        isDeleted: false,
-        limit: 20,
-        nextToken: null,
-      },
-    };
-    await API.graphql(params).then((files) => {
-      const matterFilesList = files.data.matterFiles.items;
-      console.log("checkthis", matterFilesList);
-      setMatterFiles(sortByFileOrder(matterFilesList));
-    });
-  };
-
-  function sortByFileOrder(arr) {
-    let sort;
-    sort = arr.sort((a, b) => a.order - b.order);
-    return sort;
-  }
 
   return (
     <>
@@ -1276,7 +1212,7 @@ const TableInfo = ({
                                           {selectRow.find(
                                             (x) => x.id === item.id
                                           ) && (
-                                            <div class="separator">
+                                            <div className="separator">
                                               ROW SELECTED
                                             </div>
                                           )}
@@ -1287,7 +1223,7 @@ const TableInfo = ({
                                             ) ? (
                                               <button></button>
                                             ) : (
-                                              <span class="flex">
+                                              <span className="flex">
                                                 <button
                                                   className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-white hover:text-green-500 hover:border-green-500 focus:outline-none "
                                                   onClick={() =>
@@ -1302,7 +1238,9 @@ const TableInfo = ({
                                                   onClick={() =>
                                                     (window.location = `${
                                                       AppRoutes.FILEBUCKET
-                                                    }/${matterId}/000/?matter_name=${b64EncodeUnicode(
+                                                    }/${matterId}/${
+                                                      item.id
+                                                    }/?matter_name=${b64EncodeUnicode(
                                                       matter_name
                                                     )}&client_name=${b64EncodeUnicode(
                                                       client_name
@@ -1332,8 +1270,8 @@ const TableInfo = ({
                                               <FaPaste />
                                             </span>
                                           )}
-
-                                          {item.files.items.length === 0 ? (
+                                          {item.files.items === null ||
+                                          item.files.items.length === 0 ? (
                                             <>
                                               <br />
                                               <p className="text-xs">

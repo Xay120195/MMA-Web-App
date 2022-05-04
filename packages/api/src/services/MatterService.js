@@ -3,6 +3,7 @@ const {
   GetItemCommand,
   UpdateItemCommand,
   QueryCommand,
+  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 const { v4 } = require("uuid");
@@ -35,7 +36,6 @@ export async function generatePresignedUrl(Key, src) {
 
 export async function getMatterFiles(ctx) {
   console.log("getMatterFiles()");
-  console.log(ctx);
   const {
     matterId,
     isDeleted = false,
@@ -97,16 +97,15 @@ export async function getMatterFiles(ctx) {
       if (LastEvaluatedKey && Items.length === 0) {
         read = false;
         console.log("Inconsistent Read. Continue...");
-        console.log("Items:", { Items });
       }
 
       if (!LastEvaluatedKey) {
         read = false;
-        console.log("Done: ", nextToken, " is undefined");
+        console.log("Done: NextToken is undefined");
       }
 
       if (itemCount === limit) {
-        console.log(limit, " limit is reached.");
+        console.log("Reached ", limit, " limit.");
         console.log("Result:", result);
         read = false;
       }
@@ -176,6 +175,75 @@ export async function createMatterFile(data) {
 
     const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function bulkCreateMatterFile(data) {
+  let resp = {};
+  try {
+    const arrItems = [];
+
+    for (var i = 0; i < data.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            matterId: data[i].matterId,
+            s3ObjectKey: data[i].s3ObjectKey,
+            size: data[i].size,
+            type: data[i].type,
+            name: data[i].name,
+            isDeleted: false,
+            date: null,
+            order: data[i].order ? data[i].order : 0,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 5
+      if (item_count % 5 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 5
+    if (current_batch.length > 0 && current_batch.length != 5) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const matterFileParams = {
+        RequestItems: {
+          MatterFileTable: data,
+        },
+      };
+
+      const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
+      await ddbClient.send(matterFileCmd);
+    });
+
+    resp = arrItems.map((i) => {
+      return unmarshall(i.PutRequest.Item);
+    });
   } catch (e) {
     resp = {
       error: e.message,
@@ -257,7 +325,7 @@ export async function updateMatterFile(id, data) {
 export async function bulkUpdateMatterFileOrders(data) {
   let resp = [];
   try {
-    data.map(async (items) => {
+    const asyncResult = await Promise.all(data.map(async (items) => {
       const id = items.id;
       const arrangement = items;
       delete arrangement.id;
@@ -282,7 +350,9 @@ export async function bulkUpdateMatterFileOrders(data) {
       });
 
       await ddbClient.send(cmd);
-    });
+    }));
+
+    resp = asyncResult;
   } catch (e) {
     resp = {
       error: e.message,
