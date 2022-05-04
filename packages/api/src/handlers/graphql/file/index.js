@@ -34,9 +34,14 @@ async function listFileLabels(ctx) {
     );
 
     console.log("labelIds", labelIds);
-    labelIds.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
-    console.log("unique labelIds", labelIds);
+
     if (labelIds.length !== 0) {
+      
+      labelIds.filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+      console.log("unique labelIds", labelIds);
+
       const labelsParams = {
         RequestItems: {
           LabelsTable: {
