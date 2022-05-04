@@ -1310,7 +1310,9 @@ const TableInfo = ({
                                                   onClick={() =>
                                                     (window.location = `${
                                                       AppRoutes.FILEBUCKET
-                                                    }/${matterId}/000/?matter_name=${b64EncodeUnicode(
+                                                    }/${matterId}/${
+                                                      item.id
+                                                    }/?matter_name=${b64EncodeUnicode(
                                                       matter_name
                                                     )}&client_name=${b64EncodeUnicode(
                                                       client_name
