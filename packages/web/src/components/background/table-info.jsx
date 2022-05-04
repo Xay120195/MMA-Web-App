@@ -94,7 +94,6 @@ const TableInfo = ({
   const [selectedRowId, setSelectedRowID] = useState(null);
   const [goToFileBucket, setGoToFileBucket] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [matterFiles, setMatterFiles] = useState(null);
 
   const location = useLocation();
   const history = useHistory();
@@ -197,10 +196,10 @@ const TableInfo = ({
 
     setIdList(getId);
 
-    if (matterFiles === null) {
-      console.log("matterFiles is null");
-      getMatterFiles();
-    }
+    // if (matterFiles === null) {
+    //   console.log("matterFiles is null");
+    //   getMatterFiles();
+    // }
   }, [getId]);
 
   const handleDescContent = (e, description, id) => {
@@ -850,35 +849,18 @@ const TableInfo = ({
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
     window.scrollTo(0, 0);
-    //adjust order of existing files
-    let tempMatter = [...matterFiles];
-    const result = tempMatter.map(({ id }, index) => ({
-      id: id,
-      order: index + uploadedFiles.length,
-    }));
-    const mUpdateBulkMatterFileOrder = `
-    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
-      matterFileBulkUpdateOrders(arrangement: $arrangement) {
-        id
-        order
-      }
-    }
-    `;
-    await API.graphql({
-      query: mUpdateBulkMatterFileOrder,
-      variables: {
-        arrangement: result,
-      },
-    });
 
     //Add order to new files
     var sortedFiles = uploadedFiles.sort(
       (a, b) => b.oderSelected - a.oderSelected
     );
 
-    //insert in matter file list
+    var addOrder = sortedFiles.map((x) => ({ ...x, order: 0 }));
+    // console.log("SF",sortedFiles);
+    // console.log("AO",addOrder);
 
-    await bulkCreateMatterFile(sortedFiles);
+    //insert in matter file list
+    await bulkCreateMatterFile(addOrder);
 
     console.log("idtag", idTag);
 
@@ -1031,61 +1013,8 @@ const TableInfo = ({
 
     //return request;
   }
-  const mPaginationbyItems = `
-  query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-    matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
-      items {
-        id
-        name
-        details
-        date
-        s3ObjectKey
-        labels {
-          items {
-            id
-            name
-          }
-        }
-        backgrounds {
-          items {
-            id
-            order
-            description
-          }
-        }
-        createdAt
-        order
-        type
-        size
-      }
-      nextToken
-    }
-  }
-  `;
+  
 
-  let getMatterFiles = async (next) => {
-    let q = mPaginationbyItems;
-    const params = {
-      query: q,
-      variables: {
-        matterId: matterId,
-        isDeleted: false,
-        limit: 20,
-        nextToken: null,
-      },
-    };
-    await API.graphql(params).then((files) => {
-      const matterFilesList = files.data.matterFiles.items;
-      console.log("checkthis", matterFilesList);
-      setMatterFiles(sortByFileOrder(matterFilesList));
-    });
-  };
-
-  function sortByFileOrder(arr) {
-    let sort;
-    sort = arr.sort((a, b) => a.order - b.order);
-    return sort;
-  }
 
   return (
     <>
