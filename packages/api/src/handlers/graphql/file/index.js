@@ -33,14 +33,11 @@ async function listFileLabels(ctx) {
       marshall({ id: f.labelId })
     );
 
-    console.log("labelIds", labelIds);
-
     if (labelIds.length !== 0) {
       
       labelIds.filter(function (item, i, ar) {
         return ar.indexOf(item) === i;
       });
-      console.log("unique labelIds", labelIds);
 
       const labelsParams = {
         RequestItems: {
@@ -115,6 +112,11 @@ async function listFileBackgrounds(ctx) {
     ).map((f) => marshall({ id: f.backgroundId }));
 
     if (backgroundIds.length !== 0) {
+
+      backgroundIds.filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
       const backgroundsParams = {
         RequestItems: {
           BackgroundsTable: {
