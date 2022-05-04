@@ -15,7 +15,7 @@ const {
   updateMatterFile,
   softDeleteMatterFile,
   bulkUpdateMatterFileOrders,
-  bulkCreateMatterFile
+  bulkCreateMatterFile,
 } = require("../../../services/MatterService");
 
 async function createCompany(data) {
@@ -885,32 +885,35 @@ async function updateBackground(id, data) {
 async function bulkUpdateBackgroundOrders(data) {
   let resp = [];
   try {
-    data.map(async (items) => {
-      const id = items.id;
-      const arrangement = items;
-      delete arrangement.id;
+    const asyncResult = await Promise.all(
+      data.map(async (items) => {
+        const id = items.id;
+        const arrangement = items;
+        delete arrangement.id;
 
-      resp.push({
-        id,
-        ...items,
-      });
+        resp.push({
+          id,
+          ...items,
+        });
 
-      const {
-        ExpressionAttributeNames,
-        ExpressionAttributeValues,
-        UpdateExpression,
-      } = getUpdateExpressions(arrangement);
+        const {
+          ExpressionAttributeNames,
+          ExpressionAttributeValues,
+          UpdateExpression,
+        } = getUpdateExpressions(arrangement);
 
-      const cmd = new UpdateItemCommand({
-        TableName: "BackgroundsTable",
-        Key: marshall({ id }),
-        UpdateExpression,
-        ExpressionAttributeNames,
-        ExpressionAttributeValues,
-      });
+        const cmd = new UpdateItemCommand({
+          TableName: "BackgroundsTable",
+          Key: marshall({ id }),
+          UpdateExpression,
+          ExpressionAttributeNames,
+          ExpressionAttributeValues,
+        });
 
-      await ddbClient.send(cmd);
-    });
+        await ddbClient.send(cmd);
+      })
+    );
+    resp = asyncResult;
   } catch (e) {
     resp = {
       error: e.message,
@@ -924,6 +927,7 @@ async function bulkUpdateBackgroundOrders(data) {
 
 async function bulkInitializeBackgroundOrders(clientMatterId) {
   let resp = [];
+
   try {
     const cmBackgroundsParam = {
       TableName: "ClientMatterBackgroundTable",
@@ -944,20 +948,53 @@ async function bulkInitializeBackgroundOrders(clientMatterId) {
     ).map((f) => marshall({ id: f.backgroundId }));
 
     if (backgroundIds.length !== 0) {
-      const backgroundsParam = {
-        RequestItems: {
-          BackgroundsTable: {
-            Keys: backgroundIds,
-          },
-        },
-      };
+      let batches = [],
+        current_batch = [],
+        item_count = 0;
 
-      const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
-      const backgroundsResult = await ddbClient.send(backgroundsCommand);
+      backgroundIds.filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
 
-      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
-        (i) => unmarshall(i)
+      backgroundIds.forEach((data) => {
+        item_count++;
+        current_batch.push(data);
+
+        // Chunk items to 25
+        if (item_count % 25 == 0) {
+          batches.push(current_batch);
+          current_batch = [];
+        }
+      });
+
+      if (current_batch.length > 0 && current_batch.length != 25) {
+        batches.push(current_batch);
+      }
+
+      const asyncBackgroundsResult = await Promise.all(
+        batches.map(async (data) => {
+          const backgroundsParam = {
+            RequestItems: {
+              BackgroundsTable: {
+                Keys: data,
+                ExpressionAttributeNames: {
+                  "#order": "order",
+                },
+                ProjectionExpression: "id, #order",
+              },
+            },
+          };
+
+          const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
+          const backgroundsResult = await ddbClient.send(backgroundsCommand);
+
+          return backgroundsResult.Responses.BackgroundsTable.map((i) =>
+            unmarshall(i)
+          );
+        })
       );
+
+      let objBackgrounds = [].concat.apply([], asyncBackgroundsResult);
 
       objBackgrounds.sort(function (a, b) {
         return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
@@ -970,7 +1007,7 @@ async function bulkInitializeBackgroundOrders(clientMatterId) {
         };
       });
 
-      return bulkUpdateBackgroundOrders(arrangement);
+      return await bulkUpdateBackgroundOrders(arrangement);
     }
   } catch (e) {
     resp = {
@@ -1015,7 +1052,7 @@ async function bulkInitializeMatterFileOrders(clientMatterId) {
         };
       });
 
-      return bulkUpdateMatterFileOrders(arrangement);
+      return await bulkUpdateMatterFileOrders(arrangement);
     }
   } catch (e) {
     resp = {

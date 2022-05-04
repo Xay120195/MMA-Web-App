@@ -523,24 +523,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     //   q = mNoPaginationbyItems;
     // }
 
-    // const mInitializeOrders = `
-    //   mutation initializeOrder($clientMatterId: ID) {
-    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-    //       id
-    //     }
-    //   }
-    // `;
+    const mInitializeOrders = `
+      mutation initializeOrder($clientMatterId: ID) {
+        matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+          id
+        }
+      }
+    `;
 
-    // const initializeMatterFileOrder = await API.graphql({
-    //   query: mInitializeOrders,
-    //   variables: { clientMatterId: matter_id },
-    // });
-
-    // if (
-    //   initializeMatterFileOrder.data.matterFileBulkInitializeOrders !== null
-    // ) {
-    //   console.log("Initial Sorting Successful!");
-    // }
+    await API.graphql({
+      query: mInitializeOrders,
+      variables: { clientMatterId: matter_id },
+    }).then((res) => {
+      console.log("File Bucket: Initial Sorting Successful!");
+      console.log(res);
+    });
 
     const params = {
       query: q,
@@ -1913,7 +1910,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           {...provider.dragHandleProps}
                                           className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
                                         >
-                                          {data.backgrounds.items
+                                          {data.backgrounds.items !== null && data.backgrounds.items
                                             .sort((a, b) =>
                                               a.order > b.order ? 1 : -1
                                             )
