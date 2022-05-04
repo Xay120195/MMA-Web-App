@@ -64,52 +64,8 @@ const Background = () => {
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
   useEffect(() => {
-    ClientMatterList();
     getBackground();
   }, []);
-
-  const listClientMatters = `
-  query listClientMatters($companyId: String) {
-    company(id: $companyId) {
-      clientMatters {
-        items {
-          id
-          createdAt
-          client {
-            id
-            name
-          }
-          matter {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-  `;
-
-  const ClientMatterList = async () => {
-    let result = [];
-
-    const companyId = localStorage.getItem("companyId");
-    const clientMattersOpt = await API.graphql({
-      query: listClientMatters,
-      variables: {
-        companyId: companyId,
-      },
-    });
-
-    if (clientMattersOpt.data.company.clientMatters.items !== null) {
-      result = clientMattersOpt.data.company.clientMatters.items;
-
-      var apdPr = result.map((v) => ({
-        ...v,
-      }));
-
-      setClientMattersList(apdPr);
-    }
-  };
 
   const qListBackground = `
     query listBackground($id: ID, $limit: Int, $nextToken: String) {
@@ -137,29 +93,26 @@ const Background = () => {
     }
   `;
 
-  const mInitializeOrders = `
-    mutation initializeOrder($clientMatterId: ID) {
-      backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-        id
-      }
-    }
-  `;
-
   const getBackground = async () => {
     let result = [];
     setWait(false);
     const matterId = matter_id;
 
-    const initializeBackgroundOrder = await API.graphql({
+    const mInitializeOrders = `
+      mutation initializeOrder($clientMatterId: ID) {
+        backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
+          id
+        }
+      }
+    `;
+
+    await API.graphql({
       query: mInitializeOrders,
       variables: { clientMatterId: matterId },
+    }).then((res) => {
+      console.log("File Bucket: Initial Sorting Successful!");
+      console.log(res);
     });
-
-    if (
-      initializeBackgroundOrder.data.backgroundBulkInitializeOrders !== null
-    ) {
-      console.log("Initial Sorting Successful!");
-    }
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
@@ -299,6 +252,28 @@ const Background = () => {
       setPageSize(pageSize - pageList);
     }
   };
+
+  function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split("=");
+      if (pair[0] == variable) {
+        return pair[1];
+      }
+    }
+    return false;
+  }
+
+  function UnicodeDecodeB64(str) {
+    return decodeURIComponent(atob(str));
+  }
+
+  const m_name = getQueryVariable("matter_name");
+  const c_name = getQueryVariable("client_name");
+  const matter_name = UnicodeDecodeB64(m_name);
+  const client_name = UnicodeDecodeB64(c_name);
+
   return (
     <>
       <div
@@ -315,7 +290,7 @@ const Background = () => {
           <h1 className="font-bold text-3xl">
             Background&nbsp;<span className="text-3xl">of</span>&nbsp;
             <span className="font-semibold text-3xl">
-              {clientName}/{matterName}
+              {client_name}/{matter_name}
             </span>
           </h1>
         </div>
@@ -325,7 +300,11 @@ const Background = () => {
         className="bg-white z-30"
         style={{ position: "sticky", top: "0", margin: "0 0 0 85px" }}
       >
-        <BreadCrumb matterId={matter_id} />
+        <BreadCrumb
+          matterId={matter_id}
+          client_name={client_name}
+          matter_name={matter_name}
+        />
         <ActionButtons
           witness={witness}
           setWitness={setWitness}
@@ -381,6 +360,8 @@ const Background = () => {
         />
       </div>
       <TableInfo
+        client_name={client_name}
+        matter_name={matter_name}
         wait={wait}
         setPasteButton={setPasteButton}
         setIdList={setIdList}

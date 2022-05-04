@@ -3,6 +3,7 @@ const {
   GetItemCommand,
   UpdateItemCommand,
   QueryCommand,
+  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 const { v4 } = require("uuid");
@@ -35,18 +36,20 @@ export async function generatePresignedUrl(Key, src) {
 
 export async function getMatterFiles(ctx) {
   console.log("getMatterFiles()");
-  console.log(ctx);
   const {
     matterId,
     isDeleted = false,
     limit,
-    nextToken,
     sortOrder = "CREATED_DESC",
   } = ctx;
 
   let resp = {},
     indexName,
-    isAscending;
+    isAscending,
+    read = true,
+    nextToken = ctx.nextToken,
+    itemCount = 0,
+    result = [];
 
   if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
     isAscending = false;
@@ -80,26 +83,39 @@ export async function getMatterFiles(ctx) {
       param.Limit = limit;
     }
 
-    const cmd = new QueryCommand(param);
-    const request = await ddbClient.send(cmd);
-    console.log("Result:", request);
-    const result = request.Items.map((d) => unmarshall(d));
+    while (read === true) {
+      const cmd = new QueryCommand(param);
+      const { Items, LastEvaluatedKey } = await ddbClient.send(cmd);
+      nextToken = LastEvaluatedKey;
 
-    // if (request && request.Count !== 0) {
-    //   result[0].nextToken = request.LastEvaluatedKey
-    //     ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
-    //         "base64"
-    //       )
-    //     : null;
-    // }
+      itemCount += Items.length;
+      result.push(...Items);
+
+      console.log("nextToken:", { nextToken });
+      console.log("itemCount:", { itemCount });
+
+      if (LastEvaluatedKey && Items.length === 0) {
+        read = false;
+        console.log("Inconsistent Read. Continue...");
+      }
+
+      if (!LastEvaluatedKey) {
+        read = false;
+        console.log("Done: NextToken is undefined");
+      }
+
+      if (itemCount === limit) {
+        console.log("Reached ", limit, " limit.");
+        console.log("Result:", result);
+        read = false;
+      }
+    }
 
     resp = {
-      items: request ? result : [],
-      nextToken: request.LastEvaluatedKey
-        ? Buffer.from(JSON.stringify(request.LastEvaluatedKey)).toString(
-            "base64"
-          )
-        : null,
+      items: result.map((d) => unmarshall(d)),
+      nextToken: nextToken
+        ? Buffer.from(JSON.stringify(nextToken)).toString("base64")
+        : undefined,
     };
   } catch (e) {
     resp = {
@@ -159,6 +175,75 @@ export async function createMatterFile(data) {
 
     const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function bulkCreateMatterFile(data) {
+  let resp = {};
+  try {
+    const arrItems = [];
+
+    for (var i = 0; i < data.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            matterId: data[i].matterId,
+            s3ObjectKey: data[i].s3ObjectKey,
+            size: data[i].size,
+            type: data[i].type,
+            name: data[i].name,
+            isDeleted: false,
+            date: null,
+            order: data[i].order ? data[i].order : 0,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 5
+      if (item_count % 5 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 5
+    if (current_batch.length > 0 && current_batch.length != 5) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const matterFileParams = {
+        RequestItems: {
+          MatterFileTable: data,
+        },
+      };
+
+      const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
+      await ddbClient.send(matterFileCmd);
+    });
+
+    resp = arrItems.map((i) => {
+      return unmarshall(i.PutRequest.Item);
+    });
   } catch (e) {
     resp = {
       error: e.message,
@@ -240,7 +325,7 @@ export async function updateMatterFile(id, data) {
 export async function bulkUpdateMatterFileOrders(data) {
   let resp = [];
   try {
-    data.map(async (items) => {
+    const asyncResult = await Promise.all(data.map(async (items) => {
       const id = items.id;
       const arrangement = items;
       delete arrangement.id;
@@ -265,7 +350,9 @@ export async function bulkUpdateMatterFileOrders(data) {
       });
 
       await ddbClient.send(cmd);
-    });
+    }));
+
+    resp = asyncResult;
   } catch (e) {
     resp = {
       error: e.message,

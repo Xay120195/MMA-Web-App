@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste } from "react-icons/fa";
-import { BsFillTrashFill } from "react-icons/bs";
+import { FaPaste, FaSync } from "react-icons/fa";
+import { BsFillTrashFill, BsFillBucketFill } from "react-icons/bs";
 import EmptyRow from "./empty-row";
 import { ModalParagraph } from "./modal";
 import { API } from "aws-amplify";
@@ -19,6 +19,7 @@ import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
 import ScrollToTop from "react-scroll-to-top";
+import UploadLinkModal from "../file-bucket/file-upload-modal";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -60,8 +61,8 @@ const TableInfo = ({
   checkDocu,
   pasteButton,
   setSrcIndex,
-  srcIndex,
-  pageTotal,
+  client_name,
+  matter_name,
   pageIndex,
   pageSize,
   pageSizeConst,
@@ -90,6 +91,10 @@ const TableInfo = ({
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
   const [sortByDate, setSortByDate] = useState([]);
 
+  const [selectedRowId, setSelectedRowID] = useState(null);
+  const [goToFileBucket, setGoToFileBucket] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
   const location = useLocation();
   const history = useHistory();
 
@@ -114,6 +119,7 @@ const TableInfo = ({
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
+    setShowUploadModal(false);
   };
 
   const handleCheckboxChange = (position, event, id, date, details) => {
@@ -189,6 +195,11 @@ const TableInfo = ({
     }, 1000);
 
     setIdList(getId);
+
+    // if (matterFiles === null) {
+    //   console.log("matterFiles is null");
+    //   getMatterFiles();
+    // }
   }, [getId]);
 
   const handleDescContent = (e, description, id) => {
@@ -206,73 +217,55 @@ const TableInfo = ({
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
-    console.log(e.target.innerHTML);
+    const updateArr = witness.map((obj) => {
+      if (obj.id === id) {
+        return { ...obj, description: e.target.innerHTML };
+      }
+      return obj;
+    });
+    setWitness(updateArr);
+
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
-      setUpdateProgress(false);
     } else if (textDesc === description) {
       setDescAlert("");
-      setUpdateProgress(true);
+
       setalertMessage(`Saving in progress..`);
       setShowToast(true);
 
       const data = {
         description: e.target.innerHTML,
-        date: date,
       };
 
-      await updateBackgroundDetails(id, data);
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setalertMessage(`Successfully updated `);
+        setShowToast(true);
+      }
+
       setTimeout(() => {
-        setTimeout(() => {
-          setTextDesc("");
-          setalertMessage(`Successfully updated `);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-            setUpdateProgress(false);
-          }, 1000);
-        }, 1000);
+        setShowToast(false);
       }, 1000);
     } else {
-      setDescAlert("");
-      setUpdateProgress(true);
-      setalertMessage(`Saving in progress..`);
-      setShowToast(true);
-
-      const updateArr = witness.map((obj) => {
-        if (obj.id === id) {
-          return { ...obj, description: e.target.innerHTML };
-        }
-        return obj;
-      });
-
-      setWitness(updateArr);
-
       const data = {
         description: e.target.innerHTML,
-        date: date,
       };
-      await updateBackgroundDetails(id, data);
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setalertMessage(`Successfully updated`);
+        setShowToast(true);
+      }
       setTimeout(() => {
-        setTimeout(() => {
-          setTextDesc("");
-          setalertMessage(`Successfully updated`);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-            setUpdateProgress(false);
-          }, 1000);
-        }, 1000);
+        setShowToast(false);
       }, 1000);
     }
   };
 
   const handleChangeDate = async (selected, id, description) => {
     const data = {
-      description: !description ? "" : description,
       date: selected !== null ? String(selected) : null,
     };
-    await updateBackgroundDetails(id, data);
+    await updateBackgroundDate(id, data);
 
     const updatedOSArray = witness.map((p) =>
       p.id === id ? { ...p, date: data.date } : p
@@ -281,24 +274,47 @@ const TableInfo = ({
     setWitness(updatedOSArray);
   };
 
-  const mUpdateBackground = `
-    mutation updateBackground($id: ID, $description: String, $date: AWSDateTime) {
-      backgroundUpdate(id: $id, description: $description, date: $date) {
+  const mUpdateBackgroundDate = `
+    mutation updateBackground($id: ID, $date: AWSDateTime) {
+      backgroundUpdate(id: $id, date: $date) {
         id
-        description
         date
       }
     }
   `;
 
-  async function updateBackgroundDetails(id, data) {
+  const mUpdateBackgroundDesc = `
+  mutation updateBackground($id: ID, $description: String) {
+    backgroundUpdate(id: $id, description: $description) {
+      id
+      description
+    }
+  }
+`;
+
+  async function updateBackgroundDate(id, data) {
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
-          query: mUpdateBackground,
+          query: mUpdateBackgroundDate,
           variables: {
             id: id,
             date: data.date !== null ? new Date(data.date).toISOString() : null,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+  async function updateBackgroundDesc(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackgroundDesc,
+          variables: {
+            id: id,
             description: data.description,
           },
         });
@@ -405,11 +421,10 @@ const TableInfo = ({
         if (backgroundFilesOptReq.data.background.files !== null) {
           const newFilesResult =
             backgroundFilesOptReq.data.background.files.items.map(
-              ({ id, name, description, downloadURL }) => ({
+              ({ id, name, description }) => ({
                 id: id,
                 name: name,
                 description: description,
-                downloadURL: downloadURL,
               })
             );
 
@@ -438,10 +453,15 @@ const TableInfo = ({
     setHighlightRows("bg-white");
 
     if (queryParams.has("count")) {
-      queryParams.delete("count");
-      history.replace({
-        search: queryParams.toString(),
-      });
+      // queryParams.delete("count");
+      // history.replace({
+      //   search: queryParams.toString(),
+      // });
+      history.push(
+        `${AppRoutes.BACKGROUND}/${matterId}/?matter_name=${b64EncodeUnicode(
+          matter_name
+        )}&client_name=${b64EncodeUnicode(client_name)}`
+      );
     }
   }, 10000);
 
@@ -509,7 +529,6 @@ const TableInfo = ({
       files {
         items {
           id
-          downloadURL
           details
           name
         }
@@ -575,11 +594,10 @@ const TableInfo = ({
       if (backgroundFilesOptReq.data.background.files !== null) {
         const newFilesResult =
           backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description, downloadURL }) => ({
+            ({ id, name, description }) => ({
               id: id,
               name: name,
               description: description,
-              downloadURL: downloadURL,
             })
           );
 
@@ -765,6 +783,238 @@ const TableInfo = ({
 
   useBottomScrollListener(handleBottomScroll);
 
+  const mUpdateMatterFileDesc = `
+      mutation updateMatterFile ($id: ID, $details: String) {
+        matterFileUpdate(id: $id, details: $details) {
+          id
+          details
+        }
+      }
+  `;
+
+  const mUpdateMatterFileDate = `
+      mutation updateMatterFile ($id: ID, $date: AWSDateTime) {
+        matterFileUpdate(id: $id, date: $date) {
+          id
+          date
+        }
+      }
+  `;
+
+  const handleSyncData = async (backgroundId, fileId) => {
+    var filteredWitness = witness.filter(function (item) {
+      return item.id === backgroundId;
+    });
+
+    const dateRequest = API.graphql({
+      query: mUpdateMatterFileDate,
+      variables: {
+        id: fileId,
+        date:
+          filteredWitness[0].date !== null &&
+          filteredWitness[0].date !== "null" &&
+          filteredWitness[0].date !== ""
+            ? new Date(filteredWitness[0].date).toISOString()
+            : null,
+      },
+    });
+
+    const descRequest = API.graphql({
+      query: mUpdateMatterFileDesc,
+      variables: {
+        id: fileId,
+        details: filteredWitness[0].description,
+      },
+    });
+
+    setalertMessage(`Successfully synced to File Bucket `);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+  };
+
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str));
+  }
+
+  //UPLOADING FILE THROUGH BG
+  function attachFiles(id) {
+    setShowUploadModal(true);
+    setSelectedRowID(id);
+  }
+
+  var idTag = [];
+  //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
+  const handleUploadLink = async (uf) => {
+    var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
+    
+    //Add order to new files
+    var sortedFiles = uploadedFiles.sort(
+      (a, b) => b.oderSelected - a.oderSelected
+    );
+
+    var addOrder = sortedFiles.map((x) => ({ ...x, order: 0 }));
+    // console.log("SF",sortedFiles);
+    // console.log("AO",addOrder);
+
+    //insert in matter file list
+    await bulkCreateMatterFile(addOrder);
+
+    console.log("idtag", idTag);
+
+    //set witness content
+    setTimeout(async () => {
+      const backgroundFilesOptReq = await API.graphql({
+        query: qlistBackgroundFiles,
+        variables: {
+          id: selectedRowId,
+        },
+      });
+
+      // if (backgroundFilesOptReq.data.background.files !== null) {
+      const newFilesResult =
+        backgroundFilesOptReq.data.background.files.items.map(
+          ({ id, name, description }) => ({
+            id: id,
+            name: name,
+            description: description,
+          })
+        );
+
+      const updateArrFiles = witness.map((obj) => {
+        if (obj.id === selectedRowId) {
+          return { ...obj, files: { items: newFilesResult } };
+        }
+        return obj;
+      });
+
+      console.log("new filess", newFilesResult);
+      setWitness(updateArrFiles);
+      // }
+    }, 3000);
+
+    setalertMessage(`File has been added! Go to File bucket`);
+    setShowToast(true);
+    setGoToFileBucket(true);
+
+    handleModalClose();
+    setTimeout(() => {
+      setShowToast(false);
+      setGoToFileBucket(false);
+    }, 5000);
+  };
+
+  const mBulkCreateMatterFile = `
+        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+          matterFileBulkCreate(files: $files) {
+            id
+            name
+            order
+          }
+        }
+    `;
+
+  async function bulkCreateMatterFile(param) {
+    console.log("bulkCreateMatterFile");
+
+    param.forEach(function (i) {
+      delete i.oderSelected; // remove orderSelected
+    });
+
+    const request = await API.graphql({
+      query: mBulkCreateMatterFile,
+      variables: {
+        files: param,
+      },
+    });
+
+    console.log("result", request);
+
+    if (request.data.matterFileBulkCreate !== null) {
+      request.data.matterFileBulkCreate.map((i) => {
+        return (idTag = [...idTag, { id: i.id }]);
+      });
+    }
+
+    console.log("iDTag", idTag);
+
+    const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+    //append in existing
+    const qlistBackgroundFiles = `
+    query getBackgroundByID($id: ID) {
+      background(id: $id) {
+        id
+        files {
+          items {
+            id
+            details
+            name
+          }
+        }
+      }
+    }`;
+
+    let arrFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
+
+    // console.log("MID/BID", background_id);
+
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: selectedRowId,
+      },
+    });
+
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+
+      idTag.push(...arrFileResult);
+      console.log("updatedidtag", idTag);
+
+      const filteredArr = idTag.filter((el) => {
+        const duplicate = seen.has(el.id);
+        seen.add(el.id);
+        return !duplicate;
+      });
+
+      console.log("no duplicate file", filteredArr);
+
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: filteredArr,
+        },
+      });
+    } else {
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: idTag,
+        },
+      });
+    }
+
+    //return request;
+  }
+  
+
+
   return (
     <>
       <div style={{ padding: "2rem", marginLeft: "4rem" }}>
@@ -947,9 +1197,7 @@ const TableInfo = ({
                                                 item.id
                                               )
                                             }
-                                            contentEditable={
-                                              updateProgess ? false : true
-                                            }
+                                            contentEditable={true}
                                           ></div>
                                           <span className="text-red-400 filename-validation">
                                             {item.id === descId && descAlert}
@@ -964,7 +1212,7 @@ const TableInfo = ({
                                           {selectRow.find(
                                             (x) => x.id === item.id
                                           ) && (
-                                            <div class="separator">
+                                            <div className="separator">
                                               ROW SELECTED
                                             </div>
                                           )}
@@ -975,14 +1223,33 @@ const TableInfo = ({
                                             ) ? (
                                               <button></button>
                                             ) : (
-                                              <button
-                                                className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                                onClick={() =>
-                                                  (window.location = `${AppRoutes.FILEBUCKET}/${matterId}/${item.id}`)
-                                                }
-                                              >
-                                                File Bucket +
-                                              </button>
+                                              <span className="flex">
+                                                <button
+                                                  className=" w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-white hover:text-green-500 hover:border-green-500 focus:outline-none "
+                                                  onClick={() =>
+                                                    attachFiles(item.id)
+                                                  }
+                                                >
+                                                  Upload File +
+                                                </button>
+
+                                                <button
+                                                  className=" w-15 bg-white border border-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-green-400 font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                  onClick={() =>
+                                                    (window.location = `${
+                                                      AppRoutes.FILEBUCKET
+                                                    }/${matterId}/${
+                                                      item.id
+                                                    }/?matter_name=${b64EncodeUnicode(
+                                                      matter_name
+                                                    )}&client_name=${b64EncodeUnicode(
+                                                      client_name
+                                                    )}`)
+                                                  }
+                                                >
+                                                  <BsFillBucketFill />
+                                                </button>
+                                              </span>
                                             )
                                           ) : (
                                             <span
@@ -1003,8 +1270,8 @@ const TableInfo = ({
                                               <FaPaste />
                                             </span>
                                           )}
-
-                                          {item.files.items.length === 0 ? (
+                                          {item.files.items === null ||
+                                          item.files.items.length === 0 ? (
                                             <>
                                               <br />
                                               <p className="text-xs">
@@ -1087,6 +1354,18 @@ const TableInfo = ({
                                                           }
                                                         />
                                                       )}
+                                                      <FaSync
+                                                        className="text-gray-400 hover:text-blue-400 mx-1 mt-1.5 text-sm cursor-pointer inline-block float-right"
+                                                        title="Sync Date and Description to File Bucket"
+                                                        onClick={() =>
+                                                          handleSyncData(
+                                                            item.id,
+                                                            items.id
+                                                          )
+                                                        }
+                                                      >
+                                                        {" "}
+                                                      </FaSync>
                                                     </p>
                                                   </span>
                                                 )
@@ -1149,6 +1428,14 @@ const TableInfo = ({
         </div>
         <div className="p-2"></div>
       </div>
+      {showUploadModal && (
+        <UploadLinkModal
+          title={""}
+          handleSave={handleUploadLink}
+          bucketName={matterId}
+          handleModalClose={handleModalClose}
+        />
+      )}
       {ShowModalParagraph && (
         <ModalParagraph
           setShowModalParagraph={setShowModalParagraph}
@@ -1172,7 +1459,20 @@ const TableInfo = ({
         />
       )}
       {showToast && (
-        <ToastNotification title={alertMessage} hideToast={hideToast} />
+        <div
+          onClick={
+            goToFileBucket
+              ? () =>
+                  (window.location = `${
+                    AppRoutes.FILEBUCKET
+                  }/${matterId}/000/?matter_name=${b64EncodeUnicode(
+                    matter_name
+                  )}&client_name=${b64EncodeUnicode(client_name)}`)
+              : null
+          }
+        >
+          <ToastNotification title={alertMessage} hideToast={hideToast} />
+        </div>
       )}
     </>
   );
