@@ -36,7 +36,6 @@ export async function generatePresignedUrl(Key, src) {
 
 export async function getMatterFiles(ctx) {
   console.log("getMatterFiles()");
-  console.log(ctx);
   const {
     matterId,
     isDeleted = false,
@@ -326,7 +325,7 @@ export async function updateMatterFile(id, data) {
 export async function bulkUpdateMatterFileOrders(data) {
   let resp = [];
   try {
-    data.map(async (items) => {
+    const asyncResult = await Promise.all(data.map(async (items) => {
       const id = items.id;
       const arrangement = items;
       delete arrangement.id;
@@ -351,7 +350,9 @@ export async function bulkUpdateMatterFileOrders(data) {
       });
 
       await ddbClient.send(cmd);
-    });
+    }));
+
+    resp = asyncResult;
   } catch (e) {
     resp = {
       error: e.message,
