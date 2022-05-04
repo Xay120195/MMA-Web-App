@@ -91,22 +91,29 @@ export async function getMatterFiles(ctx) {
       itemCount += Items.length;
       result.push(...Items);
 
-      console.log("nextToken:", { nextToken });
-      console.log("itemCount:", { itemCount });
+      console.log("LastEvaluatedKey:", { LastEvaluatedKey });
+      console.log("itemCount:", itemCount);
 
-      if (LastEvaluatedKey && Items.length === 0) {
-        read = false;
+      if (LastEvaluatedKey !== undefined && Items.length === 0) {
+        read = true;
         console.log("Inconsistent Read. Continue...");
+        console.log(
+          "Items = " +
+            Items.length +
+            ", LastEvaluatedKey = " +
+            LastEvaluatedKey +
+            "."
+        );
       }
 
-      if (!LastEvaluatedKey) {
+      if (LastEvaluatedKey === undefined) {
         read = false;
         console.log("Done: NextToken is undefined");
       }
 
       if (itemCount === limit) {
-        console.log("Reached ", limit, " limit.");
-        console.log("Result:", result);
+        console.log("Done: Reached ", limit, " limit.");
+        //console.log("Result:", result);
         read = false;
       }
     }
@@ -325,32 +332,34 @@ export async function updateMatterFile(id, data) {
 export async function bulkUpdateMatterFileOrders(data) {
   let resp = [];
   try {
-    const asyncResult = await Promise.all(data.map(async (items) => {
-      const id = items.id;
-      const arrangement = items;
-      delete arrangement.id;
+    const asyncResult = await Promise.all(
+      data.map(async (items) => {
+        const id = items.id;
+        const arrangement = items;
+        delete arrangement.id;
 
-      resp.push({
-        id,
-        ...items,
-      });
+        resp.push({
+          id,
+          ...items,
+        });
 
-      const {
-        ExpressionAttributeNames,
-        ExpressionAttributeValues,
-        UpdateExpression,
-      } = getUpdateExpressions(arrangement);
+        const {
+          ExpressionAttributeNames,
+          ExpressionAttributeValues,
+          UpdateExpression,
+        } = getUpdateExpressions(arrangement);
 
-      const cmd = new UpdateItemCommand({
-        TableName: "MatterFileTable",
-        Key: marshall({ id }),
-        UpdateExpression,
-        ExpressionAttributeNames,
-        ExpressionAttributeValues,
-      });
+        const cmd = new UpdateItemCommand({
+          TableName: "MatterFileTable",
+          Key: marshall({ id }),
+          UpdateExpression,
+          ExpressionAttributeNames,
+          ExpressionAttributeValues,
+        });
 
-      await ddbClient.send(cmd);
-    }));
+        await ddbClient.send(cmd);
+      })
+    );
 
     resp = asyncResult;
   } catch (e) {
