@@ -849,7 +849,6 @@ const TableInfo = ({
   //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
-    window.scrollTo(0, 0);
     //adjust order of existing files
     let tempMatter = [...matterFiles];
     const result = tempMatter.map(({ id }, index) => ({
