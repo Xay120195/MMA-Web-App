@@ -518,7 +518,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }, [searchFile]);
 
   let getMatterFiles = async (next) => {
-    let q = mPaginationbyItems;
+    //let q = mPaginationbyItems;
+    let q = mNoPaginationbyItems;
     // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
     //   q = mNoPaginationbyItems;
     // }
@@ -561,7 +562,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
-      let q = mPaginationbyItems;
+      //let q = mPaginationbyItems;
+      let q = mNoPaginationbyItems;
       // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
       //   q = mNoPaginationbyItems;
       // }
