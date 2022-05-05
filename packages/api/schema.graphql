@@ -129,6 +129,7 @@ type Label {
   id: ID!
   name: String
   description: String
+  files(limit: Int, nextToken: String): LabelFileConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -208,6 +209,7 @@ type Query {
   files: [File]
   labels: [Label]
   label(id: ID): Label
+  multipleLabels(id: [ID]): [Label]
   rfi(id: ID): RFI
   rfis: [RFI]
   backgrounds: [Background]
@@ -433,6 +435,10 @@ type ClientMatterLabelConn {
 
 type FileLabelConn {
   items: [Label]
+  nextToken: String
+}
+type LabelFileConn {
+  items: [File]
   nextToken: String
 }
 

@@ -8,7 +8,6 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
 const {
-  getMatterFile,
   getFile,
   getMatterFiles,
 } = require("../../../services/MatterService");
@@ -364,6 +363,47 @@ async function getLabel(data) {
   return resp;
 }
 
+async function bulkGetLabels(data) {
+  console.log("bulkGetLabels", data);
+
+  try {
+    const { id } = data;
+
+    const labelIds = id.map((f) => marshall({ id: f }));
+
+    if (labelIds.length !== 0) {
+      labelIds.filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
+      const labelsParam = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
+        },
+      };
+
+      const labelsCommand = new BatchGetItemCommand(labelsParam);
+      const labelsResult = await ddbClient.send(labelsCommand);
+
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
+      );
+
+      console.log("objLabels", objLabels);
+      resp = objLabels;
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function listColumnSettingsByTable(data) {
   try {
     const param = {
@@ -499,7 +539,10 @@ async function getUserColumnSettings(data) {
     }
 
     //console.log(result);
-    resp = (Object.keys(result).length !== 0 && result !== null && result !== {}) ? result : [];
+    resp =
+      Object.keys(result).length !== 0 && result !== null && result !== {}
+        ? result
+        : [];
     //console.log(resp);
   } catch (e) {
     resp = {
@@ -600,6 +643,9 @@ const resolvers = {
     },
     label: async (ctx) => {
       return getLabel(ctx.arguments);
+    },
+    multipleLabels: async (ctx) => {
+      return bulkGetLabels(ctx.arguments);
     },
     labels: async () => {
       return listLabels();
