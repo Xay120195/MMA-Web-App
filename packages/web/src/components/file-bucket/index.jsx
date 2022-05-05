@@ -91,6 +91,8 @@ export default function FileBucket() {
   const [filterLabels, setFilterLabels] = useState(false);
   const [deletingState, setDeletingState] = useState(false);
 
+  const [filterModalState, setFilterModalState] = useState(true);
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -460,6 +462,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       }
     }
     console.log("Labels", result);
+
+    var labelNames = [];
+
+    result.map((x) => labelNames = [...labelNames, x.label]);
+    
+    if(labelNames.length == 0){
+      setFilterModalState(true);
+    }else{
+      setFilterModalState(false);
+    }
+
+    pageSelectedLabels = labelNames;
 
     setLabels(result);
   };
@@ -898,14 +912,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         value,
         label,
       }));
-      newOptions.map(
-        (data) => (filterOptionsArray = [...filterOptionsArray, data])
-      );
-      pageSelectedLabels = [
-        ...new Map(
-          filterOptionsArray.map((item) => [JSON.stringify(item), item])
-        ).values(),
-      ];
+      // newOptions.map(
+      //   (data) => (filterOptionsArray = [...filterOptionsArray, data])
+      // );
+      // pageSelectedLabels = [
+      //   ...new Map(
+      //     filterOptionsArray.map((item) => [JSON.stringify(item), item])
+      //   ).values(),
+      // ];
       return newOptions;
     } else {
       return null;
@@ -1173,8 +1187,42 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   };
 
+  const mGetFilesByLabel = `
+    query getFilesByLabel($id: [ID]) {
+      multipleLabels(id: $id) {
+        files {
+        items {
+          id
+          name
+          details
+          date
+          s3ObjectKey
+          labels {
+            items {
+              id
+              name
+            }
+          }
+          backgrounds {
+            items {
+              id
+              order
+              description
+            }
+          }
+          createdAt
+          order
+          type
+          size
+        }
+        nextToken
+        }
+      }
+    }
+    `;
+
   //filter function
-  const handleFilter = (fileFilter) => {
+  const handleFilter = async (fileFilter) => {
     console.log("ff", fileFilter);
     console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
@@ -1191,25 +1239,63 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       // setFiles(sortByOrder(matterFiles));
     } else {
       // getMatterFiles(next);
-      console.log("files", files);
+      // console.log("files", files);
+      // for (var i = 0; i < fileFilter.length; i++) {
+      //   files.map((x) =>
+      //     x.labels.items !== null
+      //       ? x.labels.items.map((y) =>
+      //           y.name === fileFilter[i]
+      //             ? (filterRecord = [...filterRecord, x])
+      //             : (filterRecord = filterRecord)
+      //         )
+      //       : x.labels.items
+      //   );
+      // }
+
+      // var listFilter = [
+      //   ...new Map(filterRecord.map((x) => [JSON.stringify(x), x])).values(),
+      // ];
+      // console.log(listFilter);
+      // setMatterFiles(sortByOrder(listFilter));
+      // setFiles(sortByOrder(listFilter));
+
+      console.log("labels", labels);
+      var labelsList = labels;
+      var labelsIdList = [];
+
       for (var i = 0; i < fileFilter.length; i++) {
-        files.map((x) =>
-          x.labels.items !== null
-            ? x.labels.items.map((y) =>
-                y.name === fileFilter[i]
-                  ? (filterRecord = [...filterRecord, x])
-                  : (filterRecord = filterRecord)
-              )
-            : x.labels.items
+        labelsList.map((x) => 
+          x.label === fileFilter[i] ? 
+          labelsIdList = [...labelsIdList, x.value] :
+          labelsIdList = labelsIdList 
         );
       }
 
-      var listFilter = [
-        ...new Map(filterRecord.map((x) => [JSON.stringify(x), x])).values(),
+      var uniqueIds = [
+        ...new Map(labelsIdList.map((x) => [JSON.stringify(x), x])).values(),
       ];
-      console.log(listFilter);
-      setMatterFiles(sortByOrder(listFilter));
-      // setFiles(sortByOrder(listFilter));
+
+      console.log("labelIds", uniqueIds);
+
+      const result = await API.graphql({
+        query: mGetFilesByLabel,
+        variables: {
+          id: uniqueIds,
+        },
+      });
+
+      var newFiles = result.data.multipleLabels;
+
+      var newFiles1 = [];
+      var newFiles2 = [];
+      result.data.multipleLabels.map((x) => newFiles1 = [...newFiles1, x.files.items]);
+      newFiles1.map((x) => x.map((y)=> newFiles2 = [...newFiles2, y]));
+
+      console.log("putinmatterfiles",newFiles2);
+      setMatterFiles(sortByOrder(newFiles2));
+      setFiles(sortByOrder(newFiles2));
+
+      console.log("res", result);
     }
   };
 
@@ -1377,6 +1463,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   function b64EncodeUnicode(str) {
     return btoa(encodeURIComponent(str));
+  }
+
+  function showAlert() {
+    alert("No selected Labels on page.")
   }
 
   return (
@@ -1555,12 +1645,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
                 <button
                   className={
-                    pageSelectedLabels
-                      ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                      : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                    filterModalState
+                      ? "bg-gray-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                      : "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                   }
-                  onClick={() => setFilterLabels(true)}
-                  disabled={pageSelectedLabels ? false : true}
+                  onClick={
+                    filterModalState
+                      ? () => showAlert()
+                      : () => setFilterLabels(true)
+                  }
+                  disabled={filterModalState}
                 >
                   <AiFillTags />
                 </button>
