@@ -79,7 +79,7 @@ async function listClientMatterLabels(ctx) {
   return response;
 }
 
-async function listCompanyMatterBackgrounds(ctx) {
+async function listClientMatterBackgrounds(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
@@ -173,7 +173,95 @@ async function listCompanyMatterBackgrounds(ctx) {
   return response;
 }
 
-async function listCompanyMatterRFIs(ctx) {
+async function listClientMatterBriefs(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+
+  let indexName, isAscending;
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+    isAscending = false;
+  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
+    isAscending = true;
+  }
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+    indexName = "byCreatedAt";
+  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+    indexName = "byOrder";
+  }
+
+  try {
+    const cmBriefParam = {
+      TableName: "ClientMatterBriefTable",
+      IndexName: indexName,
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":clientMatterId": id,
+      }),
+      ScanIndexForward: isAscending,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      cmBriefParam.Limit = limit;
+    }
+
+    const cmBriefCmd = new QueryCommand(cmBriefParam);
+    const cmBriefResult = await client.send(cmBriefCmd);
+
+    const objCMBrief = cmBriefResult.Items.map((i) => unmarshall(i));
+
+    const briefIds = objCMBrief.map((f) => marshall({ id: f.briefId }));
+
+    if (briefIds.length !== 0) {
+      const briefParam = {
+        RequestItems: {
+          BriefTable: {
+            Keys: briefIds,
+          },
+        },
+      };
+
+      const briefCommand = new BatchGetItemCommand(briefParam);
+      const briefResult = await client.send(briefCommand);
+
+      const objBrief = briefResult.Responses.BriefTable.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objCMBrief.map((item) => {
+        const filterBrief = objBrief.find((u) => u.id === item.briefId);
+        return { ...item, ...filterBrief };
+      });
+
+      return {
+        items: response,
+        nextToken: cmBriefResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(cmBriefResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
+async function listClientMatterRFIs(ctx) {
   const { id } = ctx.source;
 
   const { limit, nextToken } = ctx.arguments;
@@ -253,10 +341,13 @@ const resolvers = {
       return listClientMatterLabels(ctx);
     },
     backgrounds: async (ctx) => {
-      return listCompanyMatterBackgrounds(ctx);
+      return listClientMatterBackgrounds(ctx);
     },
     rfis: async (ctx) => {
-      return listCompanyMatterRFIs(ctx);
+      return listClientMatterRFIs(ctx);
+    },
+    briefs: async (ctx) => {
+      return listClientMatterBriefs(ctx);
     },
   },
 };

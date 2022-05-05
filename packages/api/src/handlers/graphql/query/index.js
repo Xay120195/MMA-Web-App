@@ -7,10 +7,7 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
-const {
-  getFile,
-  getMatterFiles,
-} = require("../../../services/MatterService");
+const { getFile, getMatterFiles } = require("../../../services/MatterService");
 
 async function getCompany(data) {
   try {
@@ -597,6 +594,48 @@ async function listRFIs() {
   return resp;
 }
 
+async function getBrief(data) {
+  try {
+    const param = {
+      TableName: "BriefTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listBriefs() {
+  try {
+    const param = {
+      TableName: "BriefTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -683,6 +722,12 @@ const resolvers = {
     },
     rfis: async () => {
       return listRFIs();
+    },
+    brief: async (ctx) => {
+      return getBrief(ctx.arguments);
+    },
+    briefs: async () => {
+      return listBriefs();
     },
   },
 };
