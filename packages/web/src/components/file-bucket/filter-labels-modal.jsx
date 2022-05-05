@@ -10,6 +10,8 @@ let filesToSend = [];
 let filterOptions = [];
 
 export default function FilterLabels(props) {
+  filterOptions = pageSelectedLabels;
+
   const handleModalClose = () => {
     props.handleModalClose();
   };
@@ -22,23 +24,13 @@ export default function FilterLabels(props) {
       props.handleSave([]);
     }
   };
-
-  pageSelectedLabels.map((x) => (filterOptions = [...filterOptions, x.label]));
-
-  filterOptions = [
-    ...new Map(filterOptions.map((x) => [JSON.stringify(x), x])).values(),
-  ].filter((y) => y !== null);
-
-  // selectedFilters = [...selectedFilters, pageSelectedLabels[0].label];
-  // selectedFilters = [...new Map(selectedFilters.map(x => [JSON.stringify(x), x])).values()];
-
+  
   const handleFilterChange = (evt) => {
     filesToSend = evt; //filter Labels, send data to index
     selectedFilters = evt; //save for UI display of selected labels
   };
 
   const handleRemoveChange = (evt) => {
-    // filesToSend = filesToSend.filter(e => e === evt[0]);
     filesToSend = evt; //filter Labels, send data to index
     selectedFilters = evt; //save for UI display of selected labels
   };
@@ -70,17 +62,6 @@ export default function FilterLabels(props) {
                   <div className="relative flex-auto">
                     <p className="input-name">Contains Labels</p>
                     <div className="relative my-2">
-                      {/* <CreatableSelect
-                                    options={pageSelectedLabels}
-                                    isMulti
-                                    isClearable
-                                    isSearchable
-                                    allowSelectAll={true}
-                                    className="w-full placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                    onChange={(options) => handleFilterChange(options)}
-                                    defaultValue={filterTempOptions ? filterTempOptions : {value: 0, label: ""}}
-                                /> */}
-
                       <Multiselect
                         isObject={false}
                         onRemove={(event) => handleRemoveChange(event)}

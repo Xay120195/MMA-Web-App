@@ -91,6 +91,8 @@ export default function FileBucket() {
   const [filterLabels, setFilterLabels] = useState(false);
   const [deletingState, setDeletingState] = useState(false);
 
+  const [filterModalState, setFilterModalState] = useState(true);
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -460,6 +462,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       }
     }
     console.log("Labels", result);
+
+    var labelNames = [];
+
+    result.map((x) => labelNames = [...labelNames, x.label]);
+    
+    if(labelNames.length == 0){
+      setFilterModalState(true);
+    }else{
+      setFilterModalState(false);
+    }
+
+    pageSelectedLabels = labelNames;
 
     setLabels(result);
   };
@@ -904,14 +918,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         value,
         label,
       }));
-      newOptions.map(
-        (data) => (filterOptionsArray = [...filterOptionsArray, data])
-      );
-      pageSelectedLabels = [
-        ...new Map(
-          filterOptionsArray.map((item) => [JSON.stringify(item), item])
-        ).values(),
-      ];
+      // newOptions.map(
+      //   (data) => (filterOptionsArray = [...filterOptionsArray, data])
+      // );
+      // pageSelectedLabels = [
+      //   ...new Map(
+      //     filterOptionsArray.map((item) => [JSON.stringify(item), item])
+      //   ).values(),
+      // ];
       return newOptions;
     } else {
       return null;
@@ -1457,6 +1471,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     return btoa(encodeURIComponent(str));
   }
 
+  function showAlert() {
+    alert("No selected Labels on page.")
+  }
+
   return (
     <>
       <div
@@ -1633,12 +1651,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
                 <button
                   className={
-                    pageSelectedLabels
-                      ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                      : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                    filterModalState
+                      ? "bg-gray-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                      : "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                   }
-                  onClick={() => setFilterLabels(true)}
-                  disabled={pageSelectedLabels ? false : true}
+                  onClick={
+                    filterModalState
+                      ? () => showAlert()
+                      : () => setFilterLabels(true)
+                  }
+                  disabled={filterModalState}
                 >
                   <AiFillTags />
                 </button>
