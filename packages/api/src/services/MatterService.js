@@ -48,7 +48,6 @@ export async function getMatterFiles(ctx) {
     isAscending,
     read = true,
     nextToken = ctx.nextToken,
-    itemCount = 0,
     result = [];
 
   if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
@@ -88,32 +87,12 @@ export async function getMatterFiles(ctx) {
       const { Items, LastEvaluatedKey } = await ddbClient.send(cmd);
       nextToken = LastEvaluatedKey;
 
-      itemCount += Items.length;
       result.push(...Items);
 
-      console.log("LastEvaluatedKey:", { LastEvaluatedKey });
-      console.log("itemCount:", itemCount);
-
-      if (LastEvaluatedKey !== undefined && Items.length === 0) {
-        read = true;
-        console.log("Inconsistent Read. Continue...");
-        console.log(
-          "Items = " +
-            Items.length +
-            ", LastEvaluatedKey = " +
-            LastEvaluatedKey +
-            "."
-        );
-      }
-
-      if (LastEvaluatedKey === undefined) {
-        read = false;
-        console.log("Done: NextToken is undefined");
-      }
-
-      if (itemCount === limit) {
-        console.log("Done: Reached ", limit, " limit.");
-        //console.log("Result:", result);
+      // if array `result` has items
+      // or theres nothing to paginate,
+      // then stop the loop
+      if (result.length > 0 || !nextToken) {
         read = false;
       }
     }
