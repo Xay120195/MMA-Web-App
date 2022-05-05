@@ -291,6 +291,26 @@ custom:
         field: labelCreate
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: brief
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: briefs
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: briefCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: briefUpdate
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: fileLabelTag
@@ -399,6 +419,11 @@ custom:
       - dataSource: LambdaClientMatterDS
         type: ClientMatter
         field: rfis
+        request: false
+        response: false
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: briefs
         request: false
         response: false
       - dataSource: LambdaQueryDS

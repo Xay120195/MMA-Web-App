@@ -134,6 +134,15 @@ type Label {
   updatedAt: AWSDateTime
 }
 
+type Brief {
+  id: ID!
+  name: String
+  date: String
+  order: Int
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 type ClientMatter {
   id: ID!
   matter: Matter
@@ -145,6 +154,7 @@ type ClientMatter {
   ): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
   rfis(limit: Int, nextToken: String): ClientMatterRFIConn
+  briefs(limit: Int, nextToken: String): ClientMatterBriefConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -216,6 +226,8 @@ type Query {
   background(id: ID): Background
   columnSettings(tableName: ViewTable): [ColumnSettings]
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
+  briefs: [Brief]
+  brief(id: ID): Brief
 }
 
 type Mutation {
@@ -309,6 +321,14 @@ type Mutation {
   ): UserColumnSettings
   userColumnSettingsUpdate(id: ID, isVisible: Boolean): UserColumnSettings
   rfiCreate(name: String, clientMatterId: String): RFI
+  briefCreate(
+    name: String
+    date: AWSDateTime
+    clientMatterId: String
+    order: Int
+  ): Brief
+
+  briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int): Brief
 }
 
 enum UserType {
@@ -454,6 +474,11 @@ type BackgroundFileConn {
 
 type ClientMatterRFIConn {
   items: [RFI]
+  nextToken: String
+}
+
+type ClientMatterBriefConn {
+  items: [Brief]
   nextToken: String
 }
 
