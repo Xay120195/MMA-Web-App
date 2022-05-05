@@ -7,11 +7,7 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
-const {
-  getMatterFile,
-  getFile,
-  getMatterFiles,
-} = require("../../../services/MatterService");
+const { getFile, getMatterFiles } = require("../../../services/MatterService");
 
 async function getCompany(data) {
   try {
@@ -364,6 +360,47 @@ async function getLabel(data) {
   return resp;
 }
 
+async function bulkGetLabels(data) {
+  console.log("bulkGetLabels", data);
+
+  try {
+    const { id } = data;
+
+    const labelIds = id.map((f) => marshall({ id: f }));
+
+    if (labelIds.length !== 0) {
+      labelIds.filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
+      const labelsParam = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
+        },
+      };
+
+      const labelsCommand = new BatchGetItemCommand(labelsParam);
+      const labelsResult = await ddbClient.send(labelsCommand);
+
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
+      );
+
+      console.log("objLabels", objLabels);
+      resp = objLabels;
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function listColumnSettingsByTable(data) {
   try {
     const param = {
@@ -499,7 +536,10 @@ async function getUserColumnSettings(data) {
     }
 
     //console.log(result);
-    resp = (Object.keys(result).length !== 0 && result !== null && result !== {}) ? result : [];
+    resp =
+      Object.keys(result).length !== 0 && result !== null && result !== {}
+        ? result
+        : [];
     //console.log(resp);
   } catch (e) {
     resp = {
@@ -538,6 +578,48 @@ async function listRFIs() {
   try {
     const param = {
       TableName: "RFITable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function getBrief(data) {
+  try {
+    const param = {
+      TableName: "BriefTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listBriefs() {
+  try {
+    const param = {
+      TableName: "BriefTable",
     };
 
     const cmd = new ScanCommand(param);
@@ -601,6 +683,9 @@ const resolvers = {
     label: async (ctx) => {
       return getLabel(ctx.arguments);
     },
+    multipleLabels: async (ctx) => {
+      return bulkGetLabels(ctx.arguments);
+    },
     labels: async () => {
       return listLabels();
     },
@@ -637,6 +722,12 @@ const resolvers = {
     },
     rfis: async () => {
       return listRFIs();
+    },
+    brief: async (ctx) => {
+      return getBrief(ctx.arguments);
+    },
+    briefs: async () => {
+      return listBriefs();
     },
   },
 };

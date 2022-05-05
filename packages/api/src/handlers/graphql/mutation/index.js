@@ -744,7 +744,7 @@ async function createRFI(data) {
       id: v4(),
       name: data.name,
       createdAt: new Date().toISOString(),
-      order: 0,
+      order: data.order ? data.order : 0,
     };
 
     const param = marshall(rawParams);
@@ -769,6 +769,54 @@ async function createRFI(data) {
     const clientMatterRFIRequest = await ddbClient.send(clientMatterRFICommand);
 
     resp = clientMatterRFIRequest ? rawParams : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function createBrief(data) {
+  let resp = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      date: data.date,
+      createdAt: new Date().toISOString(),
+      order: data.order ? data.order : 0,
+    };
+
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
+      TableName: "BriefTable",
+      Item: param,
+    });
+    const request = await ddbClient.send(cmd);
+    console.log(request);
+
+    const clientMatterBriefParams = {
+      id: v4(),
+      briefId: rawParams.id,
+      clientMatterId: data.clientMatterId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const clientMatterBriefCommand = new PutItemCommand({
+      TableName: "ClientMatterBriefTable",
+      Item: marshall(clientMatterBriefParams),
+    });
+
+    const clientMatterBriefRequest = await ddbClient.send(
+      clientMatterBriefCommand
+    );
+
+    resp = clientMatterBriefRequest ? rawParams : {};
+    resp = request ? rawParams : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -862,6 +910,42 @@ async function updateBackground(id, data) {
 
     const cmd = new UpdateItemCommand({
       TableName: "BackgroundsTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function updateBrief(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "BriefTable",
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
@@ -1357,6 +1441,23 @@ const resolvers = {
     },
     rfiCreate: async (ctx) => {
       return await createRFI(ctx.arguments);
+    },
+    briefCreate: async (ctx) => {
+      return await createBrief(ctx.arguments);
+    },
+    briefUpdate: async (ctx) => {
+      const { id, date, name, order } = ctx.arguments;
+      const data = {
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (date !== undefined) data.date = date;
+
+      if (name !== undefined) data.name = name;
+
+      if (order !== undefined) data.order = order;
+
+      return await updateBrief(id, data);
     },
   },
 };
