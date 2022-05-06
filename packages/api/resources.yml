@@ -259,6 +259,8 @@ Resources:
           AttributeType: S
         - AttributeName: createdAt
           AttributeType: S
+        - AttributeName: order
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -274,6 +276,14 @@ Resources:
             - AttributeName: matterId
               KeyType: HASH
             - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+        - IndexName: byOrder
+          KeySchema:
+            - AttributeName: matterId
+              KeyType: HASH
+            - AttributeName: order
               KeyType: RANGE
           Projection:
               ProjectionType: ALL
