@@ -291,7 +291,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:ORDER_ASC) {
     items {
       id
       name
@@ -325,7 +325,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   const mNoPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
     items {
       id
       name
