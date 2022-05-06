@@ -1361,6 +1361,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   const handleBottomScroll = useCallback(() => {
     if(filterState){
       console.log("cancel loadmore");
+      setLoading(false);
     }else{
       console.log("Reached bottom page " + Math.round(performance.now()));
       setTimeout(() => {
@@ -2055,7 +2056,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       </DragDropContext>
                     </div>
                     <div>
-                      {maxLoading ? (
+                      {maxLoading || filterState ? (
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
