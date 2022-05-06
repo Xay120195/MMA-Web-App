@@ -1346,7 +1346,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }
 
   const handleBottomScroll = useCallback(() => {
-    if(filteredFiles){
+    if(filterState){
       console.log("cancel loadmore");
     }else{
       console.log("Reached bottom page " + Math.round(performance.now()));
