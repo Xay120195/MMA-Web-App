@@ -259,6 +259,8 @@ Resources:
           AttributeType: S
         - AttributeName: createdAt
           AttributeType: S
+        - AttributeName: order
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -274,6 +276,14 @@ Resources:
             - AttributeName: matterId
               KeyType: HASH
             - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+        - IndexName: byOrder
+          KeySchema:
+            - AttributeName: matterId
+              KeyType: HASH
+            - AttributeName: order
               KeyType: RANGE
           Projection:
               ProjectionType: ALL
@@ -325,7 +335,17 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-
+  BriefTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BriefTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
   RFITable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -562,6 +582,45 @@ Resources:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
+  ClientMatterBriefTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ClientMatterBriefTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: clientMatterId
+          AttributeType: S
+        - AttributeName: briefId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byClientMatter
+          KeySchema:
+            - AttributeName: clientMatterId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byBrief
+          KeySchema:
+            - AttributeName: briefId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: clientMatterId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      
   FileLabelTable:
     Type: AWS::DynamoDB::Table
     Properties:
