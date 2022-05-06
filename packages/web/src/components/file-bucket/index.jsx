@@ -538,21 +538,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     let q = mPaginationbyItems;
     //let q = mNoPaginationbyItems;
 
-    const mInitializeOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
+    // const mInitializeOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
 
-    await API.graphql({
-      query: mInitializeOrders,
-      variables: { clientMatterId: matter_id },
-    }).then((res) => {
-      console.log("File Bucket: Initial Sorting Successful!");
-      console.log(res);
-    });
+    // await API.graphql({
+    //   query: mInitializeOrders,
+    //   variables: { clientMatterId: matter_id },
+    // }).then((res) => {
+    //   console.log("File Bucket: Initial Sorting Successful!");
+    //   console.log(res);
+    // });
 
     const params = {
       query: q,
