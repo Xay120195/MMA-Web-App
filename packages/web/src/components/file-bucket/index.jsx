@@ -1360,13 +1360,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   });
 
-  // if(filterState){
-  //   console.log("Display All filtered Files");
-  // }else{
-    
-  //   console.log("Lazy Load");
-  // }
-
   useBottomScrollListener(handleBottomScroll);
 
   const handleDuplicate = async () => {
