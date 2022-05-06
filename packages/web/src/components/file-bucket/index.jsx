@@ -91,6 +91,11 @@ export default function FileBucket() {
   const [filterLabels, setFilterLabels] = useState(false);
   const [deletingState, setDeletingState] = useState(false);
 
+  const [filterModalState, setFilterModalState] = useState(true);
+
+  const [filteredFiles, setFilteredFiles] = useState(null);
+  const [filterState, setFilterState] = useState(false);
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -286,7 +291,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:ORDER_ASC) {
     items {
       id
       name
@@ -320,7 +325,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   const mNoPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
     items {
       id
       name
@@ -461,6 +466,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
     console.log("Labels", result);
 
+    var labelNames = [];
+
+    result.map((x) => labelNames = [...labelNames, x.label]);
+    
+    if(labelNames.length == 0){
+      setFilterModalState(true);
+    }else{
+      setFilterModalState(false);
+    }
+
+    pageSelectedLabels = labelNames;
+
     setLabels(result);
   };
 
@@ -518,27 +535,24 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }, [searchFile]);
 
   let getMatterFiles = async (next) => {
-    //let q = mPaginationbyItems;
-    let q = mNoPaginationbyItems;
-    // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-    //   q = mNoPaginationbyItems;
-    // }
+    let q = mPaginationbyItems;
+    //let q = mNoPaginationbyItems;
 
-    const mInitializeOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
+    // const mInitializeOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
 
-    await API.graphql({
-      query: mInitializeOrders,
-      variables: { clientMatterId: matter_id },
-    }).then((res) => {
-      console.log("File Bucket: Initial Sorting Successful!");
-      console.log(res);
-    });
+    // await API.graphql({
+    //   query: mInitializeOrders,
+    //   variables: { clientMatterId: matter_id },
+    // }).then((res) => {
+    //   console.log("File Bucket: Initial Sorting Successful!");
+    //   console.log(res);
+    // });
 
     const params = {
       query: q,
@@ -554,7 +568,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
-
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -562,11 +575,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
-      //let q = mPaginationbyItems;
-      let q = mNoPaginationbyItems;
-      // if (matter_id === "c934548e-c12a-4faa-a102-d77f75e3da2b") {
-      //   q = mNoPaginationbyItems;
-      // }
+      let q = mPaginationbyItems;
+      //let q = mNoPaginationbyItems;
 
       const params = {
         query: q,
@@ -585,7 +595,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setVnextToken(files.data.matterFiles.nextToken);
 
         let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
+        
         setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+        
 
         if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
           console.log("result count: ", files.data.matterFiles.items.length);
@@ -874,7 +886,20 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     const updatedArray = matterFiles.map((p) =>
       p.id === id ? { ...p, date: data.date } : p
     );
-    setMatterFiles(updatedArray);
+
+    if(filterState){
+      const updatedArray = filteredFiles.map((p) =>
+        p.id === id ? { ...p, date: data.date } : p
+      );
+      setFilteredFiles(updatedArray);
+    }else{
+      const updatedArray = matterFiles.map((p) =>
+        p.id === id ? { ...p, date: data.date } : p
+      );
+      setMatterFiles(updatedArray);
+    }
+    
+    
   };
 
   async function updateMatterFileDate(id, data) {
@@ -904,14 +929,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         value,
         label,
       }));
-      newOptions.map(
-        (data) => (filterOptionsArray = [...filterOptionsArray, data])
-      );
-      pageSelectedLabels = [
-        ...new Map(
-          filterOptionsArray.map((item) => [JSON.stringify(item), item])
-        ).values(),
-      ];
+      // newOptions.map(
+      //   (data) => (filterOptionsArray = [...filterOptionsArray, data])
+      // );
+      // pageSelectedLabels = [
+      //   ...new Map(
+      //     filterOptionsArray.map((item) => [JSON.stringify(item), item])
+      //   ).values(),
+      // ];
       return newOptions;
     } else {
       return null;
@@ -1179,11 +1204,46 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   };
 
+  const mGetFilesByLabel = `
+    query getFilesByLabel($id: [ID]) {
+      multipleLabels(id: $id) {
+        files {
+        items {
+          id
+          name
+          details
+          date
+          s3ObjectKey
+          labels {
+            items {
+              id
+              name
+            }
+          }
+          backgrounds {
+            items {
+              id
+              order
+              description
+            }
+          }
+          createdAt
+          order
+          type
+          size
+        }
+        nextToken
+        }
+      }
+    }
+    `;
+
   //filter function
-  const handleFilter = (fileFilter) => {
+  const handleFilter = async (fileFilter) => {
     console.log("ff", fileFilter);
     console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
+    
     var next = 1;
 
     var filterRecord = [];
@@ -1194,28 +1254,48 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     ) {
       getMatterFiles(next);
       setMatterFiles(sortByOrder(matterFiles));
+      setFilterState(false);
       // setFiles(sortByOrder(matterFiles));
     } else {
-      // getMatterFiles(next);
-      console.log("files", files);
+      console.log("labels", labels);
+      var labelsList = labels;
+      var labelsIdList = [];
+
       for (var i = 0; i < fileFilter.length; i++) {
-        files.map((x) =>
-          x.labels.items !== null
-            ? x.labels.items.map((y) =>
-                y.name === fileFilter[i]
-                  ? (filterRecord = [...filterRecord, x])
-                  : (filterRecord = filterRecord)
-              )
-            : x.labels.items
+        labelsList.map((x) => 
+          x.label === fileFilter[i] ? 
+          labelsIdList = [...labelsIdList, x.value] :
+          labelsIdList = labelsIdList 
         );
       }
 
-      var listFilter = [
-        ...new Map(filterRecord.map((x) => [JSON.stringify(x), x])).values(),
+      var uniqueIds = [
+        ...new Map(labelsIdList.map((x) => [JSON.stringify(x), x])).values(),
       ];
-      console.log(listFilter);
-      setMatterFiles(sortByOrder(listFilter));
-      // setFiles(sortByOrder(listFilter));
+
+      console.log("labelIds", uniqueIds);
+
+      const result = await API.graphql({
+        query: mGetFilesByLabel,
+        variables: {
+          id: uniqueIds,
+        },
+      });
+
+      var newFiles = result.data.multipleLabels;
+
+      var newFiles1 = [];
+      var newFiles2 = [];
+      result.data.multipleLabels.map((x) => newFiles1 = [...newFiles1, x.files.items]);
+      newFiles1.map((x) => x.map((y)=> newFiles2 = [...newFiles2, y]));
+
+      console.log("putinmatterfiles",newFiles2);
+      setMatterFiles(sortByOrder(newFiles2));
+      setFilteredFiles(sortByOrder(newFiles2));
+      // setFiles(sortByOrder(newFiles2));
+      setFilterState(true);
+
+      console.log("res", result);
     }
   };
 
@@ -1279,14 +1359,19 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }
 
   const handleBottomScroll = useCallback(() => {
-    console.log("Reached bottom page " + Math.round(performance.now()));
-    setTimeout(() => {
-      setLoading(true);
-    }, 300);
-    setTimeout(() => {
-      loadMoreMatterFiles();
+    if(filterState){
+      console.log("cancel loadmore");
       setLoading(false);
-    }, 1000);
+    }else{
+      console.log("Reached bottom page " + Math.round(performance.now()));
+      setTimeout(() => {
+        setLoading(true);
+      }, 300);
+      setTimeout(() => {
+        loadMoreMatterFiles();
+        setLoading(false);
+      }, 1000);
+    }
   });
 
   useBottomScrollListener(handleBottomScroll);
@@ -1383,6 +1468,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   function b64EncodeUnicode(str) {
     return btoa(encodeURIComponent(str));
+  }
+
+  function showAlert() {
+    alert("No selected Labels on page.")
   }
 
   return (
@@ -1561,12 +1650,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
                 <button
                   className={
-                    pageSelectedLabels
-                      ? "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
-                      : "bg-gray-800 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                    filterModalState
+                      ? "bg-gray-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                      : "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                   }
-                  onClick={() => setFilterLabels(true)}
-                  disabled={pageSelectedLabels ? false : true}
+                  onClick={
+                    filterModalState
+                      ? () => showAlert()
+                      : () => setFilterLabels(true)
+                  }
+                  disabled={filterModalState}
                 >
                   <AiFillTags />
                 </button>
@@ -1581,11 +1674,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
-        {matterFiles === null ? (
-          <span className="py-5 px-5">Please wait...</span>
+        {
+        // filteredFiles !== null ? 
+        // (
+        //   <span className="py-5 px-5">FILTERED FILES</span>
+        // ) :
+        matterFiles === null ?
+        (
+           <span className="py-5 px-5">Please wait...</span>
         ) : (
           <>
-            {matterFiles.length === 0 &&
+            {(matterFiles).length === 0 &&
             (searchFile === undefined || searchFile === "") ? (
               <div className="p-5 px-5 py-1 left-0">
                 <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
@@ -1647,7 +1746,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                 {...provider.droppableProps}
                                 className="bg-white divide-y divide-gray-200"
                               >
-                                {matterFiles.map((data, index) => (
+                                {(filterState ? filteredFiles : matterFiles).map((data, index) => (
                                   <Draggable
                                     key={data.id}
                                     draggableId={data.id}
@@ -1957,7 +2056,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       </DragDropContext>
                     </div>
                     <div>
-                      {maxLoading ? (
+                      {maxLoading || filterState ? (
                         <div className="flex justify-center items-center mt-5">
                           <p>All data has been loaded.</p>
                         </div>
@@ -1990,6 +2089,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                     </div>
                   </div>
                 )}
+
+
+                
               </>
             )}
           </>
