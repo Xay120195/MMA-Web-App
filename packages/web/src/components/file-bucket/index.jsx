@@ -93,6 +93,9 @@ export default function FileBucket() {
 
   const [filterModalState, setFilterModalState] = useState(true);
 
+  const [filteredFiles, setFilteredFiles] = useState(null);
+  const [filterState, setFilterState] = useState(false);
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -565,7 +568,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
-
       setMatterFiles(sortByOrder(matterFilesList));
       setMaxLoading(false);
     });
@@ -593,7 +595,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setVnextToken(files.data.matterFiles.nextToken);
 
         let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
+        
         setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+        
 
         if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
           console.log("result count: ", files.data.matterFiles.items.length);
@@ -1226,6 +1230,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("ff", fileFilter);
     console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
+    
     var next = 1;
 
     var filterRecord = [];
@@ -1236,29 +1241,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     ) {
       getMatterFiles(next);
       setMatterFiles(sortByOrder(matterFiles));
+      setFilterState(false);
       // setFiles(sortByOrder(matterFiles));
     } else {
-      // getMatterFiles(next);
-      // console.log("files", files);
-      // for (var i = 0; i < fileFilter.length; i++) {
-      //   files.map((x) =>
-      //     x.labels.items !== null
-      //       ? x.labels.items.map((y) =>
-      //           y.name === fileFilter[i]
-      //             ? (filterRecord = [...filterRecord, x])
-      //             : (filterRecord = filterRecord)
-      //         )
-      //       : x.labels.items
-      //   );
-      // }
-
-      // var listFilter = [
-      //   ...new Map(filterRecord.map((x) => [JSON.stringify(x), x])).values(),
-      // ];
-      // console.log(listFilter);
-      // setMatterFiles(sortByOrder(listFilter));
-      // setFiles(sortByOrder(listFilter));
-
       console.log("labels", labels);
       var labelsList = labels;
       var labelsIdList = [];
@@ -1293,7 +1278,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       console.log("putinmatterfiles",newFiles2);
       setMatterFiles(sortByOrder(newFiles2));
-      setFiles(sortByOrder(newFiles2));
+      setFilteredFiles(sortByOrder(newFiles2));
+      // setFiles(sortByOrder(newFiles2));
+      setFilterState(true);
 
       console.log("res", result);
     }
@@ -1359,15 +1346,26 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }
 
   const handleBottomScroll = useCallback(() => {
-    console.log("Reached bottom page " + Math.round(performance.now()));
-    setTimeout(() => {
-      setLoading(true);
-    }, 300);
-    setTimeout(() => {
-      loadMoreMatterFiles();
-      setLoading(false);
-    }, 1000);
+    if(filteredFiles){
+      console.log("cancel loadmore");
+    }else{
+      console.log("Reached bottom page " + Math.round(performance.now()));
+      setTimeout(() => {
+        setLoading(true);
+      }, 300);
+      setTimeout(() => {
+        loadMoreMatterFiles();
+        setLoading(false);
+      }, 1000);
+    }
   });
+
+  // if(filterState){
+  //   console.log("Display All filtered Files");
+  // }else{
+    
+  //   console.log("Lazy Load");
+  // }
 
   useBottomScrollListener(handleBottomScroll);
 
@@ -1669,11 +1667,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
-        {matterFiles === null ? (
-          <span className="py-5 px-5">Please wait...</span>
+        {
+        // filteredFiles !== null ? 
+        // (
+        //   <span className="py-5 px-5">FILTERED FILES</span>
+        // ) :
+        matterFiles === null ?
+        (
+           <span className="py-5 px-5">Please wait...</span>
         ) : (
           <>
-            {matterFiles.length === 0 &&
+            {(matterFiles).length === 0 &&
             (searchFile === undefined || searchFile === "") ? (
               <div className="p-5 px-5 py-1 left-0">
                 <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
@@ -1735,7 +1739,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                 {...provider.droppableProps}
                                 className="bg-white divide-y divide-gray-200"
                               >
-                                {matterFiles.map((data, index) => (
+                                {(filterState ? filteredFiles : matterFiles).map((data, index) => (
                                   <Draggable
                                     key={data.id}
                                     draggableId={data.id}
@@ -2078,6 +2082,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                     </div>
                   </div>
                 )}
+
+
+                
               </>
             )}
           </>
