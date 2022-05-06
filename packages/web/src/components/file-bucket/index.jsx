@@ -886,7 +886,20 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     const updatedArray = matterFiles.map((p) =>
       p.id === id ? { ...p, date: data.date } : p
     );
-    setMatterFiles(updatedArray);
+
+    if(filterState){
+      const updatedArray = filteredFiles.map((p) =>
+        p.id === id ? { ...p, date: data.date } : p
+      );
+      setFilteredFiles(updatedArray);
+    }else{
+      const updatedArray = matterFiles.map((p) =>
+        p.id === id ? { ...p, date: data.date } : p
+      );
+      setMatterFiles(updatedArray);
+    }
+    
+    
   };
 
   async function updateMatterFileDate(id, data) {
