@@ -721,11 +721,24 @@ async function createBackground(data) {
       Item: marshall(clientMatterBackgroundParams),
     });
 
-    const clientMatterBackgroundRes = await ddbClient.send(
-      clientMatterBackgroundCmd
-    );
+    await ddbClient.send(clientMatterBackgroundCmd);
 
-    resp = clientMatterBackgroundRes ? rawParams : {};
+    const briefBackgroundParams = {
+      id: v4(),
+      backgroundId: rawParams.id,
+      briefId: data.briefId ? data.briefId : 0,
+      createdAt: new Date().toISOString(),
+      order: data.order ? data.order : 0,
+    };
+
+    const briefBackgroundCmd = new PutItemCommand({
+      TableName: "BriefBackgroundTable",
+      Item: marshall(briefBackgroundParams),
+    });
+
+    await ddbClient.send(briefBackgroundCmd);
+
+    resp = rawParams;
   } catch (e) {
     resp = {
       error: e.message,
