@@ -139,6 +139,7 @@ type Brief {
   name: String
   date: String
   order: Int
+  backgrounds(limit: Int, nextToken: String): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -297,6 +298,7 @@ type Mutation {
     description: String
     date: AWSDateTime
     clientMatterId: String
+    briefId: ID
     order: Int
   ): Background
   backgroundUpdate(
@@ -484,5 +486,10 @@ type ClientMatterBriefConn {
 
 type MatterFileConn {
   items: [File]
+  nextToken: String
+}
+
+type BriefBackgroundConn {
+  items: [Background]
   nextToken: String
 }

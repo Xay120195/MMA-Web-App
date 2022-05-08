@@ -678,3 +678,51 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
+  BriefBackgroundTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BriefBackgroundTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: briefId
+          AttributeType: S
+        - AttributeName: backgroundId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+        - AttributeName: order
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byBrief
+          KeySchema:
+            - AttributeName: briefId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byBackground
+          KeySchema:
+            - AttributeName: backgroundId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: briefId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byOrder
+          KeySchema:
+            - AttributeName: briefId
+              KeyType: HASH
+            - AttributeName: order
+              KeyType: RANGE
+          Projection:
+              ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
