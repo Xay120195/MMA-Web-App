@@ -291,7 +291,7 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   const mPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:CREATED_DESC) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:ORDER_ASC) {
     items {
       id
       name
@@ -325,7 +325,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   const mNoPaginationbyItems = `
 query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:CREATED_DESC) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
     items {
       id
       name
@@ -538,21 +538,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     let q = mPaginationbyItems;
     //let q = mNoPaginationbyItems;
 
-    const mInitializeOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
+    // const mInitializeOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
 
-    await API.graphql({
-      query: mInitializeOrders,
-      variables: { clientMatterId: matter_id },
-    }).then((res) => {
-      console.log("File Bucket: Initial Sorting Successful!");
-      console.log(res);
-    });
+    // await API.graphql({
+    //   query: mInitializeOrders,
+    //   variables: { clientMatterId: matter_id },
+    // }).then((res) => {
+    //   console.log("File Bucket: Initial Sorting Successful!");
+    //   console.log(res);
+    // });
 
     const params = {
       query: q,
