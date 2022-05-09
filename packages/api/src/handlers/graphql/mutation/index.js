@@ -1191,6 +1191,7 @@ export async function deleteBackground(id) {
       ExpressionAttributeValues: marshall({
         ":backgroundId": id,
       }),
+      ProjectionExpression: "id",
     };
 
     const clientMatterBackgroundCmd = new QueryCommand(
@@ -1200,15 +1201,11 @@ export async function deleteBackground(id) {
       clientMatterBackgroundCmd
     );
 
-    const clientMatterBackgroundId = clientMatterBackgroundResult.Items.map(
-      (i) => i.id
-    );
-
-    const filterClientMatterBackgroundId = clientMatterBackgroundId[0];
+    const clientMatterBackgroundId = clientMatterBackgroundResult.Items[0];
 
     const deleteClientMatterBackgroundCommand = new DeleteItemCommand({
       TableName: "ClientMatterBackgroundTable",
-      Key: { id: filterClientMatterBackgroundId },
+      Key: clientMatterBackgroundId,
     });
 
     const deleteClientMatterBackgroundResult = await ddbClient.send(
@@ -1218,6 +1215,53 @@ export async function deleteBackground(id) {
     if (deleteClientMatterBackgroundResult) {
       const cmd = new DeleteItemCommand({
         TableName: "BackgroundsTable",
+        Key: marshall({ id }),
+      });
+      const request = await ddbClient.send(cmd);
+
+      resp = request ? { id: id } : {};
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function deleteBrief(id) {
+  let resp = {};
+  try {
+    const clientMatterBriefParams = {
+      TableName: "ClientMatterBriefTable",
+      IndexName: "byBrief",
+      KeyConditionExpression: "briefId = :briefId",
+      ExpressionAttributeValues: marshall({
+        ":briefId": id,
+      }),
+      ProjectionExpression: "id", // fetch id of ClientMatterBriefTable only
+    };
+
+    const clientMatterBriefCmd = new QueryCommand(clientMatterBriefParams);
+    const clientMatterBriefResult = await ddbClient.send(clientMatterBriefCmd);
+
+    const clientMatterBriefId = clientMatterBriefResult.Items[0];
+
+    const deleteClientMatterBriefCommand = new DeleteItemCommand({
+      TableName: "ClientMatterBriefTable",
+      Key: clientMatterBriefId,
+    });
+
+    const deleteClientMatterBriefResult = await ddbClient.send(
+      deleteClientMatterBriefCommand
+    );
+
+    if (deleteClientMatterBriefResult) {
+      const cmd = new DeleteItemCommand({
+        TableName: "BriefTable",
         Key: marshall({ id }),
       });
       const request = await ddbClient.send(cmd);
@@ -1246,6 +1290,7 @@ export async function deleteClientMatter(id) {
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,
       }),
+      ProjectionExpression: "id",
     };
 
     const companyClientMatterCmd = new QueryCommand(companyClientMatterParams);
@@ -1253,15 +1298,11 @@ export async function deleteClientMatter(id) {
       companyClientMatterCmd
     );
 
-    const companyClientMatterId = companyClientMatterResult.Items.map(
-      (i) => i.id
-    );
-
-    const filterCompanyClientMatterId = companyClientMatterId[0];
+    const companyClientMatterId = companyClientMatterResult.Items[0];
 
     const deleteCompanyClientMatterCommand = new DeleteItemCommand({
       TableName: "CompanyClientMatterTable",
-      Key: { id: filterCompanyClientMatterId },
+      Key: companyClientMatterId,
     });
 
     const deleteCompanyClientMatterResult = await ddbClient.send(
@@ -1471,6 +1512,10 @@ const resolvers = {
       if (order !== undefined) data.order = order;
 
       return await updateBrief(id, data);
+    },
+    briefDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      return await deleteBrief(id);
     },
   },
 };
