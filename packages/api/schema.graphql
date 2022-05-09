@@ -331,6 +331,8 @@ type Mutation {
   ): Brief
 
   briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int): Brief
+  briefDelete(id: ID): Brief
+  # briefBulkDelete(id: [ID]): [Brief]
 }
 
 enum UserType {

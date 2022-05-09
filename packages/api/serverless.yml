@@ -315,6 +315,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: briefDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: fileLabelTag
         request: false
         response: false
