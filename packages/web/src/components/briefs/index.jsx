@@ -14,6 +14,7 @@ import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import { useParams } from "react-router-dom";
 import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
+import CreateBriefsModal from "./create-brief-modal";
 
 export default function Briefs() {
   let history = useHistory();
@@ -33,6 +34,7 @@ export default function Briefs() {
   const [alertMessage, setalertMessage] = useState();
 
   const [Briefs, setBriefs] = useState(null);
+  const [showCreateBriefsModal, setshowCreateBriefsModal] = useState(false);
 
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
@@ -84,6 +86,17 @@ export default function Briefs() {
     }
     `;
 
+  const mCreateBrief = `
+  mutation MyMutation($clientMatterId: String, $date: AWSDateTime, $name: String, $order: Int) {
+    briefCreate(clientMatterId: $clientMatterId, date: $date, name: $name, order: $order) {
+      id
+      name
+      date
+      createdAt
+    }
+  }
+  `;
+
 
   const getBriefs = async () => {
     console.log("matterid", matter_id);
@@ -92,7 +105,7 @@ export default function Briefs() {
       variables: {
         id: matter_id,
         limit: 100,
-        nextToken: '101'
+        nextToken: null
       },
     };
 
@@ -102,6 +115,10 @@ export default function Briefs() {
       setBriefs(matterFilesList);
     });
   };
+
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str));
+  }
 
   useEffect(() => {
     if (Briefs === null) {
@@ -113,28 +130,34 @@ export default function Briefs() {
     console.log("matterid", matter_id);
     console.log("briefname", briefname);
 
-    // const addBrief = await API.graphql({
-    //   query: mCreateBrief,
-    //   variables: {
-    //     clientMatterId: matter_id,
-    //     name: rfiname,
-    //   },
-    // });
+    // alert(briefname);
 
-    // const getID = addBrief.data.briefCreate.id;
+    const addBrief = await API.graphql({
+      query: mCreateBrief,
+      variables: {
+        clientMatterId: matter_id,
+        name: briefname,
+        date: null,
+        order: 0,
+      },
+    });
 
-    // console.log("Brief name:", addBrief);
-    // setalertMessage(modalRFIAlertMsg);
-    // handleModalClose();
-    // setShowToast(true);
-    // setTimeout(() => {
-    //   setShowToast(false);
-    //   history.push(`${AppRoutes.RFIPAGE}/${getID}`);
-    // }, 3000);
+    console.log("brief", addBrief);
+    const getID = addBrief.data.briefCreate.id;
+
+    
+
+    handleModalClose();
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      getBriefs();
+      history.push(`${AppRoutes.BACKGROUND}/${getID}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
+    }, 3000);
   };
 
   const handleModalClose = () => {
-    setshowCreateRFIModal(false);
+    setshowCreateBriefsModal(false);
   };
 
   const contentDiv = {
@@ -157,7 +180,8 @@ export default function Briefs() {
   };
 
   function visitBrief(id) {
-    history.push(`${AppRoutes.BACKGROUND}/${id}`);
+    // history.push(`${AppRoutes.BACKGROUND}/${id}`);
+    history.push(`${AppRoutes.BACKGROUND}/${id}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
   }
 
   function getQueryVariable(variable) {
@@ -257,7 +281,7 @@ export default function Briefs() {
               <button
                 type="button"
                 className="bg-green-100 hover:bg-green-100 text-green-500 text-sm py-1 px-4 rounded inline-flex items-center border border-green-500 shadow focus:ring mx-2"
-                onClick={() => setshowCreateRFIModal(true)}
+                onClick={() => setshowCreateBriefsModal(true)}
               >
                 NEW BACKGROUND &nbsp; <HiOutlinePlusCircle />
               </button>
@@ -271,7 +295,7 @@ export default function Briefs() {
             </div>
           </div>
         </div>
-        {briefDummy === null || briefDummy.length === 0 ? (
+        {Briefs === null || Briefs.length === 0 ? (
           <div className="p-5 px-5 py-1 left-0">
             <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
               <BlankState
@@ -283,7 +307,7 @@ export default function Briefs() {
           </div>
         ) : (
           <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-            {briefDummy.map((item) => (
+            {Briefs.map((item) => (
               <div
                 className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4  cursor-pointer
                 hover:border-black"
@@ -304,7 +328,7 @@ export default function Briefs() {
                         tabIndex="0"
                         className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                       >
-                        {item.date}
+                        {item.createdAt ? item.createdAt : "No date"}
                       </p>
                     </div>
                   </div>
@@ -324,6 +348,12 @@ export default function Briefs() {
           handleModalClose={handleModalClose}
         />
       )} */}
+      {showCreateBriefsModal && (
+        <CreateBriefsModal
+          handleSave={handleSaveBrief}
+          handleModalClose={handleModalClose}
+        />
+      )}
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
