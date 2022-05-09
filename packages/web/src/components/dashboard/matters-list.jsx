@@ -88,7 +88,7 @@ export function ClientMatters({}) {
                             {allowOpenBackground ? (
                               <li className="p-2">
                                 <Link
-                                  to={`${AppRoutes.BACKGROUND}/${
+                                  to={`${AppRoutes.BRIEFS}/${
                                     item.id
                                   }/?matter_name=${b64EncodeUnicode(
                                     item.matter.name
@@ -96,7 +96,7 @@ export function ClientMatters({}) {
                                     item.client.name
                                   )}`}
                                 >
-                                  Background
+                                  Background Page
                                 </Link>
                               </li>
                             ) : null}
