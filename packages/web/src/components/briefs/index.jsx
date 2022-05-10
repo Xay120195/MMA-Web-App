@@ -408,12 +408,12 @@ export default function Briefs() {
         >
           {Briefs.map((item) => (
             <div
-              className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 cursor-pointer
+              className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
                 hover:border-black"
               key={item.id}
             >
               <div className="inline-flex z-[100]">
-                <div style={{ width: "78rem" }}>
+                <div style={{ width: "77rem" }}>
                   <p
                     suppressContentEditableWarning={true}
                     style={{
@@ -439,8 +439,21 @@ export default function Briefs() {
                     {item.createdAt ? item.createdAt : "No date"}
                   </p>
                 </div>
-                <div className="float-right  ">
-                  <FaUserCircle className="h-10 w-10" />
+                <div className="float-right inline-flex ">
+                  <FaUserCircle className="h-10 w-10" />{" "}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-7 w-7 my-1 mx-1 cursor-pointer"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    onClick={() => visitBrief(item.id)}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>
