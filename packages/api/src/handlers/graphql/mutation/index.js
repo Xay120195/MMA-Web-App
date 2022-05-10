@@ -513,8 +513,8 @@ async function bulkDeleteBackground(data) {
         },
       });
 
-      const compBackgroundParams = {
-        TableName: "ClientMatterBackgroundTable",
+      const briefBackgroundParams = {
+        TableName: "BriefBackgroundTable",
         IndexName: "byBackground",
         KeyConditionExpression: "backgroundId = :backgroundId",
         ExpressionAttributeValues: marshall({
@@ -522,14 +522,14 @@ async function bulkDeleteBackground(data) {
         }),
       };
 
-      const compBackgroundCmd = new QueryCommand(compBackgroundParams);
-      const compBackgroundRes = await ddbClient.send(compBackgroundCmd);
+      const briefBackgroundCmd = new QueryCommand(briefBackgroundParams);
+      const briefBackgroundRes = await ddbClient.send(briefBackgroundCmd);
 
-      for (var b = 0; b < compBackgroundRes.Items.length; b++) {
-        var compBackgroundId = { id: compBackgroundRes.Items[b].id };
+      for (var b = 0; b < briefBackgroundRes.Items.length; b++) {
+        var briefBackgroundId = { id: briefBackgroundRes.Items[b].id };
         arrCompBackgroundItems.push({
           DeleteRequest: {
-            Key: compBackgroundId,
+            Key: briefBackgroundId,
           },
         });
       }
@@ -547,7 +547,7 @@ async function bulkDeleteBackground(data) {
     if (backgroundResult) {
       const deleteCompBackgroundParams = {
         RequestItems: {
-          ClientMatterBackgroundTable: arrCompBackgroundItems,
+          BriefBackgroundTable: arrCompBackgroundItems,
         },
       };
 
@@ -751,15 +751,12 @@ async function createBackground(data) {
 }
 
 export async function tagBriefBackground(data) {
-  console.log("tagBriefBackground", data);
-
   let resp = {};
   try {
     const arrItems = [],
       arrIDs = [];
 
     for (var i = 0; i < data.background.length; i++) {
-      console.log(i, data.background);
       var uuid = v4();
       arrItems.push({
         PutRequest: {
@@ -798,7 +795,7 @@ export async function tagBriefBackground(data) {
       batches.push(current_batch);
     }
 
-    batches.forEach(async (data) => {
+    batches.forEach(async (data, index) => {
       const briefBackgroundParams = {
         RequestItems: {
           BriefBackgroundTable: data,
@@ -808,7 +805,86 @@ export async function tagBriefBackground(data) {
       const briefBackgroundCmd = new BatchWriteItemCommand(
         briefBackgroundParams
       );
-      await ddbClient.send(briefBackgroundCmd);
+      const request = await ddbClient.send(briefBackgroundCmd);
+    });
+
+    resp = arrIDs;
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function untagBriefBackground(data) {
+  let resp = {};
+  try {
+    const arrItems = [],
+      arrIDs = [];
+
+    // for (var a = 0; a < fileLabelIdRes.Items.length; a++) {
+    //   var fileLabelId = { id: fileLabelIdRes.Items[a].id };
+    //   arrItems.push({
+    //     DeleteRequest: {
+    //       Key: fileLabelId,
+    //     },
+    //   });
+    // }
+
+    for (var i = 0; i < data.background.length; i++) {
+      var uuid = v4();
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: uuid,
+            briefId: data.briefId,
+            backgroundId: data.background[i].id,
+            order: data.background[i].order,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+
+      arrIDs.push({
+        id: uuid,
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data, index) => {
+      const briefBackgroundParams = {
+        RequestItems: {
+          BriefBackgroundTable: data,
+        },
+      };
+
+      const briefBackgroundCmd = new BatchWriteItemCommand(
+        briefBackgroundParams
+      );
+      const request = await ddbClient.send(briefBackgroundCmd);
     });
 
     resp = arrIDs;
@@ -1512,6 +1588,9 @@ const resolvers = {
 
     briefBackgroundTag: async (ctx) => {
       return await tagBriefBackground(ctx.arguments);
+    },
+    briefBackgroundUntag: async (ctx) => {
+      return await untagBriefBackground(ctx.arguments);
     },
 
     backgroundUpdate: async (ctx) => {
