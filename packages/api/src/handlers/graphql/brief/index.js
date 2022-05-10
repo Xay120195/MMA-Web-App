@@ -6,18 +6,32 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listBriefBackground(ctx) {
-
-  console.log("listBriefBackground()");
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+
+  let indexName, isAscending;
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+    isAscending = false;
+  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
+    isAscending = true;
+  }
+
+  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+    indexName = "byCreatedAt";
+  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+    indexName = "byOrder";
+  }
+
   try {
     const briefBackgroundParams = {
       TableName: "BriefBackgroundTable",
-      IndexName: "byBrief",
+      IndexName: indexName,
       KeyConditionExpression: "briefId = :briefId",
       ExpressionAttributeValues: marshall({
         ":briefId": id,
       }),
+      ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
@@ -35,15 +49,19 @@ async function listBriefBackground(ctx) {
     ).map((f) => marshall({ id: f.backgroundId }));
 
     if (backgroundIds.length !== 0) {
+      let unique = backgroundIds
+        .map((a) => unmarshall(a))
+        .map((x) => x.id)
+        .filter(function (item, i, ar) {
+          return ar.indexOf(item) === i;
+        });
 
-      backgroundIds.filter(function (item, i, ar) {
-        return ar.indexOf(item) === i;
-      });
+      const uniqueBackgroundIds = unique.map((f) => marshall({ id: f }));
 
       const backgroundsParams = {
         RequestItems: {
           BackgroundsTable: {
-            Keys: backgroundIds,
+            Keys: uniqueBackgroundIds,
           },
         },
       };

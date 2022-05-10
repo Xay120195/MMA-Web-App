@@ -139,7 +139,7 @@ type Brief {
   name: String
   date: String
   order: Int
-  backgrounds(limit: Int, nextToken: String): BriefBackgroundConn
+  backgrounds(limit: Int, nextToken: String, sortOrder: OrderBy): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }

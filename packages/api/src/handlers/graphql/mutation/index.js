@@ -805,8 +805,6 @@ export async function tagBriefBackground(data) {
         },
       };
 
-      console.log(briefBackgroundParams);
-
       const briefBackgroundCmd = new BatchWriteItemCommand(
         briefBackgroundParams
       );
@@ -814,7 +812,6 @@ export async function tagBriefBackground(data) {
     });
 
     resp = arrIDs;
-    console.log(arrIDs);
   } catch (e) {
     resp = {
       error: e.message,
