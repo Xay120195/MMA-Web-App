@@ -158,11 +158,7 @@ export default function Briefs() {
     setTimeout(() => {
       setShowToast(false);
       getBriefs();
-      history.push(
-        `${AppRoutes.BACKGROUND}/${getID}/?matter_name=${b64EncodeUnicode(
-          matter_name
-        )}&client_name=${b64EncodeUnicode(client_name)}`
-      );
+      history.push(`${AppRoutes.BACKGROUND}/${matter_id}/${getID}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
     }, 3000);
   };
 
@@ -190,11 +186,7 @@ export default function Briefs() {
 
   function visitBrief(id) {
     // history.push(`${AppRoutes.BACKGROUND}/${id}`);
-    history.push(
-      `${AppRoutes.BACKGROUND}/${id}/?matter_name=${b64EncodeUnicode(
-        matter_name
-      )}&client_name=${b64EncodeUnicode(client_name)}`
-    );
+    history.push(`${AppRoutes.BACKGROUND}/${matter_id}/${id}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
   }
 
   function getQueryVariable(variable) {
@@ -411,8 +403,9 @@ export default function Briefs() {
                 hover:border-black"
               key={item.id}
             >
-              <div className="inline-flex z-[100]">
-                <div style={{ width: "77rem" }}>
+            <div>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="col-span-2">
                   <p
                     suppressContentEditableWarning={true}
                     style={{
@@ -438,7 +431,8 @@ export default function Briefs() {
                     {item.createdAt ? item.createdAt : "No date"}
                   </p>
                 </div>
-                <div className="float-right inline-flex ">
+              </div>
+              <div className="float-right inline-flex -mt-10">
                   <FaUserCircle className="h-10 w-10" />{" "}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -453,8 +447,8 @@ export default function Briefs() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </div>
               </div>
+            </div>
             </div>
           ))}
         </div>
