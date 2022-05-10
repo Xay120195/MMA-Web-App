@@ -16,7 +16,7 @@ importers:
       serverless-appsync-plugin: ^1.12.1
       serverless-appsync-simulator: ^0.19.2
       serverless-dynamodb-local: ^0.2.40
-      serverless-offline: ^8.2.0
+      serverless-offline: ^8.4.0
       serverless-webpack: ^5.6.0
       uuid: ^8.3.2
       webpack: ^4.44.2

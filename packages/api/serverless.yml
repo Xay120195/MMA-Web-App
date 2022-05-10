@@ -315,6 +315,16 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: briefDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: briefBackgroundTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: fileLabelTag
         request: false
         response: false
@@ -383,6 +393,7 @@ custom:
         field: backgroundFileTag
         request: false
         response: false
+
       - dataSource: LambdaMutationDS
         type: Mutation
         field: rfiCreate
