@@ -376,7 +376,6 @@ export default function Briefs() {
               >
                 NEW BACKGROUND &nbsp; <HiOutlinePlusCircle />
               </button>
-
               <input
                 type="search"
                 placeholder="Search ..."
