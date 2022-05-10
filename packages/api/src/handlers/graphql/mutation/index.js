@@ -709,24 +709,24 @@ async function createBackground(data) {
     });
     const request = await ddbClient.send(cmd);
 
-    const clientMatterBackgroundParams = {
-      id: v4(),
-      backgroundId: rawParams.id,
-      clientMatterId: data.clientMatterId,
-      createdAt: new Date().toISOString(),
-    };
+    // const clientMatterBackgroundParams = {
+    //   id: v4(),
+    //   backgroundId: rawParams.id,
+    //   clientMatterId: data.clientMatterId,
+    //   createdAt: new Date().toISOString(),
+    // };
 
-    const clientMatterBackgroundCmd = new PutItemCommand({
-      TableName: "ClientMatterBackgroundTable",
-      Item: marshall(clientMatterBackgroundParams),
-    });
+    // const clientMatterBackgroundCmd = new PutItemCommand({
+    //   TableName: "ClientMatterBackgroundTable",
+    //   Item: marshall(clientMatterBackgroundParams),
+    // });
 
-    await ddbClient.send(clientMatterBackgroundCmd);
+    // await ddbClient.send(clientMatterBackgroundCmd);
 
     const briefBackgroundParams = {
       id: v4(),
       backgroundId: rawParams.id,
-      briefId: data.briefId ? data.briefId : 0,
+      briefId: data.briefId,
       createdAt: new Date().toISOString(),
       order: data.order ? data.order : 0,
     };
@@ -739,6 +739,82 @@ async function createBackground(data) {
     await ddbClient.send(briefBackgroundCmd);
 
     resp = rawParams;
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function tagBriefBackground(data) {
+  console.log("tagBriefBackground", data);
+
+  let resp = {};
+  try {
+    const arrItems = [],
+      arrIDs = [];
+
+    for (var i = 0; i < data.background.length; i++) {
+      console.log(i, data.background);
+      var uuid = v4();
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: uuid,
+            briefId: data.briefId,
+            backgroundId: data.background[i].id,
+            order: data.background[i].order,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+
+      arrIDs.push({
+        id: uuid,
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const briefBackgroundParams = {
+        RequestItems: {
+          BriefBackgroundTable: data,
+        },
+      };
+
+      console.log(briefBackgroundParams);
+
+      const briefBackgroundCmd = new BatchWriteItemCommand(
+        briefBackgroundParams
+      );
+      await ddbClient.send(briefBackgroundCmd);
+    });
+
+    resp = arrIDs;
+    console.log(arrIDs);
   } catch (e) {
     resp = {
       error: e.message,
@@ -810,8 +886,6 @@ async function createBrief(data) {
       Item: param,
     });
     const request = await ddbClient.send(cmd);
-    console.log(request);
-
     const clientMatterBriefParams = {
       id: v4(),
       briefId: rawParams.id,
@@ -1374,7 +1448,7 @@ const resolvers = {
     },
 
     matterFileBulkCreate: async (ctx) => {
-      const { files } = ctx.arguments; // id and order
+      const { files } = ctx.arguments;
       return await bulkCreateMatterFile(files);
     },
 
@@ -1438,6 +1512,11 @@ const resolvers = {
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
     },
+
+    briefBackgroundTag: async (ctx) => {
+      return await tagBriefBackground(ctx.arguments);
+    },
+
     backgroundUpdate: async (ctx) => {
       const { id, date, description, order } = ctx.arguments;
       const data = {
