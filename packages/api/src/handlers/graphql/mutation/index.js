@@ -759,7 +759,6 @@ export async function tagBriefBackground(data) {
       arrIDs = [];
 
     for (var i = 0; i < data.background.length; i++) {
-      console.log(i, data.background);
       var uuid = v4();
       arrItems.push({
         PutRequest: {
@@ -777,6 +776,8 @@ export async function tagBriefBackground(data) {
         id: uuid,
       });
     }
+
+    console.log("put request: ", JSON.stringify(arrItems));
 
     let batches = [],
       current_batch = [],
@@ -798,7 +799,7 @@ export async function tagBriefBackground(data) {
       batches.push(current_batch);
     }
 
-    batches.forEach(async (data) => {
+    batches.forEach(async (data, index) => {
       const briefBackgroundParams = {
         RequestItems: {
           BriefBackgroundTable: data,
@@ -808,7 +809,8 @@ export async function tagBriefBackground(data) {
       const briefBackgroundCmd = new BatchWriteItemCommand(
         briefBackgroundParams
       );
-      await ddbClient.send(briefBackgroundCmd);
+      const request = await ddbClient.send(briefBackgroundCmd);
+      console.log("Execute: ", index, request);
     });
 
     resp = arrIDs;

@@ -124,8 +124,8 @@ export default function Briefs() {
     });
   };
 
-  function b64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str));
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
   }
 
   useEffect(() => {
@@ -158,7 +158,13 @@ export default function Briefs() {
     setTimeout(() => {
       setShowToast(false);
       getBriefs();
-      history.push(`${AppRoutes.BACKGROUND}/${matter_id}/${getID}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
+      history.push(
+        `${
+          AppRoutes.BACKGROUND
+        }/${matter_id}/${getID}/?matter_name=${utf8_to_b64(
+          matter_name
+        )}&client_name=${utf8_to_b64(client_name)}`
+      );
     }, 3000);
   };
 
@@ -186,7 +192,11 @@ export default function Briefs() {
 
   function visitBrief(id) {
     // history.push(`${AppRoutes.BACKGROUND}/${id}`);
-    history.push(`${AppRoutes.BACKGROUND}/${matter_id}/${id}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
+    history.push(
+      `${AppRoutes.BACKGROUND}/${matter_id}/${id}/?matter_name=${utf8_to_b64(
+        matter_name
+      )}&client_name=${utf8_to_b64(client_name)}`
+    );
   }
 
   function getQueryVariable(variable) {
@@ -201,22 +211,14 @@ export default function Briefs() {
     return false;
   }
 
-  function UnicodeDecodeB64(str) {
+  function b64_to_utf8(str) {
     return decodeURIComponent(atob(str));
   }
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
-  const matter_name = UnicodeDecodeB64(m_name);
-  const client_name = UnicodeDecodeB64(c_name);
-
-  const briefDummy = [
-    { id: "test-1", name: "test-1", date: "May 6, 2022", order: 0 },
-    { id: "test-2", name: "test-2", date: "May 6, 2022", order: 1 },
-    { id: "test-3", name: "test-3", date: "May 6, 2022", order: 2 },
-    { id: "test-4", name: "test-4", date: "May 6, 2022", order: 3 },
-    { id: "test-5", name: "test-5", date: "May 6, 2022", order: 4 },
-  ];
+  const matter_name = b64_to_utf8(m_name);
+  const client_name = b64_to_utf8(c_name);
 
   const handleNameContent = (e, name, id) => {
     if (!validationAlert) {
@@ -233,6 +235,7 @@ export default function Briefs() {
   };
 
   const handleSaveBriefName = (e, name, id) => {
+    let originalString = name.replace(/(<([^>]+)>)/gi, "");
     const updateName = Briefs.map((x) => {
       if (x.id === id) {
         return {
@@ -254,11 +257,12 @@ export default function Briefs() {
       };
       const success = updateBriefName(data);
       if (success) {
-        setalertMessage(`Successfully updated ${briefName} `);
+        setalertMessage(`Successfully updated ${originalString} `);
         setShowToast(true);
 
         setTimeout(() => {
           setShowToast(false);
+          setalertMessage("");
         }, 1000);
       }
     } else {
@@ -270,10 +274,11 @@ export default function Briefs() {
 
       const success = updateBriefName(data);
       if (success) {
-        setalertMessage(`Successfully updated ${briefName} `);
+        setalertMessage(`Successfully updated ${originalString} `);
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          setalertMessage("");
         }, 1000);
       }
     }
@@ -403,36 +408,36 @@ export default function Briefs() {
                 hover:border-black"
               key={item.id}
             >
-            <div>
-              <div className="grid grid-cols-4 gap-4">
-                <div className="col-span-2">
-                  <p
-                    suppressContentEditableWarning={true}
-                    style={{
-                      cursor: "auto",
-                      outlineColor: "rgb(204, 204, 204, 0.5)",
-                      outlineWidth: "thin",
-                    }}
-                    onClick={(e) => handleNameContent(e, item.name, item.id)}
-                    contentEditable={true}
-                    tabIndex="0"
-                    onInput={(e) => handleOnChangeBiefName(e)}
-                    onBlur={(e) => handleSaveBriefName(e, item.name, item.id)}
-                    className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12"
-                    dangerouslySetInnerHTML={{
-                      __html: item.name,
-                    }}
-                  />
+              <div>
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-2">
+                    <p
+                      suppressContentEditableWarning={true}
+                      style={{
+                        cursor: "auto",
+                        outlineColor: "rgb(204, 204, 204, 0.5)",
+                        outlineWidth: "thin",
+                      }}
+                      onClick={(e) => handleNameContent(e, item.name, item.id)}
+                      contentEditable={true}
+                      tabIndex="0"
+                      onInput={(e) => handleOnChangeBiefName(e)}
+                      onBlur={(e) => handleSaveBriefName(e, item.name, item.id)}
+                      className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12"
+                      dangerouslySetInnerHTML={{
+                        __html: item.name,
+                      }}
+                    />
 
-                  <p
-                    tabIndex="0"
-                    className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
-                  >
-                    {item.createdAt ? item.createdAt : "No date"}
-                  </p>
+                    <p
+                      tabIndex="0"
+                      className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
+                    >
+                      {item.createdAt ? item.createdAt : "No date"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="float-right inline-flex -mt-10">
+                <div className="float-right inline-flex -mt-10">
                   <FaUserCircle className="h-10 w-10" />{" "}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -447,8 +452,8 @@ export default function Briefs() {
                       clipRule="evenodd"
                     />
                   </svg>
+                </div>
               </div>
-            </div>
             </div>
           ))}
         </div>
