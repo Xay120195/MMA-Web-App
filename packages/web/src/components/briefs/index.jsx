@@ -32,6 +32,9 @@ export default function Briefs() {
   const [allowUpdateQuestion, setAllowUpdateQuestion] = useState(false);
   const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
+  const [briefName, setBriefName] = useState("");
+  const [briefId, setBriefId] = useState("");
+  const [validationAlert, setValidationAlert] = useState("");
 
   const [Briefs, setBriefs] = useState(null);
   const [showCreateBriefsModal, setshowCreateBriefsModal] = useState(false);
@@ -97,6 +100,11 @@ export default function Briefs() {
   }
   `;
 
+  const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
+    briefUpdate(id: $id, name: $name) {
+      id
+    }
+  }`;
 
   const getBriefs = async () => {
     console.log("matterid", matter_id);
@@ -105,7 +113,7 @@ export default function Briefs() {
       variables: {
         id: matter_id,
         limit: 100,
-        nextToken: null
+        nextToken: null,
       },
     };
 
@@ -145,14 +153,16 @@ export default function Briefs() {
     console.log("brief", addBrief);
     const getID = addBrief.data.briefCreate.id;
 
-    
-
     handleModalClose();
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
       getBriefs();
-      history.push(`${AppRoutes.BACKGROUND}/${getID}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
+      history.push(
+        `${AppRoutes.BACKGROUND}/${getID}/?matter_name=${b64EncodeUnicode(
+          matter_name
+        )}&client_name=${b64EncodeUnicode(client_name)}`
+      );
     }, 3000);
   };
 
@@ -169,7 +179,6 @@ export default function Briefs() {
     gridtemplatecolumn: "1fr auto",
   };
 
-
   const handleSearchChange = (e) => {
     console.log("L114" + e.target.value);
     setSearchTable(e.target.value);
@@ -181,7 +190,11 @@ export default function Briefs() {
 
   function visitBrief(id) {
     // history.push(`${AppRoutes.BACKGROUND}/${id}`);
-    history.push(`${AppRoutes.BACKGROUND}/${id}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
+    history.push(
+      `${AppRoutes.BACKGROUND}/${id}/?matter_name=${b64EncodeUnicode(
+        matter_name
+      )}&client_name=${b64EncodeUnicode(client_name)}`
+    );
   }
 
   function getQueryVariable(variable) {
@@ -206,12 +219,90 @@ export default function Briefs() {
   const client_name = UnicodeDecodeB64(c_name);
 
   const briefDummy = [
-    {id:'test-1' , name: 'test-1', date: 'May 6, 2022', order: 0 },
-    {id:'test-2' , name: 'test-2', date: 'May 6, 2022', order: 1 },
-    {id:'test-3' , name: 'test-3', date: 'May 6, 2022', order: 2 },
-    {id:'test-4' , name: 'test-4', date: 'May 6, 2022', order: 3 },
-    {id:'test-5' , name: 'test-5', date: 'May 6, 2022', order: 4 },
+    { id: "test-1", name: "test-1", date: "May 6, 2022", order: 0 },
+    { id: "test-2", name: "test-2", date: "May 6, 2022", order: 1 },
+    { id: "test-3", name: "test-3", date: "May 6, 2022", order: 2 },
+    { id: "test-4", name: "test-4", date: "May 6, 2022", order: 3 },
+    { id: "test-5", name: "test-5", date: "May 6, 2022", order: 4 },
   ];
+
+  const handleNameContent = (e, name, id) => {
+    if (!validationAlert) {
+      setBriefName(!name ? "" : name);
+      setBriefId(id);
+      setValidationAlert("");
+    } else {
+      setBriefName("");
+    }
+  };
+
+  const handleOnChangeBiefName = (e) => {
+    setBriefName(e.currentTarget.textContent);
+  };
+
+  const handleSaveBriefName = (e, name, id) => {
+    const updateName = Briefs.map((x) => {
+      if (x.id === id) {
+        return {
+          ...x,
+          name: e.target.innerHTML,
+        };
+      }
+      return x;
+    });
+    setBriefs(updateName);
+
+    if (briefName.length <= 0) {
+      setValidationAlert("Brief Name is required");
+    } else if (briefName === name) {
+      setValidationAlert("");
+      const data = {
+        id,
+        name: e.target.innerHTML,
+      };
+      const success = updateBriefName(data);
+      if (success) {
+        setalertMessage(`Successfully updated ${briefName} `);
+        setShowToast(true);
+
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }
+    } else {
+      setValidationAlert("");
+      const data = {
+        id,
+        name: e.target.innerHTML,
+      };
+
+      const success = updateBriefName(data);
+      if (success) {
+        setalertMessage(`Successfully updated ${briefName} `);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }
+    }
+  };
+
+  async function updateBriefName(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBriefName,
+          variables: {
+            id: data.id,
+            name: data.name,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
 
   return (
     <>
@@ -295,53 +386,69 @@ export default function Briefs() {
             </div>
           </div>
         </div>
-        {Briefs === null || Briefs.length === 0 ? (
-          <div className="p-5 px-5 py-1 left-0">
-            <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
-              <BlankState
-                displayText={"There are no items to show in this view"}
-                txtLink={"add new Background"}
-                iconDisplay={BlankList}
-              />
-            </div>
+      </div>
+      {Briefs === null || Briefs.length === 0 ? (
+        <div className="p-5 px-5 py-1 left-0">
+          <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6">
+            <BlankState
+              displayText={"There are no items to show in this view"}
+              txtLink={"add new Background"}
+              iconDisplay={BlankList}
+            />
           </div>
-        ) : (
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-            {Briefs.map((item) => (
-              <div
-                className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4  cursor-pointer
+        </div>
+      ) : (
+        <div
+          className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"
+          style={{
+            marginLeft: "5.2rem",
+            marginTop: "2rem",
+            marginRight: "1rem",
+          }}
+        >
+          {Briefs.map((item) => (
+            <div
+              className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 cursor-pointer
                 hover:border-black"
-                key={item.id}
-                onClick={() => visitBrief(item.id)}
-              >
-                <div>
-                  <div className="grid grid-cols-4 gap-4">
-                    <div className="col-span-2">
-                      <h4
-                        tabIndex="0"
-                        className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1"
-                      >
-                        {item.name}
-                      </h4>
+              key={item.id}
 
-                      <p
-                        tabIndex="0"
-                        className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
-                      >
-                        {item.createdAt ? item.createdAt : "No date"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="float-right -mt-10">
-                    <FaUserCircle className="h-10 w-10" />
-                  </div>
+              // onClick={() => visitBrief(item.id)}
+            >
+              <div className="inline-flex">
+                <div style={{ width: "78rem" }}>
+                  <p
+                    suppressContentEditableWarning={true}
+                    style={{
+                      cursor: "auto",
+                      outlineColor: "rgb(204, 204, 204, 0.5)",
+                      outlineWidth: "thin",
+                    }}
+                    onClick={(e) => handleNameContent(e, item.name, item.id)}
+                    contentEditable={true}
+                    tabIndex="0"
+                    onInput={(e) => handleOnChangeBiefName(e)}
+                    onBlur={(e) => handleSaveBriefName(e, item.name, item.id)}
+                    className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12"
+                    dangerouslySetInnerHTML={{
+                      __html: item.name,
+                    }}
+                  />
+
+                  <p
+                    tabIndex="0"
+                    className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
+                  >
+                    {item.createdAt ? item.createdAt : "No date"}
+                  </p>
+                </div>
+                <div className="float-right ">
+                  <FaUserCircle className="h-10 w-10" />
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
+            </div>
+          ))}
+        </div>
+      )}
       {/* {showCreateRFIModal && (
         <CreateRFIModal
           handleSave={handleSaveRFI}
