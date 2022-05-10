@@ -799,7 +799,7 @@ export async function tagBriefBackground(data) {
       batches.push(current_batch);
     }
 
-    batches.forEach(async (data) => {
+    batches.forEach(async (data, index) => {
       const briefBackgroundParams = {
         RequestItems: {
           BriefBackgroundTable: data,
@@ -810,7 +810,7 @@ export async function tagBriefBackground(data) {
         briefBackgroundParams
       );
       const request = await ddbClient.send(briefBackgroundCmd);
-      console.log(request);
+      console.log("Execute: ", index, request);
     });
 
     resp = arrIDs;
