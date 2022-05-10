@@ -403,8 +403,9 @@ export default function Briefs() {
                 hover:border-black"
               key={item.id}
             >
-              <div className="inline-flex z-[100]">
-                <div style={{ width: "77rem" }}>
+            <div>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="col-span-2">
                   <p
                     suppressContentEditableWarning={true}
                     style={{
@@ -430,7 +431,8 @@ export default function Briefs() {
                     {item.createdAt ? item.createdAt : "No date"}
                   </p>
                 </div>
-                <div className="float-right inline-flex ">
+              </div>
+              <div className="float-right inline-flex -mt-10">
                   <FaUserCircle className="h-10 w-10" />{" "}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -445,8 +447,8 @@ export default function Briefs() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </div>
               </div>
+            </div>
             </div>
           ))}
         </div>
