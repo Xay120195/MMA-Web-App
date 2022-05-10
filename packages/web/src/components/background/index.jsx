@@ -93,26 +93,73 @@ const Background = () => {
     }
   `;
 
+  const qBriefBackgroundList = `
+    query getBriefByID($limit: Int, $nextToken: String, $id: ID, $sortOrder: OrderBy) {
+      brief(id: $id) {
+        id
+        backgrounds(limit: $limit, nextToken: $nextToken, sortOrder: $sortOrder) {
+          items {
+            id
+            description
+            date
+            createdAt
+            order
+            files {
+              items {
+                id
+                name
+              }
+            }
+          }
+          nextToken
+        }
+      }
+    }  
+  `;
+
   const getBackground = async () => {
     let result = [];
     setWait(false);
+
+    const backgroundOpt = await API.graphql({
+      query: qBriefBackgroundList,
+      variables: { id: background_id, limit: 20, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+    });
+
+    setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+
+    console.log(backgroundOpt);
+
+    if (backgroundOpt.data.brief.backgrounds.items !== null) {
+      result = backgroundOpt.data.brief.backgrounds.items.map(
+        ({ id, description, date, createdAt, order, files }) => ({
+          createdAt: createdAt,
+          id: id,
+          description: description,
+          date: date,
+          order: order,
+          files: files,
+        })
+      );
+
+      setPageTotal(result.length);
+      setPageSize(20);
+      setPageIndex(1);
+
+      if (witness !== null) {
+        console.log(result);
+        setWitness(sortByOrder(result));
+        setWait(true);
+        setMaxLoading(false);
+      }
+    }
+  };
+
+  /* No Brief ID
+    const getBackground = async () => {
+    let result = [];
+    setWait(false);
     const matterId = matter_id;
-
-    // const mInitializeOrders = `
-    //   mutation initializeOrder($clientMatterId: ID) {
-    //     backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-    //       id
-    //     }
-    //   }
-    // `;
-
-    // await API.graphql({
-    //   query: mInitializeOrders,
-    //   variables: { clientMatterId: matterId },
-    // }).then((res) => {
-    //   console.log("File Bucket: Initial Sorting Successful!");
-    //   console.log(res);
-    // });
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
@@ -139,38 +186,11 @@ const Background = () => {
 
       if (witness !== null) {
         setWitness(sortByOrder(result));
-
-        // const res = result.map(({ id }, index) => ({
-        //   id: id,
-        //   order: index + 1,
-        // }));
-
-        // const mUpdateBackgroundOrder = `
-        //   mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
-        //     backgroundBulkUpdateOrders(arrangement: $arrangement) {
-        //       id
-        //       order
-        //     }
-        //   }`;
-        // const response = await API.graphql({
-        //   query: mUpdateBackgroundOrder,
-        //   variables: {
-        //     arrangement: res,
-        //   },
-        // });
-        // console.log(response);
         setWait(true);
         setMaxLoading(false);
       }
     }
-  };
-
-  const goToBottom = () => {
-    window.scrollTo({
-      bottom: 0,
-      behavior: "smooth",
-    });
-  };
+  };*/
 
   const loadMoreBackground = async () => {
     if (vNextToken !== null && !loading) {
@@ -179,8 +199,8 @@ const Background = () => {
       const matterId = matter_id;
 
       const backgroundOpt = await API.graphql({
-        query: qListBackground,
-        variables: { id: matterId, limit: 20, nextToken: vNextToken },
+        query: qBriefBackgroundList,
+        variables: { id: background_id, limit: 20, nextToken: vNextToken },
       });
 
       setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
@@ -198,7 +218,6 @@ const Background = () => {
         );
 
         if (witness !== "") {
-          //goToBottom();
           setTimeout(() => {
             setLoading(false);
             setMaxLoading(false);
