@@ -26,7 +26,7 @@ const Background = () => {
   const [getId, setId] = useState([{}]);
   const [fileMatter, setFileMatter] = useState([]);
   const params = useParams();
-  const { matter_id } = params;
+  const { matter_id, background_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);

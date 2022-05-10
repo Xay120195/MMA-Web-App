@@ -152,7 +152,7 @@ export default function Briefs() {
     setTimeout(() => {
       setShowToast(false);
       getBriefs();
-      history.push(`${AppRoutes.BACKGROUND}/${getID}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
+      history.push(`${AppRoutes.BACKGROUND}/${matter_id}/${getID}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
     }, 3000);
   };
 
@@ -181,7 +181,7 @@ export default function Briefs() {
 
   function visitBrief(id) {
     // history.push(`${AppRoutes.BACKGROUND}/${id}`);
-    history.push(`${AppRoutes.BACKGROUND}/${id}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
+    history.push(`${AppRoutes.BACKGROUND}/${matter_id}/${id}/?matter_name=${b64EncodeUnicode(matter_name)}&client_name=${b64EncodeUnicode(client_name)}`);
   }
 
   function getQueryVariable(variable) {

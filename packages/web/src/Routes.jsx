@@ -76,7 +76,7 @@ const Routes = () => {
           />
           <Route
             exact
-            path={`${AppRoutes.BACKGROUND}/:matter_id`}
+            path={`${AppRoutes.BACKGROUND}/:matter_id/:background_id`}
             component={Background}
           />
           <Route
