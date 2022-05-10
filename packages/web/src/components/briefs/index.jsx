@@ -411,10 +411,8 @@ export default function Briefs() {
               className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 cursor-pointer
                 hover:border-black"
               key={item.id}
-
-              // onClick={() => visitBrief(item.id)}
             >
-              <div className="inline-flex">
+              <div className="inline-flex z-[100]">
                 <div style={{ width: "78rem" }}>
                   <p
                     suppressContentEditableWarning={true}
@@ -441,7 +439,7 @@ export default function Briefs() {
                     {item.createdAt ? item.createdAt : "No date"}
                   </p>
                 </div>
-                <div className="float-right ">
+                <div className="float-right  ">
                   <FaUserCircle className="h-10 w-10" />
                 </div>
               </div>
