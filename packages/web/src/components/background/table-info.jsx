@@ -458,9 +458,9 @@ const TableInfo = ({
       //   search: queryParams.toString(),
       // });
       history.push(
-        `${AppRoutes.BACKGROUND}/${matterId}/?matter_name=${b64EncodeUnicode(
+        `${AppRoutes.BACKGROUND}/${matterId}/?matter_name=${utf8_to_b64(
           matter_name
-        )}&client_name=${b64EncodeUnicode(client_name)}`
+        )}&client_name=${utf8_to_b64(client_name)}`
       );
     }
   }, 10000);
@@ -834,8 +834,8 @@ const TableInfo = ({
     }, 2000);
   };
 
-  function b64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str));
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
   }
 
   //UPLOADING FILE THROUGH BG
@@ -848,7 +848,7 @@ const TableInfo = ({
   //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
-    
+
     //Add order to new files
     var sortedFiles = uploadedFiles.sort(
       (a, b) => b.oderSelected - a.oderSelected
@@ -1012,8 +1012,6 @@ const TableInfo = ({
 
     //return request;
   }
-  
-
 
   return (
     <>
@@ -1240,9 +1238,9 @@ const TableInfo = ({
                                                       AppRoutes.FILEBUCKET
                                                     }/${matterId}/${
                                                       item.id
-                                                    }/?matter_name=${b64EncodeUnicode(
+                                                    }/?matter_name=${utf8_to_b64(
                                                       matter_name
-                                                    )}&client_name=${b64EncodeUnicode(
+                                                    )}&client_name=${utf8_to_b64(
                                                       client_name
                                                     )}`)
                                                   }
@@ -1465,9 +1463,9 @@ const TableInfo = ({
               ? () =>
                   (window.location = `${
                     AppRoutes.FILEBUCKET
-                  }/${matterId}/000/?matter_name=${b64EncodeUnicode(
+                  }/${matterId}/000/?matter_name=${utf8_to_b64(
                     matter_name
-                  )}&client_name=${b64EncodeUnicode(client_name)}`)
+                  )}&client_name=${utf8_to_b64(client_name)}`)
               : null
           }
         >
