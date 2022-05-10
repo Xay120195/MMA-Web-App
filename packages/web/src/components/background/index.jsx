@@ -65,7 +65,27 @@ const Background = () => {
 
   useEffect(() => {
     getBackground();
+
+    if(bgName === null){
+      getBriefs();
+    }
   }, []);
+  const getName = `
+  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
+    clientMatter(id: $id) {
+      briefs(limit: $limit, nextToken: $nextToken) {
+        items {
+          id
+          name
+          date
+          order
+        }
+      }
+    }
+  }
+  `;
+
+  const [bgName, setBGName] = useState(null);
 
   const qListBackground = `
     query listBackground($id: ID, $limit: Int, $nextToken: String) {
@@ -92,6 +112,25 @@ const Background = () => {
       }
     }
   `;
+
+  const getBriefs = async () => {
+    console.log("matterid", matter_id);
+    const params = {
+      query: getName,
+      variables: {
+        id: matter_id,
+        limit: 100,
+        nextToken: null,
+      },
+    };
+
+    await API.graphql(params).then((brief) => {
+      const matterFilesList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", matterFilesList);
+      matterFilesList.map((x)=> x.id === background_id ? setBGName(x.name) : x);
+    });
+  };
+
 
   const getBackground = async () => {
     let result = [];
@@ -288,7 +327,7 @@ const Background = () => {
             </button>
           </Link>
           <h1 className="font-bold text-3xl">
-            Background&nbsp;<span className="text-3xl">of</span>&nbsp;
+          {bgName}&nbsp;<span className="text-3xl">of</span>&nbsp;
             <span className="font-semibold text-3xl">
               {client_name}/{matter_name}
             </span>
