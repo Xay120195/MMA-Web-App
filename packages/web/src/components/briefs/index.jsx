@@ -235,7 +235,9 @@ export default function Briefs() {
   };
 
   const handleSaveBriefName = (e, name, id) => {
-    let originalString = name.replace(/(<([^>]+)>)/gi, "");
+    const originalString = briefName.replace(/(<([^>]+)>)/gi, "");
+    const final = originalString.replace(/\&nbsp;/g, " ");
+
     const updateName = Briefs.map((x) => {
       if (x.id === id) {
         return {
@@ -257,7 +259,7 @@ export default function Briefs() {
       };
       const success = updateBriefName(data);
       if (success) {
-        setalertMessage(`Successfully updated ${originalString} `);
+        setalertMessage(`Successfully updated ${final} `);
         setShowToast(true);
 
         setTimeout(() => {
@@ -274,7 +276,7 @@ export default function Briefs() {
 
       const success = updateBriefName(data);
       if (success) {
-        setalertMessage(`Successfully updated ${originalString} `);
+        setalertMessage(`Successfully updated ${final} `);
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);

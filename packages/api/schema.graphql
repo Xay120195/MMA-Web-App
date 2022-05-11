@@ -281,7 +281,7 @@ type Mutation {
   ): File
   matterFileBulkUpdateOrders(arrangement: [ArrangementInput]): [File]
   matterFileBulkCreate(files: [MatterFileInput]): [File]
-  matterFileBulkInitializeOrders(clientMatterId: ID): [File]
+  # matterFileBulkInitializeOrders(clientMatterId: ID): [File]
   matterFileSoftDelete(id: ID): File
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   clientMatterCreate(
