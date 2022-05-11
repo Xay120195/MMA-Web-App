@@ -107,8 +107,8 @@ const ActionButtons = (props) => {
     const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-          backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
+        mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+          backgroundCreate(briefId: $briefId, description: $description, date: $date) {
             id
           }
         }
@@ -117,7 +117,7 @@ const ActionButtons = (props) => {
     const createBackgroundRow = await API.graphql({
       query: mCreateBackground,
       variables: {
-        clientMatterId: matterId,
+        briefId: briefId,
         description: "",
         date: null,
       },

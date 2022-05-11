@@ -10,7 +10,7 @@ import CreatableSelect from "react-select/creatable";
 export default function BriefModal(props) {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
-  const [selectedBrief, setSelectedBrief] = useState();
+  const [selectedBrief, setSelectedBrief] = useState(null);
   const [Briefs, setBriefs] = useState(null);
   const [briefsOptions, setBriefOptions] = useState();
 
@@ -105,7 +105,11 @@ export default function BriefModal(props) {
         value: id,
         label: name,
       }));
-      setBriefOptions(result);
+      var filteredArr = result.filter(function (sel) {
+        return sel.value !== props.briefId;
+      });
+
+      setBriefOptions(filteredArr);
     });
   };
 
@@ -122,7 +126,6 @@ export default function BriefModal(props) {
         background: resultArray
       },
     });
-    console.log(selectedBrief.value);
 
     setShowToast(true);
     setResultMessage("Successfully Saved!");
@@ -178,9 +181,14 @@ export default function BriefModal(props) {
                   </button>
 
                   <button
-                    className="ml-2 bg-green-400 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                    type="button"
+                    className={
+                      selectedBrief === null ? "ml-2 bg-green-200 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring disabled:opacity-25 cursor-not-allowed"
+                      : 
+                      "ml-2 bg-green-400 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                      
+                      }
                     onClick={() => handleSaveBriefItems()}
+                    type="button"
                     disabled={selectedBrief === null ? true : false}
                   >
                     Create &nbsp; <FaFolder />
