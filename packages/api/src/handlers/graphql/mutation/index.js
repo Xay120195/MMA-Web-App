@@ -709,19 +709,19 @@ async function createBackground(data) {
     });
     const request = await ddbClient.send(cmd);
 
-    // const clientMatterBackgroundParams = {
+    // const briefBackgroundParams = {
     //   id: v4(),
     //   backgroundId: rawParams.id,
     //   clientMatterId: data.clientMatterId,
     //   createdAt: new Date().toISOString(),
     // };
 
-    // const clientMatterBackgroundCmd = new PutItemCommand({
-    //   TableName: "ClientMatterBackgroundTable",
-    //   Item: marshall(clientMatterBackgroundParams),
+    // const briefBackgroundCmd = new PutItemCommand({
+    //   TableName: "BriefBackgroundTable",
+    //   Item: marshall(briefBackgroundParams),
     // });
 
-    // await ddbClient.send(clientMatterBackgroundCmd);
+    // await ddbClient.send(briefBackgroundCmd);
 
     const briefBackgroundParams = {
       id: v4(),
@@ -1131,13 +1131,28 @@ async function bulkUpdateBackgroundOrders(data) {
   try {
     const asyncResult = await Promise.all(
       data.map(async (items) => {
-        const id = items.id;
+        const background_id = items.id;
         const arrangement = items;
         delete arrangement.id;
 
+        const briefBackgroundParams = {
+          TableName: "BriefBackgroundTable",
+          IndexName: "byBackground",
+          KeyConditionExpression: "backgroundId = :backgroundId",
+          ExpressionAttributeValues: marshall({
+            ":backgroundId": background_id,
+          }),
+          ProjectionExpression: "id",
+        };
+
+        const briefBackgroundCmd = new QueryCommand(briefBackgroundParams);
+        const briefBackgroundResult = await ddbClient.send(briefBackgroundCmd);
+
+        const briefBackgroundId = briefBackgroundResult.Items[0];
+
         resp.push({
-          id,
-          ...items,
+          id: background_id,
+          ...items
         });
 
         const {
@@ -1146,18 +1161,29 @@ async function bulkUpdateBackgroundOrders(data) {
           UpdateExpression,
         } = getUpdateExpressions(arrangement);
 
-        const cmd = new UpdateItemCommand({
-          TableName: "BackgroundsTable",
-          Key: marshall({ id }),
+        const updateBriefBackgroundCmd = new UpdateItemCommand({
+          TableName: "BriefBackgroundTable",
+          Key: briefBackgroundId,
           UpdateExpression,
           ExpressionAttributeNames,
           ExpressionAttributeValues,
         });
 
-        await ddbClient.send(cmd);
+        await ddbClient.send(updateBriefBackgroundCmd);
+
+        const updateBackgroundCmd = new UpdateItemCommand({
+          TableName: "BackgroundsTable",
+          Key: marshall({ id: background_id }),
+          UpdateExpression,
+          ExpressionAttributeNames,
+          ExpressionAttributeValues,
+        });
+
+        await ddbClient.send(updateBackgroundCmd);
       })
     );
-    resp = asyncResult;
+
+    console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
@@ -1174,7 +1200,7 @@ async function bulkInitializeBackgroundOrders(clientMatterId) {
 
   try {
     const cmBackgroundsParam = {
-      TableName: "ClientMatterBackgroundTable",
+      TableName: "BriefBackgroundTable",
       IndexName: "byCreatedAt",
       KeyConditionExpression: "clientMatterId = :clientMatterId",
       ExpressionAttributeValues: marshall({
@@ -1331,8 +1357,8 @@ export function getUpdateExpressions(data) {
 export async function deleteBackground(id) {
   let resp = {};
   try {
-    const clientMatterBackgroundParams = {
-      TableName: "ClientMatterBackgroundTable",
+    const briefBackgroundParams = {
+      TableName: "BriefBackgroundTable",
       IndexName: "byBackground",
       KeyConditionExpression: "backgroundId = :backgroundId",
       ExpressionAttributeValues: marshall({
@@ -1341,25 +1367,21 @@ export async function deleteBackground(id) {
       ProjectionExpression: "id",
     };
 
-    const clientMatterBackgroundCmd = new QueryCommand(
-      clientMatterBackgroundParams
-    );
-    const clientMatterBackgroundResult = await ddbClient.send(
-      clientMatterBackgroundCmd
-    );
+    const briefBackgroundCmd = new QueryCommand(briefBackgroundParams);
+    const briefBackgroundResult = await ddbClient.send(briefBackgroundCmd);
 
-    const clientMatterBackgroundId = clientMatterBackgroundResult.Items[0];
+    const briefBackgroundId = briefBackgroundResult.Items[0];
 
-    const deleteClientMatterBackgroundCommand = new DeleteItemCommand({
-      TableName: "ClientMatterBackgroundTable",
-      Key: clientMatterBackgroundId,
+    const deleteBriefBackgroundCommand = new DeleteItemCommand({
+      TableName: "BriefBackgroundTable",
+      Key: briefBackgroundId,
     });
 
-    const deleteClientMatterBackgroundResult = await ddbClient.send(
-      deleteClientMatterBackgroundCommand
+    const deleteBriefBackgroundResult = await ddbClient.send(
+      deleteBriefBackgroundCommand
     );
 
-    if (deleteClientMatterBackgroundResult) {
+    if (deleteBriefBackgroundResult) {
       const cmd = new DeleteItemCommand({
         TableName: "BackgroundsTable",
         Key: marshall({ id }),
@@ -1530,10 +1552,10 @@ const resolvers = {
       return await bulkUpdateMatterFileOrders(arrangement);
     },
 
-    matterFileBulkInitializeOrders: async (ctx) => {
-      const { clientMatterId } = ctx.arguments; // id and order
-      return await bulkInitializeMatterFileOrders(clientMatterId);
-    },
+    // matterFileBulkInitializeOrders: async (ctx) => {
+    //   const { clientMatterId } = ctx.arguments; // id and order
+    //   return await bulkInitializeMatterFileOrders(clientMatterId);
+    // },
 
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
@@ -1613,10 +1635,10 @@ const resolvers = {
       return await bulkUpdateBackgroundOrders(arrangement);
     },
 
-    backgroundBulkInitializeOrders: async (ctx) => {
-      const { clientMatterId } = ctx.arguments; // id and order
-      return await bulkInitializeBackgroundOrders(clientMatterId);
-    },
+    // backgroundBulkInitializeOrders: async (ctx) => {
+    //   const { clientMatterId } = ctx.arguments; // id and order
+    //   return await bulkInitializeBackgroundOrders(clientMatterId);
+    // },
 
     backgroundDelete: async (ctx) => {
       const { id } = ctx.arguments;
