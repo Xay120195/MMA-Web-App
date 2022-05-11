@@ -234,7 +234,6 @@ const Background = () => {
     if (vNextToken !== null && !loading) {
       setLoading(true);
       let result = [];
-      const matterId = matter_id;
 
       const backgroundOpt = await API.graphql({
         query: qBriefBackgroundList,
@@ -319,6 +318,10 @@ const Background = () => {
     return decodeURIComponent(escape(window.atob(str)));
   }
 
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
+  }
+
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
   const matter_name = b64_to_utf8(m_name);
@@ -331,7 +334,9 @@ const Background = () => {
         style={{ margin: "0 0 0 65px" }}
       >
         <div className="px-6 py-2">
-          <Link to={AppRoutes.DASHBOARD}>
+          <Link to={`${AppRoutes.BRIEFS}/${matter_id}/?matter_name=${utf8_to_b64(
+                    matter_name
+                  )}&client_name=${utf8_to_b64(client_name)}`} >
             <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
               <MdArrowBackIos />
               Back
@@ -407,6 +412,9 @@ const Background = () => {
           setMaxLoading={setMaxLoading}
           sortByOrder={sortByOrder}
           setNewWitness={setNewWitness}
+          briefId={background_id}
+          client_name={client_name}
+          matter_name={matter_name}
         />
       </div>
       <TableInfo
