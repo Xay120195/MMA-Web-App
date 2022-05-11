@@ -400,6 +400,11 @@ custom:
         field: briefBackgroundTag
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: briefBackgroundUntag
+        request: false
+        response: false
       - dataSource: LambdaClientMatterDS
         type: ClientMatter
         field: briefs
