@@ -115,6 +115,19 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
+  const mBulkCreateMatterFile = `
+        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+          matterFileBulkCreate(files: $files) {
+            id
+            name
+            order
+          }
+        }
+    `;
+
+
+  
+
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
     window.scrollTo(0, 0);
@@ -148,9 +161,12 @@ export default function FileBucket() {
       (a, b) => b.oderSelected - a.oderSelected
     );
 
-    sortedFiles.map((file) => {
-      createMatterFile(file);
-    });
+    // sortedFiles.map((file) => {
+    //   createMatterFile(file);
+    // });
+    
+
+    createMatterFile(sortedFiles);
 
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
@@ -612,11 +628,25 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   };
 
-  function createMatterFile(file) {
-    const request = API.graphql({
-      query: mCreateMatterFile,
-      variables: file,
+  async function createMatterFile(param) {
+    param.forEach(function (i) {
+      delete i.oderSelected; // remove orderSelected
     });
+    
+    const request = await API.graphql({
+      query: mBulkCreateMatterFile,
+      variables: {
+        files: param,
+      },
+    });
+
+    console.log("result", request);
+
+
+    // const request = API.graphql({
+    //   query: mCreateMatterFile,
+    //   variables: file,
+    // });
 
     return request;
   }
