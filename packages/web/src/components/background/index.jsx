@@ -26,7 +26,7 @@ const Background = () => {
   const [getId, setId] = useState([{}]);
   const [fileMatter, setFileMatter] = useState([]);
   const params = useParams();
-  const { matter_id } = params;
+  const { matter_id, background_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
@@ -65,7 +65,27 @@ const Background = () => {
 
   useEffect(() => {
     getBackground();
+
+    if(bgName === null){
+      getBriefs();
+    }
   }, []);
+  const getName = `
+  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
+    clientMatter(id: $id) {
+      briefs(limit: $limit, nextToken: $nextToken) {
+        items {
+          id
+          name
+          date
+          order
+        }
+      }
+    }
+  }
+  `;
+
+  const [bgName, setBGName] = useState(null);
 
   const qListBackground = `
     query listBackground($id: ID, $limit: Int, $nextToken: String) {
@@ -93,26 +113,45 @@ const Background = () => {
     }
   `;
 
+  const getBriefs = async () => {
+    console.log("matterid", matter_id);
+    const params = {
+      query: getName,
+      variables: {
+        id: matter_id,
+        limit: 100,
+        nextToken: null,
+      },
+    };
+
+    await API.graphql(params).then((brief) => {
+      const matterFilesList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", matterFilesList);
+      matterFilesList.map((x)=> x.id === background_id ? setBGName(x.name) : x);
+    });
+  };
+
+
   const getBackground = async () => {
     let result = [];
     setWait(false);
     const matterId = matter_id;
 
-    const mInitializeOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
+    // const mInitializeOrders = `
+    //   mutation initializeOrder($clientMatterId: ID) {
+    //     backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
+    //       id
+    //     }
+    //   }
+    // `;
 
-    await API.graphql({
-      query: mInitializeOrders,
-      variables: { clientMatterId: matterId },
-    }).then((res) => {
-      console.log("File Bucket: Initial Sorting Successful!");
-      console.log(res);
-    });
+    // await API.graphql({
+    //   query: mInitializeOrders,
+    //   variables: { clientMatterId: matterId },
+    // }).then((res) => {
+    //   console.log("File Bucket: Initial Sorting Successful!");
+    //   console.log(res);
+    // });
 
     const backgroundOpt = await API.graphql({
       query: qListBackground,
@@ -214,13 +253,6 @@ const Background = () => {
     }
   };
 
-  const matt = matterList.find((i) => i.id === matter_id);
-  const obj = { ...matt };
-  const client = Object.values(obj);
-  const cname = Object.values(client).map((o) => o.name);
-  const clientName = cname[2];
-  const matterName = cname[3];
-
   function sortByOrder(arr) {
     const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
     let sort;
@@ -265,14 +297,14 @@ const Background = () => {
     return false;
   }
 
-  function UnicodeDecodeB64(str) {
-    return decodeURIComponent(atob(str));
+  function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
   }
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
-  const matter_name = UnicodeDecodeB64(m_name);
-  const client_name = UnicodeDecodeB64(c_name);
+  const matter_name = b64_to_utf8(m_name);
+  const client_name = b64_to_utf8(c_name);
 
   return (
     <>
@@ -288,7 +320,7 @@ const Background = () => {
             </button>
           </Link>
           <h1 className="font-bold text-3xl">
-            Background&nbsp;<span className="text-3xl">of</span>&nbsp;
+          {bgName}&nbsp;<span className="text-3xl">of</span>&nbsp;
             <span className="font-semibold text-3xl">
               {client_name}/{matter_name}
             </span>

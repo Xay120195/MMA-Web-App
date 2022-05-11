@@ -52,6 +52,8 @@ functions:
     handler: src/handlers/graphql/background/index.handler
   label-fn:
     handler: src/handlers/graphql/label/index.handler
+  brief-fn:
+    handler: src/handlers/graphql/brief/index.handler
 custom:
   dynamodb:
     # If you only want to use DynamoDB Local in some stages, declare them here
@@ -313,6 +315,16 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: briefDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: briefBackgroundTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: fileLabelTag
         request: false
         response: false
@@ -381,6 +393,7 @@ custom:
         field: backgroundFileTag
         request: false
         response: false
+
       - dataSource: LambdaMutationDS
         type: Mutation
         field: rfiCreate
@@ -451,6 +464,11 @@ custom:
         field: files
         request: false
         response: false
+      - dataSource: LambdaBriefDS
+        type: Brief
+        field: backgrounds
+        request: false
+        response: false
 
     dataSources:
       - type: AWS_LAMBDA
@@ -485,6 +503,10 @@ custom:
         name: LambdaLabelDS
         config:
           functionName: label-fn
+      - type: AWS_LAMBDA
+        name: LambdaBriefDS
+        config:
+          functionName: brief-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

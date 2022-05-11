@@ -139,6 +139,7 @@ type Brief {
   name: String
   date: String
   order: Int
+  backgrounds(limit: Int, nextToken: String, sortOrder: OrderBy): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -296,7 +297,7 @@ type Mutation {
   backgroundCreate(
     description: String
     date: AWSDateTime
-    clientMatterId: String
+    briefId: ID
     order: Int
   ): Background
   backgroundUpdate(
@@ -308,8 +309,9 @@ type Mutation {
   backgroundDelete(id: ID): Background
   backgroundBulkDelete(id: [ID]): [Background]
   backgroundBulkUpdateOrders(arrangement: [ArrangementInput]): [Background]
-  backgroundBulkInitializeOrders(clientMatterId: ID): [Background]
+  # backgroundBulkInitializeOrders(clientMatterId: ID): [Background]
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
+
   columnSettingsCreate(
     name: String
     label: String
@@ -329,6 +331,9 @@ type Mutation {
   ): Brief
 
   briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int): Brief
+  briefDelete(id: ID): Brief
+  briefBackgroundTag(briefId: ID, background: [BackgroundInput]): [Brief]
+  # briefBulkDelete(id: [ID]): [Brief]
 }
 
 enum UserType {
@@ -359,6 +364,12 @@ input MatterInput {
 input FileInput {
   id: ID
   name: String
+}
+
+input BackgroundInput {
+  id: ID
+  description: String
+  order: Int
 }
 
 input MatterFileInput {
@@ -484,5 +495,10 @@ type ClientMatterBriefConn {
 
 type MatterFileConn {
   items: [File]
+  nextToken: String
+}
+
+type BriefBackgroundConn {
+  items: [Background]
   nextToken: String
 }

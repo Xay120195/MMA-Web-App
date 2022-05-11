@@ -163,14 +163,14 @@ export default function MattersRFI() {
     return false;
   }
 
-  function UnicodeDecodeB64(str) {
-    return decodeURIComponent(atob(str));
+  function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
   }
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
-  const matter_name = UnicodeDecodeB64(m_name);
-  const client_name = UnicodeDecodeB64(c_name);
+  const matter_name = b64_to_utf8(m_name);
+  const client_name = b64_to_utf8(c_name);
 
   return (
     <>

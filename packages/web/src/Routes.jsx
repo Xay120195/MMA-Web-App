@@ -17,6 +17,7 @@ import Background from "./components/background";
 import Labels from "./components/labels";
 import Inbox from "./components/inbox";
 import RFIPage from "./components/rfi-page";
+import Briefs from "./components/briefs";
 
 const Routes = () => {
   return (
@@ -75,9 +76,15 @@ const Routes = () => {
           />
           <Route
             exact
-            path={`${AppRoutes.BACKGROUND}/:matter_id`}
+            path={`${AppRoutes.BACKGROUND}/:matter_id/:background_id`}
             component={Background}
           />
+          <Route
+            exact
+            path={`${AppRoutes.BRIEFS}/:matter_id`}
+            component={Briefs}
+          />
+
           <Route exact path={AppRoutes.LABELS} component={Labels} />
           <Route exact path={`${AppRoutes.INBOX}`} component={Inbox} />
         </>
