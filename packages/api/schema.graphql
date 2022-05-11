@@ -425,6 +425,7 @@ type Mutation {
     clientMatterId: String
     order: Int
   ): Brief
+  briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
   briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int): Brief
   clientCreate(name: String, companyId: String): Client
