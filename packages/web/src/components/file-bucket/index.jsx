@@ -632,7 +632,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     param.forEach(function (i) {
       delete i.oderSelected; // remove orderSelected
     });
-    
+
     const request = await API.graphql({
       query: mBulkCreateMatterFile,
       variables: {
@@ -1282,7 +1282,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       getMatterFiles(next);
       setMatterFiles(sortByOrder(matterFiles));
       setFilterState(false);
-      // setFiles(sortByOrder(matterFiles));
     } else {
       console.log("labels", labels);
       var labelsList = labels;
@@ -1313,15 +1312,19 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       var newFiles1 = [];
       var newFiles2 = [];
-      result.data.multipleLabels.map(
-        (x) => (newFiles1 = [...newFiles1, x.files.items])
-      );
-      newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
 
+      if(result === null){
+        newFiles2 = [];
+      }else{
+        result.data.multipleLabels.map(
+          (x) => (newFiles1 = [...newFiles1, x.files.items])
+        );
+        newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
+      }
+      
       console.log("putinmatterfiles", newFiles2);
       setMatterFiles(sortByOrder(newFiles2));
       setFilteredFiles(sortByOrder(newFiles2));
-      // setFiles(sortByOrder(newFiles2));
       setFilterState(true);
 
       console.log("res", result);
