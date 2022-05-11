@@ -373,11 +373,11 @@ custom:
         field: backgroundBulkUpdateOrders
         request: false
         response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: backgroundBulkInitializeOrders
-        request: false
-        response: false
+      # - dataSource: LambdaMutationDS
+      #   type: Mutation
+      #   field: backgroundBulkInitializeOrders
+      #   request: false
+      #   response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: backgroundDelete
@@ -454,11 +454,11 @@ custom:
         field: files
         request: false
         response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: matterFileBulkInitializeOrders
-        request: false
-        response: false
+      # - dataSource: LambdaMutationDS
+      #   type: Mutation
+      #   field: matterFileBulkInitializeOrders
+      #   request: false
+      #   response: false
       - dataSource: LambdaLabelDS
         type: Label
         field: files
