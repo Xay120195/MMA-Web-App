@@ -115,6 +115,19 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
+  const mBulkCreateMatterFile = `
+        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+          matterFileBulkCreate(files: $files) {
+            id
+            name
+            order
+          }
+        }
+    `;
+
+
+  
+
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
     window.scrollTo(0, 0);
@@ -148,9 +161,12 @@ export default function FileBucket() {
       (a, b) => b.oderSelected - a.oderSelected
     );
 
-    sortedFiles.map((file) => {
-      createMatterFile(file);
-    });
+    // sortedFiles.map((file) => {
+    //   createMatterFile(file);
+    // });
+    
+
+    createMatterFile(sortedFiles);
 
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
@@ -612,11 +628,25 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   };
 
-  function createMatterFile(file) {
-    const request = API.graphql({
-      query: mCreateMatterFile,
-      variables: file,
+  async function createMatterFile(param) {
+    param.forEach(function (i) {
+      delete i.oderSelected; // remove orderSelected
     });
+
+    const request = await API.graphql({
+      query: mBulkCreateMatterFile,
+      variables: {
+        files: param,
+      },
+    });
+
+    console.log("result", request);
+
+
+    // const request = API.graphql({
+    //   query: mCreateMatterFile,
+    //   variables: file,
+    // });
 
     return request;
   }
@@ -1252,7 +1282,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       getMatterFiles(next);
       setMatterFiles(sortByOrder(matterFiles));
       setFilterState(false);
-      // setFiles(sortByOrder(matterFiles));
     } else {
       console.log("labels", labels);
       var labelsList = labels;
@@ -1283,15 +1312,19 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       var newFiles1 = [];
       var newFiles2 = [];
-      result.data.multipleLabels.map(
-        (x) => (newFiles1 = [...newFiles1, x.files.items])
-      );
-      newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
 
+      if(result === null){
+        newFiles2 = [];
+      }else{
+        result.data.multipleLabels.map(
+          (x) => (newFiles1 = [...newFiles1, x.files.items])
+        );
+        newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
+      }
+      
       console.log("putinmatterfiles", newFiles2);
       setMatterFiles(sortByOrder(newFiles2));
       setFilteredFiles(sortByOrder(newFiles2));
-      // setFiles(sortByOrder(newFiles2));
       setFilterState(true);
 
       console.log("res", result);
