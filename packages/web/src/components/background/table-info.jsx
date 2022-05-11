@@ -1023,6 +1023,7 @@ const TableInfo = ({
                 <span className="py-5 px-5">Please wait...</span>
               ) : witness.length === 0 ? (
                 <EmptyRow search={search} />
+              
               ) : (
                 <>
                   <ScrollToTop

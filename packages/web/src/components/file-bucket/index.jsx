@@ -1533,7 +1533,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   aria-current="page"
                   className="font-medium text-gray-900"
                   to={`${
-                    AppRoutes.BACKGROUND
+                    AppRoutes.BRIEFS
                   }/${matter_id}/?matter_name=${utf8_to_b64(
                     matter_name
                   )}&client_name=${utf8_to_b64(client_name)}`}

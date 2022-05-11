@@ -306,6 +306,10 @@ const Background = () => {
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str));
+  }
+
   return (
     <>
       <div
@@ -313,7 +317,11 @@ const Background = () => {
         style={{ margin: "0 0 0 65px" }}
       >
         <div className="px-6 py-2">
-          <Link to={AppRoutes.DASHBOARD}>
+          <Link to={`${
+                AppRoutes.BRIEFS
+              }/${matter_id}/?matter_name=${b64EncodeUnicode(
+                matter_name
+              )}&client_name=${b64EncodeUnicode(client_name)}`}>
             <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
               <MdArrowBackIos />
               Back
