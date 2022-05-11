@@ -382,26 +382,20 @@ export default function Briefs() {
             </div>
           </div>
         </div>
-      </div>
+      
       {Briefs === null || Briefs.length === 0 ? (
-        <div className="p-5 px-5 py-1 left-0">
+        <div className="p-5 px-5 py-1 left-0 align-center mt-5">
           <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6">
             <BlankState
               displayText={"There are no items to show in this view"}
               txtLink={"add new Background"}
               iconDisplay={BlankList}
+              handleClick={() => setshowCreateBriefsModal(true)}
             />
           </div>
         </div>
       ) : (
-        <div
-          className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"
-          style={{
-            marginLeft: "5.2rem",
-            marginTop: "2rem",
-            marginRight: "1rem",
-          }}
-        >
+        <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
           {Briefs.map((item) => (
             <div
               className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
@@ -458,12 +452,8 @@ export default function Briefs() {
           ))}
         </div>
       )}
-      {/* {showCreateRFIModal && (
-        <CreateRFIModal
-          handleSave={handleSaveRFI}
-          handleModalClose={handleModalClose}
-        />
-      )} */}
+    </div>
+
       {showCreateBriefsModal && (
         <CreateBriefsModal
           handleSave={handleSaveBrief}
@@ -473,6 +463,7 @@ export default function Briefs() {
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
+    
     </>
   );
 }
