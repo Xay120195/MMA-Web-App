@@ -392,7 +392,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
-        id: background_id,
+        id: backgroundRowId,
       },
     });
 
@@ -416,11 +416,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       return !duplicate;
     });
 
-    if (background_id !== null) {
+    if (backgroundRowId !== null) {
       const request = API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
-          backgroundId: background_id,
+          backgroundId: backgroundRowId,
           files: filteredArr,
         },
       });
@@ -431,7 +431,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setShowToast(false);
         window.location.href = `${
           AppRoutes.BACKGROUND
-        }/${matter_id}/?matter_name=${utf8_to_b64(
+        }/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(
           matter_name
         )}&client_name=${utf8_to_b64(client_name)}`;
       }, 2000);
@@ -491,41 +491,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     pageSelectedLabels = labelNames;
 
     setLabels(result);
-  };
-
-  const addLabel = async (fileId, data, index, newLabel) => {
-    console.group("addLabel()");
-    let result;
-
-    if (labels.some((x) => x.label === newLabel.trim())) {
-      return;
-    } else {
-      const createLabel = await API.graphql({
-        query: mCreateLabel,
-        variables: {
-          clientMatterId: matter_id,
-          name: newLabel,
-        },
-      });
-      result = createLabel.data.labelCreate;
-      console.log("createLabel result:", result);
-      console.groupEnd();
-      getLabels();
-
-      console.log("348 - data.labels.items", data.labels.items);
-
-      const newOptions = data.labels.items.map((d) =>
-        d.name === d.id ? { ...d, id: createLabel.data.labelCreate.id } : d
-      );
-      console.log("353 - newOptions", newOptions);
-
-      data.labels = newOptions;
-      updateArrLabels(newOptions, index);
-      //await updateMatterFile(fileId, data);
-      tagFileLabel(fileId, newOptions);
-    }
-
-    return result;
   };
 
   useEffect(() => {
@@ -696,85 +661,95 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const handleLabelChanged = async (options, id) => {
-    let newOptions = options.map(({ value: id, label: name }) => ({
-      id,
-      name,
-    }));
-
-    if (options.length <= 0) {
-      const request = await API.graphql({
+    const newlabel = options.filter((x) => x.__isNew__);
+    if (options.length <= 0 && newlabel.length <= 0) {
+      const request = API.graphql({
         query: mTagFileLabel,
         variables: {
           fileId: id,
           labels: [],
         },
       });
-      console.log("success", request);
+      console.log(request);
       if (request) {
-        setResultMessage("Successfull updated labels");
+        setResultMessage("Updating labels");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
         }, 1000);
       }
-    } else {
-      await options.map(async (o) => {
-        if (o.__isNew__ && newOptions.length >= 0) {
-          const createLabel = await API.graphql({
-            query: mCreateLabel,
-            variables: {
-              clientMatterId: matter_id,
-              name: o.label,
-            },
-          });
-          const newlabel = createLabel.data.labelCreate;
-          if (newlabel) {
-            const updatedOptions = newOptions.map((obj) => {
-              if (obj.name === newlabel.name) {
-                return {
-                  ...obj,
-                  id: newlabel.id,
-                };
-              }
-              return obj;
-            });
-            console.log(id);
-            console.log(updatedOptions);
-            const request = await API.graphql({
-              query: mTagFileLabel,
-              variables: {
-                fileId: id,
-                labels: updatedOptions,
-              },
-            });
-            console.log("success", request);
-            if (request) {
-              setResultMessage("Successfull updated labels");
-              setShowToast(true);
-              setTimeout(() => {
-                setShowToast(false);
-              }, 1000);
+    } else if (options.length >= 0 && newlabel.length <= 0) {
+      const newOptions = options.map(({ label: name, value: id }) => ({
+        id,
+        name,
+      }));
+      const request = API.graphql({
+        query: mTagFileLabel,
+        variables: {
+          fileId: id,
+          labels: newOptions,
+        },
+      });
+      console.log("success", request);
+      if (request) {
+        setResultMessage("Updating labels");
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }
+    } else if (newlabel !== [] && options.length >= 0) {
+      const x = convertArrayToObject(newlabel);
+      if (x) {
+        const createLabel = await API.graphql({
+          query: mCreateLabel,
+          variables: {
+            clientMatterId: matter_id,
+            name: x.item.label,
+          },
+        });
+        if (createLabel) {
+          const updatedNewlabel = options.map((obj) => {
+            if (obj.label === x.item.label) {
+              return {
+                ...obj,
+                value: createLabel.data.labelCreate.id,
+              };
             }
-          }
-        } else {
-          const request = await API.graphql({
+            return obj;
+          });
+          const ops = updatedNewlabel.map(({ value, label }) => ({
+            id: value,
+            name: label,
+          }));
+          const request = API.graphql({
             query: mTagFileLabel,
             variables: {
               fileId: id,
-              labels: newOptions,
+              labels: ops,
             },
           });
           console.log("success", request);
           if (request) {
-            setResultMessage("Successfull updated labels");
+            setResultMessage("Updating labels");
             setShowToast(true);
             setTimeout(() => {
               setShowToast(false);
             }, 1000);
           }
         }
-      });
+      }
     }
+  };
+
+  const convertArrayToObject = (array) => {
+    const initialValue = {};
+    return array.reduce((obj, item) => {
+      return {
+        ...obj,
+        item: item,
+      };
+    }, initialValue);
   };
 
   function updateArrLabels(data, index) {
@@ -1374,13 +1349,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const mCreateBackground = `
-  mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-    backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
-      createdAt
-      date
-      description
+  mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+    backgroundCreate(briefId: $briefId, description: $description, date: $date) {
       id
-      order
     }
   }
 `;
@@ -1402,7 +1373,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
-          clientMatterId: matter_id,
+          briefId: background_id,
           description: arrFiles[i].details,
           date:
             arrFiles[i].date !== null
@@ -1426,7 +1397,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setShowToast(false);
       window.location.href = `${
         AppRoutes.BACKGROUND
-      }/${matter_id}/?count=${counter}&matter_name=${utf8_to_b64(
+      }/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(
         matter_name
       )}&client_name=${utf8_to_b64(client_name)}`;
     }, 1000);
@@ -1543,6 +1514,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
+  const backgroundRowId = getQueryVariable("background_id");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -1682,7 +1654,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <FiUpload />
               </button>
 
-              {showRemoveFileButton && (
+              {showRemoveFileButton && backgroundRowId && (
                 <button
                   className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                   onClick={() => addFileBucketToBackground()}
@@ -1692,7 +1664,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </button>
               )}
 
-              {showAttachBackgroundButton && (
+              {showAttachBackgroundButton && backgroundRowId && (
                 <button
                   className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                   onClick={() => tagBackgroundFile()}
