@@ -710,6 +710,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         },
       });
       console.log("success", request);
+      if (request) {
+        setResultMessage("Successfull updated labels");
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }
     } else {
       await options.map(async (o) => {
         if (o.__isNew__ && newOptions.length >= 0) {
@@ -741,6 +748,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
               },
             });
             console.log("success", request);
+            if (request) {
+              setResultMessage("Successfull updated labels");
+              setShowToast(true);
+              setTimeout(() => {
+                setShowToast(false);
+              }, 1000);
+            }
           }
         } else {
           const request = await API.graphql({
@@ -751,6 +765,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             },
           });
           console.log("success", request);
+          if (request) {
+            setResultMessage("Successfull updated labels");
+            setShowToast(true);
+            setTimeout(() => {
+              setShowToast(false);
+            }, 1000);
+          }
         }
       });
     }
