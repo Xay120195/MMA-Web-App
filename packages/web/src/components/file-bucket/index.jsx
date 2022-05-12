@@ -125,9 +125,6 @@ export default function FileBucket() {
         }
     `;
 
-
-  
-
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
     window.scrollTo(0, 0);
@@ -164,7 +161,6 @@ export default function FileBucket() {
     // sortedFiles.map((file) => {
     //   createMatterFile(file);
     // });
-    
 
     createMatterFile(sortedFiles);
 
@@ -642,7 +638,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     console.log("result", request);
 
-
     // const request = API.graphql({
     //   query: mCreateMatterFile,
     //   variables: file,
@@ -700,51 +695,64 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     gridtemplatecolumn: "1fr auto",
   };
 
-  const handleLabelChanged = async (options, fileId, name, details, index) => {
-    setFileId(fileId);
-    let newOptions = [];
-    let createdLabel;
-    let isNewCtr = 0;
-
-    newOptions = options.map(({ value: id, label: name }) => ({
-      id: id,
-      name: name,
+  const handleLabelChanged = async (options, id) => {
+    let newOptions = options.map(({ value: id, label: name }) => ({
+      id,
+      name,
     }));
 
-    const data = {
-      name: name,
-      details: details,
-      labels: { items: newOptions },
-    };
-
-    console.log("options", options);
-
-    await options.map(async (o) => {
-      if (o.__isNew__) {
-        isNewCtr++;
-        console.log("ooo", o);
-        console.log("newlabel", o.label);
-        createdLabel = await addLabel(fileId, data, index, o.label);
-        console.log("cl", createdLabel);
-      }
-    });
-
-    setResultMessage(`Updating labels..`);
-    setShowToast(true);
-    setTimeout(() => {
-      setTimeout(() => {
-        setTimeout(() => {
-          setShowToast(false);
-        }, 1000);
-      }, 1000);
-    }, 1000);
-
-    if (isNewCtr === 0) {
-      console.log("No new labels found");
-      console.log("data.labels.items", data.labels.items);
-      updateArrLabels(data.labels.items, index);
-      await updateMatterFile(fileId, data);
-      tagFileLabel(fileId, data.labels.items);
+    if (options.length <= 0) {
+      const request = await API.graphql({
+        query: mTagFileLabel,
+        variables: {
+          fileId: id,
+          labels: [],
+        },
+      });
+      console.log("success", request);
+    } else {
+      await options.map(async (o) => {
+        if (o.__isNew__ && newOptions.length >= 0) {
+          const createLabel = await API.graphql({
+            query: mCreateLabel,
+            variables: {
+              clientMatterId: matter_id,
+              name: o.label,
+            },
+          });
+          const newlabel = createLabel.data.labelCreate;
+          if (newlabel) {
+            const updatedOptions = newOptions.map((obj) => {
+              if (obj.name === newlabel.name) {
+                return {
+                  ...obj,
+                  id: newlabel.id,
+                };
+              }
+              return obj;
+            });
+            console.log(id);
+            console.log(updatedOptions);
+            const request = await API.graphql({
+              query: mTagFileLabel,
+              variables: {
+                fileId: id,
+                labels: updatedOptions,
+              },
+            });
+            console.log("success", request);
+          }
+        } else {
+          const request = await API.graphql({
+            query: mTagFileLabel,
+            variables: {
+              fileId: id,
+              labels: newOptions,
+            },
+          });
+          console.log("success", request);
+        }
+      });
     }
   };
 
@@ -949,21 +957,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     });
   }
 
-  //extracting labels function
-  const extractArray = (ar) => {
-    if (Array.isArray(ar) && ar.length) {
-      const newOptions = ar.map(({ id: value, name: label }) => ({
+  const defaultOptions = (items) => {
+    if (items !== null) {
+      const newOptions = items.map(({ id: value, name: label }) => ({
         value,
         label,
       }));
-      // newOptions.map(
-      //   (data) => (filterOptionsArray = [...filterOptionsArray, data])
-      // );
-      // pageSelectedLabels = [
-      //   ...new Map(
-      //     filterOptionsArray.map((item) => [JSON.stringify(item), item])
-      //   ).values(),
-      // ];
       return newOptions;
     } else {
       return null;
@@ -1039,7 +1038,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       );
 
       selectedCompleteDataRows.splice(
-        selectedCompleteDataRows.indexOf(selectedCompleteDataRows.find((temp) => temp.id === id)),
+        selectedCompleteDataRows.indexOf(
+          selectedCompleteDataRows.find((temp) => temp.id === id)
+        ),
         1
       );
 
@@ -1050,14 +1051,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setCheckedState(updatedCheckedState);
       setIsAllChecked(false);
     } else {
-      if ( selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)) > -1) {
+      if (
+        selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)) > -1
+      ) {
         selectedRows.splice(
           selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
           1
         );
 
         selectedCompleteDataRows.splice(
-          selectedCompleteDataRows.indexOf(selectedCompleteDataRows.find((temp) => temp.id === id)),
+          selectedCompleteDataRows.indexOf(
+            selectedCompleteDataRows.find((temp) => temp.id === id)
+          ),
           1
         );
 
@@ -1329,15 +1334,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       var newFiles1 = [];
       var newFiles2 = [];
 
-      if(result === null){
+      if (result === null) {
         newFiles2 = [];
-      }else{
+      } else {
         result.data.multipleLabels.map(
           (x) => (newFiles1 = [...newFiles1, x.files.items])
         );
         newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
       }
-      
+
       console.log("putinmatterfiles", newFiles2);
       // setMatterFiles(sortByOrder(newFiles2));
       setFilteredFiles(sortByOrder(newFiles2));
@@ -1446,7 +1451,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setshowRemoveFileButton(false);
       getMatterFiles(next);
 
-      if(index === lengthSelectedRows -1) {
+      if (index === lengthSelectedRows - 1) {
         selectedCompleteDataRows = [];
         selectedRows = [];
         console.log("END", selectedCompleteDataRows);
@@ -2042,15 +2047,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             className="px-2 py-4 align-top place-items-center relative flex-wrap"
                                           >
                                             <CreatableSelect
-                                              defaultValue={extractArray(
-                                                data.labels.items
-                                                  ? data.labels.items
-                                                  : { value: 0, label: "" }
-                                              )}
-                                              options={newOptions(
-                                                labels,
-                                                data.labels.items
-                                              )}
+                                              defaultValue={() =>
+                                                defaultOptions(
+                                                  data.labels.items
+                                                )
+                                              }
+                                              options={labels}
                                               isMulti
                                               isClearable
                                               isSearchable
@@ -2058,10 +2060,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               onChange={(options) =>
                                                 handleLabelChanged(
                                                   options,
-                                                  data.id,
-                                                  data.name,
-                                                  data.details,
-                                                  index
+                                                  data.id
                                                 )
                                               }
                                               placeholder="Labels"
