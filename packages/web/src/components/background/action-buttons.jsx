@@ -59,11 +59,9 @@ const ActionButtons = (props) => {
     if (item.length === 0) {
       window.alert("Please select row.");
     } else {
-      const backgroundIds = item.map((i) => i.id);
-
       const mDeleteBackground = `
-        mutation bulkDeleteBackground($id: [ID]) {
-          backgroundBulkDelete(id: $id) {
+        mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
+          briefBackgroundUntag(briefId: $briefId, background: $background) {
             id
           }
         }
@@ -72,7 +70,8 @@ const ActionButtons = (props) => {
       await API.graphql({
         query: mDeleteBackground,
         variables: {
-          id: backgroundIds,
+          briefId: briefId,
+          background: item
         },
       });
 
@@ -98,7 +97,7 @@ const ActionButtons = (props) => {
         getBackground();
         setWitness([]);
         setcheckAllState(false);
-      }, 3000);
+      }, 2000);
     }
   };
 
