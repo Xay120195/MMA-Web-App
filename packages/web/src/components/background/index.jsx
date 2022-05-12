@@ -6,6 +6,7 @@ import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
+import ToastNotification from "../toast-notification";
 
 import { API } from "aws-amplify";
 
@@ -61,6 +62,11 @@ const Background = () => {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
 
+  const [briefName, setBriefName] = useState("");
+  const [briefId, setBriefId] = useState("");
+  const [validationAlert, setValidationAlert] = useState("");
+  const [alertMessage, setalertMessage] = useState();
+  const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
   useEffect(() => {
@@ -70,6 +76,11 @@ const Background = () => {
       getBriefs();
     }
   }, []);
+
+  const hideToast = () => {
+    setShowToast(false);
+  };
+
   const getName = `
   query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
     clientMatter(id: $id) {
@@ -371,6 +382,86 @@ const Background = () => {
     return btoa(encodeURIComponent(str));
   }
 
+  const handleNameContent = (e, name, id) => {
+    if (!validationAlert) {
+      setBriefName(!name ? "" : name);
+      setBriefId(id);
+      setValidationAlert("");
+    } else {
+      setBriefName("");
+    }
+  };
+
+  //Updating brief name
+  const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
+    briefUpdate(id: $id, name: $name) {
+      id
+    }
+  }`;
+
+  const handleOnChangeBiefName = (e) => {
+    setBriefName(e.currentTarget.textContent);
+  };
+
+  const handleSaveBriefName = (e, name, id) => {
+    const originalString = briefName.replace(/(<([^>]+)>)/gi, "");
+    const final = originalString.replace(/\&nbsp;/g, " ");
+
+    if (briefName.length <= 0) {
+      setValidationAlert("Brief Name is required");
+      setBGName(bgName);
+    } else if (briefName === name) {
+      setValidationAlert("");
+      const data = {
+        id,
+        name: e.target.innerHTML,
+      };
+      const success = updateBriefName(data);
+      setBGName(final);
+
+      setalertMessage(`Successfully updated Background title`);
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        setalertMessage("");
+      }, 1000);
+    } else {
+      setValidationAlert("");
+      const data = {
+        id,
+        name: e.target.innerHTML,
+      };
+      const success = updateBriefName(data);
+      setBGName(final);
+
+      setalertMessage(`Successfully updated Background title`);
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        setalertMessage("");
+      }, 1000);
+    }
+  };
+
+  async function updateBriefName(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBriefName,
+          variables: {
+            id: data.id,
+            name: data.name,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   return (
     <>
       <div
@@ -388,12 +479,31 @@ const Background = () => {
               Back
             </button>
           </Link>
-          <h1 className="font-bold text-3xl">
-          {bgName}&nbsp;<span className="text-3xl">of</span>&nbsp;
-            <span className="font-semibold text-3xl">
-              {client_name}/{matter_name}
-            </span>
-          </h1>
+            <h1 className="font-bold text-3xl">
+                <div className="flex"> 
+                    <p
+                      suppressContentEditableWarning={true}
+                      style={{
+                        cursor: "auto",
+                        outlineColor: "rgb(204, 204, 204, 0.5)",
+                        outlineWidth: "thin",
+                      }}
+                      onClick={(e) => handleNameContent(e, bgName, background_id)}
+                      contentEditable={true}
+                      tabIndex="0"
+                      onInput={(e) => handleOnChangeBiefName(e)}
+                      onBlur={(e) => handleSaveBriefName(e, bgName, background_id)}
+                      className="px-1 text-3xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
+                      dangerouslySetInnerHTML={{
+                        __html: bgName,
+                      }}
+                    />
+                  &nbsp;<span className="text-3xl">of</span>&nbsp;
+                  <span className="font-semibold text-3xl">
+                    {client_name}/{matter_name}
+                  </span>
+                </div>
+            </h1>
         </div>
       </div>
 
@@ -527,8 +637,11 @@ const Background = () => {
         setMaxLoading={setMaxLoading}
         maxLoading={maxLoading}
         sortByOrder={sortByOrder}
-        briefId={background_id}
       />
+
+      {showToast && (
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
     </>
   );
 };
