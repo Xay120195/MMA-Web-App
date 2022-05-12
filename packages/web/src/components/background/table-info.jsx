@@ -75,6 +75,7 @@ const TableInfo = ({
   setLoading,
   maxLoading,
   sortByOrder,
+  briefId,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -1238,12 +1239,12 @@ const TableInfo = ({
                                                     (window.location = `${
                                                       AppRoutes.FILEBUCKET
                                                     }/${matterId}/${
-                                                      item.id
+                                                      briefId
                                                     }/?matter_name=${utf8_to_b64(
                                                       matter_name
                                                     )}&client_name=${utf8_to_b64(
                                                       client_name
-                                                    )}`)
+                                                    )}&background_id=${item.id}`)
                                                   }
                                                 >
                                                   <BsFillBucketFill />

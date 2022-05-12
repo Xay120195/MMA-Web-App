@@ -136,7 +136,78 @@ const Background = () => {
       }
     }  
   `;
+
+  const getBackground = async () => {
+    let result = [];
+    setWait(false);
+
+    if(background_id === "000") {
+      // Remove this condition after migration  
+      const backgroundOpt = await API.graphql({
+        query: qListBackground,
+        variables: { id: matter_id, limit: 25, nextToken: vNextToken },
+      });
   
+      setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+  
+      if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+        result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+          ({ id, description, date, createdAt, order, files }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+            files: files,
+          })
+        );
+  
+        setPageTotal(result.length);
+        setPageSize(20);
+        setPageIndex(1);
+  
+        if (witness !== null) {
+          setWitness(sortByOrder(result));
+          setWait(true);
+          setMaxLoading(false);
+        }
+      }
+    } else {
+      const backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: { id: background_id, limit: 25, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+      });
+  
+      setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+  
+      console.log(backgroundOpt);
+  
+      if (backgroundOpt.data.brief.backgrounds.items !== null) {
+        result = backgroundOpt.data.brief.backgrounds.items.map(
+          ({ id, description, date, createdAt, order, files }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+            files: files,
+          })
+        );
+  
+        setPageTotal(result.length);
+        setPageSize(20);
+        setPageIndex(1);
+  
+        if (witness !== null) {
+          console.log(result);
+          setWitness(sortByOrder(result));
+          setWait(true);
+          setMaxLoading(false);
+        }
+      }
+    }
+  };
+
   const getBriefs = async () => {
     console.log("matterid", matter_id);
     const params = {
@@ -155,118 +226,87 @@ const Background = () => {
     });
   };
 
-  const getBackground = async () => {
-    let result = [];
-    setWait(false);
-
-    const backgroundOpt = await API.graphql({
-      query: qBriefBackgroundList,
-      variables: { id: background_id, limit: 20, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
-    });
-
-    setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
-
-    console.log(backgroundOpt);
-
-    if (backgroundOpt.data.brief.backgrounds.items !== null) {
-      result = backgroundOpt.data.brief.backgrounds.items.map(
-        ({ id, description, date, createdAt, order, files }) => ({
-          createdAt: createdAt,
-          id: id,
-          description: description,
-          date: date,
-          order: order,
-          files: files,
-        })
-      );
-
-      setPageTotal(result.length);
-      setPageSize(20);
-      setPageIndex(1);
-
-      if (witness !== null) {
-        console.log(result);
-        setWitness(sortByOrder(result));
-        setWait(true);
-        setMaxLoading(false);
-      }
-    }
-  };
-
-  /* No Brief ID
-    const getBackground = async () => {
-    let result = [];
-    setWait(false);
-    const matterId = matter_id;
-
-    const backgroundOpt = await API.graphql({
-      query: qListBackground,
-      variables: { id: matterId, limit: 20, nextToken: vNextToken },
-    });
-
-    setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
-
-    if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
-      result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-        ({ id, description, date, createdAt, order, files }) => ({
-          createdAt: createdAt,
-          id: id,
-          description: description,
-          date: date,
-          order: order,
-          files: files,
-        })
-      );
-
-      setPageTotal(result.length);
-      setPageSize(20);
-      setPageIndex(1);
-
-      if (witness !== null) {
-        setWitness(sortByOrder(result));
-        setWait(true);
-        setMaxLoading(false);
-      }
-    }
-  };*/
-
   const loadMoreBackground = async () => {
-    if (vNextToken !== null && !loading) {
-      setLoading(true);
-      let result = [];
+    if(background_id === "000") {
+      // Remove this condition after migration  
+      if (vNextToken !== null && !loading) {
+        setLoading(true);
+        let result = [];
 
-      const backgroundOpt = await API.graphql({
-        query: qBriefBackgroundList,
-        variables: { id: background_id, limit: 20, nextToken: vNextToken },
-      });
+        const backgroundOpt = await API.graphql({
+          query: qListBackground,
+          variables: { id: matter_id, limit: 20, nextToken: vNextToken },
+        });
 
-      setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+        setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
-      if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
-        result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
+        if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+          result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+            ({ id, description, date, createdAt, order, files }) => ({
+              createdAt: createdAt,
+              id: id,
+              description: description,
+              date: date,
+              order: order,
+              files: files,
+            })
+          );
 
-        if (witness !== "") {
-          setTimeout(() => {
-            setLoading(false);
-            setMaxLoading(false);
+          if (witness !== "") {
+            setTimeout(() => {
+              setLoading(false);
+              setMaxLoading(false);
 
-            let arrConcat = witness.concat(result);
-            setWitness([...new Set(sortByOrder(arrConcat))]);
-          }, 1000);
+              let arrConcat = witness.concat(result);
+              setWitness([...new Set(sortByOrder(arrConcat))]);
+            }, 1000);
+          }
         }
+      } else {
+        console.log("Last Result!");
+        setMaxLoading(true);
       }
+
     } else {
-      console.log("Last Result!");
-      setMaxLoading(true);
+
+      if (vNextToken !== null && !loading) {
+        setLoading(true);
+        let result = [];
+
+        const backgroundOpt = await API.graphql({
+          query: qBriefBackgroundList,
+          variables: { id: background_id, limit: 20, nextToken: vNextToken },
+        });
+
+        setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+
+        if (backgroundOpt.data.brief.backgrounds.items !== null) {
+          result = backgroundOpt.data.brief.backgrounds.items.map(
+            ({ id, description, date, createdAt, order, files }) => ({
+              createdAt: createdAt,
+              id: id,
+              description: description,
+              date: date,
+              order: order,
+              files: files,
+            })
+          );
+
+          if (witness !== "") {
+            setTimeout(() => {
+              setLoading(false);
+              setMaxLoading(false);
+
+              let arrConcat = witness.concat(result);
+              setWitness([...new Set(sortByOrder(arrConcat))]);
+            }, 1000);
+          }
+        }
+      } else {
+        console.log("Last Result!");
+        setMaxLoading(true);
+      }
+
     }
   };
 
@@ -487,6 +527,7 @@ const Background = () => {
         setMaxLoading={setMaxLoading}
         maxLoading={maxLoading}
         sortByOrder={sortByOrder}
+        briefId={background_id}
       />
     </>
   );
