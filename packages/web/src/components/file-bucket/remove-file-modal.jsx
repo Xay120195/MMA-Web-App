@@ -27,15 +27,14 @@ export default function RemoveFileModal(props) {
     rowsToDelete = selectedRows;
   }
 
-  //console.log(rowsToDelete);
-  //confirm deletion function
   const handleDelete = async () => {
     if (rowsToDelete.length !== 0) {
-      props.handleSave(rowsToDelete);
+      const result = rowsToDelete.map(({ id }) => ({
+        id: id,
+      }));
+      props.handleSave(result);
     }
   };
-
-  
 
   return (
     <>
