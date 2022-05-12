@@ -6,6 +6,7 @@ import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
+import ToastNotification from "../toast-notification";
 
 import { API } from "aws-amplify";
 
@@ -26,7 +27,7 @@ const Background = () => {
   const [getId, setId] = useState([{}]);
   const [fileMatter, setFileMatter] = useState([]);
   const params = useParams();
-  const { matter_id } = params;
+  const { matter_id, background_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
   const [search, setSearch] = useState("");
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
@@ -61,11 +62,41 @@ const Background = () => {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
 
+  const [briefName, setBriefName] = useState("");
+  const [briefId, setBriefId] = useState("");
+  const [validationAlert, setValidationAlert] = useState("");
+  const [alertMessage, setalertMessage] = useState();
+  const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
 
   useEffect(() => {
     getBackground();
+
+    if(bgName === null){
+      getBriefs();
+    }
   }, []);
+
+  const hideToast = () => {
+    setShowToast(false);
+  };
+
+  const getName = `
+  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
+    clientMatter(id: $id) {
+      briefs(limit: $limit, nextToken: $nextToken) {
+        items {
+          id
+          name
+          date
+          order
+        }
+      }
+    }
+  }
+  `;
+
+  const [bgName, setBGName] = useState(null);
 
   const qListBackground = `
     query listBackground($id: ID, $limit: Int, $nextToken: String) {
@@ -93,98 +124,43 @@ const Background = () => {
     }
   `;
 
+  const qBriefBackgroundList = `
+    query getBriefByID($limit: Int, $nextToken: String, $id: ID, $sortOrder: OrderBy) {
+      brief(id: $id) {
+        id
+        backgrounds(limit: $limit, nextToken: $nextToken, sortOrder: $sortOrder) {
+          items {
+            id
+            description
+            date
+            createdAt
+            order
+            files {
+              items {
+                id
+                name
+              }
+            }
+          }
+          nextToken
+        }
+      }
+    }  
+  `;
+
   const getBackground = async () => {
     let result = [];
     setWait(false);
-    const matterId = matter_id;
 
-    const mInitializeOrders = `
-      mutation initializeOrder($clientMatterId: ID) {
-        backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-          id
-        }
-      }
-    `;
-
-    await API.graphql({
-      query: mInitializeOrders,
-      variables: { clientMatterId: matterId },
-    }).then((res) => {
-      console.log("File Bucket: Initial Sorting Successful!");
-      console.log(res);
-    });
-
-    const backgroundOpt = await API.graphql({
-      query: qListBackground,
-      variables: { id: matterId, limit: 20, nextToken: vNextToken },
-    });
-
-    setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
-
-    if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
-      result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-        ({ id, description, date, createdAt, order, files }) => ({
-          createdAt: createdAt,
-          id: id,
-          description: description,
-          date: date,
-          order: order,
-          files: files,
-        })
-      );
-
-      setPageTotal(result.length);
-      setPageSize(20);
-      setPageIndex(1);
-
-      if (witness !== null) {
-        setWitness(sortByOrder(result));
-
-        // const res = result.map(({ id }, index) => ({
-        //   id: id,
-        //   order: index + 1,
-        // }));
-
-        // const mUpdateBackgroundOrder = `
-        //   mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
-        //     backgroundBulkUpdateOrders(arrangement: $arrangement) {
-        //       id
-        //       order
-        //     }
-        //   }`;
-        // const response = await API.graphql({
-        //   query: mUpdateBackgroundOrder,
-        //   variables: {
-        //     arrangement: res,
-        //   },
-        // });
-        // console.log(response);
-        setWait(true);
-        setMaxLoading(false);
-      }
-    }
-  };
-
-  const goToBottom = () => {
-    window.scrollTo({
-      bottom: 0,
-      behavior: "smooth",
-    });
-  };
-
-  const loadMoreBackground = async () => {
-    if (vNextToken !== null && !loading) {
-      setLoading(true);
-      let result = [];
-      const matterId = matter_id;
-
+    if(background_id === "000") {
+      // Remove this condition after migration  
       const backgroundOpt = await API.graphql({
         query: qListBackground,
-        variables: { id: matterId, limit: 20, nextToken: vNextToken },
+        variables: { id: matter_id, limit: 25, nextToken: vNextToken },
       });
-
+  
       setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
-
+  
       if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
         result = backgroundOpt.data.clientMatter.backgrounds.items.map(
           ({ id, description, date, createdAt, order, files }) => ({
@@ -196,30 +172,154 @@ const Background = () => {
             files: files,
           })
         );
-
-        if (witness !== "") {
-          //goToBottom();
-          setTimeout(() => {
-            setLoading(false);
-            setMaxLoading(false);
-
-            let arrConcat = witness.concat(result);
-            setWitness([...new Set(sortByOrder(arrConcat))]);
-          }, 1000);
+  
+        setPageTotal(result.length);
+        setPageSize(20);
+        setPageIndex(1);
+  
+        if (witness !== null) {
+          setWitness(sortByOrder(result));
+          setWait(true);
+          setMaxLoading(false);
         }
       }
     } else {
-      console.log("Last Result!");
-      setMaxLoading(true);
+      const backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: { id: background_id, limit: 25, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+      });
+  
+      setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+  
+      console.log(backgroundOpt);
+  
+      if (backgroundOpt.data.brief.backgrounds.items !== null) {
+        result = backgroundOpt.data.brief.backgrounds.items.map(
+          ({ id, description, date, createdAt, order, files }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+            files: files,
+          })
+        );
+  
+        setPageTotal(result.length);
+        setPageSize(20);
+        setPageIndex(1);
+  
+        if (witness !== null) {
+          console.log(result);
+          setWitness(sortByOrder(result));
+          setWait(true);
+          setMaxLoading(false);
+        }
+      }
     }
   };
 
-  const matt = matterList.find((i) => i.id === matter_id);
-  const obj = { ...matt };
-  const client = Object.values(obj);
-  const cname = Object.values(client).map((o) => o.name);
-  const clientName = cname[2];
-  const matterName = cname[3];
+  const getBriefs = async () => {
+    console.log("matterid", matter_id);
+    const params = {
+      query: getName,
+      variables: {
+        id: matter_id,
+        limit: 100,
+        nextToken: null,
+      },
+    };
+
+    await API.graphql(params).then((brief) => {
+      const matterFilesList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", matterFilesList);
+      matterFilesList.map((x)=> x.id === background_id ? setBGName(x.name) : x);
+    });
+  };
+
+  const loadMoreBackground = async () => {
+    if(background_id === "000") {
+      // Remove this condition after migration  
+      if (vNextToken !== null && !loading) {
+        setLoading(true);
+        let result = [];
+
+        const backgroundOpt = await API.graphql({
+          query: qListBackground,
+          variables: { id: matter_id, limit: 20, nextToken: vNextToken },
+        });
+
+        setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+
+        if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+          result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+            ({ id, description, date, createdAt, order, files }) => ({
+              createdAt: createdAt,
+              id: id,
+              description: description,
+              date: date,
+              order: order,
+              files: files,
+            })
+          );
+
+          if (witness !== "") {
+            setTimeout(() => {
+              setLoading(false);
+              setMaxLoading(false);
+
+              let arrConcat = witness.concat(result);
+              setWitness([...new Set(sortByOrder(arrConcat))]);
+            }, 1000);
+          }
+        }
+      } else {
+        console.log("Last Result!");
+        setMaxLoading(true);
+      }
+
+    } else {
+
+      if (vNextToken !== null && !loading) {
+        setLoading(true);
+        let result = [];
+
+        const backgroundOpt = await API.graphql({
+          query: qBriefBackgroundList,
+          variables: { id: background_id, limit: 20, nextToken: vNextToken },
+        });
+
+        setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+
+        if (backgroundOpt.data.brief.backgrounds.items !== null) {
+          result = backgroundOpt.data.brief.backgrounds.items.map(
+            ({ id, description, date, createdAt, order, files }) => ({
+              createdAt: createdAt,
+              id: id,
+              description: description,
+              date: date,
+              order: order,
+              files: files,
+            })
+          );
+
+          if (witness !== "") {
+            setTimeout(() => {
+              setLoading(false);
+              setMaxLoading(false);
+
+              let arrConcat = witness.concat(result);
+              setWitness([...new Set(sortByOrder(arrConcat))]);
+            }, 1000);
+          }
+        }
+      } else {
+        console.log("Last Result!");
+        setMaxLoading(true);
+      }
+
+    }
+  };
 
   function sortByOrder(arr) {
     const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
@@ -265,14 +365,102 @@ const Background = () => {
     return false;
   }
 
-  function UnicodeDecodeB64(str) {
-    return decodeURIComponent(atob(str));
+  function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
+  }
+
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
   }
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
-  const matter_name = UnicodeDecodeB64(m_name);
-  const client_name = UnicodeDecodeB64(c_name);
+  const matter_name = b64_to_utf8(m_name);
+  const client_name = b64_to_utf8(c_name);
+
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str));
+  }
+
+  const handleNameContent = (e, name, id) => {
+    if (!validationAlert) {
+      setBriefName(!name ? "" : name);
+      setBriefId(id);
+      setValidationAlert("");
+    } else {
+      setBriefName("");
+    }
+  };
+
+  //Updating brief name
+  const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
+    briefUpdate(id: $id, name: $name) {
+      id
+    }
+  }`;
+
+  const handleOnChangeBiefName = (e) => {
+    setBriefName(e.currentTarget.textContent);
+  };
+
+  const handleSaveBriefName = (e, name, id) => {
+    const originalString = briefName.replace(/(<([^>]+)>)/gi, "");
+    const final = originalString.replace(/\&nbsp;/g, " ");
+
+    if (briefName.length <= 0) {
+      setValidationAlert("Brief Name is required");
+      setBGName(bgName);
+    } else if (briefName === name) {
+      setValidationAlert("");
+      const data = {
+        id,
+        name: e.target.innerHTML,
+      };
+      const success = updateBriefName(data);
+      setBGName(final);
+
+      setalertMessage(`Successfully updated Background title`);
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        setalertMessage("");
+      }, 1000);
+    } else {
+      setValidationAlert("");
+      const data = {
+        id,
+        name: e.target.innerHTML,
+      };
+      const success = updateBriefName(data);
+      setBGName(final);
+
+      setalertMessage(`Successfully updated Background title`);
+      setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        setalertMessage("");
+      }, 1000);
+    }
+  };
+
+  async function updateBriefName(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBriefName,
+          variables: {
+            id: data.id,
+            name: data.name,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
 
   return (
     <>
@@ -281,18 +469,41 @@ const Background = () => {
         style={{ margin: "0 0 0 65px" }}
       >
         <div className="px-6 py-2">
-          <Link to={AppRoutes.DASHBOARD}>
+          <Link to={`${
+                AppRoutes.BRIEFS
+              }/${matter_id}/?matter_name=${b64EncodeUnicode(
+                matter_name
+              )}&client_name=${b64EncodeUnicode(client_name)}`}>
             <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
               <MdArrowBackIos />
               Back
             </button>
           </Link>
-          <h1 className="font-bold text-3xl">
-            Background&nbsp;<span className="text-3xl">of</span>&nbsp;
-            <span className="font-semibold text-3xl">
-              {client_name}/{matter_name}
-            </span>
-          </h1>
+            <h1 className="font-bold text-3xl">
+                <div className="flex"> 
+                    <p
+                      suppressContentEditableWarning={true}
+                      style={{
+                        cursor: "auto",
+                        outlineColor: "rgb(204, 204, 204, 0.5)",
+                        outlineWidth: "thin",
+                      }}
+                      onClick={(e) => handleNameContent(e, bgName, background_id)}
+                      contentEditable={true}
+                      tabIndex="0"
+                      onInput={(e) => handleOnChangeBiefName(e)}
+                      onBlur={(e) => handleSaveBriefName(e, bgName, background_id)}
+                      className="px-1 text-3xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
+                      dangerouslySetInnerHTML={{
+                        __html: bgName,
+                      }}
+                    />
+                  &nbsp;<span className="text-3xl">of</span>&nbsp;
+                  <span className="font-semibold text-3xl">
+                    {client_name}/{matter_name}
+                  </span>
+                </div>
+            </h1>
         </div>
       </div>
 
@@ -357,6 +568,9 @@ const Background = () => {
           setMaxLoading={setMaxLoading}
           sortByOrder={sortByOrder}
           setNewWitness={setNewWitness}
+          briefId={background_id}
+          client_name={client_name}
+          matter_name={matter_name}
         />
       </div>
       <TableInfo
@@ -424,6 +638,10 @@ const Background = () => {
         maxLoading={maxLoading}
         sortByOrder={sortByOrder}
       />
+
+      {showToast && (
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
     </>
   );
 };

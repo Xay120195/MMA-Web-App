@@ -163,14 +163,14 @@ export default function MattersRFI() {
     return false;
   }
 
-  function UnicodeDecodeB64(str) {
-    return decodeURIComponent(atob(str));
+  function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
   }
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
-  const matter_name = UnicodeDecodeB64(m_name);
-  const client_name = UnicodeDecodeB64(c_name);
+  const matter_name = b64_to_utf8(m_name);
+  const client_name = b64_to_utf8(c_name);
 
   return (
     <>
@@ -254,18 +254,16 @@ export default function MattersRFI() {
             </div>
           </div>
         </div>
-        {RFI === null || RFI.length === 0 ? (
-          <div className="p-5 px-5 py-1 left-0">
+        {RFI === null ?
+          <div> </div>
+        : RFI.length === 0 ? (
+          <div className="p-5 px-5 py-1 left-0 mt-5">
             <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
-              {/* <BlankState
-                  title={"RFI"}
-                  txtLink={"add RFI"}
-                  handleClick={handleBlankStateClick}
-                /> */}
               <BlankState
                 displayText={"There are no items to show in this view"}
                 txtLink={"add new RFI"}
                 iconDisplay={BlankList}
+                handleClick={() => setshowCreateRFIModal(true)}
               />
             </div>
           </div>

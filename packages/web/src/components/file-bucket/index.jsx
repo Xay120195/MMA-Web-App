@@ -115,6 +115,16 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
 
+  const mBulkCreateMatterFile = `
+        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+          matterFileBulkCreate(files: $files) {
+            id
+            name
+            order
+          }
+        }
+    `;
+
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
     window.scrollTo(0, 0);
@@ -148,9 +158,11 @@ export default function FileBucket() {
       (a, b) => b.oderSelected - a.oderSelected
     );
 
-    sortedFiles.map((file) => {
-      createMatterFile(file);
-    });
+    // sortedFiles.map((file) => {
+    //   createMatterFile(file);
+    // });
+
+    createMatterFile(sortedFiles);
 
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
@@ -380,7 +392,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
-        id: background_id,
+        id: backgroundRowId,
       },
     });
 
@@ -404,11 +416,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       return !duplicate;
     });
 
-    if (background_id !== null) {
+    if (backgroundRowId !== null) {
       const request = API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
-          backgroundId: background_id,
+          backgroundId: backgroundRowId,
           files: filteredArr,
         },
       });
@@ -419,9 +431,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setShowToast(false);
         window.location.href = `${
           AppRoutes.BACKGROUND
-        }/${matter_id}/?matter_name=${b64EncodeUnicode(
+        }/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(
           matter_name
-        )}&client_name=${b64EncodeUnicode(client_name)}`;
+        )}&client_name=${utf8_to_b64(client_name)}`;
       }, 2000);
     }
   }
@@ -468,52 +480,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     var labelNames = [];
 
-    result.map((x) => labelNames = [...labelNames, x.label]);
-    
-    if(labelNames.length == 0){
+    result.map((x) => (labelNames = [...labelNames, x.label]));
+
+    if (labelNames.length == 0) {
       setFilterModalState(true);
-    }else{
+    } else {
       setFilterModalState(false);
     }
 
     pageSelectedLabels = labelNames;
 
     setLabels(result);
-  };
-
-  const addLabel = async (fileId, data, index, newLabel) => {
-    console.group("addLabel()");
-    let result;
-
-    if (labels.some((x) => x.label === newLabel.trim())) {
-      return;
-    } else {
-      const createLabel = await API.graphql({
-        query: mCreateLabel,
-        variables: {
-          clientMatterId: matter_id,
-          name: newLabel,
-        },
-      });
-      result = createLabel.data.labelCreate;
-      console.log("createLabel result:", result);
-      console.groupEnd();
-      getLabels();
-
-      console.log("348 - data.labels.items", data.labels.items);
-
-      const newOptions = data.labels.items.map((d) =>
-        d.name === d.id ? { ...d, id: createLabel.data.labelCreate.id } : d
-      );
-      console.log("353 - newOptions", newOptions);
-
-      data.labels = newOptions;
-      updateArrLabels(newOptions, index);
-      //await updateMatterFile(fileId, data);
-      tagFileLabel(fileId, newOptions);
-    }
-
-    return result;
   };
 
   useEffect(() => {
@@ -595,9 +572,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         setVnextToken(files.data.matterFiles.nextToken);
 
         let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
-        
+
         setMatterFiles([...new Set(sortByOrder(arrConcat))]);
-        
 
         if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
           console.log("result count: ", files.data.matterFiles.items.length);
@@ -613,11 +589,24 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
   };
 
-  function createMatterFile(file) {
-    const request = API.graphql({
-      query: mCreateMatterFile,
-      variables: file,
+  async function createMatterFile(param) {
+    param.forEach(function (i) {
+      delete i.oderSelected; // remove orderSelected
     });
+
+    const request = await API.graphql({
+      query: mBulkCreateMatterFile,
+      variables: {
+        files: param,
+      },
+    });
+
+    console.log("result", request);
+
+    // const request = API.graphql({
+    //   query: mCreateMatterFile,
+    //   variables: file,
+    // });
 
     return request;
   }
@@ -671,52 +660,96 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     gridtemplatecolumn: "1fr auto",
   };
 
-  const handleLabelChanged = async (options, fileId, name, details, index) => {
-    setFileId(fileId);
-    let newOptions = [];
-    let createdLabel;
-    let isNewCtr = 0;
-
-    newOptions = options.map(({ value: id, label: name }) => ({
-      id: id,
-      name: name,
-    }));
-
-    const data = {
-      name: name,
-      details: details,
-      labels: { items: newOptions },
-    };
-
-    console.log("options", options);
-
-    await options.map(async (o) => {
-      if (o.__isNew__) {
-        isNewCtr++;
-        console.log("ooo", o);
-        console.log("newlabel", o.label);
-        createdLabel = await addLabel(fileId, data, index, o.label);
-        console.log("cl", createdLabel);
-      }
-    });
-
-    setResultMessage(`Updating labels..`);
-    setShowToast(true);
-    setTimeout(() => {
-      setTimeout(() => {
+  const handleLabelChanged = async (options, id) => {
+    const newlabel = options.filter((x) => x.__isNew__);
+    if (options.length <= 0 && newlabel.length <= 0) {
+      const request = API.graphql({
+        query: mTagFileLabel,
+        variables: {
+          fileId: id,
+          labels: [],
+        },
+      });
+      console.log(request);
+      if (request) {
+        setResultMessage("Updating labels");
+        setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
         }, 1000);
-      }, 1000);
-    }, 1000);
-
-    if (isNewCtr === 0) {
-      console.log("No new labels found");
-      console.log("data.labels.items", data.labels.items);
-      updateArrLabels(data.labels.items, index);
-      await updateMatterFile(fileId, data);
-      tagFileLabel(fileId, data.labels.items);
+      }
+    } else if (options.length >= 0 && newlabel.length <= 0) {
+      const newOptions = options.map(({ label: name, value: id }) => ({
+        id,
+        name,
+      }));
+      const request = API.graphql({
+        query: mTagFileLabel,
+        variables: {
+          fileId: id,
+          labels: newOptions,
+        },
+      });
+      console.log("success", request);
+      if (request) {
+        setResultMessage("Updating labels");
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }
+    } else if (newlabel !== [] && options.length >= 0) {
+      const x = convertArrayToObject(newlabel);
+      if (x) {
+        const createLabel = await API.graphql({
+          query: mCreateLabel,
+          variables: {
+            clientMatterId: matter_id,
+            name: x.item.label,
+          },
+        });
+        if (createLabel) {
+          const updatedNewlabel = options.map((obj) => {
+            if (obj.label === x.item.label) {
+              return {
+                ...obj,
+                value: createLabel.data.labelCreate.id,
+              };
+            }
+            return obj;
+          });
+          const ops = updatedNewlabel.map(({ value, label }) => ({
+            id: value,
+            name: label,
+          }));
+          const request = API.graphql({
+            query: mTagFileLabel,
+            variables: {
+              fileId: id,
+              labels: ops,
+            },
+          });
+          console.log("success", request);
+          if (request) {
+            setResultMessage("Updating labels");
+            setShowToast(true);
+            setTimeout(() => {
+              setShowToast(false);
+            }, 1000);
+          }
+        }
+      }
     }
+  };
+
+  const convertArrayToObject = (array) => {
+    const initialValue = {};
+    return array.reduce((obj, item) => {
+      return {
+        ...obj,
+        item: item,
+      };
+    }, initialValue);
   };
 
   function updateArrLabels(data, index) {
@@ -887,19 +920,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       p.id === id ? { ...p, date: data.date } : p
     );
 
-    if(filterState){
+    if (filterState) {
       const updatedArray = filteredFiles.map((p) =>
         p.id === id ? { ...p, date: data.date } : p
       );
       setFilteredFiles(updatedArray);
-    }else{
+    } else {
       const updatedArray = matterFiles.map((p) =>
         p.id === id ? { ...p, date: data.date } : p
       );
       setMatterFiles(updatedArray);
     }
-    
-    
   };
 
   async function updateMatterFileDate(id, data) {
@@ -922,21 +953,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     });
   }
 
-  //extracting labels function
-  const extractArray = (ar) => {
-    if (Array.isArray(ar) && ar.length) {
-      const newOptions = ar.map(({ id: value, name: label }) => ({
+  const defaultOptions = (items) => {
+    if (items !== null) {
+      const newOptions = items.map(({ id: value, name: label }) => ({
         value,
         label,
       }));
-      // newOptions.map(
-      //   (data) => (filterOptionsArray = [...filterOptionsArray, data])
-      // );
-      // pageSelectedLabels = [
-      //   ...new Map(
-      //     filterOptionsArray.map((item) => [JSON.stringify(item), item])
-      //   ).values(),
-      // ];
       return newOptions;
     } else {
       return null;
@@ -1010,6 +1032,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
         1
       );
+
+      selectedCompleteDataRows.splice(
+        selectedCompleteDataRows.indexOf(
+          selectedCompleteDataRows.find((temp) => temp.id === id)
+        ),
+        1
+      );
+
       const updatedCheckedState = checkedState.map((item, index) =>
         index === idx ? !item : item
       );
@@ -1024,6 +1054,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
           1
         );
+
+        selectedCompleteDataRows.splice(
+          selectedCompleteDataRows.indexOf(
+            selectedCompleteDataRows.find((temp) => temp.id === id)
+          ),
+          1
+        );
+
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
           index === idx ? !item : item
@@ -1048,6 +1086,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             order: 0,
           },
         ];
+
+        console.log("THIS IS SELECTED", selectedCompleteDataRows);
+
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
           index === idx ? !item : item
@@ -1074,11 +1115,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     if (isAllChecked) {
       setIsAllChecked(false);
       selectedRows = [];
+      selectedCompleteDataRows = [];
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
     } else {
       setIsAllChecked(true);
       selectedRows = [];
+      selectedCompleteDataRows = [];
       files.map(
         (data) =>
           (selectedRows = [
@@ -1115,6 +1158,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       await deleteMatterFile(id);
     });
     selectedRows = [];
+    selectedCompleteDataRows = [];
     var next = 1;
     setshowRemoveFileButton(false);
     setResultMessage(`Deleting File`);
@@ -1243,7 +1287,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     console.log("ff", fileFilter);
     console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
-    
+
     var next = 1;
 
     var filterRecord = [];
@@ -1255,17 +1299,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       getMatterFiles(next);
       setMatterFiles(sortByOrder(matterFiles));
       setFilterState(false);
-      // setFiles(sortByOrder(matterFiles));
     } else {
       console.log("labels", labels);
       var labelsList = labels;
       var labelsIdList = [];
 
       for (var i = 0; i < fileFilter.length; i++) {
-        labelsList.map((x) => 
-          x.label === fileFilter[i] ? 
-          labelsIdList = [...labelsIdList, x.value] :
-          labelsIdList = labelsIdList 
+        labelsList.map((x) =>
+          x.label === fileFilter[i]
+            ? (labelsIdList = [...labelsIdList, x.value])
+            : (labelsIdList = labelsIdList)
         );
       }
 
@@ -1286,13 +1329,19 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       var newFiles1 = [];
       var newFiles2 = [];
-      result.data.multipleLabels.map((x) => newFiles1 = [...newFiles1, x.files.items]);
-      newFiles1.map((x) => x.map((y)=> newFiles2 = [...newFiles2, y]));
 
-      console.log("putinmatterfiles",newFiles2);
-      setMatterFiles(sortByOrder(newFiles2));
+      if (result === null) {
+        newFiles2 = [];
+      } else {
+        result.data.multipleLabels.map(
+          (x) => (newFiles1 = [...newFiles1, x.files.items])
+        );
+        newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
+      }
+
+      console.log("putinmatterfiles", newFiles2);
+      // setMatterFiles(sortByOrder(newFiles2));
       setFilteredFiles(sortByOrder(newFiles2));
-      // setFiles(sortByOrder(newFiles2));
       setFilterState(true);
 
       console.log("res", result);
@@ -1300,13 +1349,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const mCreateBackground = `
-  mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-    backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
-      createdAt
-      date
-      description
+  mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+    backgroundCreate(briefId: $briefId, description: $description, date: $date) {
       id
-      order
     }
   }
 `;
@@ -1328,7 +1373,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
-          clientMatterId: matter_id,
+          briefId: background_id,
           description: arrFiles[i].details,
           date:
             arrFiles[i].date !== null
@@ -1352,17 +1397,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setShowToast(false);
       window.location.href = `${
         AppRoutes.BACKGROUND
-      }/${matter_id}/?count=${counter}&matter_name=${b64EncodeUnicode(
+      }/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(
         matter_name
-      )}&client_name=${b64EncodeUnicode(client_name)}`;
+      )}&client_name=${utf8_to_b64(client_name)}`;
     }, 1000);
   }
 
   const handleBottomScroll = useCallback(() => {
-    if(filterState){
+    if (filterState) {
       console.log("cancel loadmore");
       setLoading(false);
-    }else{
+    } else {
       console.log("Reached bottom page " + Math.round(performance.now()));
       setTimeout(() => {
         setLoading(true);
@@ -1378,7 +1423,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   const handleDuplicate = async () => {
     let next = 1;
-    selectedCompleteDataRows.map(async function (items) {
+    const lengthSelectedRows = selectedCompleteDataRows.length;
+    selectedCompleteDataRows.map(async function (items, index) {
       const request = await API.graphql({
         query: mCreateMatterFile,
         variables: {
@@ -1396,6 +1442,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setshowAttachBackgroundButton(false);
       setshowRemoveFileButton(false);
       getMatterFiles(next);
+
+      if (index === lengthSelectedRows - 1) {
+        selectedCompleteDataRows = [];
+        selectedRows = [];
+        console.log("END", selectedCompleteDataRows);
+      }
     });
   };
 
@@ -1456,22 +1508,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
     return false;
   }
-
-  function UnicodeDecodeB64(str) {
-    return decodeURIComponent(atob(str));
+  function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
   }
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
-  const matter_name = UnicodeDecodeB64(m_name);
-  const client_name = UnicodeDecodeB64(c_name);
+  const backgroundRowId = getQueryVariable("background_id");
+  const matter_name = b64_to_utf8(m_name);
+  const client_name = b64_to_utf8(c_name);
 
-  function b64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str));
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
   }
-
   function showAlert() {
-    alert("No selected Labels on page.")
+    alert("No selected Labels on page.");
   }
 
   return (
@@ -1536,10 +1587,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   aria-current="page"
                   className="font-medium text-gray-900"
                   to={`${
-                    AppRoutes.BACKGROUND
-                  }/${matter_id}/?matter_name=${b64EncodeUnicode(
+                    AppRoutes.BRIEFS
+                  }/${matter_id}/?matter_name=${utf8_to_b64(
                     matter_name
-                  )}&client_name=${b64EncodeUnicode(client_name)}`}
+                  )}&client_name=${utf8_to_b64(client_name)}`}
                 >
                   Background
                 </Link>
@@ -1561,9 +1612,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   className="font-medium text-gray-500"
                   to={`${
                     AppRoutes.FILEBUCKET
-                  }/${matter_id}/000/?matter_name=${b64EncodeUnicode(
+                  }/${matter_id}/000/?matter_name=${utf8_to_b64(
                     matter_name
-                  )}&client_name=${b64EncodeUnicode(client_name)}`}
+                  )}&client_name=${utf8_to_b64(client_name)}`}
                 >
                   File Bucket
                 </Link>
@@ -1603,7 +1654,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <FiUpload />
               </button>
 
-              {showRemoveFileButton && (
+              {showRemoveFileButton && backgroundRowId && (
                 <button
                   className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                   onClick={() => addFileBucketToBackground()}
@@ -1613,7 +1664,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </button>
               )}
 
-              {showAttachBackgroundButton && (
+              {showAttachBackgroundButton && backgroundRowId && (
                 <button
                   className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                   onClick={() => tagBackgroundFile()}
@@ -1675,427 +1726,432 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         </div>
 
         {
-        // filteredFiles !== null ? 
-        // (
-        //   <span className="py-5 px-5">FILTERED FILES</span>
-        // ) :
-        matterFiles === null ?
-        (
-           <span className="py-5 px-5">Please wait...</span>
-        ) : (
-          <>
-            {(matterFiles).length === 0 &&
-            (searchFile === undefined || searchFile === "") ? (
-              <div className="p-5 px-5 py-1 left-0">
-                <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
-                  <BlankState
-                    title={"items"}
-                    txtLink={"file upload button"}
-                    handleClick={() => setShowUploadModal(true)}
-                  />
+          // filteredFiles !== null ?
+          // (
+          //   <span className="py-5 px-5">FILTERED FILES</span>
+          // ) :
+          matterFiles === null ? (
+            <span className="py-5 px-5">Please wait...</span>
+          ) : (
+            <>
+              {matterFiles.length === 0 &&
+              (searchFile === undefined || searchFile === "") ? (
+                <div className="p-5 px-5 py-1 left-0">
+                  <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
+                    <BlankState
+                      title={"items"}
+                      txtLink={"file upload button"}
+                      handleClick={() => setShowUploadModal(true)}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                <ScrollToTop
-                  smooth
-                  color="rgb(117, 117, 114);"
-                  style={{ padding: "0.4rem" }}
-                />
-                {matterFiles !== null && matterFiles.length !== 0 ? (
-                  <div>
-                    <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                      <DragDropContext onDragEnd={handleDragEnd}>
-                        <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                          <thead
-                            className="bg-gray-100 z-30"
-                            style={{ position: "sticky", top: "153px" }}
-                          >
-                            <tr>
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
-                                Item No.
-                              </th>
-                              <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
-                                <span className="ml-4">Date</span>
-                                <img
-                                  src={barsFilter}
-                                  className="text-2xl w-4 mx-4"
-                                  alt="filter"
-                                  onClick={SortBydate}
-                                  style={{ cursor: "pointer" }}
-                                />
-                              </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
-                                Name
-                              </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
-                                Description
-                              </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
-                                Labels
-                              </th>
-                              <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
-                                Page Reference
-                              </th>
-                            </tr>
-                          </thead>
-                          <Droppable droppableId="droppable-1">
-                            {(provider) => (
-                              <tbody
-                                ref={provider.innerRef}
-                                {...provider.droppableProps}
-                                className="bg-white divide-y divide-gray-200"
-                              >
-                                {(filterState ? filteredFiles : matterFiles).map((data, index) => (
-                                  <Draggable
-                                    key={data.id}
-                                    draggableId={data.id}
-                                    index={index}
-                                  >
-                                    {(provider, snapshot) => (
-                                      <tr
-                                        key={data.id}
-                                        index={index}
-                                        className="h-full"
-                                        {...provider.draggableProps}
-                                        ref={provider.innerRef}
-                                        style={{
-                                          ...provider.draggableProps.style,
-                                          backgroundColor:
-                                            snapshot.isDragging ||
-                                            (active && data.id === selected)
-                                              ? "rgba(255, 255, 239, 0.767)"
-                                              : "white",
-                                        }}
-                                      >
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="px-2 py-6 inline-flex"
+              ) : (
+                <>
+                  <ScrollToTop
+                    smooth
+                    color="rgb(117, 117, 114);"
+                    style={{ padding: "0.4rem" }}
+                  />
+                  {matterFiles !== null && matterFiles.length !== 0 ? (
+                    <div>
+                      <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                          <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                            <thead
+                              className="bg-gray-100 z-30"
+                              style={{ position: "sticky", top: "153px" }}
+                            >
+                              <tr>
+                                <th className="px-2 py-4 text-center whitespace-nowrap">
+                                  Item No.
+                                </th>
+                                <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
+                                  <span className="ml-4">Date</span>
+                                  <img
+                                    src={barsFilter}
+                                    className="text-2xl w-4 mx-4"
+                                    alt="filter"
+                                    onClick={SortBydate}
+                                    style={{ cursor: "pointer" }}
+                                  />
+                                </th>
+                                <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                  Name
+                                </th>
+                                <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
+                                  Description
+                                </th>
+                                <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                  Labels
+                                </th>
+                                <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
+                                  Page Reference
+                                </th>
+                              </tr>
+                            </thead>
+                            <Droppable droppableId="droppable-1">
+                              {(provider) => (
+                                <tbody
+                                  ref={provider.innerRef}
+                                  {...provider.droppableProps}
+                                  className="bg-white divide-y divide-gray-200"
+                                >
+                                  {(filterState
+                                    ? filteredFiles
+                                    : matterFiles
+                                  ).map((data, index) => (
+                                    <Draggable
+                                      key={data.id}
+                                      draggableId={data.id}
+                                      index={index}
+                                    >
+                                      {(provider, snapshot) => (
+                                        <tr
+                                          key={data.id}
+                                          index={index}
+                                          className="h-full"
+                                          {...provider.draggableProps}
+                                          ref={provider.innerRef}
+                                          style={{
+                                            ...provider.draggableProps.style,
+                                            backgroundColor:
+                                              snapshot.isDragging ||
+                                              (active && data.id === selected)
+                                                ? "rgba(255, 255, 239, 0.767)"
+                                                : "white",
+                                          }}
                                         >
-                                          <MdDragIndicator
-                                            className="text-2xl"
-                                            onClick={() =>
-                                              handleChageBackground(data.id)
-                                            }
-                                          />
+                                          <td
+                                            {...provider.dragHandleProps}
+                                            className="px-2 py-6 inline-flex"
+                                          >
+                                            <MdDragIndicator
+                                              className="text-2xl"
+                                              onClick={() =>
+                                                handleChageBackground(data.id)
+                                              }
+                                            />
 
-                                          <input
-                                            type="checkbox"
-                                            name={data.id}
-                                            className="cursor-pointer w-10 mt-1"
-                                            checked={checkedState[index]}
-                                            onChange={() =>
-                                              checked(
-                                                data.id,
-                                                data.name,
-                                                data.details,
-                                                data.size,
-                                                data.s3ObjectKey,
-                                                data.type,
-                                                data.date,
-                                                index
-                                              )
-                                            }
-                                            disabled={
-                                              deletingState ? true : false
-                                            }
-                                          />
-                                          <span className="text-xs">
-                                            {index + 1}
-                                          </span>
-                                        </td>
-                                        <td>
-                                          <DatePicker
-                                            popperProps={{positionFixed: true}} 
-                                            className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
-                                            dateFormat="dd MMM yyyy"
-                                            selected={
-                                              data.date !== null
-                                                ? new Date(data.date)
-                                                : null
-                                            }
-                                            placeholderText="No Date"
-                                            onChange={(selected) =>
-                                              handleChangeDate(
-                                                selected,
-                                                data.id
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="px-2 py-4 align-top place-items-center relative flex-wrap"
-                                        >
-                                          <div className="inline-flex">
-                                            {data.type
-                                              .split("/")
-                                              .slice(0, -1)
-                                              .join("/") === "image" ? (
-                                              <GrDocumentImage className="text-2xl" />
-                                            ) : data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "audio" ? (
-                                              <FaRegFileAudio className="text-2xl" />
-                                            ) : data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "video" ? (
-                                              <FaRegFileVideo className="text-2xl" />
-                                            ) : data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "text" ? (
-                                              <GrDocumentTxt className="text-2xl" />
-                                            ) : data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "application" &&
-                                              data.type.split(".").pop() ===
-                                                "sheet" ? (
-                                              <GrDocumentExcel className="text-2xl" />
-                                            ) : data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "application" &&
-                                              data.type.split(".").pop() ===
-                                                "document" ? (
-                                              <GrDocumentWord className="text-2xl" />
-                                            ) : data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "application" &&
-                                              data.type.split(".").pop() ===
-                                                "text" ? (
-                                              <GrDocumentText className="text-2xl" />
-                                            ) : data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "application" ? (
-                                              <GrDocumentPdf className="text-2xl" />
-                                            ) : (
-                                              <GrDocumentText className="text-2xl" />
-                                            )}
-                                            &nbsp;&nbsp;
-                                            <span
-                                              className="p-2 w-52 font-poppins"
-                                              style={{
-                                                cursor: "auto",
-                                                outlineColor:
-                                                  "rgb(204, 204, 204, 0.5)",
-                                                outlineWidth: "thin",
-                                              }}
-                                              suppressContentEditableWarning={
-                                                true
-                                              }
-                                              onClick={(event) =>
-                                                handleNameContent(
-                                                  event,
+                                            <input
+                                              type="checkbox"
+                                              name={data.id}
+                                              className="cursor-pointer w-10 mt-1"
+                                              checked={checkedState[index]}
+                                              onChange={() =>
+                                                checked(
+                                                  data.id,
                                                   data.name,
-                                                  data.id
+                                                  data.details,
+                                                  data.size,
+                                                  data.s3ObjectKey,
+                                                  data.type,
+                                                  data.date,
+                                                  index
                                                 )
                                               }
-                                              onInput={(event) =>
-                                                handleOnChangeName(event)
+                                              disabled={
+                                                deletingState ? true : false
                                               }
-                                              onBlur={(e) =>
-                                                handleSaveName(
-                                                  e,
-                                                  data.name,
-                                                  data.id
-                                                )
-                                              }
-                                              contentEditable={
-                                                updateProgess ? false : true
-                                              }
-                                            >
-                                              {data.name}
+                                            />
+                                            <span className="text-xs">
+                                              {index + 1}
                                             </span>
-                                            <span>
-                                              <AiOutlineDownload
-                                                className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
-                                                onClick={() =>
-                                                  previewAndDownloadFile(
+                                          </td>
+                                          <td>
+                                            <DatePicker
+                                              popperProps={{
+                                                positionFixed: true,
+                                              }}
+                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
+                                              dateFormat="dd MMM yyyy"
+                                              selected={
+                                                data.date !== null
+                                                  ? new Date(data.date)
+                                                  : null
+                                              }
+                                              placeholderText="No Date"
+                                              onChange={(selected) =>
+                                                handleChangeDate(
+                                                  selected,
+                                                  data.id
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td
+                                            {...provider.dragHandleProps}
+                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                          >
+                                            <div className="inline-flex">
+                                              {data.type
+                                                .split("/")
+                                                .slice(0, -1)
+                                                .join("/") === "image" ? (
+                                                <GrDocumentImage className="text-2xl" />
+                                              ) : data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") === "audio" ? (
+                                                <FaRegFileAudio className="text-2xl" />
+                                              ) : data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") === "video" ? (
+                                                <FaRegFileVideo className="text-2xl" />
+                                              ) : data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") === "text" ? (
+                                                <GrDocumentTxt className="text-2xl" />
+                                              ) : data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") ===
+                                                  "application" &&
+                                                data.type.split(".").pop() ===
+                                                  "sheet" ? (
+                                                <GrDocumentExcel className="text-2xl" />
+                                              ) : data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") ===
+                                                  "application" &&
+                                                data.type.split(".").pop() ===
+                                                  "document" ? (
+                                                <GrDocumentWord className="text-2xl" />
+                                              ) : data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") ===
+                                                  "application" &&
+                                                data.type.split(".").pop() ===
+                                                  "text" ? (
+                                                <GrDocumentText className="text-2xl" />
+                                              ) : data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") ===
+                                                "application" ? (
+                                                <GrDocumentPdf className="text-2xl" />
+                                              ) : (
+                                                <GrDocumentText className="text-2xl" />
+                                              )}
+                                              &nbsp;&nbsp;
+                                              <span
+                                                className="p-2 w-52 font-poppins"
+                                                style={{
+                                                  cursor: "auto",
+                                                  outlineColor:
+                                                    "rgb(204, 204, 204, 0.5)",
+                                                  outlineWidth: "thin",
+                                                }}
+                                                suppressContentEditableWarning={
+                                                  true
+                                                }
+                                                onClick={(event) =>
+                                                  handleNameContent(
+                                                    event,
+                                                    data.name,
                                                     data.id
                                                   )
                                                 }
-                                              />
-                                            </span>
-                                          </div>
-                                          <p className="text-red-400 filename-validation">
-                                            {data.id === fileId && fileAlert}
-                                          </p>{" "}
-                                          {/* do not change */}
-                                        </td>
-
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
-                                        >
-                                          <div className="flex">
-                                            <span
-                                              className="w-full p-2 font-poppins h-full mx-2"
-                                              style={{
-                                                cursor: "auto",
-                                                outlineColor:
-                                                  "rgb(204, 204, 204, 0.5)",
-                                                outlineWidth: "thin",
-                                              }}
-                                              suppressContentEditableWarning={
-                                                true
-                                              }
-                                              onClick={(event) =>
-                                                handleDetailsContent(
-                                                  event,
-                                                  data.details,
-                                                  data.id
-                                                )
-                                              }
-                                              onInput={(event) =>
-                                                handleOnChangeDetails(event)
-                                              }
-                                              onBlur={(e) =>
-                                                handleSaveDetails(
-                                                  e,
-                                                  data.details,
-                                                  data.id
-                                                )
-                                              }
-                                              contentEditable={
-                                                updateProgess ? false : true
-                                              }
-                                              dangerouslySetInnerHTML={{
-                                                __html: data.details,
-                                              }}
-                                            ></span>
-                                          </div>
-                                          <br />
-                                          <span className="text-red-400 filename-validation">
-                                            {data.id === detId && descAlert}
-                                          </span>
-                                        </td>
-
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="px-2 py-4 align-top place-items-center relative flex-wrap"
-                                        >
-                                          <CreatableSelect
-                                            defaultValue={extractArray(
-                                              data.labels.items
-                                                ? data.labels.items
-                                                : { value: 0, label: "" }
-                                            )}
-                                            options={newOptions(
-                                              labels,
-                                              data.labels.items
-                                            )}
-                                            isMulti
-                                            isClearable
-                                            isSearchable
-                                            openMenuOnClick={true}
-                                            onChange={(options) =>
-                                              handleLabelChanged(
-                                                options,
-                                                data.id,
-                                                data.name,
-                                                data.details,
-                                                index
-                                              )
-                                            }
-                                            placeholder="Labels"
-                                            className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                          />
-                                        </td>
-                                        <td
-                                          {...provider.dragHandleProps}
-                                          className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
-                                        >
-                                          {data.backgrounds.items !== null && data.backgrounds.items
-                                            .sort((a, b) =>
-                                              a.order > b.order ? 1 : -1
-                                            )
-                                            .filter(
-                                              (x) =>
-                                                !Object.values(x).includes(null)
-                                            )
-                                            .map((background, index) => (
-                                              <p
-                                                className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
-                                                key={background.id}
-                                                index={index}
-                                                onClick={() =>
-                                                  showPageReference(
-                                                    data.id,
-                                                    background.id,
-                                                    clientMatterName,
-                                                    background.description,
-                                                    background.order
+                                                onInput={(event) =>
+                                                  handleOnChangeName(event)
+                                                }
+                                                onBlur={(e) =>
+                                                  handleSaveName(
+                                                    e,
+                                                    data.name,
+                                                    data.id
                                                   )
                                                 }
+                                                contentEditable={
+                                                  updateProgess ? false : true
+                                                }
                                               >
-                                                <b>{background.order + ". "}</b>
-                                                {ellipsis(
-                                                  clientMatterName +
-                                                    " Background",
-                                                  40
-                                                )}
-                                              </p>
-                                            ))
-                                            .sort()}
-                                        </td>
-                                      </tr>
-                                    )}
-                                  </Draggable>
-                                ))}
-                                {provider.placeholder}
-                              </tbody>
-                            )}
-                          </Droppable>
-                        </table>
-                      </DragDropContext>
-                    </div>
-                    <div>
-                      {maxLoading || filterState ? (
-                        <div className="flex justify-center items-center mt-5">
-                          <p>All data has been loaded.</p>
-                        </div>
-                      ) : matterFiles.length >= 20 ? (
-                        // && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b"
-                        <div className="flex justify-center items-center mt-5">
-                          <img src={imgLoading} width={50} height={100} />
-                        </div>
-                      ) : (
-                        <span></span>
-                      )}
+                                                {data.name}
+                                              </span>
+                                              <span>
+                                                <AiOutlineDownload
+                                                  className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
+                                                  onClick={() =>
+                                                    previewAndDownloadFile(
+                                                      data.id
+                                                    )
+                                                  }
+                                                />
+                                              </span>
+                                            </div>
+                                            <p className="text-red-400 filename-validation">
+                                              {data.id === fileId && fileAlert}
+                                            </p>{" "}
+                                            {/* do not change */}
+                                          </td>
 
-                      {!maxLoading && loading ? (
-                        <span className="grid"></span>
-                      ) : (
-                        <span></span>
-                      )}
-                    </div>
-                    <div className="p-2"></div>
-                  </div>
-                ) : (
-                  <div className="p-5 px-5 py-1 left-0">
-                    <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">
-                      <NoResultState
-                        searchKey={searchFile}
-                        message={
-                          "Check the spelling, try a more general term or look up a specific File."
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
+                                          <td
+                                            {...provider.dragHandleProps}
+                                            className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                          >
+                                            <div className="flex">
+                                              <span
+                                                className="w-full p-2 font-poppins h-full mx-2"
+                                                style={{
+                                                  cursor: "auto",
+                                                  outlineColor:
+                                                    "rgb(204, 204, 204, 0.5)",
+                                                  outlineWidth: "thin",
+                                                }}
+                                                suppressContentEditableWarning={
+                                                  true
+                                                }
+                                                onClick={(event) =>
+                                                  handleDetailsContent(
+                                                    event,
+                                                    data.details,
+                                                    data.id
+                                                  )
+                                                }
+                                                onInput={(event) =>
+                                                  handleOnChangeDetails(event)
+                                                }
+                                                onBlur={(e) =>
+                                                  handleSaveDetails(
+                                                    e,
+                                                    data.details,
+                                                    data.id
+                                                  )
+                                                }
+                                                contentEditable={
+                                                  updateProgess ? false : true
+                                                }
+                                                dangerouslySetInnerHTML={{
+                                                  __html: data.details,
+                                                }}
+                                              ></span>
+                                            </div>
+                                            <br />
+                                            <span className="text-red-400 filename-validation">
+                                              {data.id === detId && descAlert}
+                                            </span>
+                                          </td>
 
+                                          <td
+                                            {...provider.dragHandleProps}
+                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                          >
+                                            <CreatableSelect
+                                              defaultValue={() =>
+                                                defaultOptions(
+                                                  data.labels.items
+                                                )
+                                              }
+                                              options={labels}
+                                              isMulti
+                                              isClearable
+                                              isSearchable
+                                              openMenuOnClick={true}
+                                              onChange={(options) =>
+                                                handleLabelChanged(
+                                                  options,
+                                                  data.id
+                                                )
+                                              }
+                                              placeholder="Labels"
+                                              className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                            />
+                                          </td>
+                                          <td
+                                            {...provider.dragHandleProps}
+                                            className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                          >
+                                            {data.backgrounds.items !== null &&
+                                              data.backgrounds.items
+                                                .sort((a, b) =>
+                                                  a.order > b.order ? 1 : -1
+                                                )
+                                                .filter(
+                                                  (x) =>
+                                                    !Object.values(x).includes(
+                                                      null
+                                                    )
+                                                )
+                                                .map((background, index) => (
+                                                  <p
+                                                    className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                                    key={background.id}
+                                                    index={index}
+                                                    onClick={() =>
+                                                      showPageReference(
+                                                        data.id,
+                                                        background.id,
+                                                        clientMatterName,
+                                                        background.description,
+                                                        background.order
+                                                      )
+                                                    }
+                                                  >
+                                                    <b>
+                                                      {background.order + ". "}
+                                                    </b>
+                                                    {ellipsis(
+                                                      clientMatterName +
+                                                        " Background",
+                                                      40
+                                                    )}
+                                                  </p>
+                                                ))
+                                                .sort()}
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provider.placeholder}
+                                </tbody>
+                              )}
+                            </Droppable>
+                          </table>
+                        </DragDropContext>
+                      </div>
+                      <div>
+                        {maxLoading || filterState ? (
+                          <div className="flex justify-center items-center mt-5">
+                            <p>All data has been loaded.</p>
+                          </div>
+                        ) : matterFiles.length >= 20 ? (
+                          // && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b"
+                          <div className="flex justify-center items-center mt-5">
+                            <img src={imgLoading} width={50} height={100} />
+                          </div>
+                        ) : (
+                          <span></span>
+                        )}
 
-                
-              </>
-            )}
-          </>
-        )}
+                        {!maxLoading && loading ? (
+                          <span className="grid"></span>
+                        ) : (
+                          <span></span>
+                        )}
+                      </div>
+                      <div className="p-2"></div>
+                    </div>
+                  ) : (
+                    <div className="p-5 px-5 py-1 left-0">
+                      <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">
+                        <NoResultState
+                          searchKey={searchFile}
+                          message={
+                            "Check the spelling, try a more general term or look up a specific File."
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )
+        }
       </div>
       {showRemoveFileModal && (
         <RemoveFileModal

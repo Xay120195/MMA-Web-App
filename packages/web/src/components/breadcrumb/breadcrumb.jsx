@@ -43,7 +43,7 @@ const BreadCrumb = ({ matterId, client_name, matter_name }) => {
               aria-current="page"
               className="font-medium text-gray-500"
               to={`${
-                AppRoutes.BACKGROUND
+                AppRoutes.BRIEFS
               }/${matterId}/?matter_name=${b64EncodeUnicode(
                 matter_name
               )}&client_name=${b64EncodeUnicode(client_name)}`}
