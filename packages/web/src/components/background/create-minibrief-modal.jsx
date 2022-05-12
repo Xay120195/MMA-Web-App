@@ -116,7 +116,7 @@ export default function BriefModal(props) {
   const handleSaveBriefItems = async () => {
     const resultArray = props.selectedRowsBG.map(({ id }) => ({
       id: id,
-      order: 1,
+      order: 0,
     }));
 
     const response = await API.graphql({
@@ -126,6 +126,8 @@ export default function BriefModal(props) {
         background: resultArray
       },
     });
+
+    console.log(resultArray);
 
     setShowToast(true);
     setResultMessage("Successfully Saved!");

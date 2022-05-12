@@ -392,7 +392,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
-        id: background_id,
+        id: backgroundRowId,
       },
     });
 
@@ -416,11 +416,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       return !duplicate;
     });
 
-    if (background_id !== null) {
+    if (backgroundRowId !== null) {
       const request = API.graphql({
         query: mUpdateBackgroundFile,
         variables: {
-          backgroundId: background_id,
+          backgroundId: backgroundRowId,
           files: filteredArr,
         },
       });
@@ -429,11 +429,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
       setTimeout(() => {
         setShowToast(false);
-        window.location.href = `${
-          AppRoutes.BACKGROUND
-        }/${matter_id}/?matter_name=${utf8_to_b64(
-          matter_name
-        )}&client_name=${utf8_to_b64(client_name)}`;
+        window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(client_name)}`;
       }, 2000);
     }
   }
@@ -1374,13 +1370,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const mCreateBackground = `
-  mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-    backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
-      createdAt
-      date
-      description
+  mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+    backgroundCreate(briefId: $briefId, description: $description, date: $date) {
       id
-      order
     }
   }
 `;
@@ -1402,7 +1394,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
-          clientMatterId: matter_id,
+          briefId: background_id,
           description: arrFiles[i].details,
           date:
             arrFiles[i].date !== null
@@ -1424,11 +1416,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     setTimeout(() => {
       setShowToast(false);
-      window.location.href = `${
-        AppRoutes.BACKGROUND
-      }/${matter_id}/?count=${counter}&matter_name=${utf8_to_b64(
-        matter_name
-      )}&client_name=${utf8_to_b64(client_name)}`;
+      window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(client_name)}`;
     }, 1000);
   }
 
@@ -1543,6 +1531,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
+  const backgroundRowId = getQueryVariable("background_id");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -1682,7 +1671,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <FiUpload />
               </button>
 
-              {showRemoveFileButton && (
+              {showRemoveFileButton && backgroundRowId && (
                 <button
                   className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                   onClick={() => addFileBucketToBackground()}
@@ -1692,7 +1681,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </button>
               )}
 
-              {showAttachBackgroundButton && (
+              {showAttachBackgroundButton && backgroundRowId && (
                 <button
                   className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                   onClick={() => tagBackgroundFile()}
