@@ -1037,6 +1037,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
         1
       );
+
+      selectedCompleteDataRows.splice(
+        selectedCompleteDataRows.indexOf(selectedCompleteDataRows.find((temp) => temp.id === id)),
+        1
+      );
+
       const updatedCheckedState = checkedState.map((item, index) =>
         index === idx ? !item : item
       );
@@ -1044,13 +1050,17 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setCheckedState(updatedCheckedState);
       setIsAllChecked(false);
     } else {
-      if (
-        selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)) > -1
-      ) {
+      if ( selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)) > -1) {
         selectedRows.splice(
           selectedRows.indexOf(selectedRows.find((temp) => temp.id === id)),
           1
         );
+
+        selectedCompleteDataRows.splice(
+          selectedCompleteDataRows.indexOf(selectedCompleteDataRows.find((temp) => temp.id === id)),
+          1
+        );
+
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
           index === idx ? !item : item
@@ -1075,6 +1085,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             order: 0,
           },
         ];
+
+        console.log("THIS IS SELECTED", selectedCompleteDataRows);
+
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
           index === idx ? !item : item
@@ -1101,11 +1114,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     if (isAllChecked) {
       setIsAllChecked(false);
       selectedRows = [];
+      selectedCompleteDataRows = [];
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
     } else {
       setIsAllChecked(true);
       selectedRows = [];
+      selectedCompleteDataRows = [];
       files.map(
         (data) =>
           (selectedRows = [
@@ -1142,6 +1157,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       await deleteMatterFile(id);
     });
     selectedRows = [];
+    selectedCompleteDataRows = [];
     var next = 1;
     setshowRemoveFileButton(false);
     setResultMessage(`Deleting File`);
@@ -1410,7 +1426,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   const handleDuplicate = async () => {
     let next = 1;
-    selectedCompleteDataRows.map(async function (items) {
+    const lengthSelectedRows = selectedCompleteDataRows.length;
+    selectedCompleteDataRows.map(async function (items, index) {
       const request = await API.graphql({
         query: mCreateMatterFile,
         variables: {
@@ -1428,6 +1445,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       setshowAttachBackgroundButton(false);
       setshowRemoveFileButton(false);
       getMatterFiles(next);
+
+      if(index === lengthSelectedRows -1) {
+        selectedCompleteDataRows = [];
+        selectedRows = [];
+        console.log("END", selectedCompleteDataRows);
+      }
     });
   };
 
