@@ -62,6 +62,38 @@ export default function BriefModal(props) {
   }
   `;
 
+  const mBulkUpdateBackgroundOrder = `
+  mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+    backgroundBulkUpdateOrders(arrangement: $arrangement) {
+      id
+      order
+    }
+  }`;
+
+  const qBriefBackgroundList = `
+    query getBriefByID($id: ID, $sortOrder: OrderBy) {
+      brief(id: $id) {
+        id
+        backgrounds(sortOrder: $sortOrder) {
+          items {
+            id
+            description
+            date
+            createdAt
+            order
+            files {
+              items {
+                id
+                name
+              }
+            }
+          }
+          nextToken
+        }
+      }
+    }  
+  `;
+
   const handleBriefChanged = (newValue) => {
     if (newValue?.__isNew__) {
       handleSaveBrief(newValue.label);
@@ -119,6 +151,33 @@ export default function BriefModal(props) {
       order: 0,
     }));
 
+    const backgroundOpt = await API.graphql({
+      query: qBriefBackgroundList,
+      variables: { id: selectedBrief.value, sortOrder: "ORDER_ASC" },
+    });
+
+    if (backgroundOpt.data.brief.backgrounds.items !== null) {
+      const resultExistingList = backgroundOpt.data.brief.backgrounds.items.map(
+        ({ id, order }) => ({
+          id: id,
+          order: order,
+        })
+      );
+      const mergedArrayResult = [...resultArray, ...resultExistingList];
+      const res = mergedArrayResult.map(({ id }, index) => ({
+        id: id,
+        order: index,
+      }));
+      
+      await API.graphql({
+        query: mBulkUpdateBackgroundOrder,
+        variables: {
+          arrangement: res,
+        },
+      });
+
+    }
+
     const response = await API.graphql({
       query: mUpdateBrief,
       variables: {
@@ -126,8 +185,6 @@ export default function BriefModal(props) {
         background: resultArray
       },
     });
-
-    console.log(resultArray);
 
     setShowToast(true);
     setResultMessage("Successfully Saved!");
