@@ -942,6 +942,54 @@ async function createRFI(data) {
   return resp;
 }
 
+async function createRequest(data) {
+  console.log("createRequest()");
+  let resp = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      question: data.question,
+      answer: data.answer,
+      createdAt: new Date().toISOString(),
+      order: data.order ? data.order : 0,
+      itemNo: data.itemNo,
+    };
+
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
+      TableName: "RequestTable",
+      Item: param,
+    });
+    const req = await ddbClient.send(cmd);
+
+    console.log(req);
+
+    const rfiRequestParams = {
+      id: v4(),
+      requestId: rawParams.id,
+      rfiId: data.rfiId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const rfiRequestCmd = new PutItemCommand({
+      TableName: "RFIRequestTable",
+      Item: marshall(rfiRequestParams),
+    });
+
+    const rfiRequestReq = await ddbClient.send(rfiRequestCmd);
+
+    resp = rfiRequestReq ? rawParams : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function createBrief(data) {
   let resp = {};
   try {
@@ -1672,6 +1720,9 @@ const resolvers = {
     },
     rfiCreate: async (ctx) => {
       return await createRFI(ctx.arguments);
+    },
+    requestCreate: async (ctx) => {
+      return await createRequest(ctx.arguments);
     },
     briefCreate: async (ctx) => {
       return await createBrief(ctx.arguments);

@@ -159,11 +159,23 @@ type Page {
   updatedAt: AWSDateTime
 }
 
+type Request {
+  id: ID!
+  question: String
+  answer: String
+  order: Int
+  itemNo: String
+  subRequest: [Request]
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 type RFI {
   id: ID!
   name: String
   description: String
   order: Int
+  requests(limit: Int, nextToken: String): RFIRequestsConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -363,6 +375,11 @@ type MatterFileConn {
   nextToken: String
 }
 
+type RFIRequestsConn {
+  items: [Request]
+  nextToken: String
+}
+
 type Query {
   background(id: ID): Background
   backgrounds: [Background]
@@ -396,6 +413,8 @@ type Query {
   pages: [Page]
   rfi(id: ID): RFI
   rfis: [RFI]
+  request(id: ID): Request
+  requests: [Request]
   user(id: String): User
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
   users: [User]
@@ -479,6 +498,7 @@ type Mutation {
     features: [FeatureInput]
   ): Page
   rfiCreate(name: String, clientMatterId: String): RFI
+  requestCreate(question: String, answer: String, itemNo: String, order: Int, rfiId: ID): Request
   userColumnSettingsCreate(
     userId: ID
     columnSettings: [ColumnSettingsInput]

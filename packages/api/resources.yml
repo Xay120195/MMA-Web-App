@@ -364,6 +364,57 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
+  RequestTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RequestTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  RFIRequestTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RFIRequestTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: rfiId
+          AttributeType: S
+        - AttributeName: requestId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byRFI
+          KeySchema:
+            - AttributeName: rfiId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byRequest
+          KeySchema:
+            - AttributeName: requestId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: rfiId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
   CompanyMatterTable:
     Type: AWS::DynamoDB::Table
     Properties:
