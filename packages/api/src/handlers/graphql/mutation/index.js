@@ -709,19 +709,19 @@ async function createBackground(data) {
     });
     const request = await ddbClient.send(cmd);
 
-    // const clientMatterBackgroundParams = {
+    // const briefBackgroundParams = {
     //   id: v4(),
     //   backgroundId: rawParams.id,
     //   clientMatterId: data.clientMatterId,
     //   createdAt: new Date().toISOString(),
     // };
 
-    // const clientMatterBackgroundCmd = new PutItemCommand({
-    //   TableName: "ClientMatterBackgroundTable",
-    //   Item: marshall(clientMatterBackgroundParams),
+    // const briefBackgroundCmd = new PutItemCommand({
+    //   TableName: "BriefBackgroundTable",
+    //   Item: marshall(briefBackgroundParams),
     // });
 
-    // await ddbClient.send(clientMatterBackgroundCmd);
+    // await ddbClient.send(briefBackgroundCmd);
 
     const briefBackgroundParams = {
       id: v4(),
@@ -823,34 +823,34 @@ export async function tagBriefBackground(data) {
 export async function untagBriefBackground(data) {
   let resp = {};
   try {
-    const arrItems = [],
-      arrIDs = [];
+    const arrItems = [];
+    const backgroundIDs = data.background.map((i) => i.id);
 
-    // for (var a = 0; a < fileLabelIdRes.Items.length; a++) {
-    //   var fileLabelId = { id: fileLabelIdRes.Items[a].id };
-    //   arrItems.push({
-    //     DeleteRequest: {
-    //       Key: fileLabelId,
-    //     },
-    //   });
-    // }
+    const briefBackgroundParams = {
+      TableName: "BriefBackgroundTable",
+      IndexName: "byBrief",
+      KeyConditionExpression: "briefId = :briefId",
+      ExpressionAttributeValues: marshall({
+        ":briefId": data.briefId,
+      }),
+      ProjectionExpression: "id, backgroundId",
+    };
 
-    for (var i = 0; i < data.background.length; i++) {
-      var uuid = v4();
+    const briefBackgroundCmd = new QueryCommand(briefBackgroundParams);
+    const briefBackgroundResult = await ddbClient.send(briefBackgroundCmd);
+
+    const filterBriefBackgroundResult = briefBackgroundResult.Items.map((i) =>
+      unmarshall(i)
+    ).filter((b) => {
+      return backgroundIDs.includes(b.backgroundId);
+    });
+
+    for (var a = 0; a < filterBriefBackgroundResult.length; a++) {
+      var briefBackgroundId = { id: filterBriefBackgroundResult[a].id };
       arrItems.push({
-        PutRequest: {
-          Item: marshall({
-            id: uuid,
-            briefId: data.briefId,
-            backgroundId: data.background[i].id,
-            order: data.background[i].order,
-            createdAt: new Date().toISOString(),
-          }),
+        DeleteRequest: {
+          Key: marshall(briefBackgroundId),
         },
-      });
-
-      arrIDs.push({
-        id: uuid,
       });
     }
 
@@ -875,19 +875,19 @@ export async function untagBriefBackground(data) {
     }
 
     batches.forEach(async (data, index) => {
-      const briefBackgroundParams = {
+      const deleteBriefBackgroundParams = {
         RequestItems: {
           BriefBackgroundTable: data,
         },
       };
 
-      const briefBackgroundCmd = new BatchWriteItemCommand(
-        briefBackgroundParams
+      const deleteBriefBackgroundCmd = new BatchWriteItemCommand(
+        deleteBriefBackgroundParams
       );
-      const request = await ddbClient.send(briefBackgroundCmd);
+      const request = await ddbClient.send(deleteBriefBackgroundCmd);
     });
 
-    resp = arrIDs;
+    resp = { id: data.briefId };
   } catch (e) {
     resp = {
       error: e.message,
@@ -1131,12 +1131,27 @@ async function bulkUpdateBackgroundOrders(data) {
   try {
     const asyncResult = await Promise.all(
       data.map(async (items) => {
-        const id = items.id;
+        const background_id = items.id;
         const arrangement = items;
         delete arrangement.id;
 
+        const briefBackgroundParams = {
+          TableName: "BriefBackgroundTable",
+          IndexName: "byBackground",
+          KeyConditionExpression: "backgroundId = :backgroundId",
+          ExpressionAttributeValues: marshall({
+            ":backgroundId": background_id,
+          }),
+          ProjectionExpression: "id",
+        };
+
+        const briefBackgroundCmd = new QueryCommand(briefBackgroundParams);
+        const briefBackgroundResult = await ddbClient.send(briefBackgroundCmd);
+
+        const briefBackgroundId = briefBackgroundResult.Items[0];
+
         resp.push({
-          id,
+          id: background_id,
           ...items,
         });
 
@@ -1146,18 +1161,29 @@ async function bulkUpdateBackgroundOrders(data) {
           UpdateExpression,
         } = getUpdateExpressions(arrangement);
 
-        const cmd = new UpdateItemCommand({
-          TableName: "BackgroundsTable",
-          Key: marshall({ id }),
+        const updateBriefBackgroundCmd = new UpdateItemCommand({
+          TableName: "BriefBackgroundTable",
+          Key: briefBackgroundId,
           UpdateExpression,
           ExpressionAttributeNames,
           ExpressionAttributeValues,
         });
 
-        await ddbClient.send(cmd);
+        await ddbClient.send(updateBriefBackgroundCmd);
+
+        const updateBackgroundCmd = new UpdateItemCommand({
+          TableName: "BackgroundsTable",
+          Key: marshall({ id: background_id }),
+          UpdateExpression,
+          ExpressionAttributeNames,
+          ExpressionAttributeValues,
+        });
+
+        await ddbClient.send(updateBackgroundCmd);
       })
     );
-    resp = asyncResult;
+
+    console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
@@ -1174,7 +1200,7 @@ async function bulkInitializeBackgroundOrders(clientMatterId) {
 
   try {
     const cmBackgroundsParam = {
-      TableName: "ClientMatterBackgroundTable",
+      TableName: "BriefBackgroundTable",
       IndexName: "byCreatedAt",
       KeyConditionExpression: "clientMatterId = :clientMatterId",
       ExpressionAttributeValues: marshall({
@@ -1331,8 +1357,8 @@ export function getUpdateExpressions(data) {
 export async function deleteBackground(id) {
   let resp = {};
   try {
-    const clientMatterBackgroundParams = {
-      TableName: "ClientMatterBackgroundTable",
+    const briefBackgroundParams = {
+      TableName: "BriefBackgroundTable",
       IndexName: "byBackground",
       KeyConditionExpression: "backgroundId = :backgroundId",
       ExpressionAttributeValues: marshall({
@@ -1341,25 +1367,21 @@ export async function deleteBackground(id) {
       ProjectionExpression: "id",
     };
 
-    const clientMatterBackgroundCmd = new QueryCommand(
-      clientMatterBackgroundParams
-    );
-    const clientMatterBackgroundResult = await ddbClient.send(
-      clientMatterBackgroundCmd
-    );
+    const briefBackgroundCmd = new QueryCommand(briefBackgroundParams);
+    const briefBackgroundResult = await ddbClient.send(briefBackgroundCmd);
 
-    const clientMatterBackgroundId = clientMatterBackgroundResult.Items[0];
+    const briefBackgroundId = briefBackgroundResult.Items[0];
 
-    const deleteClientMatterBackgroundCommand = new DeleteItemCommand({
-      TableName: "ClientMatterBackgroundTable",
-      Key: clientMatterBackgroundId,
+    const deleteBriefBackgroundCommand = new DeleteItemCommand({
+      TableName: "BriefBackgroundTable",
+      Key: briefBackgroundId,
     });
 
-    const deleteClientMatterBackgroundResult = await ddbClient.send(
-      deleteClientMatterBackgroundCommand
+    const deleteBriefBackgroundResult = await ddbClient.send(
+      deleteBriefBackgroundCommand
     );
 
-    if (deleteClientMatterBackgroundResult) {
+    if (deleteBriefBackgroundResult) {
       const cmd = new DeleteItemCommand({
         TableName: "BackgroundsTable",
         Key: marshall({ id }),
@@ -1530,10 +1552,10 @@ const resolvers = {
       return await bulkUpdateMatterFileOrders(arrangement);
     },
 
-    matterFileBulkInitializeOrders: async (ctx) => {
-      const { clientMatterId } = ctx.arguments; // id and order
-      return await bulkInitializeMatterFileOrders(clientMatterId);
-    },
+    // matterFileBulkInitializeOrders: async (ctx) => {
+    //   const { clientMatterId } = ctx.arguments; // id and order
+    //   return await bulkInitializeMatterFileOrders(clientMatterId);
+    // },
 
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
@@ -1613,10 +1635,10 @@ const resolvers = {
       return await bulkUpdateBackgroundOrders(arrangement);
     },
 
-    backgroundBulkInitializeOrders: async (ctx) => {
-      const { clientMatterId } = ctx.arguments; // id and order
-      return await bulkInitializeBackgroundOrders(clientMatterId);
-    },
+    // backgroundBulkInitializeOrders: async (ctx) => {
+    //   const { clientMatterId } = ctx.arguments; // id and order
+    //   return await bulkInitializeBackgroundOrders(clientMatterId);
+    // },
 
     backgroundDelete: async (ctx) => {
       const { id } = ctx.arguments;

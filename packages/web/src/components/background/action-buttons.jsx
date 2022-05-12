@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
+import BriefModal from "../background/create-minibrief-modal";
 import { AiFillFile, AiFillEye } from "react-icons/ai";
 //import { selectedRowsBG } from "./table-info";
 
@@ -37,6 +38,9 @@ const ActionButtons = (props) => {
     setNewWitness,
     setMaxLoading,
     sortByOrder,
+    briefId,
+    matter_name,
+    client_name,
   } = props;
 
   const [showToast, setShowToast] = useState(false);
@@ -45,6 +49,7 @@ const ActionButtons = (props) => {
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [showhideState, setShowHideState] = useState(false);
   const [tableColumnList, setTableColumnList] = useState(null);
+  const [showBriefModal, setShowBriefModal] = useState(false);
 
   const hideToast = () => {
     setShowToast(false);
@@ -102,8 +107,8 @@ const ActionButtons = (props) => {
     const dateToday = new Date().toISOString();
 
     const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-          backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
+        mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+          backgroundCreate(briefId: $briefId, description: $description, date: $date) {
             id
           }
         }
@@ -112,7 +117,7 @@ const ActionButtons = (props) => {
     const createBackgroundRow = await API.graphql({
       query: mCreateBackground,
       variables: {
-        clientMatterId: matterId,
+        briefId: briefId,
         description: "",
         date: null,
       },
@@ -194,6 +199,7 @@ const ActionButtons = (props) => {
 
   const handleModalClose = () => {
     setshowRemoveFileModal(false);
+    setShowBriefModal(false);
   };
   const handleClick = (event, name, state) => {
     if (name === "DATE") {
@@ -396,6 +402,10 @@ const ActionButtons = (props) => {
     });
   };
 
+  const handleShowBrief = () => {
+    setShowBriefModal(true);
+  }
+
   return (
     <>
       <div className="pl-2 py-1 grid grid-cols-2 gap-4"  >
@@ -522,6 +532,17 @@ const ActionButtons = (props) => {
             <>
               <button
                 type="button"
+                className={
+                  !activateButton
+                    ? " hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                    : "bg-green-400 hover:bg-green-350 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                }
+                onClick={() => handleShowBrief()}
+              >
+                Create Brief +
+              </button>
+              <button
+                type="button"
                 onClick={handleCopyRow}
                 className="bg-white-400 hover:bg-white-500 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
               >
@@ -575,6 +596,17 @@ const ActionButtons = (props) => {
           handleSave={handleDelete}
           handleModalClose={handleModalClose}
           selectedRowsBG={selectedRowsBG}
+        />
+      )}
+
+      {showBriefModal && (
+        <BriefModal 
+          selectedRowsBG={selectedRowsBG}
+          handleModalClose={handleModalClose}
+          matterId={matterId}
+          briefId={briefId}
+          matter_name={matter_name}
+          client_name={client_name}
         />
       )}
     </>
