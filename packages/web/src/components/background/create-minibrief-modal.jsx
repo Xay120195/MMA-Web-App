@@ -163,11 +163,7 @@ export default function BriefModal(props) {
           order: order,
         })
       );
-
       const mergedArrayResult = [...resultArray, ...resultExistingList];
-
-      console.log("MErged Array: ", mergedArrayResult);
-
       const res = mergedArrayResult.map(({ id }, index) => ({
         id: id,
         order: index,
@@ -189,7 +185,7 @@ export default function BriefModal(props) {
         background: resultArray
       },
     });
-    
+
     setShowToast(true);
     setResultMessage("Successfully Saved!");
     setTimeout(() => {
