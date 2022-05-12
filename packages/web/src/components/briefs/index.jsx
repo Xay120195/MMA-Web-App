@@ -385,7 +385,9 @@ export default function Briefs() {
           </div>
         </div>
       
-      {Briefs === null || Briefs.length === 0 ? (
+      {Briefs === null ? 
+        <div> </div>
+      : Briefs.length === 0 ? (
         <div className="p-5 px-5 py-1 left-0 align-center mt-5">
           <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6">
             <BlankState
