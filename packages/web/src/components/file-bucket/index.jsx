@@ -1323,7 +1323,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       }
       
       console.log("putinmatterfiles", newFiles2);
-      setMatterFiles(sortByOrder(newFiles2));
+      // setMatterFiles(sortByOrder(newFiles2));
       setFilteredFiles(sortByOrder(newFiles2));
       setFilterState(true);
 
