@@ -1318,10 +1318,11 @@ const TableInfo = ({
                                                         ""
                                                       )}
                                                       <span className="align-middle">
-                                                        {items.name.substring(
-                                                          0,
-                                                          15
-                                                        )}
+                                                        {items.name !== null && items.name !== "" &&
+                                                          items.name.substring(
+                                                            0,
+                                                            15
+                                                          )}
                                                       </span>
                                                       &nbsp;
                                                       <AiOutlineDownload
