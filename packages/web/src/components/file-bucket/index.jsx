@@ -1526,6 +1526,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     alert("No selected Labels on page.");
   }
 
+  const checkFormat = (str) => {
+    var check = str;
+    check = check.replace("%20"," "); //returns my_name
+    return check;
+  }
+
   return (
     <>
       <div
@@ -1546,8 +1552,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
               <h1 className="font-bold text-3xl">
                 File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">{client_name}</span>/
-                <span className="font-semibold text-3xl">{matter_name}</span>
+                <span className="font-semibold text-3xl">{checkFormat(client_name)}</span>/
+                <span className="font-semibold text-3xl">{checkFormat(matter_name)}</span>
               </h1>
             </div>
           </div>
