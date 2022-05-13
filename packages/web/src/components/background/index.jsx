@@ -196,8 +196,6 @@ const Background = () => {
 
       setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
 
-      console.log(backgroundOpt);
-
       if (backgroundOpt.data.brief.backgrounds.items !== null) {
         result = backgroundOpt.data.brief.backgrounds.items.map(
           ({ id, description, date, createdAt, order, files }) => ({
@@ -253,7 +251,7 @@ const Background = () => {
 
         const backgroundOpt = await API.graphql({
           query: qListBackground,
-          variables: { id: matter_id, limit: 20, nextToken: vNextToken },
+          variables: { id: matter_id, limit: 25, nextToken: vNextToken },
         });
 
         setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
@@ -281,7 +279,7 @@ const Background = () => {
           }
         }
       } else {
-        console.log("Last Result!");
+        console.log("Last Result!- Migration");
         setMaxLoading(true);
       }
     } else {
@@ -291,10 +289,12 @@ const Background = () => {
 
         const backgroundOpt = await API.graphql({
           query: qBriefBackgroundList,
-          variables: { id: background_id, limit: 20, nextToken: vNextToken },
+          variables: { id: background_id, limit: 25, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
         });
 
         setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+
+        console.log(backgroundOpt);
 
         if (backgroundOpt.data.brief.backgrounds.items !== null) {
           result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -319,7 +319,7 @@ const Background = () => {
           }
         }
       } else {
-        console.log("Last Result!");
+        console.log("Last Result!- NEW");
         setMaxLoading(true);
       }
     }
