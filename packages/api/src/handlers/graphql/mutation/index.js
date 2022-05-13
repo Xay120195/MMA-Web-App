@@ -1203,21 +1203,24 @@ async function bulkUpdateBackgroundOrders(data) {
           ...items,
         });
 
-        const {
-          ExpressionAttributeNames,
-          ExpressionAttributeValues,
-          UpdateExpression,
-        } = getUpdateExpressions(arrangement);
+        console.log("briefBackgroundId", briefBackgroundId);
+        if (briefBackgroundId) {
+          const {
+            ExpressionAttributeNames,
+            ExpressionAttributeValues,
+            UpdateExpression,
+          } = getUpdateExpressions(arrangement);
 
-        const updateBriefBackgroundCmd = new UpdateItemCommand({
-          TableName: "BriefBackgroundTable",
-          Key: briefBackgroundId,
-          UpdateExpression,
-          ExpressionAttributeNames,
-          ExpressionAttributeValues,
-        });
+          const updateBriefBackgroundCmd = new UpdateItemCommand({
+            TableName: "BriefBackgroundTable",
+            Key: briefBackgroundId,
+            UpdateExpression,
+            ExpressionAttributeNames,
+            ExpressionAttributeValues,
+          });
 
-        await ddbClient.send(updateBriefBackgroundCmd);
+          await ddbClient.send(updateBriefBackgroundCmd);
+        }
 
         const updateBackgroundCmd = new UpdateItemCommand({
           TableName: "BackgroundsTable",
