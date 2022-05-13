@@ -637,6 +637,7 @@ const Background = () => {
         setMaxLoading={setMaxLoading}
         maxLoading={maxLoading}
         sortByOrder={sortByOrder}
+        briefId={background_id}
       />
 
       {showToast && (
