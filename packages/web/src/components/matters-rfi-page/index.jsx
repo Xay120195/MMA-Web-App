@@ -172,6 +172,14 @@ export default function MattersRFI() {
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
+  const formatDisplayDate = (val) => {
+    let date = new Date(val);
+    const day = date.toLocaleString('default', { day: '2-digit' });
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.toLocaleString('default', { year: 'numeric' });
+    return day + ' ' + month + ' ' + year;
+  }
+
   return (
     <>
       <div
@@ -289,7 +297,7 @@ export default function MattersRFI() {
                         tabIndex="0"
                         className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                       >
-                        {item.createdAt}
+                        {item.createdAt ? formatDisplayDate(item.createdAt) : "No date"}
                       </p>
                     </div>
                   </div>

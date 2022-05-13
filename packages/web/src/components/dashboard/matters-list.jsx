@@ -146,7 +146,7 @@ export function ClientMatters({}) {
                           >
                             {dateFormat(
                               clientMatter.createdAt,
-                              "dd mmmm yyyy, h:MM:ss TT"
+                              "dd mmmm yyyy"
                             )}
                           </p>
                         </div>

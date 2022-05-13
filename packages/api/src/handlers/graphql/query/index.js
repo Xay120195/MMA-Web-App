@@ -594,6 +594,48 @@ async function listRFIs() {
   return resp;
 }
 
+async function getRequest(data) {
+  try {
+    const param = {
+      TableName: "RequestTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listRequests() {
+  try {
+    const param = {
+      TableName: "RequestTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function getBrief(data) {
   try {
     const param = {
@@ -722,6 +764,12 @@ const resolvers = {
     },
     rfis: async () => {
       return listRFIs();
+    },
+    request: async (ctx) => {
+      return getRequest(ctx.arguments);
+    },
+    requests: async () => {
+      return listRequests();
     },
     brief: async (ctx) => {
       return getBrief(ctx.arguments);

@@ -72,7 +72,7 @@ const Background = () => {
   useEffect(() => {
     getBackground();
 
-    if(bgName === null){
+    if (bgName === null) {
       getBriefs();
     }
   }, []);
@@ -152,15 +152,15 @@ const Background = () => {
     let result = [];
     setWait(false);
 
-    if(background_id === "000") {
-      // Remove this condition after migration  
+    if (background_id === "000") {
+      // Remove this condition after migration
       const backgroundOpt = await API.graphql({
         query: qListBackground,
         variables: { id: matter_id, limit: 25, nextToken: vNextToken },
       });
-  
+
       setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
-  
+
       if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
         result = backgroundOpt.data.clientMatter.backgrounds.items.map(
           ({ id, description, date, createdAt, order, files }) => ({
@@ -172,11 +172,11 @@ const Background = () => {
             files: files,
           })
         );
-  
+
         setPageTotal(result.length);
         setPageSize(20);
         setPageIndex(1);
-  
+
         if (witness !== null) {
           setWitness(sortByOrder(result));
           setWait(true);
@@ -186,13 +186,18 @@ const Background = () => {
     } else {
       const backgroundOpt = await API.graphql({
         query: qBriefBackgroundList,
-        variables: { id: background_id, limit: 25, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+        variables: {
+          id: background_id,
+          limit: 25,
+          nextToken: vNextToken,
+          sortOrder: "ORDER_ASC",
+        },
       });
-  
+
       setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
-  
+
       console.log(backgroundOpt);
-  
+
       if (backgroundOpt.data.brief.backgrounds.items !== null) {
         result = backgroundOpt.data.brief.backgrounds.items.map(
           ({ id, description, date, createdAt, order, files }) => ({
@@ -204,11 +209,11 @@ const Background = () => {
             files: files,
           })
         );
-  
+
         setPageTotal(result.length);
         setPageSize(20);
         setPageIndex(1);
-  
+
         if (witness !== null) {
           console.log(result);
           setWitness(sortByOrder(result));
@@ -233,13 +238,15 @@ const Background = () => {
     await API.graphql(params).then((brief) => {
       const matterFilesList = brief.data.clientMatter.briefs.items;
       console.log("mfl", matterFilesList);
-      matterFilesList.map((x)=> x.id === background_id ? setBGName(x.name) : x);
+      matterFilesList.map((x) =>
+        x.id === background_id ? setBGName(x.name) : x
+      );
     });
   };
 
   const loadMoreBackground = async () => {
-    if(background_id === "000") {
-      // Remove this condition after migration  
+    if (background_id === "000") {
+      // Remove this condition after migration
       if (vNextToken !== null && !loading) {
         setLoading(true);
         let result = [];
@@ -277,9 +284,7 @@ const Background = () => {
         console.log("Last Result!");
         setMaxLoading(true);
       }
-
     } else {
-
       if (vNextToken !== null && !loading) {
         setLoading(true);
         let result = [];
@@ -317,7 +322,6 @@ const Background = () => {
         console.log("Last Result!");
         setMaxLoading(true);
       }
-
     }
   };
 
@@ -369,12 +373,9 @@ const Background = () => {
     return decodeURIComponent(escape(window.atob(str)));
   }
 
-  function utf8_to_b64(str) {
-    return window.btoa(unescape(encodeURIComponent(str)));
-  }
-
   const m_name = getQueryVariable("matter_name");
   const c_name = getQueryVariable("client_name");
+  const backgroundRowId = getQueryVariable("background_id");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -469,41 +470,43 @@ const Background = () => {
         style={{ margin: "0 0 0 65px" }}
       >
         <div className="px-6 py-2">
-          <Link to={`${
-                AppRoutes.BRIEFS
-              }/${matter_id}/?matter_name=${b64EncodeUnicode(
-                matter_name
-              )}&client_name=${b64EncodeUnicode(client_name)}`}>
+          <Link
+            to={`${
+              AppRoutes.BRIEFS
+            }/${matter_id}/?matter_name=${b64EncodeUnicode(
+              matter_name
+            )}&client_name=${b64EncodeUnicode(client_name)}`}
+          >
             <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
               <MdArrowBackIos />
               Back
             </button>
           </Link>
-            <h1 className="font-bold text-3xl">
-                <div className="flex"> 
-                    <p
-                      suppressContentEditableWarning={true}
-                      style={{
-                        cursor: "auto",
-                        outlineColor: "rgb(204, 204, 204, 0.5)",
-                        outlineWidth: "thin",
-                      }}
-                      onClick={(e) => handleNameContent(e, bgName, background_id)}
-                      contentEditable={true}
-                      tabIndex="0"
-                      onInput={(e) => handleOnChangeBiefName(e)}
-                      onBlur={(e) => handleSaveBriefName(e, bgName, background_id)}
-                      className="px-1 text-3xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
-                      dangerouslySetInnerHTML={{
-                        __html: bgName,
-                      }}
-                    />
-                  &nbsp;<span className="text-3xl">of</span>&nbsp;
-                  <span className="font-semibold text-3xl">
-                    {client_name}/{matter_name}
-                  </span>
-                </div>
-            </h1>
+          <h1 className="font-bold text-3xl">
+            <div className="flex">
+              <p
+                suppressContentEditableWarning={true}
+                style={{
+                  cursor: "auto",
+                  outlineColor: "rgb(204, 204, 204, 0.5)",
+                  outlineWidth: "thin",
+                }}
+                onClick={(e) => handleNameContent(e, bgName, background_id)}
+                contentEditable={true}
+                tabIndex="0"
+                onInput={(e) => handleOnChangeBiefName(e)}
+                onBlur={(e) => handleSaveBriefName(e, bgName, background_id)}
+                className="px-1 text-3xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
+                dangerouslySetInnerHTML={{
+                  __html: bgName,
+                }}
+              />
+              &nbsp;<span className="text-3xl">of</span>&nbsp;
+              <span className="font-semibold text-3xl">
+                {client_name}/{matter_name}
+              </span>
+            </div>
+          </h1>
         </div>
       </div>
 
@@ -515,6 +518,7 @@ const Background = () => {
           matterId={matter_id}
           client_name={client_name}
           matter_name={matter_name}
+          briefId={background_id}
         />
         <ActionButtons
           witness={witness}
@@ -637,6 +641,7 @@ const Background = () => {
         setMaxLoading={setMaxLoading}
         maxLoading={maxLoading}
         sortByOrder={sortByOrder}
+        briefId={background_id}
       />
 
       {showToast && (
