@@ -145,7 +145,7 @@ export default function Briefs() {
       variables: {
         clientMatterId: matter_id,
         name: briefname,
-        date: null,
+        date: new Date(),
         order: 0,
       },
     });
@@ -303,6 +303,15 @@ export default function Briefs() {
     });
   }
 
+  const formatDisplayDate = (val) => {
+    let date = new Date(val);
+    const day = date.toLocaleString('default', { day: '2-digit' });
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.toLocaleString('default', { year: 'numeric' });
+    return day + ' ' + month + ' ' + year;
+  }
+
+
   return (
     <>
       <div
@@ -431,7 +440,7 @@ export default function Briefs() {
                       tabIndex="0"
                       className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                     >
-                      {item.createdAt ? item.createdAt : "No date"}
+                      {item.date ? formatDisplayDate(item.date) : "No date"}
                     </p>
                   </div>
                 </div>
