@@ -1024,7 +1024,6 @@ const TableInfo = ({
                 <span className="py-5 px-5">Please wait...</span>
               ) : witness.length === 0 ? (
                 <EmptyRow search={search} />
-              
               ) : (
                 <>
                   <ScrollToTop
@@ -1238,13 +1237,13 @@ const TableInfo = ({
                                                   onClick={() =>
                                                     (window.location = `${
                                                       AppRoutes.FILEBUCKET
-                                                    }/${matterId}/${
-                                                      briefId
-                                                    }/?matter_name=${utf8_to_b64(
+                                                    }/${matterId}/${briefId}/?matter_name=${utf8_to_b64(
                                                       matter_name
                                                     )}&client_name=${utf8_to_b64(
                                                       client_name
-                                                    )}&background_id=${item.id}`)
+                                                    )}&background_id=${
+                                                      item.id
+                                                    }`)
                                                   }
                                                 >
                                                   <BsFillBucketFill />
@@ -1449,6 +1448,7 @@ const TableInfo = ({
           API={API}
           matterId={matterId}
           setcheckAllState={setcheckAllState}
+          briefId={briefId}
         />
       )}
       {showRemoveFileModal && (
