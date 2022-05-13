@@ -15,6 +15,7 @@ import { useParams } from "react-router-dom";
 import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
 import CreateBriefsModal from "./create-brief-modal";
+import { AiFillEye } from "react-icons/ai";
 
 export default function Briefs() {
   let history = useHistory();
@@ -35,6 +36,10 @@ export default function Briefs() {
   const [briefName, setBriefName] = useState("");
   const [briefId, setBriefId] = useState("");
   const [validationAlert, setValidationAlert] = useState("");
+  const [showColumn, setShowColumn] = useState(false);
+  const [showBName, setShowBame] = useState(true);
+  const [showDate, setShowDate] = useState(true);
+  const [showTag, setShowTag] = useState(true);
 
   const [Briefs, setBriefs] = useState(null);
   const [showCreateBriefsModal, setshowCreateBriefsModal] = useState(false);
@@ -311,6 +316,37 @@ export default function Briefs() {
     return day + ' ' + month + ' ' + year;
   }
 
+  const handleColumn = () => {
+    if (!showColumn) {
+      setShowColumn(true);
+    } else {
+      setShowColumn(false);
+    }
+  };
+
+  const handleChecBName = () => {
+    if (showBName) {
+      setShowBame(false);
+    } else {
+      setShowBame(true);
+    }
+  };
+
+  const handleCheckDate = () => {
+    if (showDate) {
+      setShowDate(false);
+    } else {
+      setShowDate(true);
+    }
+  };
+
+  const handleCheckTag = () => {
+    if (showTag) {
+      setShowTag(false);
+    } else {
+      setShowTag(true);
+    }
+  };
 
   return (
     <>
@@ -324,7 +360,7 @@ export default function Briefs() {
           <div style={mainGrid}>
             <div>
               <h1 className="font-bold text-3xl">
-                Backgroud Page&nbsp;
+                Background Page&nbsp;
                 <span className="text-3xl">of</span>&nbsp;
                 <span className="font-semibold text-3xl">
                   {client_name}/{matter_name}
@@ -384,6 +420,60 @@ export default function Briefs() {
               >
                 NEW BACKGROUND &nbsp; <HiOutlinePlusCircle />
               </button>
+              <button
+                type="button"
+                className={
+                  "hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                }
+                onClick={handleColumn}
+              >
+                SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
+              </button>
+              {showColumn && (
+                <div
+                  className="h-40 z-50 bg-white absolute mt-2 rounded border-0 shadow outline-none"
+                  style={{ marginLeft: "13.2rem", width: "13rem" }}
+                >
+                  <p className="px-2 py-2 mx-5 text-gray-400 text-xs font-semibold">
+                    COLUMN OPTIONS
+                  </p>
+
+                  <div className="mx-5">
+                    <div className="inline-flex">
+                      <input
+                        type="checkbox"
+                        className="cursor-pointer mx-2 mt-1"
+                        // checked={data.isVisible}
+                        checked={showBName ? true : false}
+                        onChange={handleChecBName}
+                      />
+                      <label className="mb-2">Brief Name</label>
+                    </div>
+                    <br />
+                    <div className="inline-flex">
+                      <input
+                        checked={showDate ? true : false}
+                        type="checkbox"
+                        className="cursor-pointer mx-2 mt-1"
+                        onChange={handleCheckDate}
+                      />
+                      <label className="mb-2">Date</label>
+                    </div>
+                    <br />
+                    <div className="inline-flex">
+                      <input
+                        type="checkbox"
+                        className="cursor-pointer mx-2 mt-1"
+                        checked={showTag ? true : false}
+                        onChange={handleCheckTag}
+                        // checked={data.isVisible}
+                      />
+                      <label className="mb-2">Tags</label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <input
                 type="search"
                 placeholder="Search ..."
@@ -393,79 +483,96 @@ export default function Briefs() {
             </div>
           </div>
         </div>
-      
-      {Briefs === null ? 
-        <div> </div>
-      : Briefs.length === 0 ? (
-        <div className="p-5 px-5 py-1 left-0 align-center mt-5">
-          <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6">
-            <BlankState
-              displayText={"There are no items to show in this view"}
-              txtLink={"add new Background"}
-              iconDisplay={BlankList}
-              handleClick={() => setshowCreateBriefsModal(true)}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
-          {Briefs.map((item) => (
-            <div
-              className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
-                hover:border-black"
-              key={item.id}
-            >
-              <div>
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-2">
-                    <p
-                      suppressContentEditableWarning={true}
-                      style={{
-                        cursor: "auto",
-                        outlineColor: "rgb(204, 204, 204, 0.5)",
-                        outlineWidth: "thin",
-                      }}
-                      onClick={(e) => handleNameContent(e, item.name, item.id)}
-                      contentEditable={true}
-                      tabIndex="0"
-                      onInput={(e) => handleOnChangeBiefName(e)}
-                      onBlur={(e) => handleSaveBriefName(e, item.name, item.id)}
-                      className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12"
-                      dangerouslySetInnerHTML={{
-                        __html: item.name,
-                      }}
-                    />
 
-                    <p
-                      tabIndex="0"
-                      className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
+        {Briefs === null ? (
+          <div> </div>
+        ) : Briefs.length === 0 ? (
+          <div className="p-5 px-5 py-1 left-0 align-center mt-5">
+            <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6">
+              <BlankState
+                displayText={"There are no items to show in this view"}
+                txtLink={"add new Background"}
+                iconDisplay={BlankList}
+                handleClick={() => setshowCreateBriefsModal(true)}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
+            {Briefs.map((item) => (
+              <div
+                className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
+                hover:border-black"
+                key={item.id}
+              >
+                <div>
+                  <div className="grid grid-cols-4 gap-4">
+                    <div
+                      className={`col-span-2 ${
+                        !showBName && `py-2 px-2 mb-2`
+                      } ${!showDate && `py-1 px-1 mb-2`}`}
                     >
-                      {item.date ? formatDisplayDate(item.date) : "No date"}
-                    </p>
+                      
+                    
+                      {showBName && (
+                        <p
+                          suppressContentEditableWarning={true}
+                          style={{
+                            cursor: "auto",
+                            outlineColor: "rgb(204, 204, 204, 0.5)",
+                            outlineWidth: "thin",
+                          }}
+                          onClick={(e) =>
+                            handleNameContent(e, item.name, item.id)
+                          }
+                          contentEditable={true}
+                          tabIndex="0"
+                          onInput={(e) => handleOnChangeBiefName(e)}
+                          onBlur={(e) =>
+                            handleSaveBriefName(e, item.name, item.id)
+                          }
+                          className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12"
+                          dangerouslySetInnerHTML={{
+                            __html: item.name,
+                          }}
+                        />
+                      )}
+
+                      {showDate && (
+                        <p
+                          tabIndex="0"
+                          className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
+                        >
+                          {item.date ? formatDisplayDate(item.date) : "No date"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="float-right inline-flex -mt-10">
+                    {showTag && <FaUserCircle className={`h-10 w-10 `} />}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-7 w-7 my-1 mx-1 cursor-pointer ${
+                        !showBName && !showDate && !showTag && `mt-3`
+                      }`}
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      onClick={() => visitBrief(item.id)}
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </div>
                 </div>
-                <div className="float-right inline-flex -mt-10">
-                  <FaUserCircle className="h-10 w-10" />{" "}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-7 w-7 my-1 mx-1 cursor-pointer"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    onClick={() => visitBrief(item.id)}
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {showCreateBriefsModal && (
         <CreateBriefsModal
@@ -476,7 +583,6 @@ export default function Briefs() {
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
-    
     </>
   );
 }
