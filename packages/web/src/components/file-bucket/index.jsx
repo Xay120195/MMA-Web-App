@@ -1654,7 +1654,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <FiUpload />
               </button>
 
-              {showRemoveFileButton && backgroundRowId && (
+              {showRemoveFileButton && (backgroundRowId === "000" || backgroundRowId) && (
                 <button
                   className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                   onClick={() => addFileBucketToBackground()}
@@ -1664,7 +1664,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </button>
               )}
 
-              {showAttachBackgroundButton && backgroundRowId && (
+              {showAttachBackgroundButton && backgroundRowId !== "000" && (
                 <button
                   className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                   onClick={() => tagBackgroundFile()}
