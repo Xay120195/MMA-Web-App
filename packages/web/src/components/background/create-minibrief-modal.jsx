@@ -144,9 +144,9 @@ export default function BriefModal(props) {
   };
 
   const handleSaveBriefItems = async () => {
-    const resultArray = props.selectedRowsBG.map(({ id }) => ({
+    const resultArray = props.selectedRowsBG.map(({ id, order }) => ({
       id: id,
-      order: 0,
+      order: order,
     }));
 
     const backgroundOpt = await API.graphql({
@@ -158,14 +158,17 @@ export default function BriefModal(props) {
       const resultExistingList = backgroundOpt.data.brief.backgrounds.items.map(
         ({ id, order }) => ({
           id: id,
-          order: order,
+          order: order, // remove order after migration
         })
       );
       const mergedArrayResult = [...resultArray, ...resultExistingList];
-      const res = mergedArrayResult.map(({ id }, index) => ({
+      // remove order after migration
+      const res = mergedArrayResult.sort((a, b) => a.order > b.order ? 1 : -1).map(({ id }, index) => ({
         id: id,
         order: index,
       }));
+
+      console.log("Merged Array:", res);
       
       await API.graphql({
         query: mBulkUpdateBackgroundOrder,

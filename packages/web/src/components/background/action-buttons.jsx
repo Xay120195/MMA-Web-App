@@ -174,7 +174,8 @@ const ActionButtons = (props) => {
       setCheckedState(new Array(witness.length).fill(true));
       settotalChecked(0);
       //insert row
-      witness.map((data) => (temp = [...temp, { id: data.id, fileName: "x" }]));
+      // remove order after migration
+      witness.map((data) => (temp = [...temp, { id: data.id, fileName: "x", order: data.order }]));
       setSelectedRowsBG(temp);
       if (temp.length > 0) {
         setShowDeleteButton(true);
