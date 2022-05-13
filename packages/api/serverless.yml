@@ -52,6 +52,10 @@ functions:
     handler: src/handlers/graphql/background/index.handler
   label-fn:
     handler: src/handlers/graphql/label/index.handler
+  brief-fn:
+    handler: src/handlers/graphql/brief/index.handler
+  rfi-fn:
+    handler: src/handlers/graphql/rfi/index.handler
 custom:
   dynamodb:
     # If you only want to use DynamoDB Local in some stages, declare them here
@@ -76,6 +80,7 @@ custom:
     mappingTemplatesLocation: src/mapping-templates
 
     mappingTemplates:
+      # Company
       - dataSource: LambdaQueryDS
         type: Query
         field: company
@@ -91,6 +96,23 @@ custom:
         field: companyCreate
         request: false
         response: false
+      # User Access
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: companyAccessType
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: companyAccessTypeCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: companyAccessTypeUpdate
+        request: false
+        response: false
+      # User
       - dataSource: LambdaQueryDS
         type: Query
         field: user
@@ -113,6 +135,27 @@ custom:
         response: false
       - dataSource: LambdaQueryDS
         type: Query
+        field: userColumnSettings
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userColumnSettingsCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userColumnSettingsUpdate
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: users
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        # Page
+        type: Query
         field: page
         request: false
         response: false
@@ -126,6 +169,7 @@ custom:
         field: pageCreate
         request: false
         response: false
+      # Feature
       - dataSource: LambdaQueryDS
         type: Query
         field: feature
@@ -141,44 +185,10 @@ custom:
         field: featureCreate
         request: false
         response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: companyAccessType
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: companyAccessTypeCreate
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: companyAccessTypeUpdate
-        request: false
-        response: false
+      # Matter File
       - dataSource: LambdaQueryDS
         type: Query
         field: matterFiles
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: file
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: files
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: rfi
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: rfis
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -206,69 +216,82 @@ custom:
         field: matterFileBulkCreate
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: file
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: files
+        request: false
+        response: false
+      - dataSource: LambdaBackgroundDS
+        type: Background
+        field: files
+        request: false
+        response: false
+      - dataSource: LambdaLabelDS
+        type: Label
+        field: files
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: fileLabelTag
+        request: false
+        response: false
       - dataSource: LambdaFileDS
         type: File
         field: downloadURL
         request: false
         response: false
+      # RFI
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: rfi
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: rfis
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: rfiCreate
+        request: false
+        response: false
+      # RFI
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: request
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: requests
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: requestCreate
+        request: false
+        response: false
+      - dataSource: LambdaRFIDS
+        type: RFI
+        field: requests
+        request: false
+        response: false
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: rfis
+        request: false
+        response: false
+      # Label
       - dataSource: LambdaFileDS
         type: File
         field: labels
-        request: false
-        response: false
-      - dataSource: LambdaFileDS
-        type: File
-        field: backgrounds
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: clientCreate
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: clientMatterCreate
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: clientMatterDelete
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: client
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: clientMatter
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: clientMatters
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: clients
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: matterCreate
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: matter
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: matters
         request: false
         response: false
       - dataSource: LambdaQueryDS
@@ -291,6 +314,85 @@ custom:
         field: labelCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: labelUpdate
+        request: false
+        response: false
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: labels
+        request: false
+        response: false
+      # Client
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clients
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: client
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: clients
+        request: false
+        response: false
+      # Client Matter
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: clientMatterDelete
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clientMatter
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: clientMatters
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: clientMatters
+        request: false
+        response: false
+      # Matter
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: matterCreate
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matter
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: matters
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: matters
+        request: false
+        response: false
+      # Brief
       - dataSource: LambdaQueryDS
         type: Query
         field: brief
@@ -313,29 +415,25 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: fileLabelTag
-        request: false
-        response: false
-      - dataSource: LambdaQueryDS
-        type: Query
-        field: userColumnSettings
+        field: briefDelete
         request: false
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: userColumnSettingsCreate
+        field: briefBackgroundTag
         request: false
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: userColumnSettingsUpdate
+        field: briefBackgroundUntag
         request: false
         response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: labelUpdate
+      - dataSource: LambdaClientMatterDS
+        type: ClientMatter
+        field: briefs
         request: false
         response: false
+      # Background
       - dataSource: LambdaQueryDS
         type: Query
         field: background
@@ -363,11 +461,6 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: backgroundBulkInitializeOrders
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
         field: backgroundDelete
         request: false
         response: false
@@ -381,34 +474,9 @@ custom:
         field: backgroundFileTag
         request: false
         response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: rfiCreate
-        request: false
-        response: false
-      - dataSource: LambdaCompanyDS
-        type: Company
-        field: users
-        request: false
-        response: false
-      - dataSource: LambdaCompanyDS
-        type: Company
-        field: matters
-        request: false
-        response: false
-      - dataSource: LambdaCompanyDS
-        type: Company
-        field: clients
-        request: false
-        response: false
-      - dataSource: LambdaCompanyDS
-        type: Company
-        field: clientMatters
-        request: false
-        response: false
-      - dataSource: LambdaClientMatterDS
-        type: ClientMatter
-        field: labels
+      - dataSource: LambdaFileDS
+        type: File
+        field: backgrounds
         request: false
         response: false
       - dataSource: LambdaClientMatterDS
@@ -416,16 +484,12 @@ custom:
         field: backgrounds
         request: false
         response: false
-      - dataSource: LambdaClientMatterDS
-        type: ClientMatter
-        field: rfis
+      - dataSource: LambdaBriefDS
+        type: Brief
+        field: backgrounds
         request: false
         response: false
-      - dataSource: LambdaClientMatterDS
-        type: ClientMatter
-        field: briefs
-        request: false
-        response: false
+      # Column Settings
       - dataSource: LambdaQueryDS
         type: Query
         field: columnSettings
@@ -436,22 +500,6 @@ custom:
         field: columnSettingsCreate
         request: false
         response: false
-      - dataSource: LambdaBackgroundDS
-        type: Background
-        field: files
-        request: false
-        response: false
-      - dataSource: LambdaMutationDS
-        type: Mutation
-        field: matterFileBulkInitializeOrders
-        request: false
-        response: false
-      - dataSource: LambdaLabelDS
-        type: Label
-        field: files
-        request: false
-        response: false
-
     dataSources:
       - type: AWS_LAMBDA
         name: LambdaQueryDS
@@ -461,6 +509,14 @@ custom:
         name: LambdaMutationDS
         config:
           functionName: mutation-fn
+      - type: AWS_LAMBDA
+        name: LambdaBackgroundDS
+        config:
+          functionName: background-fn
+      - type: AWS_LAMBDA
+        name: LambdaBriefDS
+        config:
+          functionName: brief-fn
       - type: AWS_LAMBDA
         name: LambdaCompanyDS
         config:
@@ -473,18 +529,18 @@ custom:
         name: LambdaFileDS
         config:
           functionName: file-fn
+      - type: AWS_LAMBDA
+        name: LambdaLabelDS
+        config:
+          functionName: label-fn
       - type: AMAZON_DYNAMODB
         name: DynamoDBMatterFileTableDS
         config:
           tableName: !Ref MatterFileTable
       - type: AWS_LAMBDA
-        name: LambdaBackgroundDS
+        name: LambdaRFIDS
         config:
-          functionName: background-fn
-      - type: AWS_LAMBDA
-        name: LambdaLabelDS
-        config:
-          functionName: label-fn
+          functionName: rfi-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

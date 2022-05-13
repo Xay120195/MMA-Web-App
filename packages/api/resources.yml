@@ -109,6 +109,7 @@ Resources:
         authenticated: !GetAtt CognitoAuthorizedRole.Arn
         unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
 
+  # Tables
   CompanyTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -204,6 +205,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+
   PageTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -215,6 +217,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+
   FeatureTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -278,7 +281,7 @@ Resources:
             - AttributeName: createdAt
               KeyType: RANGE
           Projection:
-              ProjectionType: ALL
+            ProjectionType: ALL
         - IndexName: byOrder
           KeySchema:
             - AttributeName: matterId
@@ -286,7 +289,7 @@ Resources:
             - AttributeName: order
               KeyType: RANGE
           Projection:
-              ProjectionType: ALL
+            ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
   ClientsTable:
@@ -324,6 +327,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+
   LabelsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -335,6 +339,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+
   BriefTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -346,6 +351,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+
   RFITable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -356,6 +362,57 @@ Resources:
       KeySchema:
         - AttributeName: id
           KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  RequestTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RequestTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  RFIRequestTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RFIRequestTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: rfiId
+          AttributeType: S
+        - AttributeName: requestId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byRFI
+          KeySchema:
+            - AttributeName: rfiId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byRequest
+          KeySchema:
+            - AttributeName: requestId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: rfiId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
   CompanyMatterTable:
@@ -620,7 +677,7 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
-      
+
   FileLabelTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -675,6 +732,55 @@ Resources:
           KeySchema:
             - AttributeName: fileId
               KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+  BriefBackgroundTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BriefBackgroundTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: briefId
+          AttributeType: S
+        - AttributeName: backgroundId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+        - AttributeName: order
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byBrief
+          KeySchema:
+            - AttributeName: briefId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byBackground
+          KeySchema:
+            - AttributeName: backgroundId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCreatedAt
+          KeySchema:
+            - AttributeName: briefId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byOrder
+          KeySchema:
+            - AttributeName: briefId
+              KeyType: HASH
+            - AttributeName: order
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
