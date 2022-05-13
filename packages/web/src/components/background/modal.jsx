@@ -13,42 +13,60 @@ export const ModalParagraph = ({
   setShowDeleteButton,
   matterId,
   setcheckAllState,
+  briefId,
 }) => {
   let buttonBg = "bg-green-500";
 
   const handleNewParagraph = async (e) => {
-
     console.log("handleNewParagraph");
     const arrParagraph = paragraph.split("\n\n");
 
     const dateToday = new Date().toISOString();
     arrParagraph.map(async function (x) {
+      //   const mCreateBackground = `
+      //     mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
+      //       backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
+      //         id
+      //         date
+      //         description
+      //         order
+      //         createdAt
+      //       }
+      //     }
+      // `;
+
+      //   const createBackgroundRow = await API.graphql({
+      //     query: mCreateBackground,
+      //     variables: {
+      //       clientMatterId: matterId,
+      //       description: x,
+      //       date: null,
+      //       files: { items: [] },
+      //     },
+      //   });
       const mCreateBackground = `
-        mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-          backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
-            id
-            date
-            description
-            order
-            createdAt
-          }
-        }
-    `;
+    mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+      backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+        id
+        description
+        order
+      }
+    }
+`;
 
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
-          clientMatterId: matterId,
+          briefId: briefId,
           description: x,
           date: null,
-          files: { items: [] },
         },
       });
 
       let newData = [];
       newData.push({
         createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-        date: createBackgroundRow.data.backgroundCreate.date,
+        date: null,
         description: createBackgroundRow.data.backgroundCreate.description,
         id: createBackgroundRow.data.backgroundCreate.id,
         order: 0,
@@ -69,7 +87,7 @@ export const ModalParagraph = ({
           id: id,
           order: index + 1,
         }));
-  
+
         const mUpdateBackgroundOrder = `
           mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
             backgroundBulkUpdateOrders(arrangement: $arrangement) {
