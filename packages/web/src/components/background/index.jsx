@@ -463,6 +463,8 @@ const Background = () => {
     });
   }
 
+  console.log("Items - ",witness);
+
   return (
     <>
       <div
