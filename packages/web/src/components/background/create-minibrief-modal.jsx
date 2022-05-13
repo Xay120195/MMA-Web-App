@@ -15,10 +15,8 @@ export default function BriefModal(props) {
   const [briefsOptions, setBriefOptions] = useState();
 
   useEffect(() => {
-    if (Briefs === null) {
-      getListBriefs();
-    }
-  });
+    getListBriefs();
+  }, []);
 
   const hideToast = () => {
     setShowToast(false);
