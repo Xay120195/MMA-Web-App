@@ -54,6 +54,8 @@ functions:
     handler: src/handlers/graphql/label/index.handler
   brief-fn:
     handler: src/handlers/graphql/brief/index.handler
+  rfi-fn:
+    handler: src/handlers/graphql/rfi/index.handler
 custom:
   dynamodb:
     # If you only want to use DynamoDB Local in some stages, declare them here
@@ -258,6 +260,27 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: rfiCreate
+        request: false
+        response: false
+      # RFI
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: request
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: requests
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: requestCreate
+        request: false
+        response: false
+      - dataSource: LambdaRFIDS
+        type: RFI
+        field: requests
         request: false
         response: false
       - dataSource: LambdaClientMatterDS
@@ -514,6 +537,10 @@ custom:
         name: DynamoDBMatterFileTableDS
         config:
           tableName: !Ref MatterFileTable
+      - type: AWS_LAMBDA
+        name: LambdaRFIDS
+        config:
+          functionName: rfi-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}
