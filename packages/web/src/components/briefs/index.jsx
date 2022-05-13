@@ -150,7 +150,7 @@ export default function Briefs() {
       variables: {
         clientMatterId: matter_id,
         name: briefname,
-        date: null,
+        date: new Date(),
         order: 0,
       },
     });
@@ -306,6 +306,14 @@ export default function Briefs() {
         reject(e.errors[0].message);
       }
     });
+  }
+
+  const formatDisplayDate = (val) => {
+    let date = new Date(val);
+    const day = date.toLocaleString('default', { day: '2-digit' });
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.toLocaleString('default', { year: 'numeric' });
+    return day + ' ' + month + ' ' + year;
   }
 
   const handleColumn = () => {
@@ -504,6 +512,8 @@ export default function Briefs() {
                         !showBName && `py-2 px-2 mb-2`
                       } ${!showDate && `py-1 px-1 mb-2`}`}
                     >
+                      
+                    
                       {showBName && (
                         <p
                           suppressContentEditableWarning={true}
@@ -533,7 +543,7 @@ export default function Briefs() {
                           tabIndex="0"
                           className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                         >
-                          {item.createdAt ? item.createdAt : "No date"}
+                          {item.date ? formatDisplayDate(item.date) : "No date"}
                         </p>
                       )}
                     </div>
