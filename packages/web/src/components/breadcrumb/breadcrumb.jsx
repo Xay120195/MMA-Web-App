@@ -5,11 +5,12 @@ import { AppRoutes } from "../../constants/AppRoutes";
 const style = {
   paddingLeft: "0rem",
 };
-function b64EncodeUnicode(str) {
-  return btoa(encodeURIComponent(str));
+
+function utf8_to_b64(str) {
+  return window.btoa(unescape(encodeURIComponent(str)));
 }
 
-const BreadCrumb = ({ matterId, client_name, matter_name }) => {
+const BreadCrumb = ({ matterId, client_name, matter_name, briefId }) => {
   return (
     <div className="pt-1">
       <nav aria-label="Breadcrumb" style={style}>
@@ -42,11 +43,9 @@ const BreadCrumb = ({ matterId, client_name, matter_name }) => {
             <Link
               aria-current="page"
               className="font-medium text-gray-500"
-              to={`${
-                AppRoutes.BRIEFS
-              }/${matterId}/?matter_name=${b64EncodeUnicode(
+              to={`${AppRoutes.BRIEFS}/${matterId}/?matter_name=${utf8_to_b64(
                 matter_name
-              )}&client_name=${b64EncodeUnicode(client_name)}`}
+              )}&client_name=${utf8_to_b64(client_name)}`}
             >
               Background
             </Link>
@@ -68,9 +67,9 @@ const BreadCrumb = ({ matterId, client_name, matter_name }) => {
               className="font-medium text-gray-900"
               to={`${
                 AppRoutes.FILEBUCKET
-              }/${matterId}/000/?matter_name=${b64EncodeUnicode(
+              }/${matterId}/${briefId}/?matter_name=${utf8_to_b64(
                 matter_name
-              )}&client_name=${b64EncodeUnicode(client_name)}`}
+              )}&client_name=${utf8_to_b64(client_name)}&background_id=000`}
             >
               File Bucket
             </Link>

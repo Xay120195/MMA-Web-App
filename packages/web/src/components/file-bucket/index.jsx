@@ -1508,6 +1508,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }
     return false;
   }
+
   function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
   }
