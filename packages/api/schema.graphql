@@ -500,6 +500,7 @@ type Mutation {
   rfiCreate(name: String, clientMatterId: String): RFI
   requestCreate(question: String, answer: String, itemNo: String, order: Int, rfiId: ID): Request
   requestUpdate(id: ID, question: String, answer: String, itemNo: String, order: Int): Request
+  requestDelete(id: ID): Request
   userColumnSettingsCreate(
     userId: ID
     columnSettings: [ColumnSettingsInput]
