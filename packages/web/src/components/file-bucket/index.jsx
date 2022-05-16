@@ -699,26 +699,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         }, 1000);
       }
     } else if (newlabel !== [] && options.length >= 0) {
-      const x = convertArrayToObject(newlabel);
-      if (x) {
-        const createLabel = await API.graphql({
-          query: mCreateLabel,
-          variables: {
-            clientMatterId: matter_id,
-            name: x.item.label,
-          },
-        });
-        if (createLabel) {
-          const updatedNewlabel = options.map((obj) => {
-            if (obj.label === x.item.label) {
-              return {
-                ...obj,
-                value: createLabel.data.labelCreate.id,
-              };
-            }
-            return obj;
-          });
-          const ops = updatedNewlabel.map(({ value, label }) => ({
+      const existlabel = convertArrayToObject(newlabel);
+      if (existlabel) {
+        const label = existlabel.item.label.trim();
+
+        const checkexist = labels.some((x) => x.label === label);
+        //if label is already exist
+        if (checkexist) {
+          const oldlabel = options.filter((x) => !x.__isNew__);
+          const ops = oldlabel.map(({ value, label }) => ({
             id: value,
             name: label,
           }));
@@ -738,6 +727,54 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             }, 1000);
           }
         }
+        if (checkexist === false) {
+          const createLabel = await API.graphql({
+            query: mCreateLabel,
+            variables: {
+              clientMatterId: matter_id,
+              name: existlabel.item.label,
+            },
+          });
+          let updateLabel = labels;
+          updateLabel.push({
+            value: createLabel.data.labelCreate.id,
+            label: createLabel.data.labelCreate.name,
+          });
+
+          setLabels(updateLabel);
+          if (createLabel) {
+            const updatedNewlabel = options.map((obj) => {
+              if (obj.label === existlabel.item.label.trim()) {
+                return {
+                  ...obj,
+                  value: createLabel.data.labelCreate.id,
+                };
+              }
+              return obj;
+            });
+            const ops = updatedNewlabel.map(({ value, label }) => ({
+              id: value,
+              name: label,
+            }));
+            console.log(ops);
+
+            const request = API.graphql({
+              query: mTagFileLabel,
+              variables: {
+                fileId: id,
+                labels: ops,
+              },
+            });
+            console.log("success", request);
+            if (request) {
+              setResultMessage("Updating labels");
+              setShowToast(true);
+              setTimeout(() => {
+                setShowToast(false);
+              }, 1000);
+            }
+          }
+        }
       }
     }
   };
@@ -751,11 +788,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       };
     }, initialValue);
   };
-
-  function updateArrLabels(data, index) {
-    console.log("updateArrLabels", data, index);
-    tempArr[index] = data;
-  }
 
   //description saving
   const handleDetailsContent = (e, details, id) => {
@@ -1528,9 +1560,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   const checkFormat = (str) => {
     var check = str;
-    check = check.replace("%20"," "); //returns my_name
+    check = check.replace("%20", " "); //returns my_name
     return check;
-  }
+  };
 
   return (
     <>
@@ -1552,8 +1584,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
               <h1 className="font-bold text-3xl">
                 File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">{checkFormat(client_name)}</span>/
-                <span className="font-semibold text-3xl">{checkFormat(matter_name)}</span>
+                <span className="font-semibold text-3xl">
+                  {checkFormat(client_name)}
+                </span>
+                /
+                <span className="font-semibold text-3xl">
+                  {checkFormat(matter_name)}
+                </span>
               </h1>
             </div>
           </div>
@@ -1661,15 +1698,16 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <FiUpload />
               </button>
 
-              {showRemoveFileButton && (backgroundRowId === "000" || backgroundRowId) && (
-                <button
-                  className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-                  onClick={() => addFileBucketToBackground()}
-                >
-                  COPY TO BACKGROUND PAGE &nbsp;
-                  <FiCopy />
-                </button>
-              )}
+              {showRemoveFileButton &&
+                (backgroundRowId === "000" || backgroundRowId) && (
+                  <button
+                    className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                    onClick={() => addFileBucketToBackground()}
+                  >
+                    COPY TO BACKGROUND PAGE &nbsp;
+                    <FiCopy />
+                  </button>
+                )}
 
               {showAttachBackgroundButton && backgroundRowId !== "000" && (
                 <button
