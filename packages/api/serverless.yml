@@ -278,6 +278,16 @@ custom:
         field: requestCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: requestUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: requestDelete
+        request: false
+        response: false
       - dataSource: LambdaRFIDS
         type: RFI
         field: requests
