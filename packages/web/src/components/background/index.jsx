@@ -70,7 +70,7 @@ const Background = () => {
   const [alertMessage, setalertMessage] = useState();
   const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
-  const [searchDescription, setSearchDescription] = useState();
+  const [searchDescription, setSearchDescription] = useState("");
 
   useEffect(() => {
     getBackground();
@@ -317,7 +317,14 @@ const Background = () => {
               setLoading(false);
               setMaxLoading(false);
 
-              let arrConcat = witness.concat(result);
+              var arrConcat = witness.concat(result);
+
+              if(searchDescription !== "") {
+                arrConcat = witness.concat(result).filter((x) =>
+                x.description.toLowerCase().includes(searchDescription.toLowerCase()));
+                console.log("HELO", searchDescription);
+              }
+
               setWitness([...new Set(sortByOrder(arrConcat))]);
             }, 200);
           }
