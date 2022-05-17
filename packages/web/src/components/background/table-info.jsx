@@ -20,6 +20,7 @@ import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
 import ScrollToTop from "react-scroll-to-top";
 import UploadLinkModal from "../file-bucket/file-upload-modal";
+import ReactTooltip from "react-tooltip";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -1031,6 +1032,7 @@ const TableInfo = ({
                     color="rgb(117, 117, 114);"
                     style={{ padding: "0.4rem" }}
                   />
+
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                       <thead
@@ -1298,6 +1300,17 @@ const TableInfo = ({
                                               {item.files.items.map(
                                                 (items, index) => (
                                                   <span key={items.id}>
+                                                    <ReactTooltip
+                                                      type="dark"
+                                                      place="bottom"
+                                                      effect="float"
+                                                      key={
+                                                        "rt" +
+                                                        items.id +
+                                                        "-" +
+                                                        index
+                                                      }
+                                                    />
                                                     <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
                                                       {activateButton ? (
                                                         <input
@@ -1317,8 +1330,12 @@ const TableInfo = ({
                                                       ) : (
                                                         ""
                                                       )}
-                                                      <span className="align-middle">
-                                                        {items.name !== null && items.name !== "" &&
+                                                      <span
+                                                        className="align-middle cursor-pointer"
+                                                        data-tip={items.name}
+                                                      >
+                                                        {items.name !== null &&
+                                                          items.name !== "" &&
                                                           items.name.substring(
                                                             0,
                                                             15
