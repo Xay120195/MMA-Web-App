@@ -67,7 +67,7 @@ const ActionButtons = (props) => {
         }
         `;
 
-      await API.graphql({
+    const deletedId =  await API.graphql({
         query: mDeleteBackground,
         variables: {
           briefId: briefId,
@@ -75,12 +75,24 @@ const ActionButtons = (props) => {
         },
       });
 
+
+    // var temp = witness;
+    // var find = deletedId.data.briefBackgroundUntag.id;
+    // console.log("id", find);  
+    // var idxs = [];
+    // for(var i = 0 ; i<idxs.length; i++){
+    //   temp.map(
+    //     (x) => x.id === find
+    //     ? temp.splice(idxs[i], 1)
+    //     : x
+    //   );
+    // }
+    
       setalertMessage(`Successfully deleted`);
       setMaxLoading(false);
 
       const newArr = Array(witness.length).fill(false);
       setCheckedState(newArr);
-
       setSelectedRowsBG([]);
 
       if (temp.length > 0) {
@@ -95,7 +107,7 @@ const ActionButtons = (props) => {
       setTimeout(() => {
         setShowToast(false);
         getBackground();
-        setWitness([]);
+        // setWitness([]);
         setcheckAllState(false);
       }, 2000);
     }
