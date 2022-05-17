@@ -152,38 +152,38 @@ const Background = () => {
     let result = [];
     setWait(false);
 
-    if (background_id === "000") {
+    // if (background_id === "000") {
       // Remove this condition after migration
-      const backgroundOpt = await API.graphql({
-        query: qListBackground,
-        variables: { id: matter_id, limit: 25, nextToken: vNextToken },
-      });
+    //   const backgroundOpt = await API.graphql({
+    //     query: qListBackground,
+    //     variables: { id: matter_id, limit: 25, nextToken: vNextToken },
+    //   });
 
-      setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+    //   setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
-      if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
-        result = backgroundOpt.data.clientMatter.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
+    //   if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
+    //     result = backgroundOpt.data.clientMatter.backgrounds.items.map(
+    //       ({ id, description, date, createdAt, order, files }) => ({
+    //         createdAt: createdAt,
+    //         id: id,
+    //         description: description,
+    //         date: date,
+    //         order: order,
+    //         files: files,
+    //       })
+    //     );
 
-        setPageTotal(result.length);
-        setPageSize(20);
-        setPageIndex(1);
+    //     setPageTotal(result.length);
+    //     setPageSize(20);
+    //     setPageIndex(1);
 
-        if (witness !== null) {
-          setWitness(sortByOrder(result));
-          setWait(true);
-          setMaxLoading(false);
-        }
-      }
-    } else {
+    //     if (witness !== null) {
+    //       setWitness(sortByOrder(result));
+    //       setWait(true);
+    //       setMaxLoading(false);
+    //     }
+    //   }
+    // } else {
       const backgroundOpt = await API.graphql({
         query: qBriefBackgroundList,
         variables: {
@@ -219,7 +219,7 @@ const Background = () => {
           setMaxLoading(false);
         }
       }
-    }
+    //}
   };
 
   const getBriefs = async () => {
