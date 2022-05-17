@@ -70,6 +70,7 @@ importers:
       react-scripts: 4.0.3
       react-scroll-to-top: ^1.0.8
       react-select: ^5.2.1
+      react-tooltip: ^4.2.21
       semantic-ui-react: ^2.0.4
       tailwindcss: ^2.2.17
       web-vitals: ^1.0.1
@@ -103,6 +104,7 @@ importers:
       react-scripts: 4.0.3_react@17.0.2
       react-scroll-to-top: 1.0.8_react@17.0.2
       react-select: 5.2.2_react-dom@17.0.2+react@17.0.2
+      react-tooltip: 4.2.21_react-dom@17.0.2+react@17.0.2
       semantic-ui-react: 2.1.1_react-dom@17.0.2+react@17.0.2
       web-vitals: 1.1.2
     devDependencies:
@@ -11445,7 +11447,7 @@ packages:
     resolution: {integrity: sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==}
     engines: {node: '>=6 <7 || >=8'}
     dependencies:
-      graceful-fs: 4.2.9
+      graceful-fs: 4.2.10
       jsonfile: 4.0.0
       universalify: 0.1.2
     dev: false
@@ -13610,7 +13612,7 @@ packages:
   /jsonfile/4.0.0:
     resolution: {integrity: sha1-h3Gq4HmbZAdrdmQPygWPnBDjPss=}
     optionalDependencies:
-      graceful-fs: 4.2.9
+      graceful-fs: 4.2.10
     dev: false
 
   /jsonfile/6.1.0:
@@ -13618,7 +13620,7 @@ packages:
     dependencies:
       universalify: 2.0.0
     optionalDependencies:
-      graceful-fs: 4.2.9
+      graceful-fs: 4.2.10
 
   /jsonpath-plus/5.1.0:
     resolution: {integrity: sha512-890w2Pjtj0iswAxalRlt2kHthi6HKrXEfZcn+ZNZptv7F3rUGIeDuZo+C+h4vXBHLEsVjJrHeCm35nYeZLzSBQ==}
@@ -17103,6 +17105,19 @@ packages:
       - '@types/react'
     dev: false
 
+  /react-tooltip/4.2.21_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-zSLprMymBDowknr0KVDiJ05IjZn9mQhhg4PRsqln0OZtURAJ1snt1xi5daZfagsh6vfsziZrc9pErPTDY1ACig==}
+    engines: {npm: '>=6.13'}
+    peerDependencies:
+      react: '>=16.0.0'
+      react-dom: '>=16.0.0'
+    dependencies:
+      prop-types: 15.8.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      uuid: 7.0.3
+    dev: false
+
   /react-transition-group/4.4.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}
     peerDependencies:
@@ -19566,6 +19581,11 @@ packages:
   /uuid/3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    hasBin: true
+    dev: false
+
+  /uuid/7.0.3:
+    resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
     hasBin: true
     dev: false
 
