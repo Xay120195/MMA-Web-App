@@ -6,6 +6,7 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listLabelFiles(ctx) {
+  console.log("listLabelFiles()");
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
 
@@ -21,6 +22,7 @@ async function listLabelFiles(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
+      ProjectionExpression: "fileId",
     };
 
     if (limit !== undefined) {
@@ -30,15 +32,23 @@ async function listLabelFiles(ctx) {
     const cmFilesCmd = new QueryCommand(cmFilesParam);
     const cmFilesResult = await client.send(cmFilesCmd);
 
-    const fileIds = cmFilesResult.Items.map((i) => unmarshall(i)).map((f) =>
-      marshall({ id: f.fileId })
-    );
+    let unique = cmFilesResult.Items.map((a) => unmarshall(a))
+      .map((x) => x.fileId)
+      .filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
 
-    if (fileIds.length !== 0) {
+    const uniqueFileIds = unique.map((f) => marshall({ id: f }));
+
+    if (uniqueFileIds.length !== 0) {
       const filesParam = {
         RequestItems: {
           MatterFileTable: {
-            Keys: fileIds,
+            Keys: uniqueFileIds,
+            FilterExpression: "isDeleted = :isDeleted",
+            ExpressionAttributeValues: marshall({
+              ":isDeleted": false,
+            }),
           },
         },
       };
@@ -55,6 +65,8 @@ async function listLabelFiles(ctx) {
         const filterFile = objFiles.find((u) => u.id === item.fileId);
         return { ...item, ...filterFile };
       });
+
+      console.log("Batch Get Files:", response);
 
       return {
         items: response,
