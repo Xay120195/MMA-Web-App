@@ -193,7 +193,7 @@ const Background = () => {
         variables: {
           id: background_id,
           limit: 25,
-          nextToken: vNextToken,
+          nextToken: null,
           sortOrder: "ORDER_ASC",
         },
       });
@@ -492,14 +492,14 @@ const Background = () => {
     console.log("filter", v);
     if (v === "") {
       // Refresh page if necessary
+      setVnextToken(null);
       getBackground();
-      console.log("JDHJDK");
     } else {
       const filterRecord = witness.filter((x) =>
         x.description.toLowerCase().includes(v.toLowerCase())
       );
       console.log("filterRecord:", filterRecord);
-      setWitness(filterRecord);
+      setWitness(sortByOrder(filterRecord));
     }
   };
 
