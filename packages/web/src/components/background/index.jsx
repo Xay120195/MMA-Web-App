@@ -617,7 +617,7 @@ const Background = () => {
           matter_name={matter_name}
         />
 
-        {witness !== null && witness.length !== 0 && (
+        {/* {witness !== null && witness.length !== 0 && ( */}
           <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
             <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
               <IoIcons.IoIosSearch />
@@ -629,7 +629,7 @@ const Background = () => {
               className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
             />
           </div>
-        )}
+        {/* )} */}
 
       </div>
       <TableInfo
