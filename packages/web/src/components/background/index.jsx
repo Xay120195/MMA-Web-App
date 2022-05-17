@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
+import { useIdleTimer } from 'react-idle-timer';
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import ToastNotification from "../toast-notification";
+import * as IoIcons from "react-icons/io";
 
 import { API } from "aws-amplify";
 
@@ -68,6 +70,7 @@ const Background = () => {
   const [alertMessage, setalertMessage] = useState();
   const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
+  const [searchDescription, setSearchDescription] = useState();
 
   useEffect(() => {
     getBackground();
@@ -75,6 +78,7 @@ const Background = () => {
     if (bgName === null) {
       getBriefs();
     }
+
   }, []);
 
   const hideToast = () => {
@@ -189,7 +193,7 @@ const Background = () => {
         variables: {
           id: background_id,
           limit: 25,
-          nextToken: vNextToken,
+          nextToken: null,
           sortOrder: "ORDER_ASC",
         },
       });
@@ -315,7 +319,7 @@ const Background = () => {
 
               let arrConcat = witness.concat(result);
               setWitness([...new Set(sortByOrder(arrConcat))]);
-            }, 1000);
+            }, 200);
           }
         }
       } else {
@@ -324,6 +328,17 @@ const Background = () => {
       }
     }
   };
+
+  const handleOnAction = event => {
+    console.log('User did something', event);
+    loadMoreBackground();
+  }
+
+  useIdleTimer({
+    timeout: 1000 * 60 * 15,
+    onAction: handleOnAction,
+    debounce: 1000
+  })
 
   function sortByOrder(arr) {
     const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
@@ -463,7 +478,30 @@ const Background = () => {
     });
   }
 
-  console.log("Items - ",witness);
+  useEffect(() => {
+    if (searchDescription !== undefined) {
+      filterRecord(searchDescription);
+    }
+  }, [searchDescription]);
+
+  const handleSearchDescriptionChange = (e) => {
+    setSearchDescription(e.target.value);
+  };
+
+  const filterRecord = (v) => {
+    console.log("filter", v);
+    if (v === "") {
+      // Refresh page if necessary
+      setVnextToken(null);
+      getBackground();
+    } else {
+      const filterRecord = witness.filter((x) =>
+        x.description.toLowerCase().includes(v.toLowerCase())
+      );
+      console.log("filterRecord:", filterRecord);
+      setWitness(sortByOrder(filterRecord));
+    }
+  };
 
   return (
     <>
@@ -578,6 +616,21 @@ const Background = () => {
           client_name={client_name}
           matter_name={matter_name}
         />
+
+        {/* {witness !== null && witness.length !== 0 && ( */}
+          <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
+            <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+              <IoIcons.IoIosSearch />
+            </span>
+            <input
+              type="search"
+              placeholder="Type to search description in the Background ..."
+              onChange={handleSearchDescriptionChange}
+              className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+            />
+          </div>
+        {/* )} */}
+
       </div>
       <TableInfo
         client_name={client_name}
@@ -644,6 +697,7 @@ const Background = () => {
         maxLoading={maxLoading}
         sortByOrder={sortByOrder}
         briefId={background_id}
+        searchDescription={searchDescription}
       />
 
       {showToast && (

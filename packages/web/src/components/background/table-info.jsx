@@ -20,6 +20,7 @@ import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
 import ScrollToTop from "react-scroll-to-top";
 import UploadLinkModal from "../file-bucket/file-upload-modal";
+import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
 
 export let selectedRowsBGPass = [],
@@ -77,6 +78,7 @@ const TableInfo = ({
   maxLoading,
   sortByOrder,
   briefId,
+  searchDescription,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -772,18 +774,19 @@ const TableInfo = ({
   //   tempWitness.splice(targetIndex + 1, 0, df.item);
   //   return setWitness(tempWitness);
   // };
-  const handleBottomScroll = useCallback(() => {
+
+  /*const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
       setLoading(true);
-    }, 300);
+    }, 200);
     setTimeout(() => {
       loadMoreBackground();
       setLoading(false);
-    }, 1000);
+    }, 400);
   });
 
-  useBottomScrollListener(handleBottomScroll);
+  useBottomScrollListener(handleBottomScroll);*/
 
   const mUpdateMatterFileDesc = `
       mutation updateMatterFile ($id: ID, $details: String) {
@@ -1017,13 +1020,14 @@ const TableInfo = ({
 
   return (
     <>
-      <div style={{ padding: "2rem", marginLeft: "4rem" }}>
+      <div style={{ paddingLeft: "2rem", paddingRight: "2rem", paddingBottom: "2rem", marginLeft: "4rem" }}>
         <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow border-b border-gray-200 sm:rounded-lg">
               {wait === false ? (
                 <span className="py-5 px-5">Please wait...</span>
-              ) : witness.length === 0 ? (
+              ) : witness.length === 0 &&
+              (searchDescription === undefined || searchDescription === "") ? (
                 <EmptyRow search={search} />
               ) : (
                 <>
@@ -1032,12 +1036,12 @@ const TableInfo = ({
                     color="rgb(117, 117, 114);"
                     style={{ padding: "0.4rem" }}
                   />
-
+                  {witness !== null && witness.length !== 0 ? (
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                       <thead
                         className="bg-gray-100 z-10"
-                        style={{ position: "sticky", top: "68px" }}
+                        style={{ position: "sticky", top: "120px" }}
                       >
                         <tr>
                           <th className="px-2 py-4 text-center whitespace-nowrap">
@@ -1426,6 +1430,18 @@ const TableInfo = ({
                       </Droppable>
                     </table>
                   </DragDropContext>
+                  ) : (
+                    <div className="p-5 px-5 py-1 left-0">
+                      <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">
+                        <NoResultState
+                          searchKey={searchDescription}
+                          message={
+                            "Check the spelling, try a more general term or look up a specific File."
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
