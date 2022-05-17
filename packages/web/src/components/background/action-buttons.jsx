@@ -4,7 +4,6 @@ import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
 import BriefModal from "../background/create-minibrief-modal";
 import { AiFillFile, AiFillEye } from "react-icons/ai";
-//import { selectedRowsBG } from "./table-info";
 
 const ActionButtons = (props) => {
   const {
@@ -408,7 +407,7 @@ const ActionButtons = (props) => {
 
   return (
     <>
-      <div className="pl-2 py-1 grid grid-cols-2 gap-4"  >
+      <div className="pl-2 py-1 grid grid-cols-1 gap-1.5"  >
         <div className="col-span-6" >
           <input
             name="check_all"
