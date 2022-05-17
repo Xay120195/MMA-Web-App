@@ -1318,7 +1318,7 @@ const TableInfo = ({
                                                       ) : (
                                                         ""
                                                       )}
-                                                      <span className="align-middle">
+                                                      <span className="align-middle cursor-auto" title={items.name}>
                                                         {items.name !== null && items.name !== "" &&
                                                           items.name.substring(
                                                             0,
