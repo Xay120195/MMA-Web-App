@@ -388,7 +388,6 @@ async function bulkGetLabels(data) {
         unmarshall(i)
       );
 
-      console.log("objLabels", objLabels);
       resp = objLabels;
     }
   } catch (e) {

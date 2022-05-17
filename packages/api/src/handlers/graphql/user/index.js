@@ -5,7 +5,8 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
-async function listRFIRequests(ctx) {
+async function listUserClientMatter(ctx) {
+  console.log("listUserClientMatter()");
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
@@ -24,12 +25,12 @@ async function listRFIRequests(ctx) {
   }
 
   try {
-    const rfiRequestsParams = {
-      TableName: "RFIRequestTable",
+    const userClientMatterParams = {
+      TableName: "UserClientMatterTable",
       IndexName: indexName,
-      KeyConditionExpression: "rfiId = :rfiId",
+      KeyConditionExpression: "userId = :userId",
       ExpressionAttributeValues: marshall({
-        ":rfiId": id,
+        ":userId": id,
       }),
       ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
@@ -38,52 +39,55 @@ async function listRFIRequests(ctx) {
     };
 
     if (limit !== undefined) {
-      rfiRequestsParams.Limit = limit;
+      userClientMatterParams.Limit = limit;
     }
 
-    const rfiRequestsCommand = new QueryCommand(rfiRequestsParams);
+    const userClientMatterCommand = new QueryCommand(userClientMatterParams);
+    const userClientMatterResult = await ddbClient.send(userClientMatterCommand);
 
-    const rfiRequestsResult = await ddbClient.send(rfiRequestsCommand);
+    const clientMatterIds = userClientMatterResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.clientMatterId }));
 
-    const requestIds = rfiRequestsResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.requestId })
-    );
-
-    if (requestIds.length !== 0) {
-      let unique = requestIds
+    if (clientMatterIds.length !== 0) {
+      let unique = clientMatterIds
         .map((a) => unmarshall(a))
         .map((x) => x.id)
         .filter(function (item, i, ar) {
           return ar.indexOf(item) === i;
         });
 
-      const uniqueRequestIds = unique.map((f) => marshall({ id: f }));
+      const uniqueBackgroundIds = unique.map((f) => marshall({ id: f }));
 
-      const requestParams = {
+      const clientMattersParams = {
         RequestItems: {
-          RequestTable: {
-            Keys: uniqueRequestIds,
+          BackgroundsTable: {
+            Keys: uniqueBackgroundIds,
           },
         },
       };
 
-      const requestCommand = new BatchGetItemCommand(requestParams);
-      const requestResult = await ddbClient.send(requestCommand);
+      const clientMattersCommand = new BatchGetItemCommand(clientMattersParams);
+      const clientMattersResult = await ddbClient.send(clientMattersCommand);
 
-      const objRequest = requestResult.Responses.RequestTable.map((i) =>
+      const objBackgrounds = clientMattersResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
+      );
+      const objUserClientMatter = userClientMatterResult.Items.map((i) =>
         unmarshall(i)
       );
-      const objRFIRequests = rfiRequestsResult.Items.map((i) => unmarshall(i));
 
-      const response = objRFIRequests.map((item) => {
-        const filterRequest = objRequest.find((u) => u.id === item.requestId);
-        return { ...item, ...filterRequest };
+      const response = objUserClientMatter.map((item) => {
+        const filterBackground = objBackgrounds.find(
+          (u) => u.id === item.clientMatterId
+        );
+        return { ...item, ...filterBackground };
       });
       return {
         items: response,
-        nextToken: rfiRequestsResult.LastEvaluatedKey
+        nextToken: userClientMatterResult.LastEvaluatedKey
           ? Buffer.from(
-              JSON.stringify(rfiRequestsResult.LastEvaluatedKey)
+              JSON.stringify(userClientMatterResult.LastEvaluatedKey)
             ).toString("base64")
           : null,
       };
@@ -105,9 +109,10 @@ async function listRFIRequests(ctx) {
 }
 
 const resolvers = {
-  RFI: {
-    requests: async (ctx) => {
-      return listRFIRequests(ctx);
+  User: {
+    clientMatters: async (ctx) => {
+      console.log("listUserClientMatter");
+      return listUserClientMatter(ctx);
     },
   },
 };

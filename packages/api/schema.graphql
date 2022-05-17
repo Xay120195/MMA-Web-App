@@ -188,6 +188,7 @@ type User {
   contactNumber: String
   company: Company
   userType: UserType
+  clientMatters(limit: Int, nextToken: String): UserClientMatterCon
   profilePicture: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -380,6 +381,11 @@ type RFIRequestsConn {
   nextToken: String
 }
 
+type UserClientMatterCon {
+  items: [ClientMatter]
+  nextToken: String
+}
+
 type Query {
   background(id: ID): Background
   backgrounds: [Background]
@@ -499,6 +505,8 @@ type Mutation {
   ): Page
   rfiCreate(name: String, clientMatterId: String): RFI
   requestCreate(question: String, answer: String, itemNo: String, order: Int, rfiId: ID): Request
+  requestUpdate(id: ID, question: String, answer: String, itemNo: String, order: Int): Request
+  requestDelete(id: ID): Request
   userColumnSettingsCreate(
     userId: ID
     columnSettings: [ColumnSettingsInput]
