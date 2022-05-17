@@ -6,12 +6,9 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listRFIRequests(ctx) {
-
-  
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  console.log("listRFIRequests:", id);
   let indexName, isAscending;
 
   if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
@@ -44,22 +41,13 @@ async function listRFIRequests(ctx) {
       rfiRequestsParams.Limit = limit;
     }
 
-    
-    
-    console.log(rfiRequestsParams);
-    console.log("------------------------------------------------")
     const rfiRequestsCommand = new QueryCommand(rfiRequestsParams);
-    console.log(rfiRequestsCommand);
-    console.log("------------------------------------------------")
 
     const rfiRequestsResult = await ddbClient.send(rfiRequestsCommand);
 
-    console.log(rfiRequestsResult);
-    console.log("------------------------------------------------")
-
-    const requestIds = rfiRequestsResult.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.requestId }));
+    const requestIds = rfiRequestsResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.requestId })
+    );
 
     if (requestIds.length !== 0) {
       let unique = requestIds
@@ -82,17 +70,13 @@ async function listRFIRequests(ctx) {
       const requestCommand = new BatchGetItemCommand(requestParams);
       const requestResult = await ddbClient.send(requestCommand);
 
-      const objRequest = requestResult.Responses.RequestTable.map(
-        (i) => unmarshall(i)
-      );
-      const objRFIRequests = rfiRequestsResult.Items.map((i) =>
+      const objRequest = requestResult.Responses.RequestTable.map((i) =>
         unmarshall(i)
       );
+      const objRFIRequests = rfiRequestsResult.Items.map((i) => unmarshall(i));
 
       const response = objRFIRequests.map((item) => {
-        const filterRequest = objRequest.find(
-          (u) => u.id === item.requestId
-        );
+        const filterRequest = objRequest.find((u) => u.id === item.requestId);
         return { ...item, ...filterRequest };
       });
       return {
