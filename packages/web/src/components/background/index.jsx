@@ -315,7 +315,7 @@ const Background = () => {
 
               let arrConcat = witness.concat(result);
               setWitness([...new Set(sortByOrder(arrConcat))]);
-            }, 1000);
+            }, 200);
           }
         }
       } else {

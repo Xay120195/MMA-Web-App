@@ -771,18 +771,19 @@ const TableInfo = ({
   //   tempWitness.splice(targetIndex + 1, 0, df.item);
   //   return setWitness(tempWitness);
   // };
-  const handleBottomScroll = useCallback(() => {
+  
+  /*const handleBottomScroll = useCallback(() => {
     console.log("Reached bottom page " + Math.round(performance.now()));
     setTimeout(() => {
       setLoading(true);
-    }, 300);
+    }, 200);
     setTimeout(() => {
       loadMoreBackground();
       setLoading(false);
-    }, 1000);
+    }, 400);
   });
 
-  useBottomScrollListener(handleBottomScroll);
+  useBottomScrollListener(handleBottomScroll);*/
 
   const mUpdateMatterFileDesc = `
       mutation updateMatterFile ($id: ID, $details: String) {
