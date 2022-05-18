@@ -20,7 +20,6 @@ async function listClientMatterLabels(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
-      ConsistentRead: true,
     };
 
     if (limit !== undefined) {
@@ -39,6 +38,7 @@ async function listClientMatterLabels(ctx) {
         RequestItems: {
           LabelsTable: {
             Keys: labelIds,
+            ConsistentRead: true,
           },
         },
       };
