@@ -1868,7 +1868,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                         >
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="px-2 py-6 inline-flex"
+                                            className="px-2 py-3 inline-flex align-top"
                                           >
                                             <MdDragIndicator
                                               className="text-2xl"
@@ -1902,7 +1902,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               {index + 1}
                                             </span>
                                           </td>
-                                          <td>
+                                          <td className="align-top py-3">
                                             <DatePicker
                                               popperProps={{
                                                 positionFixed: true,
@@ -1925,7 +1925,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             <div className="inline-flex">
                                               {data.type
@@ -2035,7 +2035,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             <div className="flex">
                                               <span
@@ -2082,7 +2082,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             <CreatableSelect
                                               defaultValue={() =>
@@ -2107,7 +2107,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             {data.backgrounds.items !== null &&
                                               data.backgrounds.items
