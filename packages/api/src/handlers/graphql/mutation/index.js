@@ -371,7 +371,8 @@ async function bulkCreateLabel(clientMatterId, labels) {
       };
 
       const labelCmd = new BatchWriteItemCommand(labelParams);
-      await ddbClient.send(labelCmd);
+      const labelResp = await ddbClient.send(labelCmd);
+      console.log("labelResp", labelResp);
     });
 
     cm_batches.forEach(async (data) => {
@@ -384,7 +385,8 @@ async function bulkCreateLabel(clientMatterId, labels) {
       const clientMatterLabelCmd = new BatchWriteItemCommand(
         clientMatterLabelParams
       );
-      await ddbClient.send(clientMatterLabelCmd);
+      const clientMatterLabelResp = await ddbClient.send(clientMatterLabelCmd);
+      console.log("clientMatterLabelResp", clientMatterLabelResp);
     });
 
     resp = arrItems.map((i) => {
