@@ -298,6 +298,109 @@ async function createLabel(data) {
   return resp;
 }
 
+async function bulkCreateLabel(clientMatterId, labels) {
+  let resp = {};
+  try {
+    const arrItems = [],
+      arrClientMatterLabels = [];
+
+    for (var i = 0; i < labels.length; i++) {
+      const labelId = v4();
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: labelId,
+            name: labels[i].name,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+
+      arrClientMatterLabels.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            labelId: labelId,
+            clientMatterId: clientMatterId,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0,
+      cm_batches = [],
+      cm_current_batch = [],
+      cm_item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      if (item_count % 5 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    if (current_batch.length > 0 && current_batch.length != 5) {
+      batches.push(current_batch);
+    }
+
+    arrClientMatterLabels.forEach((data) => {
+      cm_item_count++;
+      cm_current_batch.push(data);
+
+      if (cm_item_count % 5 == 0) {
+        cm_batches.push(cm_current_batch);
+        cm_current_batch = [];
+      }
+    });
+
+    if (cm_current_batch.length > 0 && cm_current_batch.length != 5) {
+      cm_batches.push(cm_current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const labelParams = {
+        RequestItems: {
+          LabelsTable: data,
+        },
+      };
+
+      const labelCmd = new BatchWriteItemCommand(labelParams);
+      await ddbClient.send(labelCmd);
+    });
+
+    cm_batches.forEach(async (data) => {
+      const clientMatterLabelParams = {
+        RequestItems: {
+          ClientMatterLabelTable: data,
+        },
+      };
+
+      const clientMatterLabelCmd = new BatchWriteItemCommand(
+        clientMatterLabelParams
+      );
+      await ddbClient.send(clientMatterLabelCmd);
+    });
+
+    resp = arrItems.map((i) => {
+      return unmarshall(i.PutRequest.Item);
+    });
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function tagFileLabel(data) {
   let resp = {};
   try {
@@ -943,7 +1046,6 @@ async function createRFI(data) {
 }
 
 async function createRequest(data) {
-  console.log("createRequest()");
   let resp = {};
   try {
     const rawParams = {
@@ -961,8 +1063,6 @@ async function createRequest(data) {
       Item: param,
     });
     const req = await ddbClient.send(cmd);
-
-    console.log(req);
 
     const rfiRequestParams = {
       id: v4(),
@@ -1245,7 +1345,6 @@ async function bulkUpdateBackgroundOrders(data) {
           UpdateExpression,
         } = getUpdateExpressions(arrangement);
 
-        console.log("briefBackgroundId", briefBackgroundId);
         if (briefBackgroundId) {
           const updateBriefBackgroundCmd = new UpdateItemCommand({
             TableName: "BriefBackgroundTable",
@@ -1702,6 +1801,11 @@ const resolvers = {
     },
     labelCreate: async (ctx) => {
       return await createLabel(ctx.arguments);
+    },
+    labelBulkCreate: async (ctx) => {
+      const { clientMatterId, labels } = ctx.arguments;
+
+      return await bulkCreateLabel(clientMatterId, labels);
     },
     fileLabelTag: async (ctx) => {
       return await tagFileLabel(ctx.arguments);

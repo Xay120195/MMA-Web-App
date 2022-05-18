@@ -84,15 +84,22 @@ export async function getMatterFiles(ctx) {
 
     while (read === true) {
       const cmd = new QueryCommand(param);
-      const { Items, LastEvaluatedKey } = await ddbClient.send(cmd);
+      const { Items, LastEvaluatedKey, Count } = await ddbClient.send(cmd);
       nextToken = LastEvaluatedKey;
 
       result.push(...Items);
 
+      // if nextToken is has value
+      // and items is empty
+      // set param.ExclusiveStartKey to lastEvaluatedKey
+      if (nextToken && Count === 0) {
+        param.ExclusiveStartKey = LastEvaluatedKey;
+      }
+
       // if array `result` has items
       // or theres nothing to paginate,
       // then stop the loop
-      if (result.length > 0 || !nextToken) {
+      if ((Count > 0 && nextToken) || !nextToken) {
         read = false;
       }
     }
