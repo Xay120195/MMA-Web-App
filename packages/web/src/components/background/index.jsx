@@ -350,7 +350,7 @@ const Background = () => {
     timeout: 60 * 40,
     onAction: handleOnAction,
     onIdle: handleOnIdle,
-    debounce: 500
+    debounce: 1000
   })
 
   function sortByOrder(arr) {
