@@ -1108,7 +1108,7 @@ const TableInfo = ({
                                     >
                                       <td
                                         {...provider.dragHandleProps}
-                                        className="px-1 py-3"
+                                        className="px-1 py-3 align-top"
                                       >
                                         <div className="flex items-center ">
                                           <MdDragIndicator
@@ -1143,7 +1143,7 @@ const TableInfo = ({
                                       </td>
 
                                       {checkDate && (
-                                        <td {...provider.dragHandleProps}>
+                                        <td className="align-top py-3" {...provider.dragHandleProps}>
                                           <div>
                                             <DatePicker
                                               className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-20"
@@ -1170,7 +1170,7 @@ const TableInfo = ({
                                       {checkDesc && (
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="w-10/12 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                          className="w-10/12 px-2 py-3 align-top place-items-center relative flex-wrap"
                                         >
                                           <div
                                             className="p-2 w-full h-full font-poppins"
@@ -1212,7 +1212,7 @@ const TableInfo = ({
                                       {checkDocu && (
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="py-2 px-3 w-80 text-sm text-gray-500"
+                                          className="py-3 px-3 w-80 text-sm text-gray-500 align-top"
                                         >
                                           {selectRow.find(
                                             (x) => x.id === item.id
