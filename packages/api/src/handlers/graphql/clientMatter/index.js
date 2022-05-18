@@ -38,6 +38,7 @@ async function listClientMatterLabels(ctx) {
         RequestItems: {
           LabelsTable: {
             Keys: labelIds,
+            ConsistentRead: true,
           },
         },
       };
