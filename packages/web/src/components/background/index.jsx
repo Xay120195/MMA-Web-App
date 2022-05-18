@@ -195,7 +195,7 @@ const Background = () => {
         query: qBriefBackgroundList,
         variables: {
           id: background_id,
-          limit: 25,
+          limit: 100,
           nextToken: null,
           sortOrder: "ORDER_ASC",
         },
@@ -296,7 +296,7 @@ const Background = () => {
 
         const backgroundOpt = await API.graphql({
           query: qBriefBackgroundList,
-          variables: { id: background_id, limit: 25, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+          variables: { id: background_id, limit: 50, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
         });
 
         setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
@@ -344,10 +344,16 @@ const Background = () => {
     loadMoreBackground();
   }
 
+  const handleOnIdle = event => {
+    console.log('User is on idle');
+    loadMoreBackground();
+  }
+
   useIdleTimer({
-    timeout: 1000 * 60 * 15,
+    timeout: 60 * 40,
     onAction: handleOnAction,
-    debounce: 1000
+    onIdle: handleOnIdle,
+    debounce: 500
   })
 
   function sortByOrder(arr) {
