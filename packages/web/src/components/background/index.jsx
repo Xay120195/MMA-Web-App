@@ -70,7 +70,7 @@ const Background = () => {
   const [alertMessage, setalertMessage] = useState();
   const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
-  const [searchDescription, setSearchDescription] = useState();
+  const [searchDescription, setSearchDescription] = useState("");
 
   useEffect(() => {
     getBackground();
@@ -193,7 +193,7 @@ const Background = () => {
         variables: {
           id: background_id,
           limit: 25,
-          nextToken: vNextToken,
+          nextToken: null,
           sortOrder: "ORDER_ASC",
         },
       });
@@ -317,7 +317,14 @@ const Background = () => {
               setLoading(false);
               setMaxLoading(false);
 
-              let arrConcat = witness.concat(result);
+              var arrConcat = witness.concat(result);
+
+              if(searchDescription !== "") {
+                arrConcat = witness.concat(result).filter((x) =>
+                x.description.toLowerCase().includes(searchDescription.toLowerCase()));
+                console.log("HELO", searchDescription);
+              }
+
               setWitness([...new Set(sortByOrder(arrConcat))]);
             }, 200);
           }
@@ -492,14 +499,14 @@ const Background = () => {
     console.log("filter", v);
     if (v === "") {
       // Refresh page if necessary
+      setVnextToken(null);
       getBackground();
-      console.log("JDHJDK");
     } else {
       const filterRecord = witness.filter((x) =>
         x.description.toLowerCase().includes(v.toLowerCase())
       );
       console.log("filterRecord:", filterRecord);
-      setWitness(filterRecord);
+      setWitness(sortByOrder(filterRecord));
     }
   };
 
