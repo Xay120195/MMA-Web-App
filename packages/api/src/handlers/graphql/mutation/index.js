@@ -299,8 +299,8 @@ async function createLabel(data) {
 }
 
 async function bulkCreateLabel(clientMatterId, labels) {
-  let resp = {};
   try {
+    let resp = {};
     const arrItems = [],
       arrClientMatterLabels = [];
 
@@ -330,10 +330,7 @@ async function bulkCreateLabel(clientMatterId, labels) {
 
     let batches = [],
       current_batch = [],
-      item_count = 0,
-      cm_batches = [],
-      cm_current_batch = [],
-      cm_item_count = 0;
+      item_count = 0;
 
     arrItems.forEach((data) => {
       item_count++;
@@ -349,6 +346,34 @@ async function bulkCreateLabel(clientMatterId, labels) {
       batches.push(current_batch);
     }
 
+    batches.forEach(async (data) => {
+      const labelParams = {
+        RequestItems: {
+          LabelsTable: data,
+        },
+      };
+
+      const labelCmd = new BatchWriteItemCommand(labelParams);
+      const labelResp = await ddbClient.send(labelCmd);
+      console.log("labelResp", labelResp);
+    });
+
+    return await bulkCreateClientMatterLabel(arrItems, arrClientMatterLabels);
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+}
+
+async function bulkCreateClientMatterLabel(arrItems, arrClientMatterLabels) {
+  try {
+    let cm_batches = [],
+      cm_current_batch = [],
+      cm_item_count = 0;
+
     arrClientMatterLabels.forEach((data) => {
       cm_item_count++;
       cm_current_batch.push(data);
@@ -362,18 +387,6 @@ async function bulkCreateLabel(clientMatterId, labels) {
     if (cm_current_batch.length > 0 && cm_current_batch.length != 5) {
       cm_batches.push(cm_current_batch);
     }
-
-    batches.forEach(async (data) => {
-      const labelParams = {
-        RequestItems: {
-          LabelsTable: data,
-        },
-      };
-
-      const labelCmd = new BatchWriteItemCommand(labelParams);
-      const labelResp = await ddbClient.send(labelCmd);
-      console.log("labelResp", labelResp);
-    });
 
     cm_batches.forEach(async (data) => {
       const clientMatterLabelParams = {
@@ -389,7 +402,7 @@ async function bulkCreateLabel(clientMatterId, labels) {
       console.log("clientMatterLabelResp", clientMatterLabelResp);
     });
 
-    resp = arrItems.map((i) => {
+    return arrItems.map((i) => {
       return unmarshall(i.PutRequest.Item);
     });
   } catch (e) {
@@ -399,8 +412,6 @@ async function bulkCreateLabel(clientMatterId, labels) {
     };
     console.log(resp);
   }
-
-  return resp;
 }
 
 async function tagFileLabel(data) {
