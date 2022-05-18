@@ -7,3 +7,19 @@
 .react-datepicker-popper {
     z-index: 40 !important;
 }
+
+.chip{
+    display: none !important;
+}
+
+/* #search_input{
+    z-index: 40 !important;
+}
+
+.optionListContainer {
+    z-index: 40 !important;
+}
+
+.optionContainer{
+    z-index: 40 !important;
+} */
