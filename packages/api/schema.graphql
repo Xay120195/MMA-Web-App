@@ -475,6 +475,7 @@ type Mutation {
   featureCreate(name: String, label: String, page: PageInput): Feature
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
   labelCreate(name: String, clientMatterId: String): Label
+  labelBulkCreate(clientMatterId: String, labels: [LabelInput]): [Label]
   labelUpdate(id: ID, name: String, description: String): Label
   matterCreate(name: String, companyId: String): Matter
   matterFileBulkCreate(files: [MatterFileInput]): [File]
