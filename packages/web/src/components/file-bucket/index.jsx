@@ -39,9 +39,9 @@ import {
 } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 import imgLoading from "../../assets/images/loading-circle.gif";
+import Multiselect from "multiselect-react-dropdown";
 import { useIdleTimer } from 'react-idle-timer';
 import ScrollToTop from "react-scroll-to-top";
-
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
@@ -90,6 +90,8 @@ export default function FileBucket() {
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
   const [showAttachBackgroundButton, setshowAttachBackgroundButton] =
     useState(false);
+  const [showCopyToBackgroundButton, setShowCopyToBackgroundButton] =
+    useState(false);
   var fileCount = 0;
 
   const [filterLabels, setFilterLabels] = useState(false);
@@ -99,6 +101,12 @@ export default function FileBucket() {
 
   const [filteredFiles, setFilteredFiles] = useState(null);
   const [filterState, setFilterState] = useState(false);
+
+  const [copyOptions, showCopyOptions] = useState(false);
+
+  const [Briefs, setBriefs] = useState(null);
+  const [copyBgOptions, setCopyBgOptions] = useState(null);
+  const [copyBgIds, setCopyBgIds] = useState([]);
 
   const hideToast = () => {
     setShowToast(false);
@@ -509,6 +517,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     if (searchFile !== undefined) {
       filterRecord(searchFile);
+    }
+
+    if (Briefs === null){
+      getBriefs();
     }
 
     console.log("searchFile", searchFile);
@@ -1135,11 +1147,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      setShowCopyToBackgroundButton(true);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
     } else {
       setshowRemoveFileButton(false);
+      setShowCopyToBackgroundButton(false);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
@@ -1176,11 +1190,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      setShowCopyToBackgroundButton(true);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
     } else {
       setshowRemoveFileButton(false);
+      setShowCopyToBackgroundButton(false);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
@@ -1197,6 +1213,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     selectedCompleteDataRows = [];
     var next = 1;
     setshowRemoveFileButton(false);
+    setShowCopyToBackgroundButton(false);
     setResultMessage(`Deleting File`);
     setShowToast(true);
     handleModalClose();
@@ -1475,6 +1492,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
       setshowAttachBackgroundButton(false);
+      setShowCopyToBackgroundButton(false);
       setshowRemoveFileButton(false);
       getMatterFiles(next);
 
@@ -1584,6 +1602,135 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     return check;
   };
 
+  //new copy to BG
+  const handleShowCopyOptions=() => {
+    if(copyOptions){
+      showCopyOptions(false);
+    }else{
+      showCopyOptions(true);
+    }
+    
+  }
+
+  const listBriefs = `
+  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
+    clientMatter(id: $id) {
+      briefs(limit: $limit, nextToken: $nextToken) {
+        items {
+          id
+          name
+          date
+          order
+        }
+      }
+    }
+  }
+  `;
+
+  const getBriefs = async () => {
+    var opts = [];
+    console.log("matterid", matter_id);
+    const params = {
+      query: listBriefs,
+      variables: {
+        id: matter_id,
+        limit: 100,
+        nextToken: null,
+      },
+    };
+
+    await API.graphql(params).then((brief) => {
+      const matterFilesList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", matterFilesList);
+      var temp = matterFilesList.map(x=> opts = [...opts, {label: x.name, value: x.id}]);
+      setCopyBgOptions(opts);
+    });
+  };
+
+  const handleFilterChange =(evt)=>{
+    setCopyBgIds(evt);
+  }
+
+  const handleCopyToBg = async ()=>{
+    console.log("cb",copyBgOptions);
+
+    let temp = copyBgIds;
+    var searchIds = []
+
+    for(var i=0; i<temp.length; i++){
+      copyBgOptions.map(x=> x.label === temp[i] ? searchIds = [...searchIds, x.value] : x)
+    }
+
+    console.log("searchthis", searchIds); //ids of backgrounds [id, id] correct
+
+    //from old code, attach to bg
+    let arrFiles = [];
+    setShowToast(true);
+    setResultMessage(`Copying files to background..`);
+
+    showCopyOptions(false);
+    setshowRemoveFileButton(false);
+    setShowCopyToBackgroundButton(false);
+    setshowAttachBackgroundButton(false);
+    
+
+    arrFiles = selectedRows.map(({ id, details, date }) => ({
+      id: id,
+      details: details,
+      date: date,
+    }));
+
+    var counter = 0;
+    for (let j = 0; j < searchIds.length; j++) {
+      for (let i = 0; i < arrFiles.length; i++) {
+        counter++;
+        const createBackgroundRow = await API.graphql({
+          query: mCreateBackground,
+          variables: {
+            briefId: searchIds[j],
+            description: arrFiles[i].details,
+            date:
+              arrFiles[i].date !== null
+                ? new Date(arrFiles[i].date).toISOString()
+                : new Date().toISOString(),
+          },
+        });
+
+        if (createBackgroundRow.data.backgroundCreate.id !== null) {
+          const request = await API.graphql({
+            query: mUpdateBackgroundFile,
+            variables: {
+              backgroundId: createBackgroundRow.data.backgroundCreate.id,
+              files: [{ id: arrFiles[i].id }],
+            },
+          });
+        }
+      }
+    }
+    setShowToast(false);
+    
+    setResultMessage(`Files successfully copied in backgrounds!`);
+    setShowToast(true);
+
+    setTimeout(() => {
+      setShowToast(false);
+    }, 1000);
+
+    selectedRows = [];
+    selectedCompleteDataRows = [];
+
+    setTimeout(() => {
+      setShowToast(false);
+      getBriefs();
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+    }, 1000);
+
+    
+  }
+  
+
   return (
     <>
       <div
@@ -1617,7 +1764,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         </div>
 
         <div
-          className="bg-white z-30 "
+          className="bg-white z-40 "
           style={{ position: "sticky", top: "0" }}
         >
           <nav aria-label="Breadcrumb" style={style} className="mt-4">
@@ -1700,7 +1847,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
               />
             </div>
           )}
-          <div className="pl-2 py-1 grid grid-cols-1 gap-4">
+          <div className="z-50 pl-2 py-1 grid grid-cols-1 gap-4">
             <div className="">
               {matterFiles !== null && matterFiles.length !== 0 && (
                 <input
@@ -1717,17 +1864,51 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 FILE UPLOAD &nbsp;
                 <FiUpload />
               </button>
-
-              {showRemoveFileButton &&
-                (backgroundRowId === "000" || backgroundRowId) && (
+              <div className="inline-flex">
+              {showCopyToBackgroundButton &&
+                (
                   <button
                     className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-                    onClick={() => addFileBucketToBackground()}
+                    onClick={() => handleShowCopyOptions()}
                   >
                     COPY TO BACKGROUND PAGE &nbsp;
                     <FiCopy />
                   </button>
                 )}
+              {copyOptions && (
+                  <div 
+                    className="w-72 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none"
+                    
+                  >
+                    <div className="flex">
+                    <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
+                      Results
+                    </p>
+                    <p 
+                      className="px-2 py-2 text-blue-400 text-xs font-semibold ml-16  cursor-pointer"
+                      onClick={() => handleCopyToBg()}
+                    >
+                      
+                      Copy To Background
+                    </p>
+                    </div>
+
+                    <Multiselect
+                        isObject={false}
+                        onSelect={(event) => handleFilterChange(event)}
+                        options={copyBgOptions.map(x=>x.label)}
+                        value={selected}
+                        showCheckbox
+                        className="z-50"
+                        placeholder={"Search"}
+                      />
+                  </div>
+                 
+                      
+            
+              )}
+              </div>
+              
 
               {showAttachBackgroundButton && backgroundRowId !== "000" && (
                 <button
@@ -1738,6 +1919,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   <BsArrowLeft />
                 </button>
               )}
+
+                {/* {matterFiles !== null &&
+                matterFiles.length !== 0 &&
+                showRemoveFileButton && (
+                  <button
+                    className="bg-green-500 hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                    onClick={() => addFileBucketToBackground()}
+                  >
+                    COPY TO BACKGROUND PAGE &nbsp;
+                    <FiCopy />
+                  </button>
+                )} */}
 
               {matterFiles !== null &&
                 matterFiles.length !== 0 &&
@@ -1956,12 +2149,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               {index + 1}
                                             </span>
                                           </td>
-                                          <td className="align-top py-3">
+                                          <td className="align-top py-2">
                                             <DatePicker
                                               popperProps={{
                                                 positionFixed: true,
                                               }}
-                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
+                                              className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
                                               dateFormat="dd MMM yyyy"
                                               selected={
                                                 data.date !== null
