@@ -33,9 +33,8 @@ import {
 } from "react-icons/gr";
 import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
-import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
-
+import { useIdleTimer } from 'react-idle-timer';
 import ScrollToTop from "react-scroll-to-top";
 
 export var selectedRows = [];
@@ -536,7 +535,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 20,
+        limit: 100,
         nextToken: next === 1 ? null : vNextToken,
       },
     };
@@ -560,7 +559,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         variables: {
           matterId: matter_id,
           isDeleted: false,
-          limit: 20,
+          limit: 50,
           nextToken: vNextToken,
         },
       };
@@ -1435,23 +1434,22 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }, 1000);
   }
 
-  const handleBottomScroll = useCallback(() => {
-    if (filterState) {
-      console.log("cancel loadmore");
-      setLoading(false);
-    } else {
-      console.log("Reached bottom page " + Math.round(performance.now()));
-      setTimeout(() => {
-        setLoading(true);
-      }, 300);
-      setTimeout(() => {
-        loadMoreMatterFiles();
-        setLoading(false);
-      }, 1000);
-    }
-  });
+  const handleOnAction = event => {
+    console.log('User did something', event);
+    loadMoreMatterFiles();
+  }
 
-  useBottomScrollListener(handleBottomScroll);
+  const handleOnIdle = event => {
+    console.log('User is on idle', event);
+    loadMoreMatterFiles();
+  }
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000
+  });
 
   const handleDuplicate = async () => {
     let next = 1;
