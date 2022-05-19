@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
-import { useIdleTimer } from 'react-idle-timer';
+import { useIdleTimer } from "react-idle-timer";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
@@ -78,7 +78,6 @@ const Background = () => {
     if (bgName === null) {
       getBriefs();
     }
-
   }, []);
 
   const hideToast = () => {
@@ -157,7 +156,7 @@ const Background = () => {
     setWait(false);
 
     // if (background_id === "000") {
-      // Remove this condition after migration
+    // Remove this condition after migration
     //   const backgroundOpt = await API.graphql({
     //     query: qListBackground,
     //     variables: { id: matter_id, limit: 25, nextToken: vNextToken },
@@ -188,41 +187,41 @@ const Background = () => {
     //     }
     //   }
     // } else {
-      const backgroundOpt = await API.graphql({
-        query: qBriefBackgroundList,
-        variables: {
-          id: background_id,
-          limit: 100,
-          nextToken: null,
-          sortOrder: "ORDER_ASC",
-        },
-      });
+    const backgroundOpt = await API.graphql({
+      query: qBriefBackgroundList,
+      variables: {
+        id: background_id,
+        limit: 100,
+        nextToken: null,
+        sortOrder: "ORDER_ASC",
+      },
+    });
 
-      setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+    setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
 
-      if (backgroundOpt.data.brief.backgrounds.items !== null) {
-        result = backgroundOpt.data.brief.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
+    if (backgroundOpt.data.brief.backgrounds.items !== null) {
+      result = backgroundOpt.data.brief.backgrounds.items.map(
+        ({ id, description, date, createdAt, order, files }) => ({
+          createdAt: createdAt,
+          id: id,
+          description: description,
+          date: date,
+          order: order,
+          files: files,
+        })
+      );
 
-        setPageTotal(result.length);
-        setPageSize(20);
-        setPageIndex(1);
+      setPageTotal(result.length);
+      setPageSize(20);
+      setPageIndex(1);
 
-        if (witness !== null) {
-          console.log(result);
-          setWitness(sortByOrder(result));
-          setWait(true);
-          setMaxLoading(false);
-        }
+      if (witness !== null) {
+        console.log(result);
+        setWitness(sortByOrder(result));
+        setWait(true);
+        setMaxLoading(false);
       }
+    }
     //}
   };
 
@@ -247,6 +246,7 @@ const Background = () => {
   };
 
   const loadMoreBackground = async () => {
+    console.log("loadMoreBackground()");
     if (background_id === "000") {
       // Remove this condition after migration
       if (vNextToken !== null && !loading) {
@@ -288,12 +288,18 @@ const Background = () => {
       }
     } else {
       if (vNextToken !== null && !loading) {
+        console.log("Next Token is not null, fetch next page");
         setLoading(true);
         let result = [];
 
         const backgroundOpt = await API.graphql({
           query: qBriefBackgroundList,
-          variables: { id: background_id, limit: 50, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+          variables: {
+            id: background_id,
+            limit: 50,
+            nextToken: vNextToken,
+            sortOrder: "ORDER_ASC",
+          },
         });
 
         setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
@@ -319,39 +325,72 @@ const Background = () => {
 
               var arrConcat = witness.concat(result);
 
-              if(searchDescription !== "") {
-                arrConcat = witness.concat(result).filter((x) =>
-                x.description.toLowerCase().includes(searchDescription.toLowerCase()));
+              if (searchDescription !== "") {
+                arrConcat = witness
+                  .concat(result)
+                  .filter((x) =>
+                    x.description
+                      .toLowerCase()
+                      .includes(searchDescription.toLowerCase())
+                  );
                 console.log("HELO", searchDescription);
               }
 
-              setWitness([...new Set(sortByOrder(arrConcat))]);
+              if (ascDesc !== null) {
+                console.log("sorting is ascending?", ascDesc);
+
+                if (ascDesc === true) {
+                  console.log("set order by Date ASC, CreatedAt DESC");
+
+                  arrConcat = arrConcat
+                    .slice()
+                    .sort(
+                      (a, b) =>
+                        new Date(a.date) - new Date(b.date) ||
+                        new Date(b.createdAt) - new Date(a.createdAt)
+                    );
+                } else if (!ascDesc) {
+                  console.log("set order by Date DESC, CreatedAt DESC");
+
+                  arrConcat = arrConcat
+                    .slice()
+                    .sort(
+                      (a, b) =>
+                        new Date(b.date) - new Date(a.date) ||
+                        new Date(b.createdAt) - new Date(a.createdAt)
+                    );
+                }
+
+                setWitness([...new Set(arrConcat)]);
+              } else {
+                setWitness([...new Set(sortByOrder(arrConcat))]);
+              }
             }, 200);
           }
         }
       } else {
-        console.log("Last Result!- NEW");
+        console.log("All data has been loaded.");
         setMaxLoading(true);
       }
     }
   };
 
-  const handleOnAction = event => {
-    console.log('User did something', event);
+  const handleOnAction = (event) => {
+    console.log("User did something", event);
     loadMoreBackground();
-  }
+  };
 
-  const handleOnIdle = event => {
-    console.log('User is on idle');
+  const handleOnIdle = (event) => {
+    console.log("User is on idle");
     loadMoreBackground();
-  }
+  };
 
   useIdleTimer({
     timeout: 60 * 40,
     onAction: handleOnAction,
     onIdle: handleOnIdle,
-    debounce: 1000
-  })
+    debounce: 1000,
+  });
 
   function sortByOrder(arr) {
     const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
@@ -631,19 +670,18 @@ const Background = () => {
         />
 
         {/* {witness !== null && witness.length !== 0 && ( */}
-          <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
-            <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
-              <IoIcons.IoIosSearch />
-            </span>
-            <input
-              type="search"
-              placeholder="Type to search description in the Background ..."
-              onChange={handleSearchDescriptionChange}
-              className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-            />
-          </div>
+        <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
+          <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+            <IoIcons.IoIosSearch />
+          </span>
+          <input
+            type="search"
+            placeholder="Type to search description in the Background ..."
+            onChange={handleSearchDescriptionChange}
+            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+          />
+        </div>
         {/* )} */}
-
       </div>
       <TableInfo
         client_name={client_name}
