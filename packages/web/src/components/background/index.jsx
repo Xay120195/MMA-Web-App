@@ -46,7 +46,7 @@ const Background = () => {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
+  const [ascDesc, setAscDesc] = useState(null);
   const [activateButton, setActivateButton] = useState(false);
   const [pasteButton, setPasteButton] = useState(false);
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
@@ -354,16 +354,31 @@ const Background = () => {
   });
 
   function sortByOrder(arr) {
-    const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
+    // const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
+
+    var zero;
     let sort;
-    if (isAllZero) {
-      sort = arr.sort(
-        (a, b) =>
-          a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-      );
-    } else {
+
+    if(arr){
+    // arr.map(
+    //   (x, y)=> x.order - y.order === 0 ?
+    //   sort=arr.sort((a, b)=>new Date(b.createdAt) - new Date(a.createdAt))
+    //   :
+       sort=arr.sort((a, b)=> a.order-b.order === 0 
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : a.order - b.order )
+    //);
+    }else{
       sort = arr;
     }
+    // if (isAllZero) {
+    //   sort = arr.sort(
+    //     (a, b) =>
+    //       a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+    //   );
+    // } else {
+    //   sort = arr;
+    // }
     return sort;
   }
 
