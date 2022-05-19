@@ -351,7 +351,7 @@ const Background = () => {
     onAction: handleOnAction,
     onIdle: handleOnIdle,
     debounce: 1000
-  })
+  });
 
   function sortByOrder(arr) {
     const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
