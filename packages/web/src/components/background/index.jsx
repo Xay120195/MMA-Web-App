@@ -46,7 +46,7 @@ const Background = () => {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
+  const [ascDesc, setAscDesc] = useState(null);
   const [activateButton, setActivateButton] = useState(false);
   const [pasteButton, setPasteButton] = useState(false);
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
