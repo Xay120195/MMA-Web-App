@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
-import barsFilter from "../../assets/images/bars-filter.svg";
+// import barsFilter from "../../assets/images/bars-filter.svg";
 import ellipsis from "../../shared/ellipsis";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
@@ -21,7 +21,7 @@ import PageReferenceModal from "./page-reference-modal";
 //import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
+import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
 import {
   GrDocumentPdf,
   GrDocumentText,
@@ -31,7 +31,12 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
-import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
+import {
+  BsArrowLeft,
+  BsFillTrashFill,
+  BsSortUpAlt,
+  BsSortDown,
+} from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
@@ -70,7 +75,7 @@ export default function FileBucket() {
   const [vNextToken, setVnextToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
+  const [ascDesc, setAscDesc] = useState(null);
   const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
   const [pageReferenceFileId, setPageReferenceFileId] = useState("");
   const [pageReferenceBackgroundId, setPageReferenceBackgroundId] =
@@ -1484,29 +1489,26 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const SortBydate = async () => {
-    const isAllZero = matterFiles.every(
-      (item) => item.order >= 0 && item.order !== 0
-    );
-    if (!ascDesc) {
-      console.log("f");
+    // const isAllZero = matterFiles.every(
+    //   (item) => item.order >= 0 && item.order !== 0
+    // );
+
+    if (ascDesc == null) {
+      console.log("set order to ASC");
       setAscDesc(true);
       setMatterFiles(
-        matterFiles.slice().sort(
-          (a, b) =>
-            //isAllZero ? b.order - a.order :
-            new Date(b.date) - new Date(a.date)
-        )
+        matterFiles.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
       );
-    } else {
-      console.log("t");
+    } else if (ascDesc === true) {
+      console.log("set order to DESC");
       setAscDesc(false);
       setMatterFiles(
-        matterFiles.slice().sort(
-          (a, b) =>
-            //isAllZero ? a.order - b.order :
-            new Date(a.date) - new Date(b.date)
-        )
+        matterFiles.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
       );
+    } else if (!ascDesc) {
+      console.log("set order to DEFAULT");
+      setAscDesc(null);
+      setMatterFiles(matterFiles.slice().sort((a, b) => a.order - b.order)); // default to sort by order
     }
   };
 
@@ -1811,14 +1813,48 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                   Item No.
                                 </th>
                                 <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
-                                  <span className="ml-4">Date</span>
-                                  <img
+                                  <span className="ml-4">Date &nbsp;</span>
+                                  {/* <img
                                     src={barsFilter}
                                     className="text-2xl w-4 mx-4"
                                     alt="filter"
                                     onClick={SortBydate}
                                     style={{ cursor: "pointer" }}
-                                  />
+                                  /> */}
+                                  {(() => {
+                                    console.log("ascDesc:", ascDesc);
+                                    if (ascDesc == null) {
+                                      return (
+                                        <FaSort
+                                          className="mx-auto inline-block"
+                                          alt="Sort"
+                                          title="Sort"
+                                          onClick={SortBydate}
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      );
+                                    } else if (ascDesc === true) {
+                                      return (
+                                        <BsSortUpAlt
+                                          className="mx-auto inline-block"
+                                          alt="Sort"
+                                          title="Sort"
+                                          onClick={SortBydate}
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      );
+                                    } else if (ascDesc === false) {
+                                      return (
+                                        <BsSortDown
+                                          className="mx-auto inline-block"
+                                          alt="Sort"
+                                          title="Sort"
+                                          onClick={SortBydate}
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      );
+                                    }
+                                  })()}
                                 </th>
                                 <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                   Name
