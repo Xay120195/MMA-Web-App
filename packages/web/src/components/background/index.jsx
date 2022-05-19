@@ -81,7 +81,7 @@ const Background = () => {
       getBriefs();
     }
 
-    convertUrl();
+    //convertUrl();
   }, []);
 
   const hideToast = () => {
