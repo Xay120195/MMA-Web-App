@@ -478,23 +478,43 @@ const TableInfo = ({
   const SortBydate = async () => {
     console.group("SortBydate()");
     if (ascDesc == null) {
-      console.log("set order to ASC");
+      console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
       setWitness(
-        witness.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+        witness
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.date) - new Date(b.date) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
       );
     } else if (ascDesc === true) {
-      console.log("set order to DESC");
+      console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
       setWitness(
-        witness.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+        witness
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(b.date) - new Date(a.date) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
       );
     } else if (!ascDesc) {
-      console.log("set order to DEFAULT");
+      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
       setAscDesc(null);
-      setWitness(witness.slice().sort((a, b) => a.order - b.order)); // default to sort by order
+      setWitness(
+        witness
+          .slice()
+          .sort(
+            (a, b) =>
+              a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
+          )
+      ); // default to sort by order
     }
 
+    console.log(witness);
     console.groupEnd();
   };
 

@@ -1494,21 +1494,41 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     // );
 
     if (ascDesc == null) {
-      console.log("set order to ASC");
+      console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
       setMatterFiles(
-        matterFiles.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+        matterFiles
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.date) - new Date(b.date) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
       );
     } else if (ascDesc === true) {
-      console.log("set order to DESC");
+      console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
       setMatterFiles(
-        matterFiles.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+        matterFiles
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.date) - new Date(b.date) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
       );
     } else if (!ascDesc) {
-      console.log("set order to DEFAULT");
+      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
       setAscDesc(null);
-      setMatterFiles(matterFiles.slice().sort((a, b) => a.order - b.order)); // default to sort by order
+      setMatterFiles(
+        matterFiles
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.date) - new Date(b.date) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
+      ); // default to sort by order
     }
   };
 
