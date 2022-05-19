@@ -328,68 +328,33 @@ async function bulkCreateLabel(clientMatterId, labels) {
       });
     }
 
-    let batches = [],
-      current_batch = [],
-      item_count = 0,
-      cm_batches = [],
-      cm_current_batch = [],
-      cm_item_count = 0;
+    const labelParams = {
+      RequestItems: {
+        LabelsTable: arrItems,
+      },
+    };
 
-    arrItems.forEach((data) => {
-      item_count++;
-      current_batch.push(data);
+    const labelCmd = new BatchWriteItemCommand(labelParams);
+    const labelRes = await ddbClient.send(labelCmd);
 
-      if (item_count % 5 == 0) {
-        batches.push(current_batch);
-        current_batch = [];
-      }
-    });
-
-    if (current_batch.length > 0 && current_batch.length != 5) {
-      batches.push(current_batch);
-    }
-
-    arrClientMatterLabels.forEach((data) => {
-      cm_item_count++;
-      cm_current_batch.push(data);
-
-      if (cm_item_count % 5 == 0) {
-        cm_batches.push(cm_current_batch);
-        cm_current_batch = [];
-      }
-    });
-
-    if (cm_current_batch.length > 0 && cm_current_batch.length != 5) {
-      cm_batches.push(cm_current_batch);
-    }
-
-    batches.forEach(async (data) => {
-      const labelParams = {
-        RequestItems: {
-          LabelsTable: data,
-        },
-      };
-
-      const labelCmd = new BatchWriteItemCommand(labelParams);
-      await ddbClient.send(labelCmd);
-    });
-
-    cm_batches.forEach(async (data) => {
+    if (labelRes) {
       const clientMatterLabelParams = {
         RequestItems: {
-          ClientMatterLabelTable: data,
+          ClientMatterLabelTable: arrClientMatterLabels,
         },
       };
 
       const clientMatterLabelCmd = new BatchWriteItemCommand(
         clientMatterLabelParams
       );
-      await ddbClient.send(clientMatterLabelCmd);
-    });
+      const clientMatterLabelRes = await ddbClient.send(clientMatterLabelCmd);
 
-    resp = arrItems.map((i) => {
-      return unmarshall(i.PutRequest.Item);
-    });
+      if (clientMatterLabelRes) {
+        resp = arrItems.map((i) => {
+          return unmarshall(i.PutRequest.Item);
+        });
+      }
+    }
   } catch (e) {
     resp = {
       error: e.message,
@@ -397,7 +362,6 @@ async function bulkCreateLabel(clientMatterId, labels) {
     };
     console.log(resp);
   }
-
   return resp;
 }
 
@@ -1804,7 +1768,6 @@ const resolvers = {
     },
     labelBulkCreate: async (ctx) => {
       const { clientMatterId, labels } = ctx.arguments;
-
       return await bulkCreateLabel(clientMatterId, labels);
     },
     fileLabelTag: async (ctx) => {
