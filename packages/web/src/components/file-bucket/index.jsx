@@ -1688,17 +1688,24 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         }
       }
     }
+    setShowToast(false);
+    
+    setResultMessage(`Files successfully copied in backgrounds!`);
+    setShowToast(true);
 
     setTimeout(() => {
       setShowToast(false);
     }, 1000);
 
     selectedRows = [];
+    selectedCompleteDataRows = [];
 
     setTimeout(() => {
       setShowToast(false);
       getBriefs();
-
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
     }, 1000);
 
     
@@ -1851,7 +1858,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 )}
               {copyOptions && (
                   <div 
-                    className="w-64 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none"
+                    className="w-72 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none"
                     
                   >
                     <div className="flex">
@@ -1859,7 +1866,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       Results
                     </p>
                     <p 
-                      className="px-2 py-2 text-blue-400 text-xs font-semibold ml-12"
+                      className="px-2 py-2 text-blue-400 text-xs font-semibold ml-16  cursor-pointer"
                       onClick={() => handleCopyToBg()}
                     >
                       
@@ -1874,6 +1881,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         value={selected}
                         showCheckbox
                         className="z-50"
+                        placeholder={"Search"}
                       />
                   </div>
                  
@@ -2054,7 +2062,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                         >
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="px-2 py-6 inline-flex align-top"
+                                            className="px-2 py-3 inline-flex align-top"
                                           >
                                             <MdDragIndicator
                                               className="text-2xl"
@@ -2088,12 +2096,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               {index + 1}
                                             </span>
                                           </td>
-                                          <td className="align-top">
+                                          <td className="align-top py-2">
                                             <DatePicker
                                               popperProps={{
                                                 positionFixed: true,
                                               }}
-                                              className=" mt-4 border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
+                                              className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
                                               dateFormat="dd MMM yyyy"
                                               selected={
                                                 data.date !== null
@@ -2111,7 +2119,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             <div className="inline-flex">
                                               {data.type
@@ -2221,7 +2229,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             <div className="flex">
                                               <span
@@ -2268,7 +2276,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             <CreatableSelect
                                               defaultValue={() =>
@@ -2293,7 +2301,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="w-96 px-2 py-4 align-top place-items-center relative flex-wrap"
+                                            className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             {data.backgrounds.items !== null &&
                                               data.backgrounds.items

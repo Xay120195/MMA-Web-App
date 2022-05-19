@@ -333,6 +333,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: labelBulkCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: labelUpdate
         request: false
         response: false

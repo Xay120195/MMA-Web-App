@@ -70,7 +70,7 @@ const Background = () => {
   const [alertMessage, setalertMessage] = useState();
   const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
-  const [searchDescription, setSearchDescription] = useState();
+  const [searchDescription, setSearchDescription] = useState("");
 
   useEffect(() => {
     getBackground();
@@ -192,7 +192,7 @@ const Background = () => {
         query: qBriefBackgroundList,
         variables: {
           id: background_id,
-          limit: 25,
+          limit: 100,
           nextToken: null,
           sortOrder: "ORDER_ASC",
         },
@@ -293,7 +293,7 @@ const Background = () => {
 
         const backgroundOpt = await API.graphql({
           query: qBriefBackgroundList,
-          variables: { id: background_id, limit: 25, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+          variables: { id: background_id, limit: 50, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
         });
 
         setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
@@ -317,7 +317,14 @@ const Background = () => {
               setLoading(false);
               setMaxLoading(false);
 
-              let arrConcat = witness.concat(result);
+              var arrConcat = witness.concat(result);
+
+              if(searchDescription !== "") {
+                arrConcat = witness.concat(result).filter((x) =>
+                x.description.toLowerCase().includes(searchDescription.toLowerCase()));
+                console.log("HELO", searchDescription);
+              }
+
               setWitness([...new Set(sortByOrder(arrConcat))]);
             }, 200);
           }
@@ -334,9 +341,15 @@ const Background = () => {
     loadMoreBackground();
   }
 
+  const handleOnIdle = event => {
+    console.log('User is on idle');
+    loadMoreBackground();
+  }
+
   useIdleTimer({
-    timeout: 1000 * 60 * 15,
+    timeout: 60 * 40,
     onAction: handleOnAction,
+    onIdle: handleOnIdle,
     debounce: 1000
   })
 

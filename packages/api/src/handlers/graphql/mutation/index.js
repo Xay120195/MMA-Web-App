@@ -298,6 +298,73 @@ async function createLabel(data) {
   return resp;
 }
 
+async function bulkCreateLabel(clientMatterId, labels) {
+  let resp = {};
+  try {
+    const arrItems = [],
+      arrClientMatterLabels = [];
+
+    for (var i = 0; i < labels.length; i++) {
+      const labelId = v4();
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: labelId,
+            name: labels[i].name,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+
+      arrClientMatterLabels.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            labelId: labelId,
+            clientMatterId: clientMatterId,
+            createdAt: new Date().toISOString(),
+          }),
+        },
+      });
+    }
+
+    const labelParams = {
+      RequestItems: {
+        LabelsTable: arrItems,
+      },
+    };
+
+    const labelCmd = new BatchWriteItemCommand(labelParams);
+    const labelRes = await ddbClient.send(labelCmd);
+
+    if (labelRes) {
+      const clientMatterLabelParams = {
+        RequestItems: {
+          ClientMatterLabelTable: arrClientMatterLabels,
+        },
+      };
+
+      const clientMatterLabelCmd = new BatchWriteItemCommand(
+        clientMatterLabelParams
+      );
+      const clientMatterLabelRes = await ddbClient.send(clientMatterLabelCmd);
+
+      if (clientMatterLabelRes) {
+        resp = arrItems.map((i) => {
+          return unmarshall(i.PutRequest.Item);
+        });
+      }
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function tagFileLabel(data) {
   let resp = {};
   try {
@@ -943,7 +1010,6 @@ async function createRFI(data) {
 }
 
 async function createRequest(data) {
-  console.log("createRequest()");
   let resp = {};
   try {
     const rawParams = {
@@ -961,8 +1027,6 @@ async function createRequest(data) {
       Item: param,
     });
     const req = await ddbClient.send(cmd);
-
-    console.log(req);
 
     const rfiRequestParams = {
       id: v4(),
@@ -1245,7 +1309,6 @@ async function bulkUpdateBackgroundOrders(data) {
           UpdateExpression,
         } = getUpdateExpressions(arrangement);
 
-        console.log("briefBackgroundId", briefBackgroundId);
         if (briefBackgroundId) {
           const updateBriefBackgroundCmd = new UpdateItemCommand({
             TableName: "BriefBackgroundTable",
@@ -1702,6 +1765,10 @@ const resolvers = {
     },
     labelCreate: async (ctx) => {
       return await createLabel(ctx.arguments);
+    },
+    labelBulkCreate: async (ctx) => {
+      const { clientMatterId, labels } = ctx.arguments;
+      return await bulkCreateLabel(clientMatterId, labels);
     },
     fileLabelTag: async (ctx) => {
       return await tagFileLabel(ctx.arguments);
