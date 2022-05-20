@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import BlankState from "../dynamic-blankstate";
-import { MdArrowForwardIos, MdDownload } from "react-icons/md";
+import { MdArrowForwardIos } from "react-icons/md";
 import ToastNotification from "../toast-notification";
-import { IoIosArrowDroprightCircle, IoIosArrowDropright } from "react-icons/io";
+import { IoIosArrowDropright } from "react-icons/io";
 import { AiOutlineFolderOpen } from "react-icons/ai";
-import BlankList from "../../assets/images/RFI_Blank_List.svg";
+// import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import BlankQuestion from "../../assets/images/RFI_Blank_State.svg";
 import BlankAnswer from "../../assets/images/RFI_Blank_Answer.svg";
 import { Link } from "react-router-dom";
@@ -35,6 +35,35 @@ export default function RFIPage() {
     { id: 115, name: "RFI 5", datecreated: "Jan 05, 2022" },
   ];
 
+  const rfiListUrl =
+    AppRoutes.MATTERSRFI +
+    "/" +
+    getQueryVariable("matter_id") +
+    "/?matter_name=" +
+    getQueryVariable("matter_name") +
+    "&client_name=" +
+    getQueryVariable("client_name");
+
+  function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split("=");
+      if (pair[0] === variable) {
+        return pair[1];
+      }
+    }
+    return false;
+  }
+
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
+  }
+
+  function b64_to_utf8(str) {
+    return decodeURIComponent(escape(window.atob(str)));
+  }
+
   return (
     <>
       <div
@@ -50,9 +79,9 @@ export default function RFIPage() {
                 <span className="font-bold text-3xl flex-inline">
                   {" "}
                   <IoIosArrowDropright className="h-8 w-8 absolute -ml-1 " />{" "}
-                  &nbsp;&nbsp;&nbsp;&nbsp; Request For Information{" "}
-                </span>{" "}
-                <span className="text-gray-500 text-3xl ml-2"></span>
+                  &nbsp;&nbsp;&nbsp;&nbsp; Request For Information {" "}
+                </span>of
+                <span className="text-gray-500 text-3xl ml-2">{b64_to_utf8(getQueryVariable("rfi_name"))}</span>
               </h1>
             </div>
             <div className="py-3">
@@ -62,7 +91,7 @@ export default function RFIPage() {
             </div>
 
             <div className="absolute right-0">
-              <Link to={AppRoutes.DASHBOARD}>
+              <Link to={rfiListUrl}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
                   Back &nbsp;
                   <MdArrowForwardIos />
@@ -72,14 +101,14 @@ export default function RFIPage() {
           </div>
 
           <div className="mt-7">
-            <div>
+            {/* <div>
               <input
                 type="search"
                 placeholder="Search ..."
-                // onChange={handleSearchChange}
+                onChange={handleSearchChange}
                 className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
