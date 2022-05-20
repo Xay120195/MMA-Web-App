@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
-import barsFilter from "../../assets/images/bars-filter.svg";
+// import barsFilter from "../../assets/images/bars-filter.svg";
 import ellipsis from "../../shared/ellipsis";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
@@ -21,7 +21,8 @@ import PageReferenceModal from "./page-reference-modal";
 //import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { FaRegFileAudio, FaRegFileVideo } from "react-icons/fa";
+import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
+import Loading from "../loading/loading";
 import {
   GrDocumentPdf,
   GrDocumentText,
@@ -31,13 +32,17 @@ import {
   GrDocumentWord,
   GrDocumentTxt,
 } from "react-icons/gr";
-import { BsArrowLeft, BsFillTrashFill } from "react-icons/bs";
+import {
+  BsArrowLeft,
+  BsFillTrashFill,
+  BsSortUpAlt,
+  BsSortDown,
+} from "react-icons/bs";
 import RemoveFileModal from "./remove-file-modal";
-import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
-
+import Multiselect from "multiselect-react-dropdown";
+import { useIdleTimer } from "react-idle-timer";
 import ScrollToTop from "react-scroll-to-top";
-
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
@@ -70,7 +75,7 @@ export default function FileBucket() {
   const [vNextToken, setVnextToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
+  const [ascDesc, setAscDesc] = useState(null);
   const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
   const [pageReferenceFileId, setPageReferenceFileId] = useState("");
   const [pageReferenceBackgroundId, setPageReferenceBackgroundId] =
@@ -86,6 +91,8 @@ export default function FileBucket() {
   const [showRemoveFileButton, setshowRemoveFileButton] = useState(false);
   const [showAttachBackgroundButton, setshowAttachBackgroundButton] =
     useState(false);
+  const [showCopyToBackgroundButton, setShowCopyToBackgroundButton] =
+    useState(false);
   var fileCount = 0;
 
   const [filterLabels, setFilterLabels] = useState(false);
@@ -95,6 +102,12 @@ export default function FileBucket() {
 
   const [filteredFiles, setFilteredFiles] = useState(null);
   const [filterState, setFilterState] = useState(false);
+
+  const [copyOptions, showCopyOptions] = useState(false);
+
+  const [Briefs, setBriefs] = useState(null);
+  const [copyBgOptions, setCopyBgOptions] = useState(null);
+  const [copyBgIds, setCopyBgIds] = useState(null);
 
   const hideToast = () => {
     setShowToast(false);
@@ -182,6 +195,7 @@ export default function FileBucket() {
 
   const contentDiv = {
     margin: "0 0 0 65px",
+    position: "sticky", top: 0
   };
 
   const noStyle = {
@@ -507,6 +521,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       filterRecord(searchFile);
     }
 
+    if (Briefs === null) {
+      getBriefs();
+    }
+
     console.log("searchFile", searchFile);
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
@@ -536,12 +554,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 20,
+        limit: 100,
         nextToken: next === 1 ? null : vNextToken,
+        sortOrder: "ORDER_ASC",
       },
     };
     await API.graphql(params).then((files) => {
-      const matterFilesList = files.data.matterFiles.items;
+      let matterFilesList = files.data.matterFiles.items;
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
@@ -560,28 +579,57 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         variables: {
           matterId: matter_id,
           isDeleted: false,
-          limit: 20,
+          limit: 50,
           nextToken: vNextToken,
+          sortOrder: "ORDER_ASC",
         },
       };
 
       await API.graphql(params).then((files) => {
-        const matterFilesList = files.data.matterFiles.items;
+        let matterFilesList = files.data.matterFiles.items;
         console.log("Files", matterFilesList);
         //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
 
-        let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
+        let arrConcat = matterFiles.concat(matterFilesList);
 
-        setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+        if (ascDesc !== null) {
+          console.log("sorting is ascending?", ascDesc);
 
-        if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
-          console.log("result count: ", files.data.matterFiles.items.length);
-          console.log("next token: ", vNextToken);
-          setMaxLoading(false);
+          if (ascDesc === true) {
+            console.log("set order by Date ASC, CreatedAt DESC");
+
+            arrConcat = arrConcat
+              .slice()
+              .sort(
+                (a, b) =>
+                  new Date(a.date) - new Date(b.date) ||
+                  new Date(b.createdAt) - new Date(a.createdAt)
+              );
+          } else if (!ascDesc) {
+            console.log("set order by Date DESC, CreatedAt DESC");
+
+            arrConcat = arrConcat
+              .slice()
+              .sort(
+                (a, b) =>
+                  new Date(b.date) - new Date(a.date) ||
+                  new Date(b.createdAt) - new Date(a.createdAt)
+              );
+          }
+
+          setMatterFiles([...new Set(arrConcat)]);
         } else {
-          setMaxLoading(true);
+          setMatterFiles([...new Set(sortByOrder(arrConcat))]);
         }
+
+        // if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
+        //   console.log("result count: ", files.data.matterFiles.items.length);
+        //   console.log("next token: ", vNextToken);
+        //   setMaxLoading(false);
+        // } else {
+        //   setMaxLoading(true);
+        // }
       });
     } else {
       console.log("Last Result!");
@@ -658,6 +706,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   const mainGrid = {
     display: "grid",
     gridtemplatecolumn: "1fr auto",
+    position: "sticky",
+    top: 0,
   };
 
   const handleLabelChanged = async (options, id) => {
@@ -1131,11 +1181,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      setShowCopyToBackgroundButton(true);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
     } else {
       setshowRemoveFileButton(false);
+      setShowCopyToBackgroundButton(false);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
@@ -1172,11 +1224,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
+      setShowCopyToBackgroundButton(true);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
     } else {
       setshowRemoveFileButton(false);
+      setShowCopyToBackgroundButton(false);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
@@ -1193,6 +1247,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     selectedCompleteDataRows = [];
     var next = 1;
     setshowRemoveFileButton(false);
+    setShowCopyToBackgroundButton(false);
     setResultMessage(`Deleting File`);
     setShowToast(true);
     handleModalClose();
@@ -1435,23 +1490,22 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }, 1000);
   }
 
-  const handleBottomScroll = useCallback(() => {
-    if (filterState) {
-      console.log("cancel loadmore");
-      setLoading(false);
-    } else {
-      console.log("Reached bottom page " + Math.round(performance.now()));
-      setTimeout(() => {
-        setLoading(true);
-      }, 300);
-      setTimeout(() => {
-        loadMoreMatterFiles();
-        setLoading(false);
-      }, 1000);
-    }
-  });
+  const handleOnAction = (event) => {
+    console.log("User did something", event);
+    loadMoreMatterFiles();
+  };
 
-  useBottomScrollListener(handleBottomScroll);
+  const handleOnIdle = (event) => {
+    console.log("User is on idle", event);
+    loadMoreMatterFiles();
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
 
   const handleDuplicate = async () => {
     let next = 1;
@@ -1472,6 +1526,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
       setshowAttachBackgroundButton(false);
+      setShowCopyToBackgroundButton(false);
       setshowRemoveFileButton(false);
       getMatterFiles(next);
 
@@ -1484,29 +1539,50 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const SortBydate = async () => {
-    const isAllZero = matterFiles.every(
-      (item) => item.order >= 0 && item.order !== 0
-    );
-    if (!ascDesc) {
-      console.log("f");
+    // const isAllZero = matterFiles.every(
+    //   (item) => item.order >= 0 && item.order !== 0
+    // );
+
+    console.log("matterFiles", matterFiles);
+    if (ascDesc == null) {
+      console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
-      setMatterFiles(
-        matterFiles.slice().sort(
-          (a, b) =>
-            //isAllZero ? b.order - a.order :
-            new Date(b.date) - new Date(a.date)
-        )
-      );
-    } else {
-      console.log("t");
+
+      setMatterFiles(matterFiles
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(a.date) - new Date(b.date) ||
+          new Date(b.createdAt) - new Date(a.createdAt)
+      ));
+      
+
+      
+
+    } else if (ascDesc === true) {
+      console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
       setMatterFiles(
-        matterFiles.slice().sort(
-          (a, b) =>
-            //isAllZero ? a.order - b.order :
-            new Date(a.date) - new Date(b.date)
-        )
+        matterFiles
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(b.date) - new Date(a.date) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
       );
+    } else if (!ascDesc) {
+      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
+      setAscDesc(null);
+      setMatterFiles(
+        matterFiles
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.order) - new Date(b.order) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
+      ); // default to sort by order
     }
   };
 
@@ -1564,6 +1640,140 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     return check;
   };
 
+  //new copy to BG
+  const handleShowCopyOptions = () => {
+    if (copyOptions) {
+      showCopyOptions(false);
+    } else {
+      showCopyOptions(true);
+    }
+  };
+
+  const listBriefs = `
+  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
+    clientMatter(id: $id) {
+      briefs(limit: $limit, nextToken: $nextToken) {
+        items {
+          id
+          name
+          date
+          order
+        }
+      }
+    }
+  }
+  `;
+
+  const getBriefs = async () => {
+    var opts = [];
+    console.log("matterid", matter_id);
+    const params = {
+      query: listBriefs,
+      variables: {
+        id: matter_id,
+        limit: 100,
+        nextToken: null,
+      },
+    };
+
+    await API.graphql(params).then((brief) => {
+      let matterFilesList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", matterFilesList);
+      var temp = matterFilesList.map(
+        (x) => (opts = [...opts, { label: x.name, value: x.id }])
+      );
+      setCopyBgOptions(opts);
+    });
+  };
+
+  const handleFilterChange = (evt) => {
+    setCopyBgIds(evt);
+  };
+
+  const handleFilterRemoveChange = (evt) => {
+    if(evt.length === 0 ){
+      setCopyBgIds(null);
+    }
+  }
+
+  const handleCopyToBg = async () => {
+    console.log("cb", copyBgOptions);
+
+    let temp = copyBgIds;
+    var searchIds = [];
+
+    for (var i = 0; i < temp.length; i++) {
+      copyBgOptions.map((x) =>
+        x.label === temp[i] ? (searchIds = [...searchIds, x.value]) : x
+      );
+    }
+
+    console.log("searchthis", searchIds); //ids of backgrounds [id, id] correct
+
+    //from old code, attach to bg
+    let arrFiles = [];
+    setShowToast(true);
+    setResultMessage(`Copying files to background..`);
+
+    showCopyOptions(false);
+    setshowRemoveFileButton(false);
+    setShowCopyToBackgroundButton(false);
+    setshowAttachBackgroundButton(false);
+
+    arrFiles = selectedRows.map(({ id, details, date }) => ({
+      id: id,
+      details: details,
+      date: date,
+    }));
+
+    var counter = 0;
+    for (let j = 0; j < searchIds.length; j++) {
+      for (let i = 0; i < arrFiles.length; i++) {
+        counter++;
+        const createBackgroundRow = await API.graphql({
+          query: mCreateBackground,
+          variables: {
+            briefId: searchIds[j],
+            description: arrFiles[i].details,
+            date:
+              arrFiles[i].date !== null
+                ? new Date(arrFiles[i].date).toISOString()
+                : new Date().toISOString(),
+          },
+        });
+
+        if (createBackgroundRow.data.backgroundCreate.id !== null) {
+          const request = await API.graphql({
+            query: mUpdateBackgroundFile,
+            variables: {
+              backgroundId: createBackgroundRow.data.backgroundCreate.id,
+              files: [{ id: arrFiles[i].id }],
+            },
+          });
+        }
+      }
+    }
+    setShowToast(false);
+
+    setResultMessage(`Files successfully copied in backgrounds!`);
+    setShowToast(true);
+
+    setTimeout(() => {
+      setShowToast(false);
+    }, 1000);
+
+    selectedRows = [];
+    selectedCompleteDataRows = [];
+
+    setTimeout(() => {
+      setShowToast(false);
+      getBriefs();
+      setIsAllChecked(false);
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+    }, 1000);
+  };
+
   return (
     <>
       <div
@@ -1572,8 +1782,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         }
         style={contentDiv}
       >
-        <div className="relative flex-grow flex-1">
-          <div style={mainGrid}>
+      
+        <div className="flex-grow flex-1">
+          <div style={mainGrid} >
             <div>
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
@@ -1581,24 +1792,25 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   Back
                 </button>
               </Link>
-
-              <h1 className="font-bold text-3xl">
-                File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">
-                  {checkFormat(client_name)}
-                </span>
-                /
-                <span className="font-semibold text-3xl">
-                  {checkFormat(matter_name)}
-                </span>
-              </h1>
-            </div>
+              </div>
           </div>
         </div>
-
+        <div style={{ position: "sticky", top: "0" }} className="py-5 bg-white z-40">
+           <h1 className="font-bold text-3xl">
+              File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
+                <span className="font-semibold text-3xl">
+                    {checkFormat(client_name)}
+                  </span>
+                  /
+                  <span className="font-semibold text-3xl">
+                    {checkFormat(matter_name)}
+                </span>
+          </h1>
+        </div>
+            
         <div
-          className="bg-white z-30 "
-          style={{ position: "sticky", top: "0" }}
+          className="bg-white z-40 "
+          style={{ position: "sticky", top: "70px" }}
         >
           <nav aria-label="Breadcrumb" style={style} className="mt-4">
             <ol
@@ -1680,7 +1892,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
               />
             </div>
           )}
-          <div className="pl-2 py-1 grid grid-cols-1 gap-4">
+          <div className="z-50 pl-2 py-1 grid grid-cols-1 gap-4">
             <div className="">
               {matterFiles !== null && matterFiles.length !== 0 && (
                 <input
@@ -1697,17 +1909,47 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 FILE UPLOAD &nbsp;
                 <FiUpload />
               </button>
-
-              {showRemoveFileButton &&
-                (backgroundRowId === "000" || backgroundRowId) && (
+              <div className="inline-flex">
+                {showCopyToBackgroundButton && (
                   <button
                     className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-                    onClick={() => addFileBucketToBackground()}
+                    onClick={() => handleShowCopyOptions()}
                   >
                     COPY TO BACKGROUND PAGE &nbsp;
                     <FiCopy />
                   </button>
                 )}
+                {copyOptions && (
+                  <div className="w-72 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+                    <div className="flex">
+                      <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
+                        Results
+                      </p>
+                      <button
+                        className={copyBgIds ?
+                          "px-2 py-2 text-blue-400 text-xs font-semibold ml-16 cursor-pointer"
+                          : "px-2 py-2 text-blue-200 text-xs font-semibold ml-16"
+                        }
+                        onClick={() => handleCopyToBg()}
+                        disabled={copyBgIds ? false : true}
+                      >
+                        Copy To Background
+                      </button>
+                    </div>
+
+                    <Multiselect
+                      isObject={false}
+                      onSelect={(event) => handleFilterChange(event)}
+                      onRemove={(event) => handleFilterRemoveChange(event)}
+                      options={copyBgOptions.map((x) => x.label)}
+                      value={selected}
+                      showCheckbox
+                      className="z-50"
+                      placeholder={"Search"}
+                    />
+                  </div>
+                )}
+              </div>
 
               {showAttachBackgroundButton && backgroundRowId !== "000" && (
                 <button
@@ -1718,6 +1960,18 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   <BsArrowLeft />
                 </button>
               )}
+
+              {/* {matterFiles !== null &&
+                matterFiles.length !== 0 &&
+                showRemoveFileButton && (
+                  <button
+                    className="bg-green-500 hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                    onClick={() => addFileBucketToBackground()}
+                  >
+                    COPY TO BACKGROUND PAGE &nbsp;
+                    <FiCopy />
+                  </button>
+                )} */}
 
               {matterFiles !== null &&
                 matterFiles.length !== 0 &&
@@ -1769,14 +2023,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         <div className="px-2 py-0 left-0">
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
-
+     
         {
           // filteredFiles !== null ?
           // (
           //   <span className="py-5 px-5">FILTERED FILES</span>
           // ) :
           matterFiles === null ? (
-            <span className="py-5 px-5">Please wait...</span>
+            <Loading content={"Please wait..."} />
           ) : (
             <>
               {matterFiles.length === 0 &&
@@ -1804,21 +2058,55 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                           <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                             <thead
                               className="bg-gray-100 z-30"
-                              style={{ position: "sticky", top: "153px" }}
+                              style={{ position: "sticky", top: "235px" }}
                             >
                               <tr>
                                 <th className="px-2 py-4 text-center whitespace-nowrap">
                                   Item No.
                                 </th>
                                 <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
-                                  <span className="ml-4">Date</span>
-                                  <img
+                                  <span className="ml-4">Date &nbsp;</span>
+                                  {/* <img
                                     src={barsFilter}
                                     className="text-2xl w-4 mx-4"
                                     alt="filter"
                                     onClick={SortBydate}
                                     style={{ cursor: "pointer" }}
-                                  />
+                                  /> */}
+                                  {(() => {
+                                    console.log("ascDesc:", ascDesc);
+                                    if (ascDesc == null) {
+                                      return (
+                                        <FaSort
+                                          className="mx-auto inline-block"
+                                          alt="Sort"
+                                          title="Sort"
+                                          onClick={SortBydate}
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      );
+                                    } else if (ascDesc === true) {
+                                      return (
+                                        <BsSortUpAlt
+                                          className="mx-auto inline-block"
+                                          alt="Sort"
+                                          title="Sort"
+                                          onClick={SortBydate}
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      );
+                                    } else if (ascDesc === false) {
+                                      return (
+                                        <BsSortDown
+                                          className="mx-auto inline-block"
+                                          alt="Sort"
+                                          title="Sort"
+                                          onClick={SortBydate}
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      );
+                                    }
+                                  })()}
                                 </th>
                                 <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                   Name
@@ -1902,12 +2190,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               {index + 1}
                                             </span>
                                           </td>
-                                          <td className="align-top py-3">
+                                          <td className="align-top py-2">
                                             <DatePicker
                                               popperProps={{
                                                 positionFixed: true,
                                               }}
-                                              className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
+                                              className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
                                               dateFormat="dd MMM yyyy"
                                               selected={
                                                 data.date !== null
