@@ -482,43 +482,39 @@ const TableInfo = ({
     }
   }, 10000);
 
+  function compareValues(key, order = "asc") {
+    return function innerSort(a, b) {
+      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+        // property doesn't exist on either object
+        return 0;
+      }
+
+      const varA = new Date(a[key]);
+      const varB = new Date(b[key]);
+      let comparison = 0;
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
+      return order === "desc" ? comparison * -1 : comparison;
+    };
+  }
+
   const SortBydate = async () => {
     console.group("SortBydate()");
     if (ascDesc == null) {
       console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
-      setWitness(
-        witness
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(a.date) - new Date(b.date) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+      setWitness(witness.sort(compareValues("date")));
     } else if (ascDesc === true) {
       console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
-      setWitness(
-        witness
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(b.date) - new Date(a.date) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+      setWitness(witness.sort(compareValues("date", "desc")));
     } else if (!ascDesc) {
       console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
       setAscDesc(null); // default to sort by order
-      setWitness(
-        witness
-          .slice()
-          .sort(
-            (a, b) =>
-              a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+      setWitness(witness.sort(compareValues("order")));
     }
 
     console.groupEnd();
