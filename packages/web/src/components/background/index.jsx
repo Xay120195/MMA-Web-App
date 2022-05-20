@@ -36,6 +36,7 @@ const Background = () => {
   const [selectRow, setSelectRow] = useState([]);
   const [newRow, setNewRow] = useState([{}]);
   const [newWitness, setNewWitness] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
@@ -246,7 +247,6 @@ const Background = () => {
   };
 
   const loadMoreBackground = async () => {
-    console.log("loadMoreBackground()");
     if (background_id === "000") {
       // Remove this condition after migration
       if (vNextToken !== null && !loading) {
@@ -288,7 +288,6 @@ const Background = () => {
       }
     } else {
       if (vNextToken !== null && !loading) {
-        console.log("Next Token is not null, fetch next page");
         setLoading(true);
         let result = [];
 
@@ -333,31 +332,18 @@ const Background = () => {
                       .toLowerCase()
                       .includes(searchDescription.toLowerCase())
                   );
+                console.log("HELO", searchDescription);
               }
 
               if (ascDesc !== null) {
                 console.log("sorting is ascending?", ascDesc);
 
                 if (ascDesc === true) {
-                  console.log("set order by Date ASC, CreatedAt DESC");
-
-                  arrConcat = arrConcat
-                    .slice()
-                    .sort(
-                      (a, b) =>
-                        new Date(a.date) - new Date(b.date) ||
-                        new Date(b.createdAt) - new Date(a.createdAt)
-                    );
+                  console.log("set order by Date ASC");
+                  arrConcat = arrConcat.sort(compareValues("date"));
                 } else if (!ascDesc) {
-                  console.log("set order by Date DESC, CreatedAt DESC");
-
-                  arrConcat = arrConcat
-                    .slice()
-                    .sort(
-                      (a, b) =>
-                        new Date(b.date) - new Date(a.date) ||
-                        new Date(b.createdAt) - new Date(a.createdAt)
-                    );
+                  console.log("set order by Date DESC");
+                  arrConcat = arrConcat.sort(compareValues("date", "desc"));
                 }
 
                 setWitness([...new Set(arrConcat)]);
@@ -368,11 +354,29 @@ const Background = () => {
           }
         }
       } else {
-        console.log("All data has been loaded.");
+        console.log("Last Result!- NEW");
         setMaxLoading(true);
       }
     }
   };
+
+  function compareValues(key, order = "asc") {
+    return function innerSort(a, b) {
+      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+        return 0;
+      }
+
+      const varA = new Date(a[key]);
+      const varB = new Date(b[key]);
+      let comparison = 0;
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
+      return order === "desc" ? comparison * -1 : comparison;
+    };
+  }
 
   const handleOnAction = (event) => {
     console.log("User did something", event);
@@ -388,27 +392,11 @@ const Background = () => {
     timeout: 60 * 40,
     onAction: handleOnAction,
     onIdle: handleOnIdle,
-    debounce: 1000
+    debounce: 1000,
   });
 
   function sortByOrder(arr) {
     // const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
-
-    var zero;
-    let sort;
-
-    if(arr){
-    // arr.map(
-    //   (x, y)=> x.order - y.order === 0 ?
-    //   sort=arr.sort((a, b)=>new Date(b.createdAt) - new Date(a.createdAt))
-    //   :
-       sort=arr.sort((a, b)=> a.order-b.order === 0 
-        ? new Date(b.createdAt) - new Date(a.createdAt)
-        : a.order - b.order )
-    //);
-    }else{
-      sort = arr;
-    }
     // if (isAllZero) {
     //   sort = arr.sort(
     //     (a, b) =>
@@ -417,6 +405,18 @@ const Background = () => {
     // } else {
     //   sort = arr;
     // }
+    let sort;
+
+    if (arr) {
+      sort = arr.sort((a, b) =>
+        a.order - b.order === 0
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : a.order - b.order
+      );
+    } else {
+      sort = arr;
+    }
+
     return sort;
   }
 
@@ -575,7 +575,7 @@ const Background = () => {
         className={"shadow-lg rounded bg-white z-30"}
         style={{ margin: "0 0 0 65px" }}
       >
-        <div className="px-6 py-2">
+        <div className="px-6 mt-5 -ml-1">
           <Link
             to={`${
               AppRoutes.BRIEFS
@@ -588,7 +588,13 @@ const Background = () => {
               Back
             </button>
           </Link>
-          <h1 className="font-bold text-3xl">
+        </div>
+
+        <div
+          style={{ position: "sticky", top: "0" }}
+          className="py-5 z-40 ml-4 bg-white"
+        >
+          <h1 className="font-bold text-3xl ">
             <div className="flex">
               <p
                 suppressContentEditableWarning={true}
@@ -614,22 +620,107 @@ const Background = () => {
             </div>
           </h1>
         </div>
-      </div>
 
-      <div
-        className="bg-white z-30"
-        style={{ position: "sticky", top: "0", margin: "0 0 0 85px" }}
-      >
-        <BreadCrumb
-          matterId={matter_id}
+        <div
+          className="bg-white z-30 ml-4"
+          style={{ position: "sticky", top: "72px" }}
+        >
+          <BreadCrumb
+            matterId={matter_id}
+            client_name={client_name}
+            matter_name={matter_name}
+            briefId={background_id}
+          />
+          <ActionButtons
+            setSelectedItems={setSelectedItems}
+            selectedItems={selectedItems}
+            witness={witness}
+            setWitness={setWitness}
+            idList={idList}
+            checkAllState={checkAllState}
+            setcheckAllState={setcheckAllState}
+            checkedState={checkedState}
+            setCheckedState={setCheckedState}
+            totalChecked={totalChecked}
+            settotalChecked={settotalChecked}
+            setId={setId}
+            search={search}
+            setSearch={setSearch}
+            getId={getId}
+            matterId={matter_id}
+            getBackground={getBackground}
+            selectedRowsBG={selectedRowsBG}
+            setSelectedRowsBG={setSelectedRowsBG}
+            setShowModalParagraph={setShowModalParagraph}
+            paragraph={paragraph}
+            showDeleteButton={showDeleteButton}
+            setShowDeleteButton={setShowDeleteButton}
+            activateButton={activateButton}
+            setactivateButton={setActivateButton}
+            handleManageFiles={handleManageFiles}
+            checkNo={checkNo}
+            setCheckNo={setCheckNo}
+            checkDate={checkDate}
+            setCheckDate={setCheckDate}
+            checkDesc={checkDesc}
+            setCheckDesc={setCheckDesc}
+            checkDocu={checkDocu}
+            setCheckDocu={setCheckDocu}
+            checkedStateShowHide={checkedStateShowHide}
+            setCheckedStateShowHide={setCheckedStateShowHide}
+            pageTotal={pageTotal}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            pageSizeConst={pageSizeConst}
+            getPaginateItems={getPaginateItems}
+            selectRow={selectRow}
+            setSelectRow={setSelectRow}
+            setPasteButton={setPasteButton}
+            pasteButton={pasteButton}
+            setSrcIndex={setSrcIndex}
+            srcIndex={srcIndex}
+            setNewRow={setNewRow}
+            newRow={newRow}
+            newWitness={newWitness}
+            setMaxLoading={setMaxLoading}
+            sortByOrder={sortByOrder}
+            setNewWitness={setNewWitness}
+            briefId={background_id}
+            client_name={client_name}
+            matter_name={matter_name}
+          />
+
+          {/* {witness !== null && witness.length !== 0 && ( */}
+          <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
+            <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+              <IoIcons.IoIosSearch />
+            </span>
+            <input
+              type="search"
+              placeholder="Type to search description in the Background ..."
+              onChange={handleSearchDescriptionChange}
+              className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+            />
+          </div>
+          {/* )} */}
+        </div>
+
+        <TableInfo
+          selectedItems={selectedItems}
+          setSelectedItems={setSelectedItems}
           client_name={client_name}
           matter_name={matter_name}
-          briefId={background_id}
-        />
-        <ActionButtons
+          wait={wait}
+          setPasteButton={setPasteButton}
+          setIdList={setIdList}
           witness={witness}
+          ShowModalParagraph={ShowModalParagraph}
+          setShowModalParagraph={setShowModalParagraph}
+          fileMatter={fileMatter}
+          setFileMatter={setFileMatter}
+          files={files}
+          setFiles={setFiles}
           setWitness={setWitness}
-          idList={idList}
           checkAllState={checkAllState}
           setcheckAllState={setcheckAllState}
           checkedState={checkedState}
@@ -637,137 +728,57 @@ const Background = () => {
           totalChecked={totalChecked}
           settotalChecked={settotalChecked}
           setId={setId}
-          search={search}
-          setSearch={setSearch}
           getId={getId}
+          search={search}
           matterId={matter_id}
           getBackground={getBackground}
           selectedRowsBG={selectedRowsBG}
           setSelectedRowsBG={setSelectedRowsBG}
-          setShowModalParagraph={setShowModalParagraph}
           paragraph={paragraph}
+          setParagraph={setParagraph}
           showDeleteButton={showDeleteButton}
           setShowDeleteButton={setShowDeleteButton}
-          activateButton={activateButton}
-          setactivateButton={setActivateButton}
           handleManageFiles={handleManageFiles}
+          setActivateButton={setActivateButton}
+          activateButton={activateButton}
+          setAscDesc={setAscDesc}
+          ascDesc={ascDesc}
+          setSelectedRowsBGFiles={setSelectedRowsBGFiles}
+          selectedRowsBGFiles={selectedRowsBGFiles}
+          setSelectedId={setSelectedId}
+          selectedId={selectedId}
+          pasteButton={pasteButton}
           checkNo={checkNo}
-          setCheckNo={setCheckNo}
           checkDate={checkDate}
-          setCheckDate={setCheckDate}
           checkDesc={checkDesc}
-          setCheckDesc={setCheckDesc}
           checkDocu={checkDocu}
-          setCheckDocu={setCheckDocu}
           checkedStateShowHide={checkedStateShowHide}
           setCheckedStateShowHide={setCheckedStateShowHide}
           pageTotal={pageTotal}
           pageIndex={pageIndex}
           pageSize={pageSize}
           pageSizeConst={pageSizeConst}
-          getPaginateItems={getPaginateItems}
+          loadMoreBackground={loadMoreBackground}
           selectRow={selectRow}
           setSelectRow={setSelectRow}
-          setPasteButton={setPasteButton}
-          pasteButton={pasteButton}
           setSrcIndex={setSrcIndex}
           srcIndex={srcIndex}
-          setNewRow={setNewRow}
           newRow={newRow}
+          setNewRow={setNewRow}
           newWitness={newWitness}
+          loading={loading}
+          setLoading={setLoading}
           setMaxLoading={setMaxLoading}
+          maxLoading={maxLoading}
           sortByOrder={sortByOrder}
-          setNewWitness={setNewWitness}
           briefId={background_id}
-          client_name={client_name}
-          matter_name={matter_name}
+          searchDescription={searchDescription}
         />
 
-        {/* {witness !== null && witness.length !== 0 && ( */}
-        <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
-          <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
-            <IoIcons.IoIosSearch />
-          </span>
-          <input
-            type="search"
-            placeholder="Type to search description in the Background ..."
-            onChange={handleSearchDescriptionChange}
-            className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-          />
-        </div>
-        {/* )} */}
+        {showToast && (
+          <ToastNotification title={alertMessage} hideToast={hideToast} />
+        )}
       </div>
-      <TableInfo
-        client_name={client_name}
-        matter_name={matter_name}
-        wait={wait}
-        setPasteButton={setPasteButton}
-        setIdList={setIdList}
-        witness={witness}
-        ShowModalParagraph={ShowModalParagraph}
-        setShowModalParagraph={setShowModalParagraph}
-        fileMatter={fileMatter}
-        setFileMatter={setFileMatter}
-        files={files}
-        setFiles={setFiles}
-        setWitness={setWitness}
-        checkAllState={checkAllState}
-        setcheckAllState={setcheckAllState}
-        checkedState={checkedState}
-        setCheckedState={setCheckedState}
-        totalChecked={totalChecked}
-        settotalChecked={settotalChecked}
-        setId={setId}
-        getId={getId}
-        search={search}
-        matterId={matter_id}
-        getBackground={getBackground}
-        selectedRowsBG={selectedRowsBG}
-        setSelectedRowsBG={setSelectedRowsBG}
-        paragraph={paragraph}
-        setParagraph={setParagraph}
-        showDeleteButton={showDeleteButton}
-        setShowDeleteButton={setShowDeleteButton}
-        handleManageFiles={handleManageFiles}
-        setActivateButton={setActivateButton}
-        activateButton={activateButton}
-        setAscDesc={setAscDesc}
-        ascDesc={ascDesc}
-        setSelectedRowsBGFiles={setSelectedRowsBGFiles}
-        selectedRowsBGFiles={selectedRowsBGFiles}
-        setSelectedId={setSelectedId}
-        selectedId={selectedId}
-        pasteButton={pasteButton}
-        checkNo={checkNo}
-        checkDate={checkDate}
-        checkDesc={checkDesc}
-        checkDocu={checkDocu}
-        checkedStateShowHide={checkedStateShowHide}
-        setCheckedStateShowHide={setCheckedStateShowHide}
-        pageTotal={pageTotal}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
-        pageSizeConst={pageSizeConst}
-        loadMoreBackground={loadMoreBackground}
-        selectRow={selectRow}
-        setSelectRow={setSelectRow}
-        setSrcIndex={setSrcIndex}
-        srcIndex={srcIndex}
-        newRow={newRow}
-        setNewRow={setNewRow}
-        newWitness={newWitness}
-        loading={loading}
-        setLoading={setLoading}
-        setMaxLoading={setMaxLoading}
-        maxLoading={maxLoading}
-        sortByOrder={sortByOrder}
-        briefId={background_id}
-        searchDescription={searchDescription}
-      />
-
-      {showToast && (
-        <ToastNotification title={alertMessage} hideToast={hideToast} />
-      )}
     </>
   );
 };
