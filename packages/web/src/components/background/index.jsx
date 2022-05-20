@@ -47,7 +47,7 @@ const Background = () => {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
+  const [ascDesc, setAscDesc] = useState(null);
   const [activateButton, setActivateButton] = useState(false);
   const [pasteButton, setPasteButton] = useState(false);
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
@@ -335,7 +335,21 @@ const Background = () => {
                 console.log("HELO", searchDescription);
               }
 
-              setWitness([...new Set(sortByOrder(arrConcat))]);
+              if (ascDesc !== null) {
+                console.log("sorting is ascending?", ascDesc);
+
+                if (ascDesc === true) {
+                  console.log("set order by Date ASC");
+                  arrConcat = arrConcat.sort(compareValues("date"));
+                } else if (!ascDesc) {
+                  console.log("set order by Date DESC");
+                  arrConcat = arrConcat.sort(compareValues("date", "desc"));
+                }
+
+                setWitness([...new Set(arrConcat)]);
+              } else {
+                setWitness([...new Set(sortByOrder(arrConcat))]);
+              }
             }, 200);
           }
         }
@@ -345,6 +359,24 @@ const Background = () => {
       }
     }
   };
+
+  function compareValues(key, order = "asc") {
+    return function innerSort(a, b) {
+      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+        return 0;
+      }
+
+      const varA = new Date(a[key]);
+      const varB = new Date(b[key]);
+      let comparison = 0;
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
+      return order === "desc" ? comparison * -1 : comparison;
+    };
+  }
 
   const handleOnAction = (event) => {
     console.log("User did something", event);
