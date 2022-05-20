@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Redirect, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
 import { HiOutlinePlusCircle } from "react-icons/hi";
-import { MdArrowForwardIos, MdDownload } from "react-icons/md";
-import { matter_rfi, questions } from "./data-source";
+import { MdArrowForwardIos } from "react-icons/md";
 import { AppRoutes } from "../../constants/AppRoutes";
 import CreateRFIModal from "./create-RFI-modal";
 import ToastNotification from "../toast-notification";
@@ -23,7 +22,6 @@ export default function MattersRFI() {
 
   const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
 
-  const [dataquestions, setQuestion] = useState(questions);
   const [searchTable, setSearchTable] = useState();
 
   const [showToast, setShowToast] = useState(false);
@@ -78,9 +76,9 @@ export default function MattersRFI() {
     };
 
     await API.graphql(params).then((rfi) => {
-      const matterFilesList = rfi.data.clientMatter.rfis.items;
-      console.log("mfl", matterFilesList);
-      setRFI(matterFilesList);
+      const RFIList = rfi.data.clientMatter.rfis.items;
+      console.log("mfl", RFIList);
+      setRFI(RFIList);
     });
   };
 
@@ -110,7 +108,8 @@ export default function MattersRFI() {
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
-      history.push(`${AppRoutes.RFIPAGE}/${getID}`);
+
+      visitRFI(getID, addRFI);
     }, 3000);
   };
 
@@ -147,8 +146,17 @@ export default function MattersRFI() {
     paddingLeft: "0rem",
   };
 
-  function visitRFI(id) {
-    history.push(`${AppRoutes.RFIPAGE}/${id}`);
+  function visitRFI(id, name) {
+    const m_name = getQueryVariable("matter_name");
+    const c_name = getQueryVariable("client_name");
+
+    history.push(
+      `${
+        AppRoutes.RFIPAGE
+      }/${id}/?matter_id=${matter_id}&matter_name=${m_name}&client_name=${c_name}&rfi_name=${utf8_to_b64(
+        name
+      )}`
+    );
   }
 
   function getQueryVariable(variable) {
@@ -156,11 +164,15 @@ export default function MattersRFI() {
     var vars = query.split("&");
     for (var i = 0; i < vars.length; i++) {
       var pair = vars[i].split("=");
-      if (pair[0] == variable) {
+      if (pair[0] === variable) {
         return pair[1];
       }
     }
     return false;
+  }
+
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
   }
 
   function b64_to_utf8(str) {
@@ -174,11 +186,11 @@ export default function MattersRFI() {
 
   const formatDisplayDate = (val) => {
     let date = new Date(val);
-    const day = date.toLocaleString('default', { day: '2-digit' });
-    const month = date.toLocaleString('default', { month: 'short' });
-    const year = date.toLocaleString('default', { year: 'numeric' });
-    return day + ' ' + month + ' ' + year;
-  }
+    const day = date.toLocaleString("default", { day: "2-digit" });
+    const month = date.toLocaleString("default", { month: "short" });
+    const year = date.toLocaleString("default", { year: "numeric" });
+    return day + " " + month + " " + year;
+  };
 
   return (
     <>
@@ -262,9 +274,9 @@ export default function MattersRFI() {
             </div>
           </div>
         </div>
-        {RFI === null ?
+        {RFI === null ? (
           <div> </div>
-        : RFI.length === 0 ? (
+        ) : RFI.length === 0 ? (
           <div className="p-5 px-5 py-1 left-0 mt-5">
             <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
               <BlankState
@@ -281,7 +293,7 @@ export default function MattersRFI() {
               <div
                 className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4  cursor-pointer"
                 key={item.id}
-                onClick={() => visitRFI(item.id)}
+                onClick={() => visitRFI(item.id, item.name)}
               >
                 <div>
                   <div className="grid grid-cols-4 gap-4">
@@ -297,7 +309,9 @@ export default function MattersRFI() {
                         tabIndex="0"
                         className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                       >
-                        {item.createdAt ? formatDisplayDate(item.createdAt) : "No date"}
+                        {item.createdAt
+                          ? formatDisplayDate(item.createdAt)
+                          : "No date"}
                       </p>
                     </div>
                   </div>
