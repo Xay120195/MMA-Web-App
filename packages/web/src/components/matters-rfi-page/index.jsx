@@ -203,7 +203,7 @@ export default function MattersRFI() {
               <nav aria-label="Breadcrumb" style={style} className="mt-4">
                 <ol
                   role="list"
-                  className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+                  className="px-0 flex items-left space-x-2 lg:max-w-7xl lg:px-8"
                 >
                   <li>
                     <Link
@@ -276,7 +276,7 @@ export default function MattersRFI() {
             </div>
           </div>
         ) : (
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
+          <div className="my-5 ml-2">
             {RFI.map((item) => (
               <div
                 className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4  cursor-pointer"
