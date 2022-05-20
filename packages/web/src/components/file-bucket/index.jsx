@@ -9,7 +9,6 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
-// import barsFilter from "../../assets/images/bars-filter.svg";
 import ellipsis from "../../shared/ellipsis";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
@@ -17,7 +16,6 @@ import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
-import PageReferenceModal from "./page-reference-modal";
 //import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -75,7 +73,6 @@ export default function FileBucket() {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [ascDesc, setAscDesc] = useState(null);
-  const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
   const [pageReferenceFileId, setPageReferenceFileId] = useState("");
   const [pageReferenceBackgroundId, setPageReferenceBackgroundId] =
     useState("");
@@ -189,7 +186,6 @@ export default function FileBucket() {
     setShowUploadModal(false);
     setshowRemoveFileModal(false);
     setFilterLabels(false);
-    setShowPageReferenceModal(false);
   };
 
   const contentDiv = {
@@ -1593,7 +1589,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     description,
     rowOrder
   ) => {
-    setShowPageReferenceModal(true);
     setPageReferenceFileId(fileId);
     setPageReferenceBackgroundId(backgroundId);
     setPageReferenceClientMatter(clientMatter);
@@ -2380,47 +2375,47 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             {...provider.dragHandleProps}
                                             className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
-                                                .sort((a, b) =>
-                                                  a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
-                                                    )
-                                                )
-                                                .map((background, index) => (
-                                                  <p
-                                                    className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
-                                                    key={background.id}
-                                                    index={index}
-                                                    onClick={() =>
-                                                      showPageReference(
-                                                        data.id,
-                                                        background.id,
-                                                        clientMatterName,
-                                                        background.description,
-                                                        background.order
-                                                      )
-                                                    }
-                                                  >
-                                                    <b>
-                                                      {background.order + ". "}
-                                                    </b>
-                                                    {ellipsis(
-                                                      clientMatterName +
-                                                        " Background",
-                                                      40
-                                                    )}
-                                                  </p>
-                                                ))
-                                                .sort()}
                                           </td>
                                         </tr>
                                       )}
                                     </Draggable>
+                                    /*data.backgrounds.items !== null &&
+                                      data.backgrounds.items
+                                        .sort((a, b) =>
+                                          a.order > b.order ? 1 : -1
+                                        )
+                                        .filter(
+                                          (x) =>
+                                            !Object.values(x).includes(
+                                              null
+                                            )
+                                        )
+                                        .map((background, index) => (
+                                          <p
+                                            className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                            key={background.id}
+                                            index={index}
+                                            onClick={() =>
+                                              showPageReference(
+                                                data.id,
+                                                background.id,
+                                                clientMatterName,
+                                                background.description,
+                                                background.order
+                                              )
+                                            }
+                                          >
+                                            <b>
+                                              {background.order + ". "}
+                                            </b>
+                                            {ellipsis(
+                                              clientMatterName +
+                                                " Background",
+                                              40
+                                            )}
+                                          </p>
+                                        ))
+                                        .sort()*/
                                   ))}
                                   {provider.placeholder}
                                 </tbody>
@@ -2482,17 +2477,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           handleSave={handleUploadLink}
           bucketName={matter_id}
           handleModalClose={handleModalClose}
-        />
-      )}
-      {showPageReferenceModal && (
-        <PageReferenceModal
-          handleModalClose={handleModalClose}
-          fileId={pageReferenceFileId}
-          backgroundId={pageReferenceBackgroundId}
-          clientMatter={pageReferenceClientMatter}
-          description={pageReferenceDescription}
-          order={pageReferenceRowOrder}
-          getMatterFiles={getMatterFiles}
         />
       )}
       {filterLabels && (
