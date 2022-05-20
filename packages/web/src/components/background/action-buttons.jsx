@@ -8,12 +8,14 @@ import { AiFillFile, AiFillEye } from "react-icons/ai";
 const ActionButtons = (props) => {
   const {
     witness,
+    setSelectedItems,
     checkAllState,
     setcheckAllState,
     setCheckedState,
     settotalChecked,
     setId,
     matterId,
+    selectedItems,
     getBackground,
     selectedRowsBG,
     setSelectedRowsBG,
@@ -66,27 +68,26 @@ const ActionButtons = (props) => {
         }
         `;
 
-    const deletedId =  await API.graphql({
+      const deletedId = await API.graphql({
         query: mDeleteBackground,
         variables: {
           briefId: briefId,
-          background: item
+          background: item,
         },
       });
 
+      // var temp = witness;
+      // var find = deletedId.data.briefBackgroundUntag.id;
+      // console.log("id", find);
+      // var idxs = [];
+      // for(var i = 0 ; i<idxs.length; i++){
+      //   temp.map(
+      //     (x) => x.id === find
+      //     ? temp.splice(idxs[i], 1)
+      //     : x
+      //   );
+      // }
 
-    // var temp = witness;
-    // var find = deletedId.data.briefBackgroundUntag.id;
-    // console.log("id", find);  
-    // var idxs = [];
-    // for(var i = 0 ; i<idxs.length; i++){
-    //   temp.map(
-    //     (x) => x.id === find
-    //     ? temp.splice(idxs[i], 1)
-    //     : x
-    //   );
-    // }
-    
       setalertMessage(`Successfully deleted`);
       setMaxLoading(false);
 
@@ -165,7 +166,6 @@ const ActionButtons = (props) => {
         },
       });
       console.log(response);
-    
 
       setcheckAllState(false);
       setCheckedState(new Array(witness.length).fill(false));
@@ -186,7 +186,10 @@ const ActionButtons = (props) => {
       settotalChecked(0);
       //insert row
       // remove order after migration
-      witness.map((data) => (temp = [...temp, { id: data.id, fileName: "x", order: data.order }]));
+      witness.map(
+        (data) =>
+          (temp = [...temp, { id: data.id, fileName: "x", order: data.order }])
+      );
       setSelectedRowsBG(temp);
       if (temp.length > 0) {
         setShowDeleteButton(true);
@@ -388,46 +391,30 @@ const ActionButtons = (props) => {
   const handleCopyRow = () => {
     setPasteButton(true);
     localStorage.setItem("selectedRows", JSON.stringify(selectRow));
-
-    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
-
-    storedItemRows.map(async function (x) {
-      const backgroundFilesOptReq = await API.graphql({
-        query: qlistBackgroundFiles,
-        variables: {
-          id: x.id,
-        },
-      });
-
-      if (backgroundFilesOptReq.data.background.files !== null) {
-        const newFilesResult =
-          backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description }) => ({
-              id: id,
-              name: name,
-              description: description,
-            })
-          );
-        setNewWitness(newFilesResult);
-      }
-    });
   };
 
   const handleShowBrief = () => {
     setShowBriefModal(true);
-  }
+  };
 
+  const handleCheckAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(witness.map((x) => x.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
   return (
     <>
-      <div className="pl-2 py-1 grid grid-cols-1 gap-1.5"  >
-        <div className="col-span-6" >
+      <div className="pl-2 py-1 grid grid-cols-1 gap-1.5">
+        <div className="col-span-6">
           <input
             name="check_all"
             id="check_all"
             aria-describedby="checkbox-1"
             type="checkbox"
-            checked={checkAllState}
-            onChange={(e) => handleCheckAllChange(e.target.checked)}
+            checked={selectedItems.length === witness.length ? true : false}
+            onChange={handleCheckAll}
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
           {!showDeleteButton && (
@@ -611,7 +598,7 @@ const ActionButtons = (props) => {
       )}
 
       {showBriefModal && (
-        <BriefModal 
+        <BriefModal
           selectedRowsBG={selectedRowsBG}
           handleModalClose={handleModalClose}
           matterId={matterId}
