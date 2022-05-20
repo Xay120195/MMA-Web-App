@@ -5,6 +5,8 @@ import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 import * as FaIcons from "react-icons/fa";
 import { MatterContext } from "./index";
+import Loading from "../loading/loading";
+
 export function ClientMatters({}) {
   const setshowDeleteModal = (displayStatus, id) => {
     onShowDeleteModal(displayStatus, id);
@@ -34,7 +36,7 @@ export function ClientMatters({}) {
       {view === "grid" ? (
         <>
           {loading ? (
-            <span>Please wait...</span>
+            <Loading content={"Please wait..."} />
           ) : clientMatter.length <= 0 ? (
             <span>No result found.</span>
           ) : (
@@ -161,7 +163,7 @@ export function ClientMatters({}) {
       ) : (
         <>
           {loading ? (
-            <span>Please wait...</span>
+            <Loading content={"Please wait..."} />
           ) : clientMatter.length <= 0 ? (
             <span>No result found.</span>
           ) : (
