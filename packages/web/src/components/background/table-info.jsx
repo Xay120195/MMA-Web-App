@@ -6,6 +6,8 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync, FaSort } from "react-icons/fa";
+import Loading from "../loading/loading";
+
 import {
   BsFillTrashFill,
   BsFillBucketFill,
@@ -1052,7 +1054,8 @@ const TableInfo = ({
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow border-b border-gray-200 sm:rounded-lg">
               {wait === false ? (
-                <span className="py-5 px-5">Please wait...</span>
+                // <span className="py-5 px-5">Please wait...</span>
+                <Loading content={"Please wait..."} />
               ) : witness.length === 0 &&
                 (searchDescription === undefined ||
                   searchDescription === "") ? (

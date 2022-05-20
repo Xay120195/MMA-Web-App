@@ -22,6 +22,7 @@ import PageReferenceModal from "./page-reference-modal";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
+import Loading from "../loading/loading";
 import {
   GrDocumentPdf,
   GrDocumentText,
@@ -2018,7 +2019,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           //   <span className="py-5 px-5">FILTERED FILES</span>
           // ) :
           matterFiles === null ? (
-            <span className="py-5 px-5">Please wait...</span>
+            <Loading content={"Please wait..."} />
           ) : (
             <>
               {matterFiles.length === 0 &&
