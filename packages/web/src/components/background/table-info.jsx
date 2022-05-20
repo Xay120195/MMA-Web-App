@@ -503,7 +503,7 @@ const TableInfo = ({
       );
     } else if (!ascDesc) {
       console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
-      setAscDesc(null);
+      setAscDesc(null); // default to sort by order
       setWitness(
         witness
           .slice()
@@ -511,10 +511,9 @@ const TableInfo = ({
             (a, b) =>
               a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
           )
-      ); // default to sort by order
+      ); 
     }
 
-    console.log(witness);
     console.groupEnd();
   };
 
@@ -1086,7 +1085,6 @@ const TableInfo = ({
                               <th className="px-2 py-4 text-center whitespace-nowrap">
                                 Date &nbsp;
                                 {(() => {
-                                  console.log("ascDesc:", ascDesc);
                                   if (ascDesc == null) {
                                     return (
                                       <FaSort
