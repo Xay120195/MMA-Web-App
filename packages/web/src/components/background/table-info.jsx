@@ -6,6 +6,8 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync, FaSort } from "react-icons/fa";
+import Loading from "../loading/loading";
+
 import {
   BsFillTrashFill,
   BsFillBucketFill,
@@ -1046,19 +1048,14 @@ const TableInfo = ({
 
   return (
     <>
-      <div
-        style={{
-          paddingLeft: "2rem",
-          paddingRight: "2rem",
-          paddingBottom: "2rem",
-          marginLeft: "4rem",
-        }}
+      <div className="px-7"
       >
         <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow border-b border-gray-200 sm:rounded-lg">
               {wait === false ? (
-                <span className="py-5 px-5">Please wait...</span>
+                // <span className="py-5 px-5">Please wait...</span>
+                <Loading content={"Please wait..."} />
               ) : witness.length === 0 &&
                 (searchDescription === undefined ||
                   searchDescription === "") ? (
@@ -1075,7 +1072,7 @@ const TableInfo = ({
                       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                         <thead
                           className="bg-gray-100 z-10"
-                          style={{ position: "sticky", top: "120px" }}
+                          style={{ position: "sticky", top: "190px" }}
                         >
                           <tr>
                             <th className="px-2 py-4 text-center whitespace-nowrap">
