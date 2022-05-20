@@ -333,7 +333,6 @@ const Background = () => {
                       .toLowerCase()
                       .includes(searchDescription.toLowerCase())
                   );
-                console.log("HELO", searchDescription);
               }
 
               if (ascDesc !== null) {

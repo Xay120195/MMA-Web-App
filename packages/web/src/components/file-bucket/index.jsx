@@ -40,7 +40,7 @@ import {
 import RemoveFileModal from "./remove-file-modal";
 import imgLoading from "../../assets/images/loading-circle.gif";
 import Multiselect from "multiselect-react-dropdown";
-import { useIdleTimer } from 'react-idle-timer';
+import { useIdleTimer } from "react-idle-timer";
 import ScrollToTop from "react-scroll-to-top";
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
@@ -519,7 +519,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       filterRecord(searchFile);
     }
 
-    if (Briefs === null){
+    if (Briefs === null) {
       getBriefs();
     }
 
@@ -554,10 +554,11 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         isDeleted: false,
         limit: 100,
         nextToken: next === 1 ? null : vNextToken,
+        sortOrder: "ORDER_ASC",
       },
     };
     await API.graphql(params).then((files) => {
-      const matterFilesList = files.data.matterFiles.items;
+      let matterFilesList = files.data.matterFiles.items;
       console.log("checkthis", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
@@ -578,26 +579,55 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           isDeleted: false,
           limit: 50,
           nextToken: vNextToken,
+          sortOrder: "ORDER_ASC",
         },
       };
 
       await API.graphql(params).then((files) => {
-        const matterFilesList = files.data.matterFiles.items;
+        let matterFilesList = files.data.matterFiles.items;
         console.log("Files", matterFilesList);
         //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
 
-        let arrConcat = matterFiles.concat(sortByOrder(matterFilesList));
+        let arrConcat = matterFiles.concat(matterFilesList);
 
-        setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+        if (ascDesc !== null) {
+          console.log("sorting is ascending?", ascDesc);
 
-        if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
-          console.log("result count: ", files.data.matterFiles.items.length);
-          console.log("next token: ", vNextToken);
-          setMaxLoading(false);
+          if (ascDesc === true) {
+            console.log("set order by Date ASC, CreatedAt DESC");
+
+            arrConcat = arrConcat
+              .slice()
+              .sort(
+                (a, b) =>
+                  new Date(a.date) - new Date(b.date) ||
+                  new Date(b.createdAt) - new Date(a.createdAt)
+              );
+          } else if (!ascDesc) {
+            console.log("set order by Date DESC, CreatedAt DESC");
+
+            arrConcat = arrConcat
+              .slice()
+              .sort(
+                (a, b) =>
+                  new Date(b.date) - new Date(a.date) ||
+                  new Date(b.createdAt) - new Date(a.createdAt)
+              );
+          }
+
+          setMatterFiles([...new Set(arrConcat)]);
         } else {
-          setMaxLoading(true);
+          setMatterFiles([...new Set(sortByOrder(arrConcat))]);
         }
+
+        // if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
+        //   console.log("result count: ", files.data.matterFiles.items.length);
+        //   console.log("next token: ", vNextToken);
+        //   setMaxLoading(false);
+        // } else {
+        //   setMaxLoading(true);
+        // }
       });
     } else {
       console.log("Last Result!");
@@ -1456,21 +1486,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }, 1000);
   }
 
-  const handleOnAction = event => {
-    console.log('User did something', event);
+  const handleOnAction = (event) => {
+    console.log("User did something", event);
     loadMoreMatterFiles();
-  }
+  };
 
-  const handleOnIdle = event => {
-    console.log('User is on idle', event);
+  const handleOnIdle = (event) => {
+    console.log("User is on idle", event);
     loadMoreMatterFiles();
-  }
+  };
 
   useIdleTimer({
     timeout: 60 * 40,
     onAction: handleOnAction,
     onIdle: handleOnIdle,
-    debounce: 1000
+    debounce: 1000,
   });
 
   const handleDuplicate = async () => {
@@ -1509,18 +1539,22 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     //   (item) => item.order >= 0 && item.order !== 0
     // );
 
+    console.log("matterFiles", matterFiles);
     if (ascDesc == null) {
       console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
-      setMatterFiles(
-        matterFiles
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(a.date) - new Date(b.date) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+
+      setMatterFiles(matterFiles
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(a.date) - new Date(b.date) ||
+          new Date(b.createdAt) - new Date(a.createdAt)
+      ));
+      
+
+      
+
     } else if (ascDesc === true) {
       console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
@@ -1529,7 +1563,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           .slice()
           .sort(
             (a, b) =>
-              new Date(a.date) - new Date(b.date) ||
+              new Date(b.date) - new Date(a.date) ||
               new Date(b.createdAt) - new Date(a.createdAt)
           )
       );
@@ -1541,7 +1575,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           .slice()
           .sort(
             (a, b) =>
-              new Date(a.date) - new Date(b.date) ||
+              new Date(a.order) - new Date(b.order) ||
               new Date(b.createdAt) - new Date(a.createdAt)
           )
       ); // default to sort by order
@@ -1603,14 +1637,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   //new copy to BG
-  const handleShowCopyOptions=() => {
-    if(copyOptions){
+  const handleShowCopyOptions = () => {
+    if (copyOptions) {
       showCopyOptions(false);
-    }else{
+    } else {
       showCopyOptions(true);
     }
-    
-  }
+  };
 
   const listBriefs = `
   query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
@@ -1640,25 +1673,29 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     };
 
     await API.graphql(params).then((brief) => {
-      const matterFilesList = brief.data.clientMatter.briefs.items;
+      let matterFilesList = brief.data.clientMatter.briefs.items;
       console.log("mfl", matterFilesList);
-      var temp = matterFilesList.map(x=> opts = [...opts, {label: x.name, value: x.id}]);
+      var temp = matterFilesList.map(
+        (x) => (opts = [...opts, { label: x.name, value: x.id }])
+      );
       setCopyBgOptions(opts);
     });
   };
 
-  const handleFilterChange =(evt)=>{
+  const handleFilterChange = (evt) => {
     setCopyBgIds(evt);
-  }
+  };
 
-  const handleCopyToBg = async ()=>{
-    console.log("cb",copyBgOptions);
+  const handleCopyToBg = async () => {
+    console.log("cb", copyBgOptions);
 
     let temp = copyBgIds;
-    var searchIds = []
+    var searchIds = [];
 
-    for(var i=0; i<temp.length; i++){
-      copyBgOptions.map(x=> x.label === temp[i] ? searchIds = [...searchIds, x.value] : x)
+    for (var i = 0; i < temp.length; i++) {
+      copyBgOptions.map((x) =>
+        x.label === temp[i] ? (searchIds = [...searchIds, x.value]) : x
+      );
     }
 
     console.log("searchthis", searchIds); //ids of backgrounds [id, id] correct
@@ -1672,7 +1709,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     setshowRemoveFileButton(false);
     setShowCopyToBackgroundButton(false);
     setshowAttachBackgroundButton(false);
-    
 
     arrFiles = selectedRows.map(({ id, details, date }) => ({
       id: id,
@@ -1708,7 +1744,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       }
     }
     setShowToast(false);
-    
+
     setResultMessage(`Files successfully copied in backgrounds!`);
     setShowToast(true);
 
@@ -1726,10 +1762,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
     }, 1000);
-
-    
-  }
-  
+  };
 
   return (
     <>
@@ -1865,8 +1898,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 <FiUpload />
               </button>
               <div className="inline-flex">
-              {showCopyToBackgroundButton &&
-                (
+                {showCopyToBackgroundButton && (
                   <button
                     className="bg-white hover:bg-gray-300 text-black font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                     onClick={() => handleShowCopyOptions()}
@@ -1875,40 +1907,32 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                     <FiCopy />
                   </button>
                 )}
-              {copyOptions && (
-                  <div 
-                    className="w-72 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none"
-                    
-                  >
+                {copyOptions && (
+                  <div className="w-72 h-38 z-50 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
                     <div className="flex">
-                    <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
-                      Results
-                    </p>
-                    <p 
-                      className="px-2 py-2 text-blue-400 text-xs font-semibold ml-16  cursor-pointer"
-                      onClick={() => handleCopyToBg()}
-                    >
-                      
-                      Copy To Background
-                    </p>
+                      <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
+                        Results
+                      </p>
+                      <p
+                        className="px-2 py-2 text-blue-400 text-xs font-semibold ml-16  cursor-pointer"
+                        onClick={() => handleCopyToBg()}
+                      >
+                        Copy To Background
+                      </p>
                     </div>
 
                     <Multiselect
-                        isObject={false}
-                        onSelect={(event) => handleFilterChange(event)}
-                        options={copyBgOptions.map(x=>x.label)}
-                        value={selected}
-                        showCheckbox
-                        className="z-50"
-                        placeholder={"Search"}
-                      />
+                      isObject={false}
+                      onSelect={(event) => handleFilterChange(event)}
+                      options={copyBgOptions.map((x) => x.label)}
+                      value={selected}
+                      showCheckbox
+                      className="z-50"
+                      placeholder={"Search"}
+                    />
                   </div>
-                 
-                      
-            
-              )}
+                )}
               </div>
-              
 
               {showAttachBackgroundButton && backgroundRowId !== "000" && (
                 <button
@@ -1920,7 +1944,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                 </button>
               )}
 
-                {/* {matterFiles !== null &&
+              {/* {matterFiles !== null &&
                 matterFiles.length !== 0 &&
                 showRemoveFileButton && (
                   <button
