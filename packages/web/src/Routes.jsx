@@ -4,7 +4,6 @@ import Dashboard from "./components/dashboard";
 import MattersOverview from "./components/matters-overview";
 import UserTypeAccess from "./components/usertype-access";
 import AccountSettings from "./components/account-settings";
-import WitnessAffidavit from "./components/witness-affidavit";
 import MattersRFI from "./components/matters-rfi-page";
 import Contacts from "./components/contacts";
 import PostRegistration from "./components/authentication/post-registration";
@@ -47,11 +46,6 @@ const Routes = () => {
             exact
             path={AppRoutes.USERTYPEACCESS}
             component={UserTypeAccess}
-          />
-          <Route
-            exact
-            path={`${AppRoutes.WITNESSAFFIDAVIT}/:id`}
-            component={WitnessAffidavit}
           />
           <Route
             exact

@@ -87,6 +87,8 @@ const TableInfo = ({
   sortByOrder,
   briefId,
   searchDescription,
+  selectedItems,
+  setSelectedItems,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -97,11 +99,14 @@ const TableInfo = ({
   const [descId, setDescId] = useState("");
   const [textDesc, setTextDesc] = useState("");
   const [descAlert, setDescAlert] = useState("");
-  const [updateProgess, setUpdateProgress] = useState(false);
+
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
   const [sortByDate, setSortByDate] = useState([]);
+  const [isShiftDown, setIsShiftDown] = useState(false);
+
+  const [lastSelectedItem, setLastSelectedItem] = useState(null);
 
   const [selectedRowId, setSelectedRowID] = useState(null);
   const [goToFileBucket, setGoToFileBucket] = useState(false);
@@ -477,43 +482,38 @@ const TableInfo = ({
     }
   }, 10000);
 
+  function compareValues(key, order = "asc") {
+    return function innerSort(a, b) {
+      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+        return 0;
+      }
+
+      const varA = new Date(a[key]);
+      const varB = new Date(b[key]);
+      let comparison = 0;
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
+      return order === "desc" ? comparison * -1 : comparison;
+    };
+  }
+
   const SortBydate = async () => {
     console.group("SortBydate()");
     if (ascDesc == null) {
-      console.log("set order by Date ASC, CreatedAt DESC");
+      console.log("set order by Date ASC");
       setAscDesc(true);
-      setWitness(
-        witness
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(a.date) - new Date(b.date) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+      setWitness(witness.sort(compareValues("date")));
     } else if (ascDesc === true) {
-      console.log("set order by Date DESC, CreatedAt DESC");
+      console.log("set order by Date DESC");
       setAscDesc(false);
-      setWitness(
-        witness
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(b.date) - new Date(a.date) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+      setWitness(witness.sort(compareValues("date", "desc")));
     } else if (!ascDesc) {
-      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
+      console.log("set order by DEFAULT: Order ASC");
       setAscDesc(null); // default to sort by order
-      setWitness(
-        witness
-          .slice()
-          .sort(
-            (a, b) =>
-              a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      ); 
+      setWitness(witness.sort(compareValues("order")));
     }
 
     console.groupEnd();
@@ -649,23 +649,9 @@ const TableInfo = ({
     }, 2000);
   };
 
-  const handleSelected = (date) => {
-    return new Date(date);
-  };
-
-  const convertArrayToObject = (array) => {
-    const initialValue = {};
-    return array.reduce((obj, item) => {
-      return {
-        ...obj,
-        item: item,
-      };
-    }, initialValue);
-  };
-
   const handlePasteRow = (targetIndex) => {
     let tempWitness = [...witness];
-    let arrCopyFiles = [];
+
     let arrFileResult = [];
 
     setCheckedState(new Array(witness.length).fill(false));
@@ -673,125 +659,79 @@ const TableInfo = ({
 
     storedItemRows.map(async function (x) {
       const mCreateBackground = `
-          mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-            backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
-              createdAt
-              date
-              description
-              id
-              order
-            }
-          }
-      `;
+      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+        backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+          id
+          createdAt
+          date
+          description
+          order
+        }
+      }
+  `;
 
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
-          clientMatterId: matterId,
+          briefId: briefId,
           description: x.details,
-          date: null,
+          date: x.date,
           files: { items: [] },
         },
       });
 
-      arrFileResult = [
-        {
-          createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-          id: createBackgroundRow.data.backgroundCreate.id,
-          files: { items: [] },
-          date: createBackgroundRow.data.backgroundCreate.date,
-          description: createBackgroundRow.data.backgroundCreate.description,
-          order: createBackgroundRow.data.backgroundCreate.order,
-        },
-      ];
+      const arrFileResult = {
+        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        files: { items: x.files.items },
+        date: createBackgroundRow.data.backgroundCreate.date,
+        description: createBackgroundRow.data.backgroundCreate.description,
+        order: createBackgroundRow.data.backgroundCreate.order,
+      };
 
-      arrCopyFiles = newWitness.map(({ id }) => ({
+      const arrId = [{ id: createBackgroundRow.data.backgroundCreate.id }];
+
+      const request = await API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: createBackgroundRow.data.backgroundCreate.id,
+          files: x.files.items,
+        },
+      });
+
+      tempWitness.splice(targetIndex + 1, 0, arrFileResult);
+
+      setWitness(tempWitness);
+      setSelectRow([arrFileResult]);
+      console.log(arrFileResult);
+      setSelectedItems(arrId.map((x) => x.id));
+      const result = tempWitness.map(({ id }, index) => ({
         id: id,
+        order: index + 1,
       }));
 
-      if (arrCopyFiles.length <= 0) {
-        const acdc = convertArrayToObject(arrFileResult);
-        tempWitness.splice(targetIndex + 1, 0, acdc.item);
-        setWitness(tempWitness);
-
-        setSelectRow(arrFileResult);
-
-        const result = tempWitness.map(({ id }, index) => ({
-          id: id,
-          order: index + 1,
-        }));
-
-        const mUpdateBulkMatterFileOrder = `
-    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
-      matterFileBulkUpdateOrders(arrangement: $arrangement) {
-        id
-        order
+      const mUpdateBulkMatterFileOrder = `
+      mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
+        matterFileBulkUpdateOrders(arrangement: $arrangement) {
+          id
+          order
+        }
       }
-    }
-    `;
+      `;
 
-        await API.graphql({
-          query: mUpdateBulkMatterFileOrder,
-          variables: {
-            arrangement: result,
-          },
-        });
-      } else {
-        const request = await API.graphql({
-          query: mUpdateBackgroundFile,
-          variables: {
-            backgroundId: createBackgroundRow.data.backgroundCreate.id,
-            files: arrCopyFiles,
-          },
-        });
-        const backgroundFilesOptReq = await API.graphql({
-          query: qlistBackgroundFiles,
-          variables: {
-            id: createBackgroundRow.data.backgroundCreate.id,
-          },
-        });
-        const updateArrFiles = arrFileResult.map((obj) => {
-          if (obj.id === request.data.backgroundFileTag.id) {
-            return {
-              ...obj,
-              files: backgroundFilesOptReq.data.background.files,
-            };
-          }
-          return obj;
-        });
-        const newFiles = convertArrayToObject(updateArrFiles);
-        tempWitness.splice(targetIndex + 1, 0, newFiles.item);
-        setWitness(tempWitness);
-        setSelectRow(updateArrFiles);
-        const result = tempWitness.map(({ id }, index) => ({
-          id: id,
-          order: index + 1,
-        }));
-
-        const mUpdateBulkMatterFileOrder = `
-    mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
-      matterFileBulkUpdateOrders(arrangement: $arrangement) {
-        id
-        order
-      }
-    }
-    `;
-
-        await API.graphql({
-          query: mUpdateBulkMatterFileOrder,
-          variables: {
-            arrangement: result,
-          },
-        });
-      }
+      await API.graphql({
+        query: mUpdateBulkMatterFileOrder,
+        variables: {
+          arrangement: result,
+        },
+      });
     });
 
     setShowDeleteButton(false);
     setPasteButton(false);
     setTimeout(() => {
       setSelectRow([]);
-      setNewRow([]);
-      setSrcIndex("");
+      setSelectedItems([]);
       localStorage.removeItem("selectedRows");
     }, 10000);
   };
@@ -815,6 +755,16 @@ const TableInfo = ({
   });
 
   useBottomScrollListener(handleBottomScroll);*/
+
+  const createObject = (array, key) => {
+    const initialValue = {};
+    return array.reduce((obj, item) => {
+      return {
+        ...obj,
+        [item[key]]: item,
+      };
+    }, initialValue);
+  };
 
   const mUpdateMatterFileDesc = `
       mutation updateMatterFile ($id: ID, $details: String) {
@@ -1046,10 +996,101 @@ const TableInfo = ({
     //return request;
   }
 
+  const handleKeyUp = (e) => {
+    if (e.key === "Shift" && isShiftDown) {
+      setIsShiftDown(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Shift" && !isShiftDown) {
+      setIsShiftDown(true);
+    }
+  };
+
+  const handleSelectItem = (e, index) => {
+    const { value } = e.target;
+    const nextValue = getNextValue(value);
+    setSelectedItems(nextValue);
+    setLastSelectedItem(value);
+
+    if (nextValue.length > 0) {
+      const isf1 = witness.filter((item) => nextValue.includes(item.id));
+      const xWitness = isf1.map(({ id, date, description, files }) => ({
+        id,
+        date,
+        details: description,
+        files,
+      }));
+      setSelectRow(xWitness);
+      setShowDeleteButton(true);
+      setSrcIndex(index);
+
+      const ids = xWitness.map(({ id }) => ({
+        id,
+        fileName: "",
+      }));
+      setSelectedRowsBG(ids);
+      selectedRowsBGPass = ids;
+    } else {
+      setShowDeleteButton(false);
+      setSelectRow([]);
+      setSrcIndex("");
+      setSelectedRowsBG([]);
+      selectedRowsBGPass = [];
+    }
+  };
+
+  const getNextValue = (value) => {
+    const hasBeenSelected = !selectedItems.includes(value);
+
+    if (isShiftDown) {
+      const newSelectedItems = getNewSelectedItems(value);
+
+      const selections = [...new Set([...selectedItems, ...newSelectedItems])];
+
+      if (!hasBeenSelected) {
+        return selections.filter((item) => !newSelectedItems.includes(item));
+      }
+
+      return selections;
+    }
+
+    // if it's already in there, remove it, otherwise append it
+    return selectedItems.includes(value)
+      ? selectedItems.filter((item) => item !== value)
+      : [...selectedItems, value];
+  };
+
+  const getNewSelectedItems = (value) => {
+    const currentSelectedIndex = witness.findIndex((item) => item.id === value);
+    const lastSelectedIndex = witness.findIndex(
+      (item) => item.id === lastSelectedItem
+    );
+
+    return witness
+      .slice(
+        Math.min(lastSelectedIndex, currentSelectedIndex),
+        Math.max(lastSelectedIndex, currentSelectedIndex) + 1
+      )
+      .map((item) => item.id);
+  };
+
+  useEffect(() => {
+    document.addEventListener("keyup", handleKeyUp, false);
+    document.addEventListener("keydown", handleKeyDown, false);
+
+    return () => {
+      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyUp, handleKeyDown]);
+
+  const handleCheckBox = () => {};
+
   return (
     <>
-      <div className="px-7"
-      >
+      <div className="px-7">
         <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div className="shadow border-b border-gray-200 sm:rounded-lg">
@@ -1174,7 +1215,7 @@ const TableInfo = ({
                                                 handleChageBackground(item.id)
                                               }
                                             />
-                                            <input
+                                            {/* <input
                                               type="checkbox"
                                               name={item.id}
                                               className="cursor-pointer mr-1"
@@ -1188,6 +1229,17 @@ const TableInfo = ({
                                                   item.description
                                                 )
                                               }
+                                            /> */}
+                                            <input
+                                              className="cursor-pointer mr-1"
+                                              onChange={handleSelectItem}
+                                              type="checkbox"
+                                              checked={selectedItems.includes(
+                                                item.id
+                                              )}
+                                              value={item.id}
+                                              id={`item-${item.id}`}
+                                              onClick={handleCheckBox}
                                             />
                                             <label
                                               htmlFor="checkbox-1"
