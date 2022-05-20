@@ -485,7 +485,6 @@ const TableInfo = ({
   function compareValues(key, order = "asc") {
     return function innerSort(a, b) {
       if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
-        // property doesn't exist on either object
         return 0;
       }
 
@@ -504,15 +503,15 @@ const TableInfo = ({
   const SortBydate = async () => {
     console.group("SortBydate()");
     if (ascDesc == null) {
-      console.log("set order by Date ASC, CreatedAt DESC");
+      console.log("set order by Date ASC");
       setAscDesc(true);
       setWitness(witness.sort(compareValues("date")));
     } else if (ascDesc === true) {
-      console.log("set order by Date DESC, CreatedAt DESC");
+      console.log("set order by Date DESC");
       setAscDesc(false);
       setWitness(witness.sort(compareValues("date", "desc")));
     } else if (!ascDesc) {
-      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
+      console.log("set order by DEFAULT: Order ASC");
       setAscDesc(null); // default to sort by order
       setWitness(witness.sort(compareValues("order")));
     }
