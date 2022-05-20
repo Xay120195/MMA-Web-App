@@ -1795,7 +1795,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
               </div>
           </div>
         </div>
-        <div style={{ position: "sticky", top: "0" }} className="py-5 bg-white z-40">
+        {/* DON'T DELETE THIS PART. THIS IS A CLONE FOR SCROLLING DOWN */}
+        <div style={{ position: "sticky", top: "0"}} className=" py-5 bg-white z-30">
+           <h8 className="font-bold text-xl bg-white w-full">
+              File Bucket&nbsp;<span className="text-xl">of</span>&nbsp;
+                <span className="font-semibold text-xl">
+                    {checkFormat(client_name)}
+                  </span>
+                  /
+                  <span className="font-semibold text-xl">
+                    {checkFormat(matter_name)}
+                </span>
+          </h8>
+        </div>
+        {/* END */}
+        <div className="py-5 bg-white z-40 absolute mt-10 ">
            <h1 className="font-bold text-3xl">
               File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
                 <span className="font-semibold text-3xl">
@@ -1810,7 +1824,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             
         <div
           className="bg-white z-40 "
-          style={{ position: "sticky", top: "70px" }}
+          style={{ position: "sticky", top: "67px" }}
         >
           <nav aria-label="Breadcrumb" style={style} className="mt-4">
             <ol
@@ -2057,7 +2071,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <DragDropContext onDragEnd={handleDragEnd}>
                           <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                             <thead
-                              className="bg-gray-100 z-30"
+                              className="bg-gray-100 z-20"
                               style={{ position: "sticky", top: "235px" }}
                             >
                               <tr>
