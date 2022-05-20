@@ -107,7 +107,7 @@ export default function FileBucket() {
 
   const [Briefs, setBriefs] = useState(null);
   const [copyBgOptions, setCopyBgOptions] = useState(null);
-  const [copyBgIds, setCopyBgIds] = useState([]);
+  const [copyBgIds, setCopyBgIds] = useState(null);
 
   const hideToast = () => {
     setShowToast(false);
@@ -1690,6 +1690,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     setCopyBgIds(evt);
   };
 
+  const handleFilterRemoveChange = (evt) => {
+    if(evt.length === 0 ){
+      setCopyBgIds(null);
+    }
+  }
+
   const handleCopyToBg = async () => {
     console.log("cb", copyBgOptions);
 
@@ -1919,17 +1925,22 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                         Results
                       </p>
-                      <p
-                        className="px-2 py-2 text-blue-400 text-xs font-semibold ml-16  cursor-pointer"
+                      <button
+                        className={copyBgIds ?
+                          "px-2 py-2 text-blue-400 text-xs font-semibold ml-16 cursor-pointer"
+                          : "px-2 py-2 text-blue-200 text-xs font-semibold ml-16"
+                        }
                         onClick={() => handleCopyToBg()}
+                        disabled={copyBgIds ? false : true}
                       >
                         Copy To Background
-                      </p>
+                      </button>
                     </div>
 
                     <Multiselect
                       isObject={false}
                       onSelect={(event) => handleFilterChange(event)}
+                      onRemove={(event) => handleFilterRemoveChange(event)}
                       options={copyBgOptions.map((x) => x.label)}
                       value={selected}
                       showCheckbox
