@@ -158,7 +158,7 @@ export async function createMatterFile(data) {
       createdAt: new Date().toISOString(),
     };
 
-    if (data.date !== undefined) rawParams.date = data.date;
+    // if (data.date !== undefined) rawParams.date = data.date;
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
@@ -197,7 +197,7 @@ export async function bulkCreateMatterFile(data) {
         createdAt: new Date().toISOString(),
       };
 
-      if (data[i].date !== undefined) p.date = data[i].date;
+      // if (data[i].date !== undefined) p.date = data[i].date;
 
       arrItems.push({
         PutRequest: {
