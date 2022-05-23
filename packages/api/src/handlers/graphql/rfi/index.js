@@ -9,17 +9,15 @@ async function listRFIRequests(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  let indexName, isAscending;
+  let indexName, isAscending = true;
 
-  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+  if (sortOrder.includes("_DESC")) {
     isAscending = false;
-  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
-    isAscending = true;
   }
 
-  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+  if (sortOrder.includes("CREATED_")) {
     indexName = "byCreatedAt";
-  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+  } else if (sortOrder.includes("ORDER_")) {
     indexName = "byOrder";
   }
 
@@ -97,7 +95,6 @@ async function listRFIRequests(ctx) {
     response = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
     console.log(response);
   }

@@ -45,21 +45,21 @@ export async function getMatterFiles(ctx) {
 
   let resp = {},
     indexName,
-    isAscending,
+    isAscending = true,
     read = true,
     nextToken = ctx.nextToken,
     result = [];
 
-  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+  if (sortOrder.includes("_DESC")) {
     isAscending = false;
-  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
-    isAscending = true;
   }
 
-  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+  if (sortOrder.includes("CREATED_")) {
     indexName = "byCreatedAt";
-  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+  } else if (sortOrder.includes("ORDER_")) {
     indexName = "byOrder";
+  } else if (sortOrder.includes("DATE_")) {
+    indexName = "byDate";
   }
 
   try {
@@ -155,7 +155,7 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
-      date: null,
+      date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
       createdAt: new Date().toISOString(),
     };
@@ -195,7 +195,7 @@ export async function bulkCreateMatterFile(data) {
             type: data[i].type,
             name: data[i].name,
             isDeleted: false,
-            date: null,
+            date: data[i].date ? data[i].date : null,
             order: data[i].order ? data[i].order : 0,
             createdAt: new Date().toISOString(),
           }),
