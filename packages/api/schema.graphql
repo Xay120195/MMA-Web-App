@@ -209,6 +209,8 @@ enum OrderBy {
   CREATED_ASC
   ORDER_DESC
   ORDER_ASC
+  DATE_DESC
+  DATE_ASC
 }
 
 enum UserType {
