@@ -1802,6 +1802,8 @@ const resolvers = {
       return await createMatter(ctx.arguments);
     },
     matterFileCreate: async (ctx) => {
+      console.log("matterFileCreate()");
+      console.log(ctx.arguments);
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
@@ -1823,6 +1825,8 @@ const resolvers = {
     },
 
     matterFileBulkCreate: async (ctx) => {
+      console.log("matterFileBulkCreate()");
+      console.log(ctx.arguments);
       const { files } = ctx.arguments;
       return await bulkCreateMatterFile(files);
     },

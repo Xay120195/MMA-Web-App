@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
@@ -241,11 +241,11 @@ const TableInfo = ({
     setBackground(updateArr);
 
     if (textDesc.length <= 0) {
-      setDescAlert("description can't be empty");
+      setDescAlert("Description can't be empty.");
     } else if (textDesc === description) {
       setDescAlert("");
 
-      setalertMessage(`Saving in progress..`);
+      setalertMessage("Saving in progress...");
       setShowToast(true);
 
       const data = {
@@ -254,7 +254,7 @@ const TableInfo = ({
 
       const success = await updateBackgroundDesc(id, data);
       if (success) {
-        setalertMessage(`Successfully updated `);
+        setalertMessage("Successfully updated.");
         setShowToast(true);
       }
 
@@ -267,7 +267,7 @@ const TableInfo = ({
       };
       const success = await updateBackgroundDesc(id, data);
       if (success) {
-        setalertMessage(`Successfully updated`);
+        setalertMessage("Successfully updated.");
         setShowToast(true);
       }
       setTimeout(() => {
@@ -346,14 +346,14 @@ const TableInfo = ({
   }
 
   const handleDragEnd = async (e) => {
-    let tempWitness = [...background];
+    let tempBackground = [...background];
 
-    let [selectedRow] = tempWitness.splice(e.source.index, 1);
+    let [selectedRow] = tempBackground.splice(e.source.index, 1);
 
-    tempWitness.splice(e.destination.index, 0, selectedRow);
-    setBackground(tempWitness);
+    tempBackground.splice(e.destination.index, 0, selectedRow);
+    setBackground(tempBackground);
 
-    const res = tempWitness.map(({ id }, index) => ({
+    const res = tempBackground.map(({ id }, index) => ({
       id: id,
       order: index,
     }));
@@ -499,7 +499,7 @@ const TableInfo = ({
   }
 
   const SortBydate = async () => {
-    console.group("SortBydate()");
+    console.group("table-info.jsx: SortBydate()");
     if (ascDesc == null) {
       console.log("set order by Date ASC");
       setAscDesc(true);
@@ -648,7 +648,7 @@ const TableInfo = ({
   };
 
   const handlePasteRow = (targetIndex) => {
-    let tempWitness = [...background];
+    let tempBackground = [...background];
 
     let arrFileResult = [];
 
@@ -697,13 +697,13 @@ const TableInfo = ({
         },
       });
 
-      tempWitness.splice(targetIndex + 1, 0, arrFileResult);
+      tempBackground.splice(targetIndex + 1, 0, arrFileResult);
 
-      setBackground(tempWitness);
+      setBackground(tempBackground);
       setSelectRow([arrFileResult]);
       console.log(arrFileResult);
       setSelectedItems(arrId.map((x) => x.id));
-      const result = tempWitness.map(({ id }, index) => ({
+      const result = tempBackground.map(({ id }, index) => ({
         id: id,
         order: index + 1,
       }));
@@ -734,11 +734,11 @@ const TableInfo = ({
     }, 10000);
   };
 
-  // const reOrderFiles = (array, tempWitness, targetIndex) => {
+  // const reOrderFiles = (array, tempBackground, targetIndex) => {
   //   const df = convertArrayToObject(array);
 
-  //   tempWitness.splice(targetIndex + 1, 0, df.item);
-  //   return setBackground(tempWitness);
+  //   tempBackground.splice(targetIndex + 1, 0, df.item);
+  //   return setBackground(tempBackground);
   // };
 
   /*const handleBottomScroll = useCallback(() => {
@@ -783,7 +783,7 @@ const TableInfo = ({
   `;
 
   const handleSyncData = async (backgroundId, fileId) => {
-    var filteredWitness = background.filter(function (item) {
+    var filteredBackground = background.filter(function (item) {
       return item.id === backgroundId;
     });
 
@@ -792,10 +792,10 @@ const TableInfo = ({
       variables: {
         id: fileId,
         date:
-          filteredWitness[0].date !== null &&
-          filteredWitness[0].date !== "null" &&
-          filteredWitness[0].date !== ""
-            ? new Date(filteredWitness[0].date).toISOString()
+          filteredBackground[0].date !== null &&
+          filteredBackground[0].date !== "null" &&
+          filteredBackground[0].date !== ""
+            ? new Date(filteredBackground[0].date).toISOString()
             : null,
       },
     });
@@ -804,7 +804,7 @@ const TableInfo = ({
       query: mUpdateMatterFileDesc,
       variables: {
         id: fileId,
-        details: filteredWitness[0].description,
+        details: filteredBackground[0].description,
       },
     });
 
@@ -1014,17 +1014,17 @@ const TableInfo = ({
 
     if (nextValue.length > 0) {
       const isf1 = background.filter((item) => nextValue.includes(item.id));
-      const xWitness = isf1.map(({ id, date, description, files }) => ({
+      const xBackground = isf1.map(({ id, date, description, files }) => ({
         id,
         date,
         details: description,
         files,
       }));
-      setSelectRow(xWitness);
+      setSelectRow(xBackground);
       setShowDeleteButton(true);
       setSrcIndex(index);
 
-      const ids = xWitness.map(({ id }) => ({
+      const ids = xBackground.map(({ id }) => ({
         id,
         fileName: "",
       }));

@@ -74,6 +74,7 @@ export default function FileBucket() {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [ascDesc, setAscDesc] = useState(null);
+  const [sortOrder, setSortOrder] = useState("ORDER_ASC");
   const [pageReferenceFileId, setPageReferenceFileId] = useState("");
   const [pageReferenceBackgroundId, setPageReferenceBackgroundId] =
     useState("");
@@ -313,9 +314,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   // WITH PAGINAGTION
 
-  const mPaginationbyItems = `
+  const qGetFilesByMatter = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String, $sortOrder: OrderBy) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:$sortOrder) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder: $sortOrder) {
     items {
       id
       name
@@ -347,37 +348,37 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   // WITHOUT PAGINAGTION
 
-  const mNoPaginationbyItems = `
-query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
-    items {
-      id
-      name
-      details
-      date
-      s3ObjectKey
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      backgrounds {
-        items {
-          id
-          order
-          description
-        }
-      }
-      createdAt
-      order
-      type
-      size
-    }
-    nextToken
-  }
-}
-`;
+  //   const mNoPaginationbyItems = `
+  // query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+  //   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
+  //     items {
+  //       id
+  //       name
+  //       details
+  //       date
+  //       s3ObjectKey
+  //       labels {
+  //         items {
+  //           id
+  //           name
+  //         }
+  //       }
+  //       backgrounds {
+  //         items {
+  //           id
+  //           order
+  //           description
+  //         }
+  //       }
+  //       createdAt
+  //       order
+  //       type
+  //       size
+  //     }
+  //     nextToken
+  //   }
+  // }
+  // `;
 
   const qlistBackgroundFiles = `
   query getBackgroundByID($id: ID) {
@@ -503,7 +504,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     result.map((x) => (labelNames = [...labelNames, x.label]));
 
-    if (labelNames.length == 0) {
+    if (labelNames.length === 0) {
       setFilterModalState(true);
     } else {
       setFilterModalState(false);
@@ -537,9 +538,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }, [searchFile]);
 
   let getMatterFiles = async (next) => {
-    // let q = mPaginationbyItems;
-    //let q = mNoPaginationbyItems;
-
     // const mInitializeOrders = `
     //   mutation initializeOrder($clientMatterId: ID) {
     //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
@@ -557,38 +555,37 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     // });
 
     const params = {
-      query: mPaginationbyItems,
+      query: qGetFilesByMatter,
       variables: {
         matterId: matter_id,
         isDeleted: false,
         limit: 100,
         nextToken: next === 1 ? null : vNextToken,
-        sortOrder: "ORDER_ASC",
+        sortOrder: sortOrder,
       },
     };
     await API.graphql(params).then((files) => {
       let matterFilesList = files.data.matterFiles.items;
-      console.log("checkthis", matterFilesList);
+      console.log("matterFilesList: ", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      setFiles(sortByOrder(matterFilesList));
-      setMatterFiles(sortByOrder(matterFilesList));
+      //setFiles(sortByOrder(matterFilesList));
+      //setMatterFiles(sortByOrder(matterFilesList));
+      setFiles(matterFilesList);
+      setMatterFiles(matterFilesList); // no need to use sortByOrder
       setMaxLoading(false);
     });
   };
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
-      let q = mPaginationbyItems;
-      //let q = mNoPaginationbyItems;
-
       const params = {
-        query: q,
+        query: qGetFilesByMatter,
         variables: {
           matterId: matter_id,
           isDeleted: false,
           limit: 50,
           nextToken: vNextToken,
-          sortOrder: "ORDER_ASC",
+          sortOrder: sortOrder,
         },
       };
 
@@ -627,7 +624,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
           setMatterFiles([...new Set(arrConcat)]);
         } else {
-          setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+          //setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+          setMatterFiles([...new Set(arrConcat)]);
         }
 
         // if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
@@ -1384,7 +1382,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     var next = 1;
 
-    var filterRecord = [];
+    //var filterRecord = [];
     if (
       fileFilter === null ||
       fileFilter === undefined ||
@@ -1529,6 +1527,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           order: items.order,
         },
       });
+
       setIsAllChecked(false);
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
@@ -1546,6 +1545,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const SortBydate = async () => {
+    console.group("SortBydate()");
     // const isAllZero = matterFiles.every(
     //   (item) => item.order >= 0 && item.order !== 0
     // );
@@ -1589,6 +1589,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           )
       ); // default to sort by order
     }
+
+    console.groupEnd();
   };
 
   const style = {
@@ -1681,9 +1683,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     };
 
     await API.graphql(params).then((brief) => {
-      let matterFilesList = brief.data.clientMatter.briefs.items;
-      console.log("mfl", matterFilesList);
-      var temp = matterFilesList.map(
+      let briefList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", briefList);
+      var temp = briefList.map(
         (x) => (opts = [...opts, { label: x.name, value: x.id }])
       );
       setCopyBgOptions(opts);
@@ -2161,7 +2163,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                     style={{ cursor: "pointer" }}
                                   /> */}
                                   {(() => {
-                                    console.log("ascDesc:", ascDesc);
                                     if (ascDesc == null) {
                                       return (
                                         <FaSort
@@ -2483,8 +2484,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           <td
                                             {...provider.dragHandleProps}
                                             className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
-                                          >
-                                          </td>
+                                          ></td>
                                         </tr>
                                       )}
 
