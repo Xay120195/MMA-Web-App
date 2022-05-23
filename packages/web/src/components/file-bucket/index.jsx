@@ -74,6 +74,7 @@ export default function FileBucket() {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [ascDesc, setAscDesc] = useState(null);
+  const [sortOrder, setSortOrder] = useState("ORDER_ASC");
   const [pageReferenceFileId, setPageReferenceFileId] = useState("");
   const [pageReferenceBackgroundId, setPageReferenceBackgroundId] =
     useState("");
@@ -313,9 +314,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   // WITH PAGINAGTION
 
-  const mPaginationbyItems = `
+  const qGetFilesByMatter = `
 query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String, $sortOrder: OrderBy) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:$sortOrder) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder: $sortOrder) {
     items {
       id
       name
@@ -347,37 +348,37 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   // WITHOUT PAGINAGTION
 
-  const mNoPaginationbyItems = `
-query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
-    items {
-      id
-      name
-      details
-      date
-      s3ObjectKey
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      backgrounds {
-        items {
-          id
-          order
-          description
-        }
-      }
-      createdAt
-      order
-      type
-      size
-    }
-    nextToken
-  }
-}
-`;
+  //   const mNoPaginationbyItems = `
+  // query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+  //   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
+  //     items {
+  //       id
+  //       name
+  //       details
+  //       date
+  //       s3ObjectKey
+  //       labels {
+  //         items {
+  //           id
+  //           name
+  //         }
+  //       }
+  //       backgrounds {
+  //         items {
+  //           id
+  //           order
+  //           description
+  //         }
+  //       }
+  //       createdAt
+  //       order
+  //       type
+  //       size
+  //     }
+  //     nextToken
+  //   }
+  // }
+  // `;
 
   const qlistBackgroundFiles = `
   query getBackgroundByID($id: ID) {
@@ -503,7 +504,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     result.map((x) => (labelNames = [...labelNames, x.label]));
 
-    if (labelNames.length == 0) {
+    if (labelNames.length === 0) {
       setFilterModalState(true);
     } else {
       setFilterModalState(false);
@@ -537,9 +538,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }, [searchFile]);
 
   let getMatterFiles = async (next) => {
-    // let q = mPaginationbyItems;
-    //let q = mNoPaginationbyItems;
-
     // const mInitializeOrders = `
     //   mutation initializeOrder($clientMatterId: ID) {
     //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
@@ -557,13 +555,13 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     // });
 
     const params = {
-      query: mPaginationbyItems,
+      query: qGetFilesByMatter,
       variables: {
         matterId: matter_id,
         isDeleted: false,
         limit: 100,
         nextToken: next === 1 ? null : vNextToken,
-        sortOrder: "ORDER_ASC",
+        sortOrder: sortOrder,
       },
     };
     await API.graphql(params).then((files) => {
@@ -580,17 +578,14 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
-      let q = mPaginationbyItems;
-      //let q = mNoPaginationbyItems;
-
       const params = {
-        query: q,
+        query: qGetFilesByMatter,
         variables: {
           matterId: matter_id,
           isDeleted: false,
           limit: 50,
           nextToken: vNextToken,
-          sortOrder: "ORDER_ASC",
+          sortOrder: sortOrder,
         },
       };
 
