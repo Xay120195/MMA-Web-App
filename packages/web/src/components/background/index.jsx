@@ -9,6 +9,7 @@ import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import ToastNotification from "../toast-notification";
 import * as IoIcons from "react-icons/io";
+import { BitlyClient } from 'bitly-react';
 
 import { API } from "aws-amplify";
 
@@ -72,6 +73,7 @@ const Background = () => {
   const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
   const [searchDescription, setSearchDescription] = useState("");
+  const [shareLink, setShareLink] = useState("");
 
   useEffect(() => {
     getBackground();
@@ -79,6 +81,7 @@ const Background = () => {
     if (bgName === null) {
       getBriefs();
     }
+    //convertUrl();
   }, []);
 
   const hideToast = () => {
@@ -569,6 +572,19 @@ const Background = () => {
     }
   };
 
+  const bitly = new BitlyClient('e1540f03fd3f2318262342ac1a0d144e5407f7be', {});
+  /* To be used when tinyurl is required
+  const convertUrl = async () => {
+    let result;
+    try {
+      result = await bitly.shorten('https://develop.d3bhf42tem9b8e.amplifyapp.com/background/407e3619-cb0d-4bee-9f63-1258c0e00686/4dd99da7-f8c3-4fdd-8af5-3d2237180e9e/?matter_name=TWF0dGVyIDE=&client_name=Q2xpZW50IDE=');
+    } catch (e) {
+      throw e;
+    }
+    setShareLink(result.url);
+  }
+  */
+  
   return (
     <>
       <div
