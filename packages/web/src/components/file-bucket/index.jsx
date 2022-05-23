@@ -107,7 +107,7 @@ export default function FileBucket() {
 
   const [Briefs, setBriefs] = useState(null);
   const [copyBgOptions, setCopyBgOptions] = useState(null);
-  const [copyBgIds, setCopyBgIds] = useState([]);
+  const [copyBgIds, setCopyBgIds] = useState(null);
 
   const hideToast = () => {
     setShowToast(false);
@@ -1690,6 +1690,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     setCopyBgIds(evt);
   };
 
+  const handleFilterRemoveChange = (evt) => {
+    if(evt.length === 0 ){
+      setCopyBgIds(null);
+    }
+  }
+
   const handleCopyToBg = async () => {
     console.log("cb", copyBgOptions);
 
@@ -1789,7 +1795,21 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
               </div>
           </div>
         </div>
-        <div style={{ position: "sticky", top: "0" }} className="py-5 bg-white z-40">
+        {/* DON'T DELETE THIS PART. THIS IS A CLONE FOR SCROLLING DOWN */}
+        <div style={{ position: "sticky", top: "0"}} className=" py-5 bg-white z-30">
+           <h8 className="font-bold text-xl bg-white w-full">
+              File Bucket&nbsp;<span className="text-xl">of</span>&nbsp;
+                <span className="font-semibold text-xl">
+                    {checkFormat(client_name)}
+                  </span>
+                  /
+                  <span className="font-semibold text-xl">
+                    {checkFormat(matter_name)}
+                </span>
+          </h8>
+        </div>
+        {/* END */}
+        <div className="py-5 bg-white z-40 absolute mt-10 ">
            <h1 className="font-bold text-3xl">
               File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
                 <span className="font-semibold text-3xl">
@@ -1804,7 +1824,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
             
         <div
           className="bg-white z-40 "
-          style={{ position: "sticky", top: "70px" }}
+          style={{ position: "sticky", top: "67px" }}
         >
           <nav aria-label="Breadcrumb" style={style} className="mt-4">
             <ol
@@ -1919,17 +1939,22 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                       <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                         Results
                       </p>
-                      <p
-                        className="px-2 py-2 text-blue-400 text-xs font-semibold ml-16  cursor-pointer"
+                      <button
+                        className={copyBgIds ?
+                          "px-2 py-2 text-blue-400 text-xs font-semibold ml-16 cursor-pointer"
+                          : "px-2 py-2 text-blue-200 text-xs font-semibold ml-16"
+                        }
                         onClick={() => handleCopyToBg()}
+                        disabled={copyBgIds ? false : true}
                       >
                         Copy To Background
-                      </p>
+                      </button>
                     </div>
 
                     <Multiselect
                       isObject={false}
                       onSelect={(event) => handleFilterChange(event)}
+                      onRemove={(event) => handleFilterRemoveChange(event)}
                       options={copyBgOptions.map((x) => x.label)}
                       value={selected}
                       showCheckbox
@@ -2046,7 +2071,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         <DragDropContext onDragEnd={handleDragEnd}>
                           <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                             <thead
-                              className="bg-gray-100 z-30"
+                              className="bg-gray-100 z-20"
                               style={{ position: "sticky", top: "235px" }}
                             >
                               <tr>

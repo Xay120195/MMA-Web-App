@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
-import { useIdleTimer } from 'react-idle-timer';
+import { useIdleTimer } from "react-idle-timer";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
@@ -36,6 +36,7 @@ const Background = () => {
   const [selectRow, setSelectRow] = useState([]);
   const [newRow, setNewRow] = useState([{}]);
   const [newWitness, setNewWitness] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
@@ -46,7 +47,7 @@ const Background = () => {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
+  const [ascDesc, setAscDesc] = useState(null);
   const [activateButton, setActivateButton] = useState(false);
   const [pasteButton, setPasteButton] = useState(false);
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
@@ -78,7 +79,6 @@ const Background = () => {
     if (bgName === null) {
       getBriefs();
     }
-
   }, []);
 
   const hideToast = () => {
@@ -157,7 +157,7 @@ const Background = () => {
     setWait(false);
 
     // if (background_id === "000") {
-      // Remove this condition after migration
+    // Remove this condition after migration
     //   const backgroundOpt = await API.graphql({
     //     query: qListBackground,
     //     variables: { id: matter_id, limit: 25, nextToken: vNextToken },
@@ -188,41 +188,41 @@ const Background = () => {
     //     }
     //   }
     // } else {
-      const backgroundOpt = await API.graphql({
-        query: qBriefBackgroundList,
-        variables: {
-          id: background_id,
-          limit: 100,
-          nextToken: null,
-          sortOrder: "ORDER_ASC",
-        },
-      });
+    const backgroundOpt = await API.graphql({
+      query: qBriefBackgroundList,
+      variables: {
+        id: background_id,
+        limit: 100,
+        nextToken: null,
+        sortOrder: "ORDER_ASC",
+      },
+    });
 
-      setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+    setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
 
-      if (backgroundOpt.data.brief.backgrounds.items !== null) {
-        result = backgroundOpt.data.brief.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
+    if (backgroundOpt.data.brief.backgrounds.items !== null) {
+      result = backgroundOpt.data.brief.backgrounds.items.map(
+        ({ id, description, date, createdAt, order, files }) => ({
+          createdAt: createdAt,
+          id: id,
+          description: description,
+          date: date,
+          order: order,
+          files: files,
+        })
+      );
 
-        setPageTotal(result.length);
-        setPageSize(20);
-        setPageIndex(1);
+      setPageTotal(result.length);
+      setPageSize(20);
+      setPageIndex(1);
 
-        if (witness !== null) {
-          console.log(result);
-          setWitness(sortByOrder(result));
-          setWait(true);
-          setMaxLoading(false);
-        }
+      if (witness !== null) {
+        console.log(result);
+        setWitness(sortByOrder(result));
+        setWait(true);
+        setMaxLoading(false);
       }
+    }
     //}
   };
 
@@ -293,7 +293,12 @@ const Background = () => {
 
         const backgroundOpt = await API.graphql({
           query: qBriefBackgroundList,
-          variables: { id: background_id, limit: 50, nextToken: vNextToken, sortOrder: "ORDER_ASC" },
+          variables: {
+            id: background_id,
+            limit: 50,
+            nextToken: vNextToken,
+            sortOrder: "ORDER_ASC",
+          },
         });
 
         setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
@@ -319,13 +324,32 @@ const Background = () => {
 
               var arrConcat = witness.concat(result);
 
-              if(searchDescription !== "") {
-                arrConcat = witness.concat(result).filter((x) =>
-                x.description.toLowerCase().includes(searchDescription.toLowerCase()));
+              if (searchDescription !== "") {
+                arrConcat = witness
+                  .concat(result)
+                  .filter((x) =>
+                    x.description
+                      .toLowerCase()
+                      .includes(searchDescription.toLowerCase())
+                  );
                 console.log("HELO", searchDescription);
               }
 
-              setWitness([...new Set(sortByOrder(arrConcat))]);
+              if (ascDesc !== null) {
+                console.log("sorting is ascending?", ascDesc);
+
+                if (ascDesc === true) {
+                  console.log("set order by Date ASC");
+                  arrConcat = arrConcat.sort(compareValues("date"));
+                } else if (!ascDesc) {
+                  console.log("set order by Date DESC");
+                  arrConcat = arrConcat.sort(compareValues("date", "desc"));
+                }
+
+                setWitness([...new Set(arrConcat)]);
+              } else {
+                setWitness([...new Set(sortByOrder(arrConcat))]);
+              }
             }, 200);
           }
         }
@@ -336,22 +360,40 @@ const Background = () => {
     }
   };
 
-  const handleOnAction = event => {
-    console.log('User did something', event);
-    loadMoreBackground();
+  function compareValues(key, order = "asc") {
+    return function innerSort(a, b) {
+      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+        return 0;
+      }
+
+      const varA = new Date(a[key]);
+      const varB = new Date(b[key]);
+      let comparison = 0;
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
+      return order === "desc" ? comparison * -1 : comparison;
+    };
   }
 
-  const handleOnIdle = event => {
-    console.log('User is on idle');
+  const handleOnAction = (event) => {
+    console.log("User did something", event);
     loadMoreBackground();
-  }
+  };
+
+  const handleOnIdle = (event) => {
+    console.log("User is on idle");
+    loadMoreBackground();
+  };
 
   useIdleTimer({
     timeout: 60 * 40,
     onAction: handleOnAction,
     onIdle: handleOnIdle,
-    debounce: 1000
-  })
+    debounce: 1000,
+  });
 
   function sortByOrder(arr) {
     // const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
@@ -365,11 +407,13 @@ const Background = () => {
     // }
     let sort;
 
-    if(arr){
-       sort = arr.sort((a, b)=> a.order-b.order === 0 
-        ? new Date(b.createdAt) - new Date(a.createdAt)
-        : a.order - b.order )
-    }else{
+    if (arr) {
+      sort = arr.sort((a, b) =>
+        a.order - b.order === 0
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : a.order - b.order
+      );
+    } else {
       sort = arr;
     }
 
@@ -527,10 +571,10 @@ const Background = () => {
 
   return (
     <>
-    <div
+      <div
         className={"shadow-lg rounded bg-white z-30"}
         style={{ margin: "0 0 0 65px" }}
-    >
+      >
         <div className="px-6 mt-5 -ml-1">
           <Link
             to={`${
@@ -544,9 +588,31 @@ const Background = () => {
               Back
             </button>
           </Link>
-          </div>
-        
-        <div style={{ position: "sticky", top: "0" }} className="py-5 z-40 ml-4 bg-white">
+        </div>
+
+        <div
+          style={{ position: "sticky", top: "0" }}
+          className="py-5 z-30 ml-4 bg-white"
+        >
+          <h1 className="font-bold text-xl ">
+            <div className="flex">
+              <p
+                className="px-1 text-xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
+                dangerouslySetInnerHTML={{
+                  __html: bgName,
+                }}
+              />
+              &nbsp;<span className="text-xl">of</span>&nbsp;
+              <span className="font-semibold text-xl">
+                {client_name}/{matter_name}
+              </span>
+            </div>
+          </h1>
+        </div>
+
+        <div
+          className="py-5 bg-white z-40 absolute -mt-20 ml-5"
+        >
           <h1 className="font-bold text-3xl ">
             <div className="flex">
               <p
@@ -576,72 +642,74 @@ const Background = () => {
 
         <div
           className="bg-white z-30 ml-4"
-          style={{ position: "sticky", top: "72px"}}
+          style={{ position: "sticky", top: "72px" }}
         >
-        <BreadCrumb
-          matterId={matter_id}
-          client_name={client_name}
-          matter_name={matter_name}
-          briefId={background_id}
-        />
-        <ActionButtons
-          witness={witness}
-          setWitness={setWitness}
-          idList={idList}
-          checkAllState={checkAllState}
-          setcheckAllState={setcheckAllState}
-          checkedState={checkedState}
-          setCheckedState={setCheckedState}
-          totalChecked={totalChecked}
-          settotalChecked={settotalChecked}
-          setId={setId}
-          search={search}
-          setSearch={setSearch}
-          getId={getId}
-          matterId={matter_id}
-          getBackground={getBackground}
-          selectedRowsBG={selectedRowsBG}
-          setSelectedRowsBG={setSelectedRowsBG}
-          setShowModalParagraph={setShowModalParagraph}
-          paragraph={paragraph}
-          showDeleteButton={showDeleteButton}
-          setShowDeleteButton={setShowDeleteButton}
-          activateButton={activateButton}
-          setactivateButton={setActivateButton}
-          handleManageFiles={handleManageFiles}
-          checkNo={checkNo}
-          setCheckNo={setCheckNo}
-          checkDate={checkDate}
-          setCheckDate={setCheckDate}
-          checkDesc={checkDesc}
-          setCheckDesc={setCheckDesc}
-          checkDocu={checkDocu}
-          setCheckDocu={setCheckDocu}
-          checkedStateShowHide={checkedStateShowHide}
-          setCheckedStateShowHide={setCheckedStateShowHide}
-          pageTotal={pageTotal}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          pageSizeConst={pageSizeConst}
-          getPaginateItems={getPaginateItems}
-          selectRow={selectRow}
-          setSelectRow={setSelectRow}
-          setPasteButton={setPasteButton}
-          pasteButton={pasteButton}
-          setSrcIndex={setSrcIndex}
-          srcIndex={srcIndex}
-          setNewRow={setNewRow}
-          newRow={newRow}
-          newWitness={newWitness}
-          setMaxLoading={setMaxLoading}
-          sortByOrder={sortByOrder}
-          setNewWitness={setNewWitness}
-          briefId={background_id}
-          client_name={client_name}
-          matter_name={matter_name}
-        />
+          <BreadCrumb
+            matterId={matter_id}
+            client_name={client_name}
+            matter_name={matter_name}
+            briefId={background_id}
+          />
+          <ActionButtons
+            setSelectedItems={setSelectedItems}
+            selectedItems={selectedItems}
+            witness={witness}
+            setWitness={setWitness}
+            idList={idList}
+            checkAllState={checkAllState}
+            setcheckAllState={setcheckAllState}
+            checkedState={checkedState}
+            setCheckedState={setCheckedState}
+            totalChecked={totalChecked}
+            settotalChecked={settotalChecked}
+            setId={setId}
+            search={search}
+            setSearch={setSearch}
+            getId={getId}
+            matterId={matter_id}
+            getBackground={getBackground}
+            selectedRowsBG={selectedRowsBG}
+            setSelectedRowsBG={setSelectedRowsBG}
+            setShowModalParagraph={setShowModalParagraph}
+            paragraph={paragraph}
+            showDeleteButton={showDeleteButton}
+            setShowDeleteButton={setShowDeleteButton}
+            activateButton={activateButton}
+            setactivateButton={setActivateButton}
+            handleManageFiles={handleManageFiles}
+            checkNo={checkNo}
+            setCheckNo={setCheckNo}
+            checkDate={checkDate}
+            setCheckDate={setCheckDate}
+            checkDesc={checkDesc}
+            setCheckDesc={setCheckDesc}
+            checkDocu={checkDocu}
+            setCheckDocu={setCheckDocu}
+            checkedStateShowHide={checkedStateShowHide}
+            setCheckedStateShowHide={setCheckedStateShowHide}
+            pageTotal={pageTotal}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            pageSizeConst={pageSizeConst}
+            getPaginateItems={getPaginateItems}
+            selectRow={selectRow}
+            setSelectRow={setSelectRow}
+            setPasteButton={setPasteButton}
+            pasteButton={pasteButton}
+            setSrcIndex={setSrcIndex}
+            srcIndex={srcIndex}
+            setNewRow={setNewRow}
+            newRow={newRow}
+            newWitness={newWitness}
+            setMaxLoading={setMaxLoading}
+            sortByOrder={sortByOrder}
+            setNewWitness={setNewWitness}
+            briefId={background_id}
+            client_name={client_name}
+            matter_name={matter_name}
+          />
 
-        {/* {witness !== null && witness.length !== 0 && ( */}
+          {/* {witness !== null && witness.length !== 0 && ( */}
           <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
             <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
               <IoIcons.IoIosSearch />
@@ -653,81 +721,82 @@ const Background = () => {
               className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
             />
           </div>
-        {/* )} */}
+          {/* )} */}
+        </div>
 
-      </div>
-      
-      <TableInfo
-        client_name={client_name}
-        matter_name={matter_name}
-        wait={wait}
-        setPasteButton={setPasteButton}
-        setIdList={setIdList}
-        witness={witness}
-        ShowModalParagraph={ShowModalParagraph}
-        setShowModalParagraph={setShowModalParagraph}
-        fileMatter={fileMatter}
-        setFileMatter={setFileMatter}
-        files={files}
-        setFiles={setFiles}
-        setWitness={setWitness}
-        checkAllState={checkAllState}
-        setcheckAllState={setcheckAllState}
-        checkedState={checkedState}
-        setCheckedState={setCheckedState}
-        totalChecked={totalChecked}
-        settotalChecked={settotalChecked}
-        setId={setId}
-        getId={getId}
-        search={search}
-        matterId={matter_id}
-        getBackground={getBackground}
-        selectedRowsBG={selectedRowsBG}
-        setSelectedRowsBG={setSelectedRowsBG}
-        paragraph={paragraph}
-        setParagraph={setParagraph}
-        showDeleteButton={showDeleteButton}
-        setShowDeleteButton={setShowDeleteButton}
-        handleManageFiles={handleManageFiles}
-        setActivateButton={setActivateButton}
-        activateButton={activateButton}
-        setAscDesc={setAscDesc}
-        ascDesc={ascDesc}
-        setSelectedRowsBGFiles={setSelectedRowsBGFiles}
-        selectedRowsBGFiles={selectedRowsBGFiles}
-        setSelectedId={setSelectedId}
-        selectedId={selectedId}
-        pasteButton={pasteButton}
-        checkNo={checkNo}
-        checkDate={checkDate}
-        checkDesc={checkDesc}
-        checkDocu={checkDocu}
-        checkedStateShowHide={checkedStateShowHide}
-        setCheckedStateShowHide={setCheckedStateShowHide}
-        pageTotal={pageTotal}
-        pageIndex={pageIndex}
-        pageSize={pageSize}
-        pageSizeConst={pageSizeConst}
-        loadMoreBackground={loadMoreBackground}
-        selectRow={selectRow}
-        setSelectRow={setSelectRow}
-        setSrcIndex={setSrcIndex}
-        srcIndex={srcIndex}
-        newRow={newRow}
-        setNewRow={setNewRow}
-        newWitness={newWitness}
-        loading={loading}
-        setLoading={setLoading}
-        setMaxLoading={setMaxLoading}
-        maxLoading={maxLoading}
-        sortByOrder={sortByOrder}
-        briefId={background_id}
-        searchDescription={searchDescription}
-      />
+        <TableInfo
+          selectedItems={selectedItems}
+          setSelectedItems={setSelectedItems}
+          client_name={client_name}
+          matter_name={matter_name}
+          wait={wait}
+          setPasteButton={setPasteButton}
+          setIdList={setIdList}
+          witness={witness}
+          ShowModalParagraph={ShowModalParagraph}
+          setShowModalParagraph={setShowModalParagraph}
+          fileMatter={fileMatter}
+          setFileMatter={setFileMatter}
+          files={files}
+          setFiles={setFiles}
+          setWitness={setWitness}
+          checkAllState={checkAllState}
+          setcheckAllState={setcheckAllState}
+          checkedState={checkedState}
+          setCheckedState={setCheckedState}
+          totalChecked={totalChecked}
+          settotalChecked={settotalChecked}
+          setId={setId}
+          getId={getId}
+          search={search}
+          matterId={matter_id}
+          getBackground={getBackground}
+          selectedRowsBG={selectedRowsBG}
+          setSelectedRowsBG={setSelectedRowsBG}
+          paragraph={paragraph}
+          setParagraph={setParagraph}
+          showDeleteButton={showDeleteButton}
+          setShowDeleteButton={setShowDeleteButton}
+          handleManageFiles={handleManageFiles}
+          setActivateButton={setActivateButton}
+          activateButton={activateButton}
+          setAscDesc={setAscDesc}
+          ascDesc={ascDesc}
+          setSelectedRowsBGFiles={setSelectedRowsBGFiles}
+          selectedRowsBGFiles={selectedRowsBGFiles}
+          setSelectedId={setSelectedId}
+          selectedId={selectedId}
+          pasteButton={pasteButton}
+          checkNo={checkNo}
+          checkDate={checkDate}
+          checkDesc={checkDesc}
+          checkDocu={checkDocu}
+          checkedStateShowHide={checkedStateShowHide}
+          setCheckedStateShowHide={setCheckedStateShowHide}
+          pageTotal={pageTotal}
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          pageSizeConst={pageSizeConst}
+          loadMoreBackground={loadMoreBackground}
+          selectRow={selectRow}
+          setSelectRow={setSelectRow}
+          setSrcIndex={setSrcIndex}
+          srcIndex={srcIndex}
+          newRow={newRow}
+          setNewRow={setNewRow}
+          newWitness={newWitness}
+          loading={loading}
+          setLoading={setLoading}
+          setMaxLoading={setMaxLoading}
+          maxLoading={maxLoading}
+          sortByOrder={sortByOrder}
+          briefId={background_id}
+          searchDescription={searchDescription}
+        />
 
-      {showToast && (
-        <ToastNotification title={alertMessage} hideToast={hideToast} />
-      )}
+        {showToast && (
+          <ToastNotification title={alertMessage} hideToast={hideToast} />
+        )}
       </div>
     </>
   );
