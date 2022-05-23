@@ -289,6 +289,7 @@ input MatterFileInput {
   name: String
   details: String
   order: Int
+  date: AWSDateTime
 }
 
 input MatterInput {
@@ -490,6 +491,7 @@ type Mutation {
     name: String
     details: String
     order: Int
+    date: AWSDateTime
   ): File
   matterFileSoftDelete(id: ID): File
   matterFileUpdate(

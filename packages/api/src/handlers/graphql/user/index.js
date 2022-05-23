@@ -99,7 +99,6 @@ async function listUserClientMatter(ctx) {
     response = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
     console.log(response);
   }

@@ -58,6 +58,8 @@ export async function getMatterFiles(ctx) {
     indexName = "byCreatedAt";
   } else if (sortOrder.includes("ORDER_")) {
     indexName = "byOrder";
+  } else if (sortOrder.includes("DATE_")) {
+    indexName = "byDate";
   }
 
   try {
@@ -153,7 +155,7 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
-      date: null,
+      date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
       createdAt: new Date().toISOString(),
     };
@@ -193,7 +195,7 @@ export async function bulkCreateMatterFile(data) {
             type: data[i].type,
             name: data[i].name,
             isDeleted: false,
-            date: null,
+            date: data[i].date ? data[i].date : null,
             order: data[i].order ? data[i].order : 0,
             createdAt: new Date().toISOString(),
           }),
