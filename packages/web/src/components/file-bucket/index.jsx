@@ -568,10 +568,12 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     };
     await API.graphql(params).then((files) => {
       let matterFilesList = files.data.matterFiles.items;
-      console.log("checkthis", matterFilesList);
+      console.log("matterFilesList: ", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      setFiles(sortByOrder(matterFilesList));
-      setMatterFiles(sortByOrder(matterFilesList));
+      //setFiles(sortByOrder(matterFilesList));
+      //setMatterFiles(sortByOrder(matterFilesList));
+      setFiles(matterFilesList);
+      setMatterFiles(matterFilesList); // no need to use sortByOrder
       setMaxLoading(false);
     });
   };
@@ -627,7 +629,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
           setMatterFiles([...new Set(arrConcat)]);
         } else {
-          setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+          //setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+          setMatterFiles([...new Set(arrConcat)]);
         }
 
         // if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
@@ -1384,7 +1387,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     var next = 1;
 
-    var filterRecord = [];
+    //var filterRecord = [];
     if (
       fileFilter === null ||
       fileFilter === undefined ||
@@ -1529,6 +1532,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           order: items.order,
         },
       });
+
       setIsAllChecked(false);
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
@@ -1546,6 +1550,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const SortBydate = async () => {
+    console.group("SortBydate()");
     // const isAllZero = matterFiles.every(
     //   (item) => item.order >= 0 && item.order !== 0
     // );
@@ -1589,6 +1594,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           )
       ); // default to sort by order
     }
+
+    console.groupEnd();
   };
 
   const style = {
@@ -1681,9 +1688,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     };
 
     await API.graphql(params).then((brief) => {
-      let matterFilesList = brief.data.clientMatter.briefs.items;
-      console.log("mfl", matterFilesList);
-      var temp = matterFilesList.map(
+      let briefList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", briefList);
+      var temp = briefList.map(
         (x) => (opts = [...opts, { label: x.name, value: x.id }])
       );
       setCopyBgOptions(opts);
@@ -2161,7 +2168,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                     style={{ cursor: "pointer" }}
                                   /> */}
                                   {(() => {
-                                    console.log("ascDesc:", ascDesc);
                                     if (ascDesc == null) {
                                       return (
                                         <FaSort
@@ -2483,8 +2489,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           <td
                                             {...provider.dragHandleProps}
                                             className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
-                                          >
-                                          </td>
+                                          ></td>
                                         </tr>
                                       )}
 
