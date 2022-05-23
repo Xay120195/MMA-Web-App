@@ -35,7 +35,6 @@ export async function generatePresignedUrl(Key, src) {
 }
 
 export async function getMatterFiles(ctx) {
-  console.log("getMatterFiles()");
   const {
     matterId,
     isDeleted = false,
@@ -155,10 +154,11 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
-      date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
       createdAt: new Date().toISOString(),
     };
+
+    if (data.date !== undefined) rawParams.date = data.date;
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
@@ -185,20 +185,23 @@ export async function bulkCreateMatterFile(data) {
     const arrItems = [];
 
     for (var i = 0; i < data.length; i++) {
+      var p = {
+        id: v4(),
+        matterId: data[i].matterId,
+        s3ObjectKey: data[i].s3ObjectKey,
+        size: data[i].size,
+        type: data[i].type,
+        name: data[i].name,
+        isDeleted: false,
+        order: data[i].order ? data[i].order : 0,
+        createdAt: new Date().toISOString(),
+      };
+
+      if (data[i].date !== undefined) p.date = data[i].date;
+
       arrItems.push({
         PutRequest: {
-          Item: marshall({
-            id: v4(),
-            matterId: data[i].matterId,
-            s3ObjectKey: data[i].s3ObjectKey,
-            size: data[i].size,
-            type: data[i].type,
-            name: data[i].name,
-            isDeleted: false,
-            date: data[i].date ? data[i].date : null,
-            order: data[i].order ? data[i].order : 0,
-            createdAt: new Date().toISOString(),
-          }),
+          Item: marshall(p),
         },
       });
     }
