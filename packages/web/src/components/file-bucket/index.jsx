@@ -2392,9 +2392,57 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                             {...provider.dragHandleProps}
                                             className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
+                                            {data.backgrounds.items !== null &&
+                                      data.backgrounds.items
+                                        .sort((a, b) =>
+                                          a.order > b.order ? 1 : -1
+                                        )
+                                        .filter(
+                                          (x) =>
+                                            !Object.values(x).includes(
+                                              null
+                                            )
+                                        )
+                                        .map((background, index) => (
+                                          <p
+                                            className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                            key={background.id}
+                                            index={index}
+                                            onClick={() =>
+                                              showPageReference(
+                                                data.id,
+                                                background.id,
+                                                clientMatterName,
+                                                background.description,
+                                                background.order
+                                              )
+                                            }
+                                          >
+                                            <b>
+                                              {background.order + ". "}
+                                            </b>
+                                            {ellipsis(
+                                              clientMatterName +
+                                                " Background",
+                                              40
+                                            )}
+                                          </p>
+                                        ))
+                                        .sort()}
                                           </td>
                                         </tr>
                                       )}
+                                      <tr
+                                      {...provider.draggableProps}
+                                      ref={provider.innerRef}
+                                      >
+                                        <td>{data.id}</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                      </tr>
                                     </Draggable>
                                     /*data.backgrounds.items !== null &&
                                       data.backgrounds.items
