@@ -48,7 +48,7 @@ const Background = () => {
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
   const [paragraph, setParagraph] = useState("");
   const [showDeleteButton, setShowDeleteButton] = useState(false);
-  const [ascDesc, setAscDesc] = useState(false);
+  const [ascDesc, setAscDesc] = useState(null);
   const [activateButton, setActivateButton] = useState(false);
   const [pasteButton, setPasteButton] = useState(false);
   const [selectedRowsBGFiles, setSelectedRowsBGFiles] = useState([]);
@@ -338,7 +338,21 @@ const Background = () => {
                 console.log("HELO", searchDescription);
               }
 
-              setWitness([...new Set(sortByOrder(arrConcat))]);
+              if (ascDesc !== null) {
+                console.log("sorting is ascending?", ascDesc);
+
+                if (ascDesc === true) {
+                  console.log("set order by Date ASC");
+                  arrConcat = arrConcat.sort(compareValues("date"));
+                } else if (!ascDesc) {
+                  console.log("set order by Date DESC");
+                  arrConcat = arrConcat.sort(compareValues("date", "desc"));
+                }
+
+                setWitness([...new Set(arrConcat)]);
+              } else {
+                setWitness([...new Set(sortByOrder(arrConcat))]);
+              }
             }, 200);
           }
         }
@@ -348,6 +362,24 @@ const Background = () => {
       }
     }
   };
+
+  function compareValues(key, order = "asc") {
+    return function innerSort(a, b) {
+      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+        return 0;
+      }
+
+      const varA = new Date(a[key]);
+      const varB = new Date(b[key]);
+      let comparison = 0;
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
+      return order === "desc" ? comparison * -1 : comparison;
+    };
+  }
 
   const handleOnAction = (event) => {
     console.log("User did something", event);
@@ -576,7 +608,26 @@ const Background = () => {
 
         <div
           style={{ position: "sticky", top: "0" }}
-          className="py-5 z-40 ml-4 bg-white"
+          className="py-5 z-30 ml-4 bg-white"
+        >
+          <h1 className="font-bold text-xl ">
+            <div className="flex">
+              <p
+                className="px-1 text-xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
+                dangerouslySetInnerHTML={{
+                  __html: bgName,
+                }}
+              />
+              &nbsp;<span className="text-xl">of</span>&nbsp;
+              <span className="font-semibold text-xl">
+                {client_name}/{matter_name}
+              </span>
+            </div>
+          </h1>
+        </div>
+
+        <div
+          className="py-5 bg-white z-40 absolute -mt-20 ml-5"
         >
           <h1 className="font-bold text-3xl ">
             <div className="flex">

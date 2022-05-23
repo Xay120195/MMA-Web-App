@@ -14,5 +14,6 @@ export const AppRoutes = {
   INBOX: "/inbox",
   LABELS: "/labels",
   RFIPAGE: "/rfi",
-  BRIEFS: "/briefs"
+  BRIEFS: "/briefs",
+  AUTH: "/email-integration-auth",
 };

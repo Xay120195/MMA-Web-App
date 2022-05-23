@@ -269,6 +269,16 @@ custom:
         field: rfiCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: rfiUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: rfiDelete
+        request: false
+        response: false
       # RFI
       - dataSource: LambdaQueryDS
         type: Query
