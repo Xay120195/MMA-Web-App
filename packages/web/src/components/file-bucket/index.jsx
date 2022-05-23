@@ -9,7 +9,6 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
-// import barsFilter from "../../assets/images/bars-filter.svg";
 import ellipsis from "../../shared/ellipsis";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";

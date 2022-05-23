@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
-import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
+import { MdArrowBackIos } from "react-icons/md";
 import { useIdleTimer } from "react-idle-timer";
 import BreadCrumb from "../breadcrumb/breadcrumb";
 import TableInfo from "./table-info";
@@ -12,18 +12,18 @@ import * as IoIcons from "react-icons/io";
 
 import { API } from "aws-amplify";
 
-const contentDiv = {
-  margin: "0 0 0 65px",
-};
+// const contentDiv = {
+//   margin: "0 0 0 65px",
+// };
 
-const mainGrid = {
-  display: "grid",
-  gridtemplatecolumn: "1fr auto",
-};
+// const mainGrid = {
+//   display: "grid",
+//   gridtemplatecolumn: "1fr auto",
+// };
 
 const Background = () => {
-  const [matterList, setClientMattersList] = useState([]);
-  const [witness, setWitness] = useState([]);
+  //const [matterList, setClientMattersList] = useState([]);
+  const [background, setBackground] = useState([]);
   const [files, setFiles] = useState([]);
   const [idList, setIdList] = useState([]);
   const [getId, setId] = useState([{}]);
@@ -35,12 +35,11 @@ const Background = () => {
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [selectRow, setSelectRow] = useState([]);
   const [newRow, setNewRow] = useState([{}]);
-  const [newWitness, setNewWitness] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
 
   const [srcIndex, setSrcIndex] = useState("");
   const [checkedState, setCheckedState] = useState(
-    new Array(witness.length).fill(false)
+    new Array(background.length).fill(false)
   );
   const [selectedId, setSelectedId] = useState(0);
   const [totalChecked, settotalChecked] = useState(0);
@@ -103,10 +102,10 @@ const Background = () => {
   const [bgName, setBGName] = useState(null);
 
   const qListBackground = `
-    query listBackground($id: ID, $limit: Int, $nextToken: String) {
+    query listBackground($id: ID, $limit: Int, $nextToken: String, $sortOrder: OrderBy) {
       clientMatter(id: $id) {
         id
-        backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:CREATED_DESC) {
+        backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:$sortOrder) {
           items {
             id
             description
@@ -181,8 +180,8 @@ const Background = () => {
     //     setPageSize(20);
     //     setPageIndex(1);
 
-    //     if (witness !== null) {
-    //       setWitness(sortByOrder(result));
+    //     if (background !== null) {
+    //       setBackground(sortByOrder(result));
     //       setWait(true);
     //       setMaxLoading(false);
     //     }
@@ -216,9 +215,9 @@ const Background = () => {
       setPageSize(20);
       setPageIndex(1);
 
-      if (witness !== null) {
+      if (background !== null) {
         console.log(result);
-        setWitness(sortByOrder(result));
+        setBackground(sortByOrder(result));
         setWait(true);
         setMaxLoading(false);
       }
@@ -255,7 +254,12 @@ const Background = () => {
 
         const backgroundOpt = await API.graphql({
           query: qListBackground,
-          variables: { id: matter_id, limit: 25, nextToken: vNextToken },
+          variables: {
+            id: matter_id,
+            limit: 25,
+            nextToken: vNextToken,
+            sortOrder: "ORDER_ASC",
+          },
         });
 
         setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
@@ -272,13 +276,13 @@ const Background = () => {
             })
           );
 
-          if (witness !== "") {
+          if (background !== "") {
             setTimeout(() => {
               setLoading(false);
               setMaxLoading(false);
 
-              let arrConcat = witness.concat(result);
-              setWitness([...new Set(sortByOrder(arrConcat))]);
+              let arrConcat = background.concat(result);
+              setBackground([...new Set(sortByOrder(arrConcat))]);
             }, 1000);
           }
         }
@@ -317,15 +321,15 @@ const Background = () => {
             })
           );
 
-          if (witness !== "") {
+          if (background !== "") {
             setTimeout(() => {
               setLoading(false);
               setMaxLoading(false);
 
-              var arrConcat = witness.concat(result);
+              var arrConcat = background.concat(result);
 
               if (searchDescription !== "") {
-                arrConcat = witness
+                arrConcat = background
                   .concat(result)
                   .filter((x) =>
                     x.description
@@ -346,9 +350,9 @@ const Background = () => {
                   arrConcat = arrConcat.sort(compareValues("date", "desc"));
                 }
 
-                setWitness([...new Set(arrConcat)]);
+                setBackground([...new Set(arrConcat)]);
               } else {
-                setWitness([...new Set(sortByOrder(arrConcat))]);
+                setBackground([...new Set(sortByOrder(arrConcat))]);
               }
             }, 200);
           }
@@ -443,7 +447,7 @@ const Background = () => {
     var vars = query.split("&");
     for (var i = 0; i < vars.length; i++) {
       var pair = vars[i].split("=");
-      if (pair[0] == variable) {
+      if (pair[0] === variable) {
         return pair[1];
       }
     }
@@ -498,7 +502,7 @@ const Background = () => {
         id,
         name: e.target.innerHTML,
       };
-      const success = updateBriefName(data);
+      updateBriefName(data);
       setBGName(final);
 
       setalertMessage(`Successfully updated Background title`);
@@ -514,7 +518,7 @@ const Background = () => {
         id,
         name: e.target.innerHTML,
       };
-      const success = updateBriefName(data);
+      updateBriefName(data);
       setBGName(final);
 
       setalertMessage(`Successfully updated Background title`);
@@ -561,11 +565,11 @@ const Background = () => {
       setVnextToken(null);
       getBackground();
     } else {
-      const filterRecord = witness.filter((x) =>
+      const filterRecord = background.filter((x) =>
         x.description.toLowerCase().includes(v.toLowerCase())
       );
       console.log("filterRecord:", filterRecord);
-      setWitness(sortByOrder(filterRecord));
+      setBackground(sortByOrder(filterRecord));
     }
   };
 
@@ -610,9 +614,7 @@ const Background = () => {
           </h1>
         </div>
 
-        <div
-          className="py-5 bg-white z-40 absolute -mt-20 ml-5"
-        >
+        <div className="py-5 bg-white z-40 absolute -mt-20 ml-5">
           <h1 className="font-bold text-3xl ">
             <div className="flex">
               <p
@@ -653,8 +655,8 @@ const Background = () => {
           <ActionButtons
             setSelectedItems={setSelectedItems}
             selectedItems={selectedItems}
-            witness={witness}
-            setWitness={setWitness}
+            background={background}
+            setBackground={setBackground}
             idList={idList}
             checkAllState={checkAllState}
             setcheckAllState={setcheckAllState}
@@ -700,16 +702,14 @@ const Background = () => {
             srcIndex={srcIndex}
             setNewRow={setNewRow}
             newRow={newRow}
-            newWitness={newWitness}
             setMaxLoading={setMaxLoading}
             sortByOrder={sortByOrder}
-            setNewWitness={setNewWitness}
             briefId={background_id}
             client_name={client_name}
             matter_name={matter_name}
           />
 
-          {/* {witness !== null && witness.length !== 0 && ( */}
+          {/* {background !== null && background.length !== 0 && ( */}
           <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
             <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
               <IoIcons.IoIosSearch />
@@ -732,14 +732,14 @@ const Background = () => {
           wait={wait}
           setPasteButton={setPasteButton}
           setIdList={setIdList}
-          witness={witness}
+          background={background}
           ShowModalParagraph={ShowModalParagraph}
           setShowModalParagraph={setShowModalParagraph}
           fileMatter={fileMatter}
           setFileMatter={setFileMatter}
           files={files}
           setFiles={setFiles}
-          setWitness={setWitness}
+          setBackground={setBackground}
           checkAllState={checkAllState}
           setcheckAllState={setcheckAllState}
           checkedState={checkedState}
@@ -784,7 +784,6 @@ const Background = () => {
           srcIndex={srcIndex}
           newRow={newRow}
           setNewRow={setNewRow}
-          newWitness={newWitness}
           loading={loading}
           setLoading={setLoading}
           setMaxLoading={setMaxLoading}

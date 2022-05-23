@@ -22,7 +22,6 @@ import { MdDragIndicator } from "react-icons/md";
 
 import RemoveModal from "../delete-prompt-modal";
 import { useHistory, useLocation } from "react-router-dom";
-// import barsFilter from "../../assets/images/bars-filter.svg";
 import { useBottomScrollListener } from "react-bottom-scroll-listener";
 import imgLoading from "../../assets/images/loading-circle.gif";
 import "../../assets/styles/background.css";
@@ -35,11 +34,11 @@ export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
 
 const TableInfo = ({
-  witness,
+  background,
   files,
   wait,
   setIdList,
-  setWitness,
+  setBackground,
   checkAllState,
   setcheckAllState,
   checkedState,
@@ -78,7 +77,6 @@ const TableInfo = ({
   pageSizeConst,
   loadMoreBackground,
   newRow,
-  newWitness,
   setPasteButton,
   setNewRow,
   loading,
@@ -164,7 +162,7 @@ const TableInfo = ({
     let tc = updatedCheckedState.filter((v) => v === true).length;
     settotalChecked(tc);
 
-    if (tc !== witness.length) {
+    if (tc !== background.length) {
       if (checkAllState) {
         setcheckAllState(false);
       }
@@ -174,7 +172,7 @@ const TableInfo = ({
       }
     }
     if (event.target.checked) {
-      if (!witness.includes({ id: event.target.name })) {
+      if (!background.includes({ id: event.target.name })) {
         setId((item) => [...item, event.target.name]);
         if (temp.indexOf(temp.find((tempp) => tempp.id === id)) > -1) {
         } else {
@@ -234,13 +232,13 @@ const TableInfo = ({
   };
 
   const handleSaveDesc = async (e, description, date, id) => {
-    const updateArr = witness.map((obj) => {
+    const updateArr = background.map((obj) => {
       if (obj.id === id) {
         return { ...obj, description: e.target.innerHTML };
       }
       return obj;
     });
-    setWitness(updateArr);
+    setBackground(updateArr);
 
     if (textDesc.length <= 0) {
       setDescAlert("description can't be empty");
@@ -284,11 +282,11 @@ const TableInfo = ({
     };
     await updateBackgroundDate(id, data);
 
-    const updatedOSArray = witness.map((p) =>
+    const updatedOSArray = background.map((p) =>
       p.id === id ? { ...p, date: data.date } : p
     );
 
-    setWitness(updatedOSArray);
+    setBackground(updatedOSArray);
   };
 
   const mUpdateBackgroundDate = `
@@ -348,12 +346,12 @@ const TableInfo = ({
   }
 
   const handleDragEnd = async (e) => {
-    let tempWitness = [...witness];
+    let tempWitness = [...background];
 
     let [selectedRow] = tempWitness.splice(e.source.index, 1);
 
     tempWitness.splice(e.destination.index, 0, selectedRow);
-    setWitness(tempWitness);
+    setBackground(tempWitness);
 
     const res = tempWitness.map(({ id }, index) => ({
       id: id,
@@ -445,7 +443,7 @@ const TableInfo = ({
               })
             );
 
-          const updateArrFiles = witness.map((obj) => {
+          const updateArrFiles = background.map((obj) => {
             if (obj.id === item[0].backgroundId) {
               return { ...obj, files: { items: newFilesResult } };
             }
@@ -453,7 +451,7 @@ const TableInfo = ({
           });
 
           console.log(newFilesResult);
-          setWitness(updateArrFiles);
+          setBackground(updateArrFiles);
         }
       }, 1000);
     }
@@ -505,15 +503,15 @@ const TableInfo = ({
     if (ascDesc == null) {
       console.log("set order by Date ASC");
       setAscDesc(true);
-      setWitness(witness.sort(compareValues("date")));
+      setBackground(background.sort(compareValues("date")));
     } else if (ascDesc === true) {
       console.log("set order by Date DESC");
       setAscDesc(false);
-      setWitness(witness.sort(compareValues("date", "desc")));
+      setBackground(background.sort(compareValues("date", "desc")));
     } else if (!ascDesc) {
       console.log("set order by DEFAULT: Order ASC");
       setAscDesc(null); // default to sort by order
-      setWitness(witness.sort(compareValues("order")));
+      setBackground(background.sort(compareValues("order")));
     }
 
     console.groupEnd();
@@ -633,13 +631,13 @@ const TableInfo = ({
             })
           );
 
-        const updateArrFiles = witness.map((obj) => {
+        const updateArrFiles = background.map((obj) => {
           if (obj.id === background_id) {
             return { ...obj, files: { items: newFilesResult } };
           }
           return obj;
         });
-        setWitness(updateArrFiles);
+        setBackground(updateArrFiles);
       }
     }
 
@@ -650,11 +648,11 @@ const TableInfo = ({
   };
 
   const handlePasteRow = (targetIndex) => {
-    let tempWitness = [...witness];
+    let tempWitness = [...background];
 
     let arrFileResult = [];
 
-    setCheckedState(new Array(witness.length).fill(false));
+    setCheckedState(new Array(background.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
 
     storedItemRows.map(async function (x) {
@@ -701,7 +699,7 @@ const TableInfo = ({
 
       tempWitness.splice(targetIndex + 1, 0, arrFileResult);
 
-      setWitness(tempWitness);
+      setBackground(tempWitness);
       setSelectRow([arrFileResult]);
       console.log(arrFileResult);
       setSelectedItems(arrId.map((x) => x.id));
@@ -740,7 +738,7 @@ const TableInfo = ({
   //   const df = convertArrayToObject(array);
 
   //   tempWitness.splice(targetIndex + 1, 0, df.item);
-  //   return setWitness(tempWitness);
+  //   return setBackground(tempWitness);
   // };
 
   /*const handleBottomScroll = useCallback(() => {
@@ -785,7 +783,7 @@ const TableInfo = ({
   `;
 
   const handleSyncData = async (backgroundId, fileId) => {
-    var filteredWitness = witness.filter(function (item) {
+    var filteredWitness = background.filter(function (item) {
       return item.id === backgroundId;
     });
 
@@ -846,7 +844,7 @@ const TableInfo = ({
 
     console.log("idtag", idTag);
 
-    //set witness content
+    //set background content
     setTimeout(async () => {
       const backgroundFilesOptReq = await API.graphql({
         query: qlistBackgroundFiles,
@@ -865,7 +863,7 @@ const TableInfo = ({
           })
         );
 
-      const updateArrFiles = witness.map((obj) => {
+      const updateArrFiles = background.map((obj) => {
         if (obj.id === selectedRowId) {
           return { ...obj, files: { items: newFilesResult } };
         }
@@ -873,7 +871,7 @@ const TableInfo = ({
       });
 
       console.log("new filess", newFilesResult);
-      setWitness(updateArrFiles);
+      setBackground(updateArrFiles);
       // }
     }, 3000);
 
@@ -1015,7 +1013,7 @@ const TableInfo = ({
     setLastSelectedItem(value);
 
     if (nextValue.length > 0) {
-      const isf1 = witness.filter((item) => nextValue.includes(item.id));
+      const isf1 = background.filter((item) => nextValue.includes(item.id));
       const xWitness = isf1.map(({ id, date, description, files }) => ({
         id,
         date,
@@ -1063,12 +1061,14 @@ const TableInfo = ({
   };
 
   const getNewSelectedItems = (value) => {
-    const currentSelectedIndex = witness.findIndex((item) => item.id === value);
-    const lastSelectedIndex = witness.findIndex(
+    const currentSelectedIndex = background.findIndex(
+      (item) => item.id === value
+    );
+    const lastSelectedIndex = background.findIndex(
       (item) => item.id === lastSelectedItem
     );
 
-    return witness
+    return background
       .slice(
         Math.min(lastSelectedIndex, currentSelectedIndex),
         Math.max(lastSelectedIndex, currentSelectedIndex) + 1
@@ -1097,7 +1097,7 @@ const TableInfo = ({
               {wait === false ? (
                 // <span className="py-5 px-5">Please wait...</span>
                 <Loading content={"Please wait..."} />
-              ) : witness.length === 0 &&
+              ) : background.length === 0 &&
                 (searchDescription === undefined ||
                   searchDescription === "") ? (
                 <EmptyRow search={search} />
@@ -1108,7 +1108,7 @@ const TableInfo = ({
                     color="rgb(117, 117, 114);"
                     style={{ padding: "0.4rem" }}
                   />
-                  {witness !== null && witness.length !== 0 ? (
+                  {background !== null && background.length !== 0 ? (
                     <DragDropContext onDragEnd={handleDragEnd}>
                       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                         <thead
@@ -1176,8 +1176,8 @@ const TableInfo = ({
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
                             >
-                              {/* {witness.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
-                              {witness.map((item, index) => (
+                              {/* {background.slice(pageIndex-1, pageSizeConst).map((item, index) => ( */}
+                              {background.map((item, index) => (
                                 <>
                                   <Draggable
                                     key={item.id + "-" + index}
@@ -1570,7 +1570,7 @@ const TableInfo = ({
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
-          ) : witness.length >= 20 ? (
+          ) : background.length >= 20 ? (
             <div className="flex justify-center items-center mt-5">
               <img src={imgLoading} width={50} height={100} />
             </div>
@@ -1601,7 +1601,7 @@ const TableInfo = ({
           paragraph={paragraph}
           setParagraph={setParagraph}
           setCheckedState={setCheckedState}
-          witness={witness}
+          background={background}
           setSelectedRowsBG={setSelectedRowsBG}
           setShowDeleteButton={setShowDeleteButton}
           API={API}
