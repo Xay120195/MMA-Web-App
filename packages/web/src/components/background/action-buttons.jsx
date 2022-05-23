@@ -7,7 +7,7 @@ import { AiFillFile, AiFillEye } from "react-icons/ai";
 
 const ActionButtons = (props) => {
   const {
-    witness,
+    background,
     setSelectedItems,
     checkAllState,
     setcheckAllState,
@@ -35,8 +35,7 @@ const ActionButtons = (props) => {
     setSelectRow,
     pasteButton,
     setPasteButton,
-    setWitness,
-    setNewWitness,
+    setBackground,
     setMaxLoading,
     sortByOrder,
     briefId,
@@ -76,7 +75,7 @@ const ActionButtons = (props) => {
         },
       });
 
-      // var temp = witness;
+      // var temp = background;
       // var find = deletedId.data.briefBackgroundUntag.id;
       // console.log("id", find);
       // var idxs = [];
@@ -91,7 +90,7 @@ const ActionButtons = (props) => {
       setalertMessage(`Successfully deleted`);
       setMaxLoading(false);
 
-      const newArr = Array(witness.length).fill(false);
+      const newArr = Array(background.length).fill(false);
       setCheckedState(newArr);
       setSelectedRowsBG([]);
 
@@ -107,7 +106,7 @@ const ActionButtons = (props) => {
       setTimeout(() => {
         setShowToast(false);
         getBackground();
-        // setWitness([]);
+        // setBackground([]);
         setcheckAllState(false);
       }, 2000);
     }
@@ -144,10 +143,10 @@ const ActionButtons = (props) => {
         files: { items: [] },
       };
 
-      setWitness((witness) => sortByOrder(witness.concat(result)));
-      witness.splice(0, 0, result);
+      setBackground((background) => sortByOrder(background.concat(result)));
+      background.splice(0, 0, result);
 
-      const rowArrangement = witness.map(({ id }, index) => ({
+      const rowArrangement = background.map(({ id }, index) => ({
         id: id,
         order: index + 1,
       }));
@@ -168,12 +167,12 @@ const ActionButtons = (props) => {
       console.log(response);
 
       setcheckAllState(false);
-      setCheckedState(new Array(witness.length).fill(false));
+      setCheckedState(new Array(background.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
       setMaxLoading(false);
 
-      setWitness(witness);
+      setBackground(background);
     }
   };
 
@@ -182,11 +181,11 @@ const ActionButtons = (props) => {
     setcheckAllState(!checkAllState);
 
     if (ischecked) {
-      setCheckedState(new Array(witness.length).fill(true));
+      setCheckedState(new Array(background.length).fill(true));
       settotalChecked(0);
       //insert row
       // remove order after migration
-      witness.map(
+      background.map(
         (data) =>
           (temp = [...temp, { id: data.id, fileName: "x", order: data.order }])
       );
@@ -197,9 +196,9 @@ const ActionButtons = (props) => {
         setShowDeleteButton(false);
       }
     } else {
-      setCheckedState(new Array(witness.length).fill(false));
-      settotalChecked(witness.length);
-      setId(witness.map((s) => s.id));
+      setCheckedState(new Array(background.length).fill(false));
+      settotalChecked(background.length);
+      setId(background.map((s) => s.id));
       setShowDeleteButton(false);
       setSelectedRowsBG([]);
     }
@@ -386,7 +385,7 @@ const ActionButtons = (props) => {
     });
   }
 
-  setWitness(witness);
+  setBackground(background);
 
   const handleCopyRow = () => {
     setPasteButton(true);
@@ -399,7 +398,7 @@ const ActionButtons = (props) => {
 
   const handleCheckAll = (e) => {
     if (e.target.checked) {
-      setSelectedItems(witness.map((x) => x.id));
+      setSelectedItems(background.map((x) => x.id));
     } else {
       setSelectedItems([]);
     }
@@ -413,7 +412,7 @@ const ActionButtons = (props) => {
             id="check_all"
             aria-describedby="checkbox-1"
             type="checkbox"
-            checked={selectedItems.length === witness.length ? true : false}
+            checked={selectedItems.length === background.length ? true : false}
             onChange={handleCheckAll}
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
