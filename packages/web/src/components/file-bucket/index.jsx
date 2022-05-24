@@ -2452,7 +2452,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     )
                                                 )
                                                 .map((background, counter) => (
-                                                  <div className="text-xs flex ml-9 mt-8 border-l-2" >
+                                                  <div className="text-xs flex ml-9 mt-8 border-l-2 pt-1.5" >
                                                     {index + 1}.{counter + 1}
                                                   </div>
                                               )
