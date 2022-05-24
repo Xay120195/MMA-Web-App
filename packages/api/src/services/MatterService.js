@@ -180,57 +180,13 @@ export async function createMatterFile(data) {
   return resp;
 }
 
-// export async function bulkCreateMatterFile(data) {
-//   let resp = {};
-//   try {
-//     const arrItems = [];
-
-//     for (var i = 0; i < data.length; i++) {
-//       var p = {
-//         id: v4(),
-//         matterId: data[i].matterId,
-//         s3ObjectKey: data[i].s3ObjectKey,
-//         size: data[i].size,
-//         type: data[i].type,
-//         name: data[i].name,
-//         isDeleted: false,
-//         order: data[i].order ? data[i].order : 0,
-//         createdAt: new Date().toISOString(),
-//       };
-
-//       if (data[i].date !== undefined) p.date = data[i].date;
-
-//       arrItems.push(p);
-//     }
-
-//     const asyncResult = await Promise.all(
-//       arrItems.map(async (i) => {
-//         return await createMatterFile(i);
-//       })
-//     );
-
-//     if(asyncResult){
-//       resp = arrItems;
-//     }
-
-//   } catch (e) {
-//     resp = {
-//       error: e.message,
-//       errorStack: e.stack,
-//     };
-//     console.log(resp);
-//   }
-
-//   return resp;
-// }
-
 export async function bulkCreateMatterFile(data) {
   let resp = {};
   try {
     const arrItems = [];
 
     for (var i = 0; i < data.length; i++) {
-      var params = {
+      var p = {
         id: v4(),
         matterId: data[i].matterId,
         s3ObjectKey: data[i].s3ObjectKey,
@@ -242,49 +198,61 @@ export async function bulkCreateMatterFile(data) {
         createdAt: new Date().toISOString(),
       };
 
-      if (data[i].date !== undefined) params.date = data[i].date;
+      if (data[i].date !== undefined) p.date = data[i].date;
 
-      arrItems.push(params);
-    }
+      // arrItems.push({
+      //   PutRequest: {
+      //     Item: marshall(p),
+      //   },
+      // });
 
-    const batches = [];
-    let current_batch = [],
-      item_count = 0;
-
-    arrItems.forEach((data) => {
-      item_count++;
-      current_batch.push(data);
-
-      // Chunk items to 5
-      if (item_count % 5 == 0) {
-        batches.push(current_batch);
-        current_batch = [];
-      }
-    });
-
-    // Add the last batch if it has records and is not equal to 5
-    if (current_batch.length > 0 && current_batch.length != 5) {
-      batches.push(current_batch);
+      arrItems.push(p);
     }
 
     const asyncResult = await Promise.all(
-      batches.map(async (data) => {
-        const matterFileParams = {
-          RequestItems: {
-            MatterFileTable: data,
-          },
-        };
-
-        const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
-        return await ddbClient.send(matterFileCmd);
+      arrItems.map(async (i) => {
+        return await createMatterFile(i);
       })
     );
 
-    if (asyncResult) {
-      resp = arrItems.map((i) => {
-        return unmarshall(i.PutRequest.Item);
-      });
+    if(asyncResult){
+      resp = arrItems;
     }
+
+    // const batches = [];
+    // let current_batch = [],
+    //   item_count = 0;
+
+    // arrItems.forEach((data) => {
+    //   item_count++;
+    //   current_batch.push(data);
+
+    //   if (item_count % 5 == 0) {
+    //     batches.push(current_batch);
+    //     current_batch = [];
+    //   }
+    // });
+
+    // Add the last batch if it has records and is not equal to 5
+    // if (current_batch.length > 0 && current_batch.length != 5) {
+    //   batches.push(current_batch);
+    // }
+
+    // batches.forEach(async (data, index) => {
+    //   console.log("AQS - index", index, data);
+    //   const matterFileParams = {
+    //     RequestItems: {
+    //       MatterFileTable: data,
+    //     },
+    //   };
+
+    //   const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
+    //   const matterFIleRes = await ddbClient.send(matterFileCmd);
+
+    //   console.log(`matterFIleRes ${index}:`, matterFIleRes);
+    // });
+
+    
   } catch (e) {
     resp = {
       error: e.message,
