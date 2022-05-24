@@ -614,7 +614,7 @@ const Background = () => {
           style={{ position: "sticky", top: "0" }}
           className="py-5 z-30 ml-4 bg-white"
         >
-          <h1 className="font-bold text-xl ">
+          <p className="font-bold text-xl ">
             <div className="flex">
               <p
                 className="px-1 text-xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
@@ -627,11 +627,11 @@ const Background = () => {
                 {client_name}/{matter_name}
               </span>
             </div>
-          </h1>
+          </p>
         </div>
 
         <div className="py-5 bg-white z-40 absolute -mt-20 ml-5">
-          <h1 className="font-bold text-3xl ">
+          <p className="font-bold text-3xl ">
             <div className="flex">
               <p
                 suppressContentEditableWarning={true}
@@ -655,7 +655,7 @@ const Background = () => {
                 {client_name}/{matter_name}
               </span>
             </div>
-          </h1>
+          </p>
         </div>
 
         <div
