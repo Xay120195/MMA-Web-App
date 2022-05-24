@@ -144,7 +144,7 @@ export async function getFile(data) {
 }
 
 export async function createMatterFile(data) {
-  console.log("createMatterFile():",data);
+  console.log("createMatterFile():", data);
   let resp = {};
   try {
     const rawParams = {
@@ -200,13 +200,23 @@ export async function bulkCreateMatterFile(data) {
 
       if (data[i].date !== undefined) p.date = data[i].date;
 
-      arrItems.push({
-        PutRequest: {
-          Item: marshall(p),
-        },
-      });
+      // arrItems.push({
+      //   PutRequest: {
+      //     Item: marshall(p),
+      //   },
+      // });
 
-      createMatterFile(p);
+      arrItems.push(p);
+    }
+
+    const asyncResult = await Promise.all(
+      arrItems.map(async (i) => {
+        return await createMatterFile(i);
+      })
+    );
+
+    if(asyncResult){
+      resp = arrItems;
     }
 
     // const batches = [];
@@ -242,9 +252,7 @@ export async function bulkCreateMatterFile(data) {
     //   console.log(`matterFIleRes ${index}:`, matterFIleRes);
     // });
 
-    resp = arrItems.map((i) => {
-      return unmarshall(i.PutRequest.Item);
-    });
+    
   } catch (e) {
     resp = {
       error: e.message,
