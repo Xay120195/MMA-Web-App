@@ -868,6 +868,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     } else {
       setTextDetails("");
     }
+    setDescriptionClassId(id);
   };
 
   const handleOnChangeDetails = (event) => {
@@ -885,6 +886,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return obj;
     });
     setMatterFiles(updatedDesc);
+    setDescriptionClassId("");
     if (textDetails.length <= 0) {
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
@@ -2453,7 +2455,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     )
                                                 )
                                                 .map((background, counter) => (
-                                                  <div className="text-xs flex ml-9 mt-8 border-l-2 p-1" >
+                                                  <div className="text-xs flex ml-9 mt-8 border-l-2" >
                                                     {index + 1}.{counter + 1}
                                                   </div>
                                               )
@@ -2636,7 +2638,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           >
                                             <div className="flex mb-12">
                                               <span
-                                                className="w-full p-2 font-poppins h-full mx-2"
+                                                className={data.id === descriptionClassId ? "w-full p-2 font-poppins h-full mx-2" : "w-96 p-2 font-poppins h-full mx-2 single-line"}
                                                 style={{
                                                   cursor: "auto",
                                                   outlineColor:
@@ -2690,7 +2692,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 .map((background, index) => (
                                                   <div className="flex mt-5">
                                                     <span
-                                                      className={background.id === descriptionClassId ? "w-full p-2 font-poppins h-full mx-2" : "w-96 p-2 font-poppins h-full mx-2 flex text-ellipsis overflow-hidden"}
+                                                      className={background.id === descriptionClassId ? "w-full p-2 font-poppins h-full mx-2" : "w-96 p-2 font-poppins h-full mx-2 single-line"}
                                                       style={{
                                                         cursor: "auto",
                                                         outlineColor:
