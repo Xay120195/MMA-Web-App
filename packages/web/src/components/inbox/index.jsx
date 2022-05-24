@@ -143,7 +143,6 @@ const Inbox = () => {
             unreaddata={unreaddata}
             setTotalReadChecked={setTotalReadChecked}
             setTotalUnReadChecked={setTotalUnReadChecked}
-            totalChecked={totalChecked}
             getIdUnread={getIdUnread}
             getIdRead={getIdRead}
             checkAllState={checkAllState}
@@ -177,7 +176,6 @@ const Inbox = () => {
         setIdUnread={setIdUnread}
         setIdRead={setIdRead}
         getIdRead={getIdRead}
-        data={data}
         searchRow={searchRow}
         setSearchRow={setSearchRow}
         selectedMessage={selectedMessage}

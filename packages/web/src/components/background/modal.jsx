@@ -8,7 +8,7 @@ export const ModalParagraph = ({
   setParagraph,
   paragraph,
   setCheckedState,
-  witness,
+  background,
   setSelectedRowsBG,
   setShowDeleteButton,
   matterId,
@@ -76,14 +76,14 @@ export const ModalParagraph = ({
       if (newData.length >= 0) {
         const [xs] = [...newData];
 
-        witness.splice(0, 0, xs);
+        background.splice(0, 0, xs);
 
         setShowModalParagraph(false);
         setParagraph("");
 
-        console.log(witness);
+        console.log(background);
 
-        const rowArrangement = witness.map(({ id }, index) => ({
+        const rowArrangement = background.map(({ id }, index) => ({
           id: id,
           order: index + 1,
         }));
@@ -105,7 +105,7 @@ export const ModalParagraph = ({
 
         setcheckAllState(false);
 
-        setCheckedState(new Array(witness.length).fill(false));
+        setCheckedState(new Array(background.length).fill(false));
         setSelectedRowsBG([]);
         setShowDeleteButton(false);
       }

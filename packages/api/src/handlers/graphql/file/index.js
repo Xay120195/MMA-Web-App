@@ -77,7 +77,6 @@ async function listFileLabels(ctx) {
     response = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
     console.log(response);
   }
@@ -159,7 +158,6 @@ async function listFileBackgrounds(ctx) {
     response = {
       error: e.message,
       errorStack: e.stack,
-      statusCode: 500,
     };
     console.log(response);
   }

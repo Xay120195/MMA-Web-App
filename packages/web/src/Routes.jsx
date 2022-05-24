@@ -15,6 +15,7 @@ import FileBucket from "./components/file-bucket";
 import Background from "./components/background";
 import Labels from "./components/labels";
 import Inbox from "./components/inbox";
+import EmailIntegrationAuth from "./components/authentication/email-integration-authentication";
 import RFIPage from "./components/rfi-page";
 import Briefs from "./components/briefs";
 
@@ -81,6 +82,11 @@ const Routes = () => {
 
           <Route exact path={AppRoutes.LABELS} component={Labels} />
           <Route exact path={`${AppRoutes.INBOX}`} component={Inbox} />
+          <Route
+            exact
+            path={`${AppRoutes.AUTH}`}
+            component={EmailIntegrationAuth}
+          />
         </>
       </Switch>
     </Router>

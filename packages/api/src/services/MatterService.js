@@ -35,7 +35,6 @@ export async function generatePresignedUrl(Key, src) {
 }
 
 export async function getMatterFiles(ctx) {
-  console.log("getMatterFiles()");
   const {
     matterId,
     isDeleted = false,
@@ -45,21 +44,21 @@ export async function getMatterFiles(ctx) {
 
   let resp = {},
     indexName,
-    isAscending,
+    isAscending = true,
     read = true,
     nextToken = ctx.nextToken,
     result = [];
 
-  if (sortOrder == "CREATED_DESC" || sortOrder == "ORDER_DESC") {
+  if (sortOrder.includes("_DESC")) {
     isAscending = false;
-  } else if (sortOrder == "CREATED_ASC" || sortOrder == "ORDER_ASC") {
-    isAscending = true;
   }
 
-  if (sortOrder == "CREATED_DESC" || sortOrder == "CREATED_ASC") {
+  if (sortOrder.includes("CREATED_")) {
     indexName = "byCreatedAt";
-  } else if (sortOrder == "ORDER_DESC" || sortOrder == "ORDER_ASC") {
+  } else if (sortOrder.includes("ORDER_")) {
     indexName = "byOrder";
+  } else if (sortOrder.includes("DATE_")) {
+    indexName = "byDate";
   }
 
   try {
@@ -155,10 +154,11 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
-      date: null,
       order: data.order ? data.order : 0,
       createdAt: new Date().toISOString(),
     };
+
+    // if (data.date !== undefined) rawParams.date = data.date;
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
@@ -185,20 +185,23 @@ export async function bulkCreateMatterFile(data) {
     const arrItems = [];
 
     for (var i = 0; i < data.length; i++) {
+      var p = {
+        id: v4(),
+        matterId: data[i].matterId,
+        s3ObjectKey: data[i].s3ObjectKey,
+        size: data[i].size,
+        type: data[i].type,
+        name: data[i].name,
+        isDeleted: false,
+        order: data[i].order ? data[i].order : 0,
+        createdAt: new Date().toISOString(),
+      };
+
+      // if (data[i].date !== undefined) p.date = data[i].date;
+
       arrItems.push({
         PutRequest: {
-          Item: marshall({
-            id: v4(),
-            matterId: data[i].matterId,
-            s3ObjectKey: data[i].s3ObjectKey,
-            size: data[i].size,
-            type: data[i].type,
-            name: data[i].name,
-            isDeleted: false,
-            date: null,
-            order: data[i].order ? data[i].order : 0,
-            createdAt: new Date().toISOString(),
-          }),
+          Item: marshall(p),
         },
       });
     }
@@ -223,15 +226,20 @@ export async function bulkCreateMatterFile(data) {
       batches.push(current_batch);
     }
 
-    batches.forEach(async (data) => {
+    batches.forEach(async (data, index) => {
+      console.log("AQS - index", index);
       const matterFileParams = {
         RequestItems: {
           MatterFileTable: data,
         },
       };
 
+      console.log(JSON.stringify(matterFileParams));
+
       const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
-      await ddbClient.send(matterFileCmd);
+      const matterFIleRes = await ddbClient.send(matterFileCmd);
+
+      console.log(matterFIleRes);
     });
 
     resp = arrItems.map((i) => {

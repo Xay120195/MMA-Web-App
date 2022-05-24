@@ -9,7 +9,6 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
-// import barsFilter from "../../assets/images/bars-filter.svg";
 import ellipsis from "../../shared/ellipsis";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
@@ -17,7 +16,6 @@ import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
-import PageReferenceModal from "./page-reference-modal";
 //import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -76,7 +74,7 @@ export default function FileBucket() {
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [ascDesc, setAscDesc] = useState(null);
-  const [showPageReferenceModal, setShowPageReferenceModal] = useState(false);
+  const [sortOrder, setSortOrder] = useState("ORDER_ASC");
   const [pageReferenceFileId, setPageReferenceFileId] = useState("");
   const [pageReferenceBackgroundId, setPageReferenceBackgroundId] =
     useState("");
@@ -84,6 +82,9 @@ export default function FileBucket() {
     useState("");
   const [pageReferenceDescription, setPageReferenceDescription] = useState("");
   const [pageReferenceRowOrder, setPageReferenceRowOrder] = useState("");
+  const [isShiftDown, setIsShiftDown] = useState(false);
+  const [lastSelectedItem, setLastSelectedItem] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   let filterOptionsArray = [];
 
@@ -104,6 +105,7 @@ export default function FileBucket() {
   const [filterState, setFilterState] = useState(false);
 
   const [copyOptions, showCopyOptions] = useState(false);
+  const [textDesc, setTextDesc] = useState("");
 
   const [Briefs, setBriefs] = useState(null);
   const [copyBgOptions, setCopyBgOptions] = useState(null);
@@ -190,12 +192,12 @@ export default function FileBucket() {
     setShowUploadModal(false);
     setshowRemoveFileModal(false);
     setFilterLabels(false);
-    setShowPageReferenceModal(false);
   };
 
   const contentDiv = {
     margin: "0 0 0 65px",
-    position: "sticky", top: 0
+    position: "sticky",
+    top: 0,
   };
 
   const noStyle = {
@@ -315,9 +317,9 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
 
   // WITH PAGINAGTION
 
-  const mPaginationbyItems = `
-query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder:ORDER_ASC) {
+  const qGetFilesByMatter = `
+query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextToken: String, $sortOrder: OrderBy) {
+  matterFiles(isDeleted: $isDeleted, matterId: $matterId, nextToken: $nextToken, limit: $limit, sortOrder: $sortOrder) {
     items {
       id
       name
@@ -349,37 +351,37 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   // WITHOUT PAGINAGTION
 
-  const mNoPaginationbyItems = `
-query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
-  matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
-    items {
-      id
-      name
-      details
-      date
-      s3ObjectKey
-      labels {
-        items {
-          id
-          name
-        }
-      }
-      backgrounds {
-        items {
-          id
-          order
-          description
-        }
-      }
-      createdAt
-      order
-      type
-      size
-    }
-    nextToken
-  }
-}
-`;
+  //   const mNoPaginationbyItems = `
+  // query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
+  //   matterFiles(isDeleted: $isDeleted, matterId: $matterId, sortOrder:ORDER_ASC) {
+  //     items {
+  //       id
+  //       name
+  //       details
+  //       date
+  //       s3ObjectKey
+  //       labels {
+  //         items {
+  //           id
+  //           name
+  //         }
+  //       }
+  //       backgrounds {
+  //         items {
+  //           id
+  //           order
+  //           description
+  //         }
+  //       }
+  //       createdAt
+  //       order
+  //       type
+  //       size
+  //     }
+  //     nextToken
+  //   }
+  // }
+  // `;
 
   const qlistBackgroundFiles = `
   query getBackgroundByID($id: ID) {
@@ -394,6 +396,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       }
     }
   }`;
+
+  const mUpdateBackgroundDesc = `
+  mutation updateBackground($id: ID, $description: String) {
+    backgroundUpdate(id: $id, description: $description) {
+      id
+      description
+    }
+  }
+`;
 
   async function tagBackgroundFile() {
     let arrFiles = [];
@@ -496,7 +507,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     result.map((x) => (labelNames = [...labelNames, x.label]));
 
-    if (labelNames.length == 0) {
+    if (labelNames.length === 0) {
       setFilterModalState(true);
     } else {
       setFilterModalState(false);
@@ -530,9 +541,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   }, [searchFile]);
 
   let getMatterFiles = async (next) => {
-    let q = mPaginationbyItems;
-    //let q = mNoPaginationbyItems;
-
     // const mInitializeOrders = `
     //   mutation initializeOrder($clientMatterId: ID) {
     //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
@@ -550,38 +558,37 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     // });
 
     const params = {
-      query: q,
+      query: qGetFilesByMatter,
       variables: {
         matterId: matter_id,
         isDeleted: false,
         limit: 100,
         nextToken: next === 1 ? null : vNextToken,
-        sortOrder: "ORDER_ASC",
+        sortOrder: sortOrder,
       },
     };
     await API.graphql(params).then((files) => {
       let matterFilesList = files.data.matterFiles.items;
-      console.log("checkthis", matterFilesList);
+      console.log("matterFilesList: ", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      setFiles(sortByOrder(matterFilesList));
-      setMatterFiles(sortByOrder(matterFilesList));
+      //setFiles(sortByOrder(matterFilesList));
+      //setMatterFiles(sortByOrder(matterFilesList));
+      setFiles(matterFilesList);
+      setMatterFiles(matterFilesList); // no need to use sortByOrder
       setMaxLoading(false);
     });
   };
 
   let loadMoreMatterFiles = async () => {
     if (vNextToken !== null && !loading) {
-      let q = mPaginationbyItems;
-      //let q = mNoPaginationbyItems;
-
       const params = {
-        query: q,
+        query: qGetFilesByMatter,
         variables: {
           matterId: matter_id,
           isDeleted: false,
           limit: 50,
           nextToken: vNextToken,
-          sortOrder: "ORDER_ASC",
+          sortOrder: sortOrder,
         },
       };
 
@@ -620,7 +627,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
           setMatterFiles([...new Set(arrConcat)]);
         } else {
-          setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+          //setMatterFiles([...new Set(sortByOrder(arrConcat))]);
+          setMatterFiles([...new Set(arrConcat)]);
         }
 
         // if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
@@ -1377,7 +1385,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
 
     var next = 1;
 
-    var filterRecord = [];
+    //var filterRecord = [];
     if (
       fileFilter === null ||
       fileFilter === undefined ||
@@ -1522,6 +1530,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           order: items.order,
         },
       });
+
       setIsAllChecked(false);
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
@@ -1539,6 +1548,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const SortBydate = async () => {
+    console.group("SortBydate()");
     // const isAllZero = matterFiles.every(
     //   (item) => item.order >= 0 && item.order !== 0
     // );
@@ -1548,17 +1558,15 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
       console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
 
-      setMatterFiles(matterFiles
-      .slice()
-      .sort(
-        (a, b) =>
-          new Date(a.date) - new Date(b.date) ||
-          new Date(b.createdAt) - new Date(a.createdAt)
-      ));
-      
-
-      
-
+      setMatterFiles(
+        matterFiles
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.date) - new Date(b.date) ||
+              new Date(b.createdAt) - new Date(a.createdAt)
+          )
+      );
     } else if (ascDesc === true) {
       console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
@@ -1584,6 +1592,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           )
       ); // default to sort by order
     }
+
+    console.groupEnd();
   };
 
   const style = {
@@ -1597,7 +1607,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     description,
     rowOrder
   ) => {
-    setShowPageReferenceModal(true);
     setPageReferenceFileId(fileId);
     setPageReferenceBackgroundId(backgroundId);
     setPageReferenceClientMatter(clientMatter);
@@ -1677,9 +1686,9 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     };
 
     await API.graphql(params).then((brief) => {
-      let matterFilesList = brief.data.clientMatter.briefs.items;
-      console.log("mfl", matterFilesList);
-      var temp = matterFilesList.map(
+      let briefList = brief.data.clientMatter.briefs.items;
+      console.log("mfl", briefList);
+      var temp = briefList.map(
         (x) => (opts = [...opts, { label: x.name, value: x.id }])
       );
       setCopyBgOptions(opts);
@@ -1691,10 +1700,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
   };
 
   const handleFilterRemoveChange = (evt) => {
-    if(evt.length === 0 ){
+    if (evt.length === 0) {
       setCopyBgIds(null);
     }
-  }
+  };
 
   const handleCopyToBg = async () => {
     console.log("cb", copyBgOptions);
@@ -1774,6 +1783,186 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
     }, 1000);
   };
 
+  const handleDescContent = (e, description, id) => {
+    if (!descAlert) {
+      setTextDesc(description);
+    }
+  };
+
+  const handleChangeDesc = (event) => {
+    setTextDesc(event.currentTarget.textContent);
+  };
+
+  const handleSaveDesc = async (e, description, date, id) => {
+    matterFiles.map((obj) => {
+      if (obj.id === id) {
+        return { ...obj, description: e.target.innerHTML };
+      }
+      return obj;
+    });
+
+    if (textDesc.length <= 0) {
+      // notify error on description
+    } else if (textDesc === description) {
+      setShowToast(true);
+
+      const data = {
+        description: e.target.innerHTML,
+      };
+
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setShowToast(true);
+      }
+
+      setTimeout(() => {
+        setShowToast(false);
+      }, 1000);
+    } else {
+      const data = {
+        description: e.target.innerHTML,
+      };
+      const success = await updateBackgroundDesc(id, data);
+      if (success) {
+        setShowToast(true);
+      }
+      setTimeout(() => {
+        setShowToast(false);
+      }, 1000);
+    }
+  };
+
+  async function updateBackgroundDesc(id, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateBackgroundDesc,
+          variables: {
+            id: id,
+            description: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  const handleKeyUp = (e) => {
+    if (e.key === "Shift" && isShiftDown) {
+      setIsShiftDown(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Shift" && !isShiftDown) {
+      setIsShiftDown(true);
+    }
+  };
+
+  const handleSelectItem = (e, index) => {
+    const { value } = e.target;
+    const nextValue = getNextValue(value);
+    setSelectedItems(nextValue);
+    setLastSelectedItem(value);
+
+    if (nextValue.length > 0) {
+      const isf1 = matterFiles.filter((item) => nextValue.includes(item.id));
+      const xmatterFiles = isf1.map(
+        ({
+          id,
+          backgrounds,
+          createdAt,
+          date,
+          details,
+          labels,
+          name,
+          order,
+          s3ObjectKey,
+          size,
+          type,
+        }) => ({
+          id,
+          fileName: name,
+          backgrounds,
+          createdAt,
+          date,
+          details,
+          labels,
+          name,
+          order,
+          s3ObjectKey,
+          size,
+          type,
+        })
+      );
+
+      selectedRows = xmatterFiles;
+      selectedCompleteDataRows = xmatterFiles;
+      setshowRemoveFileButton(true);
+      setShowCopyToBackgroundButton(true);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(true);
+      }
+    } else {
+      selectedRows = [];
+      selectedCompleteDataRows = [];
+      setshowRemoveFileButton(false);
+      setShowCopyToBackgroundButton(false);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(false);
+      }
+    }
+  };
+
+  const getNextValue = (value) => {
+    const hasBeenSelected = !selectedItems.includes(value);
+
+    if (isShiftDown) {
+      const newSelectedItems = getNewSelectedItems(value);
+
+      const selections = [...new Set([...selectedItems, ...newSelectedItems])];
+
+      if (!hasBeenSelected) {
+        return selections.filter((item) => !newSelectedItems.includes(item));
+      }
+
+      return selections;
+    }
+
+    // if it's already in there, remove it, otherwise append it
+    return selectedItems.includes(value)
+      ? selectedItems.filter((item) => item !== value)
+      : [...selectedItems, value];
+  };
+
+  const getNewSelectedItems = (value) => {
+    const currentSelectedIndex = matterFiles.findIndex(
+      (item) => item.id === value
+    );
+    const lastSelectedIndex = matterFiles.findIndex(
+      (item) => item.id === lastSelectedItem
+    );
+
+    return matterFiles
+      .slice(
+        Math.min(lastSelectedIndex, currentSelectedIndex),
+        Math.max(lastSelectedIndex, currentSelectedIndex) + 1
+      )
+      .map((item) => item.id);
+  };
+
+  useEffect(() => {
+    document.addEventListener("keyup", handleKeyUp, false);
+    document.addEventListener("keydown", handleKeyDown, false);
+
+    return () => {
+      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyUp, handleKeyDown]);
+
   return (
     <>
       <div
@@ -1782,9 +1971,8 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         }
         style={contentDiv}
       >
-      
         <div className="flex-grow flex-1">
-          <div style={mainGrid} >
+          <div style={mainGrid}>
             <div>
               <Link to={AppRoutes.DASHBOARD}>
                 <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mb-3">
@@ -1792,36 +1980,39 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                   Back
                 </button>
               </Link>
-              </div>
+            </div>
           </div>
         </div>
         {/* DON'T DELETE THIS PART. THIS IS A CLONE FOR SCROLLING DOWN */}
-        <div style={{ position: "sticky", top: "0"}} className=" py-5 bg-white z-30">
-           <h8 className="font-bold text-xl bg-white w-full">
-              File Bucket&nbsp;<span className="text-xl">of</span>&nbsp;
-                <span className="font-semibold text-xl">
-                    {checkFormat(client_name)}
-                  </span>
-                  /
-                  <span className="font-semibold text-xl">
-                    {checkFormat(matter_name)}
-                </span>
+        <div
+          style={{ position: "sticky", top: "0" }}
+          className=" py-5 bg-white z-30"
+        >
+          <h8 className="font-bold text-xl bg-white w-full">
+            File Bucket&nbsp;<span className="text-xl">of</span>&nbsp;
+            <span className="font-semibold text-xl">
+              {checkFormat(client_name)}
+            </span>
+            /
+            <span className="font-semibold text-xl">
+              {checkFormat(matter_name)}
+            </span>
           </h8>
         </div>
         {/* END */}
         <div className="py-5 bg-white z-40 absolute mt-10 ">
-           <h1 className="font-bold text-3xl">
-              File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">
-                    {checkFormat(client_name)}
-                  </span>
-                  /
-                  <span className="font-semibold text-3xl">
-                    {checkFormat(matter_name)}
-                </span>
+          <h1 className="font-bold text-3xl">
+            File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
+            <span className="font-semibold text-3xl">
+              {checkFormat(client_name)}
+            </span>
+            /
+            <span className="font-semibold text-3xl">
+              {checkFormat(matter_name)}
+            </span>
           </h1>
         </div>
-            
+
         <div
           className="bg-white z-40 "
           style={{ position: "sticky", top: "67px" }}
@@ -1940,9 +2131,10 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                         Results
                       </p>
                       <button
-                        className={copyBgIds ?
-                          "px-2 py-2 text-blue-400 text-xs font-semibold ml-16 cursor-pointer"
-                          : "px-2 py-2 text-blue-200 text-xs font-semibold ml-16"
+                        className={
+                          copyBgIds
+                            ? "px-2 py-2 text-blue-400 text-xs font-semibold ml-16 cursor-pointer"
+                            : "px-2 py-2 text-blue-200 text-xs font-semibold ml-16"
                         }
                         onClick={() => handleCopyToBg()}
                         disabled={copyBgIds ? false : true}
@@ -2037,7 +2229,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
         <div className="px-2 py-0 left-0">
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
-     
+
         {
           // filteredFiles !== null ?
           // (
@@ -2088,7 +2280,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                     style={{ cursor: "pointer" }}
                                   /> */}
                                   {(() => {
-                                    console.log("ascDesc:", ascDesc);
                                     if (ascDesc == null) {
                                       return (
                                         <FaSort
@@ -2179,7 +2370,7 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               }
                                             />
 
-                                            <input
+                                            {/* <input
                                               type="checkbox"
                                               name={data.id}
                                               className="cursor-pointer w-10 mt-1"
@@ -2199,7 +2390,22 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                               disabled={
                                                 deletingState ? true : false
                                               }
+                                            /> */}
+
+                                            <input
+                                              className="cursor-pointer mr-1"
+                                              onChange={handleSelectItem}
+                                              type="checkbox"
+                                              checked={selectedItems.includes(
+                                                data.id
+                                              )}
+                                              value={data.id}
+                                              id={`data-${data.id}`}
+                                              disabled={
+                                                deletingState ? true : false
+                                              }
                                             />
+
                                             <span className="text-xs">
                                               {index + 1}
                                             </span>
@@ -2410,47 +2616,109 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                                           <td
                                             {...provider.dragHandleProps}
                                             className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
-                                          >
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
-                                                .sort((a, b) =>
-                                                  a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
-                                                    )
-                                                )
-                                                .map((background, index) => (
-                                                  <p
-                                                    className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
-                                                    key={background.id}
-                                                    index={index}
-                                                    onClick={() =>
-                                                      showPageReference(
-                                                        data.id,
-                                                        background.id,
-                                                        clientMatterName,
-                                                        background.description,
-                                                        background.order
-                                                      )
-                                                    }
-                                                  >
-                                                    <b>
-                                                      {background.order + ". "}
-                                                    </b>
-                                                    {ellipsis(
-                                                      clientMatterName +
-                                                        " Background",
-                                                      40
-                                                    )}
-                                                  </p>
-                                                ))
-                                                .sort()}
-                                          </td>
+                                          ></td>
                                         </tr>
                                       )}
+
+                                      {/*data.backgrounds.items !== null &&
+                                      data.backgrounds.items
+                                        .sort((a, b) =>
+                                          a.order > b.order ? 1 : -1
+                                        )
+                                        .filter(
+                                          (x) =>
+                                            !Object.values(x).includes(
+                                              null
+                                            )
+                                        )
+                                        .map((background, index) => (
+                                      <tr
+                                      {...provider.draggableProps}
+                                      ref={provider.innerRef}
+                                      >
+                                        <td>{data.order}.{background.order}</td>
+                                        <td>
+                                          <DatePicker
+                                              popperProps={{
+                                                positionFixed: true,
+                                              }}
+                                              className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5"
+                                              dateFormat="dd MMM yyyy"
+                                              selected={
+                                                data.date !== null
+                                                  ? new Date(data.date)
+                                                  : null
+                                              }
+                                              placeholderText="No Date"
+                                              onChange={(selected) =>
+                                                handleChangeDate(
+                                                  selected,
+                                                  data.id
+                                                )
+                                              }
+                                            />
+                                        </td>
+                                        <td></td>
+                                        <td>
+                                          <div className="flex">
+                                              <span
+                                                className="w-full p-2 font-poppins h-full mx-2"
+                                                style={{
+                                                  cursor: "auto",
+                                                  outlineColor:
+                                                    "rgb(204, 204, 204, 0.5)",
+                                                  outlineWidth: "thin",
+                                                }}
+                                                suppressContentEditableWarning
+                                              onClick={(event) =>
+                                                handleDescContent(
+                                                  event,
+                                                  item.description,
+                                                  item.id
+                                                )
+                                              }
+                                              dangerouslySetInnerHTML={{
+                                                __html: item.description,
+                                              }}
+                                              onInput={(event) =>
+                                                handleChangeDesc(event)
+                                              }
+                                              onBlur={(e) =>
+                                                handleSaveDesc(
+                                                  e,
+                                                  item.description,
+                                                  item.date,
+                                                  item.id
+                                                )
+                                              }
+                                                contentEditable={
+                                                  updateProgess ? false : true
+                                                }
+                                                dangerouslySetInnerHTML={{
+                                                  __html: data.details,
+                                                }}
+                                              ></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                          <p
+                                            className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                            key={background.id}
+                                            index={index}
+                                          >
+                                            <b>
+                                              {background.order + ". "}
+                                            </b>
+                                            {ellipsis(
+                                              clientMatterName +
+                                                " Background",
+                                              40
+                                            )}
+                                          </p>
+                                        </td>
+                                        <td></td>
+                                      </tr>
+                                      )*/}
                                     </Draggable>
                                   ))}
                                   {provider.placeholder}
@@ -2466,7 +2734,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
                             <p>All data has been loaded.</p>
                           </div>
                         ) : matterFiles.length >= 20 ? (
-                          // && matter_id !== "c934548e-c12a-4faa-a102-d77f75e3da2b"
                           <div className="flex justify-center items-center mt-5">
                             <img src={imgLoading} width={50} height={100} />
                           </div>
@@ -2513,17 +2780,6 @@ query getFilesByMatter($isDeleted: Boolean, $matterId: ID) {
           handleSave={handleUploadLink}
           bucketName={matter_id}
           handleModalClose={handleModalClose}
-        />
-      )}
-      {showPageReferenceModal && (
-        <PageReferenceModal
-          handleModalClose={handleModalClose}
-          fileId={pageReferenceFileId}
-          backgroundId={pageReferenceBackgroundId}
-          clientMatter={pageReferenceClientMatter}
-          description={pageReferenceDescription}
-          order={pageReferenceRowOrder}
-          getMatterFiles={getMatterFiles}
         />
       )}
       {filterLabels && (

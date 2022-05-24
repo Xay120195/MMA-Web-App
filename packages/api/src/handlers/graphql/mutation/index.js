@@ -1274,6 +1274,42 @@ async function updateRequest(id, data) {
   return resp;
 }
 
+async function updateRFI(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "RFITable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function bulkUpdateBackgroundOrders(data) {
   let resp = [];
   try {
@@ -1645,6 +1681,53 @@ export async function deleteRequest(id) {
   return resp;
 }
 
+export async function deleteRFI(id) {
+  let resp = {};
+  try {
+    const clientMatterRFIParams = {
+      TableName: "ClientMatterRFITable",
+      IndexName: "byRFI",
+      KeyConditionExpression: "rfiId = :rfiId",
+      ExpressionAttributeValues: marshall({
+        ":rfiId": id,
+      }),
+      ProjectionExpression: "id", // fetch id of ClientMatterRFITable only
+    };
+
+    const clientMatterRFICmd = new QueryCommand(clientMatterRFIParams);
+    const clientMatterRFIResult = await ddbClient.send(clientMatterRFICmd);
+
+    const clientMatterRFIId = clientMatterRFIResult.Items[0];
+
+    const deleteClientMatterRFICommand = new DeleteItemCommand({
+      TableName: "ClientMatterRFITable",
+      Key: clientMatterRFIId,
+    });
+
+    const deleteClientMatterRFIResult = await ddbClient.send(
+      deleteClientMatterRFICommand
+    );
+
+    if (deleteClientMatterRFIResult) {
+      const cmd = new DeleteItemCommand({
+        TableName: "RFITable",
+        Key: marshall({ id }),
+      });
+      const request = await ddbClient.send(cmd);
+
+      resp = request ? { id: id } : {};
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 export async function deleteClientMatter(id) {
   let resp = {};
 
@@ -1719,6 +1802,8 @@ const resolvers = {
       return await createMatter(ctx.arguments);
     },
     matterFileCreate: async (ctx) => {
+      console.log("matterFileCreate()");
+      console.log(ctx.arguments);
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
@@ -1740,6 +1825,8 @@ const resolvers = {
     },
 
     matterFileBulkCreate: async (ctx) => {
+      console.log("matterFileBulkCreate()");
+      console.log(ctx.arguments);
       const { files } = ctx.arguments;
       return await bulkCreateMatterFile(files);
     },
@@ -1873,6 +1960,24 @@ const resolvers = {
     },
     rfiCreate: async (ctx) => {
       return await createRFI(ctx.arguments);
+    },
+    rfiUpdate: async (ctx) => {
+      const { id, name, description, order } = ctx.arguments;
+      const data = {
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (name !== undefined) data.name = name;
+
+      if (description !== undefined) data.description = description;
+
+      if (order !== undefined) data.order = order;
+
+      return await updateRFI(id, data);
+    },
+    rfiDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      return await deleteRFI(id);
     },
     requestCreate: async (ctx) => {
       return await createRequest(ctx.arguments);
