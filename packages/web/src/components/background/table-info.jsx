@@ -1086,6 +1086,8 @@ const TableInfo = ({
     };
   }, [handleKeyUp, handleKeyDown]);
 
+  const handleCheckBox = () => {};
+
   return (
     <>
       <div className="px-7">
@@ -1237,6 +1239,7 @@ const TableInfo = ({
                                               )}
                                               value={item.id}
                                               id={`item-${item.id}`}
+                                              onClick={handleCheckBox}
                                             />
                                             <label
                                               htmlFor="checkbox-1"

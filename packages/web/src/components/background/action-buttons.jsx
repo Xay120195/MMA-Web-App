@@ -399,10 +399,8 @@ const ActionButtons = (props) => {
   const handleCheckAll = (e) => {
     if (e.target.checked) {
       setSelectedItems(background.map((x) => x.id));
-      setcheckAllState(true);
     } else {
       setSelectedItems([]);
-      setcheckAllState(false);
     }
   };
   return (
@@ -414,7 +412,7 @@ const ActionButtons = (props) => {
             id="check_all"
             aria-describedby="checkbox-1"
             type="checkbox"
-            checked={checkAllState ? true : false}
+            checked={selectedItems.length === background.length ? true : false}
             onChange={handleCheckAll}
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
