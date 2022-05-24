@@ -82,6 +82,9 @@ export default function FileBucket() {
     useState("");
   const [pageReferenceDescription, setPageReferenceDescription] = useState("");
   const [pageReferenceRowOrder, setPageReferenceRowOrder] = useState("");
+  const [isShiftDown, setIsShiftDown] = useState(false);
+  const [lastSelectedItem, setLastSelectedItem] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   let filterOptionsArray = [];
 
@@ -1846,6 +1849,120 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
   }
 
+  const handleKeyUp = (e) => {
+    if (e.key === "Shift" && isShiftDown) {
+      setIsShiftDown(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Shift" && !isShiftDown) {
+      setIsShiftDown(true);
+    }
+  };
+
+  const handleSelectItem = (e, index) => {
+    const { value } = e.target;
+    const nextValue = getNextValue(value);
+    setSelectedItems(nextValue);
+    setLastSelectedItem(value);
+
+    if (nextValue.length > 0) {
+      const isf1 = matterFiles.filter((item) => nextValue.includes(item.id));
+      const xmatterFiles = isf1.map(
+        ({
+          id,
+          backgrounds,
+          createdAt,
+          date,
+          details,
+          labels,
+          name,
+          order,
+          s3ObjectKey,
+          size,
+          type,
+        }) => ({
+          id,
+          fileName: name,
+          backgrounds,
+          createdAt,
+          date,
+          details,
+          labels,
+          name,
+          order,
+          s3ObjectKey,
+          size,
+          type,
+        })
+      );
+
+      selectedRows = xmatterFiles;
+      selectedCompleteDataRows = xmatterFiles;
+      setshowRemoveFileButton(true);
+      setShowCopyToBackgroundButton(true);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(true);
+      }
+    } else {
+      selectedRows = [];
+      selectedCompleteDataRows = [];
+      setshowRemoveFileButton(false);
+      setShowCopyToBackgroundButton(false);
+      if (background_id !== "000") {
+        setshowAttachBackgroundButton(false);
+      }
+    }
+  };
+
+  const getNextValue = (value) => {
+    const hasBeenSelected = !selectedItems.includes(value);
+
+    if (isShiftDown) {
+      const newSelectedItems = getNewSelectedItems(value);
+
+      const selections = [...new Set([...selectedItems, ...newSelectedItems])];
+
+      if (!hasBeenSelected) {
+        return selections.filter((item) => !newSelectedItems.includes(item));
+      }
+
+      return selections;
+    }
+
+    // if it's already in there, remove it, otherwise append it
+    return selectedItems.includes(value)
+      ? selectedItems.filter((item) => item !== value)
+      : [...selectedItems, value];
+  };
+
+  const getNewSelectedItems = (value) => {
+    const currentSelectedIndex = matterFiles.findIndex(
+      (item) => item.id === value
+    );
+    const lastSelectedIndex = matterFiles.findIndex(
+      (item) => item.id === lastSelectedItem
+    );
+
+    return matterFiles
+      .slice(
+        Math.min(lastSelectedIndex, currentSelectedIndex),
+        Math.max(lastSelectedIndex, currentSelectedIndex) + 1
+      )
+      .map((item) => item.id);
+  };
+
+  useEffect(() => {
+    document.addEventListener("keyup", handleKeyUp, false);
+    document.addEventListener("keydown", handleKeyDown, false);
+
+    return () => {
+      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyUp, handleKeyDown]);
+
   return (
     <>
       <div
@@ -2253,7 +2370,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               }
                                             />
 
-                                            <input
+                                            {/* <input
                                               type="checkbox"
                                               name={data.id}
                                               className="cursor-pointer w-10 mt-1"
@@ -2273,7 +2390,22 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               disabled={
                                                 deletingState ? true : false
                                               }
+                                            /> */}
+
+                                            <input
+                                              className="cursor-pointer mr-1"
+                                              onChange={handleSelectItem}
+                                              type="checkbox"
+                                              checked={selectedItems.includes(
+                                                data.id
+                                              )}
+                                              value={data.id}
+                                              id={`data-${data.id}`}
+                                              disabled={
+                                                deletingState ? true : false
+                                              }
                                             />
+
                                             <span className="text-xs">
                                               {index + 1}
                                             </span>
