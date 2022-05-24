@@ -226,15 +226,20 @@ export async function bulkCreateMatterFile(data) {
       batches.push(current_batch);
     }
 
-    batches.forEach(async (data) => {
+    batches.forEach(async (data, index) => {
+      console.log("AQS - index", index);
       const matterFileParams = {
         RequestItems: {
           MatterFileTable: data,
         },
       };
 
+      console.log(JSON.stringify(matterFileParams));
+
       const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
-      await ddbClient.send(matterFileCmd);
+      const matterFIleRes = await ddbClient.send(matterFileCmd);
+
+      console.log(matterFIleRes);
     });
 
     resp = arrItems.map((i) => {
