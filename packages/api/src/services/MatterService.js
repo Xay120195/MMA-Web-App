@@ -144,6 +144,7 @@ export async function getFile(data) {
 }
 
 export async function createMatterFile(data) {
+  console.log("createMatterFile():",data);
   let resp = {};
   try {
     const rawParams = {
@@ -158,7 +159,7 @@ export async function createMatterFile(data) {
       createdAt: new Date().toISOString(),
     };
 
-    // if (data.date !== undefined) rawParams.date = data.date;
+    if (data.date !== undefined) rawParams.date = data.date;
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
@@ -197,50 +198,49 @@ export async function bulkCreateMatterFile(data) {
         createdAt: new Date().toISOString(),
       };
 
-      // if (data[i].date !== undefined) p.date = data[i].date;
+      if (data[i].date !== undefined) p.date = data[i].date;
 
       arrItems.push({
         PutRequest: {
           Item: marshall(p),
         },
       });
+
+      createMatterFile(p);
     }
 
-    let batches = [],
-      current_batch = [],
-      item_count = 0;
+    // const batches = [];
+    // let current_batch = [],
+    //   item_count = 0;
 
-    arrItems.forEach((data) => {
-      item_count++;
-      current_batch.push(data);
+    // arrItems.forEach((data) => {
+    //   item_count++;
+    //   current_batch.push(data);
 
-      // Chunk items to 5
-      if (item_count % 5 == 0) {
-        batches.push(current_batch);
-        current_batch = [];
-      }
-    });
+    //   if (item_count % 5 == 0) {
+    //     batches.push(current_batch);
+    //     current_batch = [];
+    //   }
+    // });
 
     // Add the last batch if it has records and is not equal to 5
-    if (current_batch.length > 0 && current_batch.length != 5) {
-      batches.push(current_batch);
-    }
+    // if (current_batch.length > 0 && current_batch.length != 5) {
+    //   batches.push(current_batch);
+    // }
 
-    batches.forEach(async (data, index) => {
-      console.log("AQS - index", index);
-      const matterFileParams = {
-        RequestItems: {
-          MatterFileTable: data,
-        },
-      };
+    // batches.forEach(async (data, index) => {
+    //   console.log("AQS - index", index, data);
+    //   const matterFileParams = {
+    //     RequestItems: {
+    //       MatterFileTable: data,
+    //     },
+    //   };
 
-      console.log(JSON.stringify(matterFileParams));
+    //   const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
+    //   const matterFIleRes = await ddbClient.send(matterFileCmd);
 
-      const matterFileCmd = new BatchWriteItemCommand(matterFileParams);
-      const matterFIleRes = await ddbClient.send(matterFileCmd);
-
-      console.log(matterFIleRes);
-    });
+    //   console.log(`matterFIleRes ${index}:`, matterFIleRes);
+    // });
 
     resp = arrItems.map((i) => {
       return unmarshall(i.PutRequest.Item);
