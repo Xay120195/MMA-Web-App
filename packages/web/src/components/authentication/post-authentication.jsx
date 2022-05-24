@@ -91,7 +91,7 @@ export default function PostRegistration() {
         });
       } catch (e) {
         console.log(e);
-        setError(e.errors[0].message);
+        //setError(e.errors.message);
       }
     };
 
