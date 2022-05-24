@@ -2373,27 +2373,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 }
                                               />
                                               <input
+                                                className="cursor-pointer mr-1"
+                                                onChange={handleSelectItem}
                                                 type="checkbox"
-                                                name={data.id}
-                                                className="cursor-pointer w-10 mt-1"
-                                                checked={checkedState[index]}
-                                                onChange={() =>
-                                                  checked(
-                                                    data.id,
-                                                    data.name,
-                                                    data.details,
-                                                    data.size,
-                                                    data.s3ObjectKey,
-                                                    data.type,
-                                                    data.date,
-                                                    index
-                                                  )
-                                                }
+                                                checked={selectedItems.includes(
+                                                  data.id
+                                                )}
+                                                value={data.id}
+                                                id={`data-${data.id}`}
                                                 disabled={
                                                   deletingState ? true : false
                                                 }
                                               />
-                                              <span className="text-xs mt-0.5">
+
+                                              <span className="text-xs">
                                                 {index + 1}
                                               </span>
                                             </div>
@@ -2416,45 +2409,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               )
                                             )}
                                           </div>
-                                            {/* <input
-                                              type="checkbox"
-                                              name={data.id}
-                                              className="cursor-pointer w-10 mt-1"
-                                              checked={checkedState[index]}
-                                              onChange={() =>
-                                                checked(
-                                                  data.id,
-                                                  data.name,
-                                                  data.details,
-                                                  data.size,
-                                                  data.s3ObjectKey,
-                                                  data.type,
-                                                  data.date,
-                                                  index
-                                                )
-                                              }
-                                              disabled={
-                                                deletingState ? true : false
-                                              }
-                                            /> */}
-
-                                            <input
-                                              className="cursor-pointer mr-1"
-                                              onChange={handleSelectItem}
-                                              type="checkbox"
-                                              checked={selectedItems.includes(
-                                                data.id
-                                              )}
-                                              value={data.id}
-                                              id={`data-${data.id}`}
-                                              disabled={
-                                                deletingState ? true : false
-                                              }
-                                            />
-
-                                            <span className="text-xs">
-                                              {index + 1}
-                                            </span>
                                           </td>
                                           <td className="align-top py-2">
                                             <div className="inline-flex mb-16">
