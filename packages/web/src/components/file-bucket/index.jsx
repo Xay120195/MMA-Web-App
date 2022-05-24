@@ -113,6 +113,8 @@ export default function FileBucket() {
   const [copyBgOptions, setCopyBgOptions] = useState(null);
   const [copyBgIds, setCopyBgIds] = useState(null);
 
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -130,7 +132,17 @@ export default function FileBucket() {
     });
   };
 
-  const [showUploadModal, setShowUploadModal] = useState(false);
+  
+
+  const contentDiv = {
+    margin: "0 0 0 65px",
+    position: "sticky",
+    top: 0,
+  };
+
+  const noStyle = {
+    textDecoration: "none",
+  };
 
   const mBulkCreateMatterFile = `
         mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
@@ -142,18 +154,7 @@ export default function FileBucket() {
         }
     `;
 
-  const handleUploadLink = async (uf) => {
-    var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
-    window.scrollTo(0, 0);
-    //adjust order of existing files
-    let tempMatter = [...matterFiles];
-    // tempMatter.sort((a, b) => b.order - a.order);
-    const result = tempMatter.map(({ id }, index) => ({
-      id: id,
-      order: index + uploadedFiles.length,
-    }));
-
-    const mUpdateBulkMatterFileOrder = `
+  const mUpdateBulkMatterFileOrder = `
     mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
       matterFileBulkUpdateOrders(arrangement: $arrangement) {
         id
@@ -161,6 +162,16 @@ export default function FileBucket() {
       }
     }
     `;
+
+  const handleUploadLink = async (uf) => {
+    var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
+    window.scrollTo(0, 0);
+    //adjust order of existing files
+    let tempMatter = [...matterFiles];
+    const result = tempMatter.map(({ id }, index) => ({
+      id: id,
+      order: index + uploadedFiles.length,
+    }));
 
     await API.graphql({
       query: mUpdateBulkMatterFileOrder,
@@ -170,14 +181,9 @@ export default function FileBucket() {
     });
 
     //add order to new files
-    var next = 1;
     var sortedFiles = uploadedFiles.sort(
       (a, b) => b.oderSelected - a.oderSelected
     );
-
-    // sortedFiles.map((file) => {
-    //   createMatterFile(file);
-    // });
 
     createMatterFile(sortedFiles);
 
@@ -186,9 +192,37 @@ export default function FileBucket() {
     handleModalClose();
     setTimeout(() => {
       setShowToast(false);
-      getMatterFiles(next);
+      getMatterFiles(1);
     }, 3000);
+
+    //don't delete for single upload
+    // sortedFiles.map((file) => {
+    //   createMatterFile(file);
+    // });
   };
+
+  async function createMatterFile(param) {
+    param.forEach(function (i) {
+      delete i.oderSelected;
+    });
+
+    const request = await API.graphql({
+      query: mBulkCreateMatterFile,
+      variables: {
+        files: param,
+      },
+    });
+
+    console.log("result", request);
+
+    //don't delete for single upload
+    // const request = API.graphql({
+    //   query: mCreateMatterFile,
+    //   variables: param,
+    // });
+
+    return request;
+  }
 
   const handleModalClose = () => {
     setShowUploadModal(false);
@@ -196,15 +230,6 @@ export default function FileBucket() {
     setFilterLabels(false);
   };
 
-  const contentDiv = {
-    margin: "0 0 0 65px",
-    position: "sticky",
-    top: 0,
-  };
-
-  const noStyle = {
-    textDecoration: "none",
-  };
 
   const mCreateMatterFile = `
       mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
@@ -583,8 +608,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       let matterFilesList = files.data.matterFiles.items;
       console.log("matterFilesList: ", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      //setFiles(sortByOrder(matterFilesList));
-      //setMatterFiles(sortByOrder(matterFilesList));
       setFiles(matterFilesList);
       setMatterFiles(matterFilesList); // no need to use sortByOrder
       setMaxLoading(false);
@@ -607,11 +630,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       await API.graphql(params).then((files) => {
         let matterFilesList = files.data.matterFiles.items;
         console.log("Files", matterFilesList);
-        //setFiles(matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
-
         let arrConcat = matterFiles.concat(matterFilesList);
-
         if (ascDesc !== null) {
           console.log("sorting is ascending?", ascDesc);
 
@@ -627,7 +647,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               );
           } else if (!ascDesc) {
             console.log("set order by Date DESC, CreatedAt DESC");
-
             arrConcat = arrConcat
               .slice()
               .sort(
@@ -656,28 +675,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setMaxLoading(true);
     }
   };
-
-  async function createMatterFile(param) {
-    param.forEach(function (i) {
-      delete i.oderSelected; // remove orderSelected
-    });
-
-    const request = await API.graphql({
-      query: mBulkCreateMatterFile,
-      variables: {
-        files: param,
-      },
-    });
-
-    console.log("result", request);
-
-    // const request = API.graphql({
-    //   query: mCreateMatterFile,
-    //   variables: file,
-    // });
-
-    return request;
-  }
 
   async function updateMatterFile(id, data) {
     console.group("updateMatterFile()");
@@ -2041,7 +2038,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           style={{ position: "sticky", top: "0" }}
           className=" py-5 bg-white z-30"
         >
-          <h8 className="font-bold text-xl bg-white w-full">
+          <p className="font-bold text-xl bg-white w-full">
             File Bucket&nbsp;<span className="text-xl">of</span>&nbsp;
             <span className="font-semibold text-xl">
               {checkFormat(client_name)}
@@ -2050,11 +2047,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             <span className="font-semibold text-xl">
               {checkFormat(matter_name)}
             </span>
-          </h8>
+          </p>
         </div>
         {/* END */}
         <div className="py-5 bg-white z-40 absolute mt-10 ">
-          <h1 className="font-bold text-3xl">
+          <p className="font-bold text-3xl">
             File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
             <span className="font-semibold text-3xl">
               {checkFormat(client_name)}
@@ -2063,7 +2060,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             <span className="font-semibold text-3xl">
               {checkFormat(matter_name)}
             </span>
-          </h1>
+          </p>
         </div>
 
         <div
