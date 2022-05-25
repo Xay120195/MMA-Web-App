@@ -1211,45 +1211,55 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   //checking all rows
-  function checkAll(files) {
-    if (isAllChecked) {
-      setIsAllChecked(false);
-      selectedRows = [];
-      selectedCompleteDataRows = [];
-      const newArr = Array(files.length).fill(false);
-      setCheckedState(newArr);
-    } else {
-      setIsAllChecked(true);
-      selectedRows = [];
-      selectedCompleteDataRows = [];
-      files.map(
-        (data) =>
-          (selectedRows = [
-            ...selectedRows,
-            {
-              id: data.id,
-              fileName: data.name,
-              details: data.details,
-              date: data.date,
-            },
-          ])
-      );
-      const newArr = Array(files.length).fill(true);
-      setCheckedState(newArr);
-    }
-
-    if (selectedRows.length > 0) {
+  function checkAll(e) {
+    if (e.target.checked) {
       setshowRemoveFileButton(true);
       setShowCopyToBackgroundButton(true);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
+      const xmatterFiles = matterFiles.map(
+        ({
+          id,
+          backgrounds,
+          createdAt,
+          date,
+          details,
+          labels,
+          name,
+          order,
+          s3ObjectKey,
+          size,
+          type,
+        }) => ({
+          id,
+          fileName: name,
+          backgrounds,
+          createdAt,
+          date,
+          details,
+          labels,
+          name,
+          order,
+          s3ObjectKey,
+          size,
+          type,
+        })
+      );
+      setIsAllChecked(true);
+      setSelectedItems(matterFiles.map((x) => x.id));
+      selectedRows = xmatterFiles;
+      selectedCompleteDataRows = xmatterFiles;
     } else {
+      selectedRows = [];
+      selectedCompleteDataRows = [];
+      setIsAllChecked(false);
       setshowRemoveFileButton(false);
       setShowCopyToBackgroundButton(false);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
+      setSelectedItems([]);
     }
   }
 
@@ -1538,8 +1548,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           order: items.order,
         },
       });
-
       setIsAllChecked(false);
+      setSelectedItems([]);
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
       setshowAttachBackgroundButton(false);
@@ -1780,7 +1790,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     }
     setShowToast(false);
-
+    setIsAllChecked(false);
+    setSelectedItems([]);
     setResultMessage(`Files successfully copied in backgrounds!`);
     setShowToast(true);
 
@@ -2156,8 +2167,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 <input
                   type="checkbox"
                   className="mt-1 mr-3 px-2"
-                  onChange={() => checkAll(matterFiles)}
-                  checked={isAllChecked}
+                  onChange={(e) => checkAll(e)}
+                  checked={isAllChecked ? true : false}
                 />
               )}
               <button
