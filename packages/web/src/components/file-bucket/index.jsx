@@ -1211,55 +1211,45 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   //checking all rows
-  function checkAll(e) {
-    if (e.target.checked) {
+  function checkAll(files) {
+    if (isAllChecked) {
+      setIsAllChecked(false);
+      selectedRows = [];
+      selectedCompleteDataRows = [];
+      const newArr = Array(files.length).fill(false);
+      setCheckedState(newArr);
+    } else {
+      setIsAllChecked(true);
+      selectedRows = [];
+      selectedCompleteDataRows = [];
+      files.map(
+        (data) =>
+          (selectedRows = [
+            ...selectedRows,
+            {
+              id: data.id,
+              fileName: data.name,
+              details: data.details,
+              date: data.date,
+            },
+          ])
+      );
+      const newArr = Array(files.length).fill(true);
+      setCheckedState(newArr);
+    }
+
+    if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
       setShowCopyToBackgroundButton(true);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
-      const xmatterFiles = matterFiles.map(
-        ({
-          id,
-          backgrounds,
-          createdAt,
-          date,
-          details,
-          labels,
-          name,
-          order,
-          s3ObjectKey,
-          size,
-          type,
-        }) => ({
-          id,
-          fileName: name,
-          backgrounds,
-          createdAt,
-          date,
-          details,
-          labels,
-          name,
-          order,
-          s3ObjectKey,
-          size,
-          type,
-        })
-      );
-      setIsAllChecked(true);
-      setSelectedItems(matterFiles.map((x) => x.id));
-      selectedRows = xmatterFiles;
-      selectedCompleteDataRows = xmatterFiles;
     } else {
-      selectedRows = [];
-      selectedCompleteDataRows = [];
-      setIsAllChecked(false);
       setshowRemoveFileButton(false);
       setShowCopyToBackgroundButton(false);
       if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
-      setSelectedItems([]);
     }
   }
 
@@ -1548,8 +1538,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           order: items.order,
         },
       });
+
       setIsAllChecked(false);
-      setSelectedItems([]);
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
       setshowAttachBackgroundButton(false);
@@ -1790,8 +1780,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     }
     setShowToast(false);
-    setIsAllChecked(false);
-    setSelectedItems([]);
+
     setResultMessage(`Files successfully copied in backgrounds!`);
     setShowToast(true);
 
@@ -2167,8 +2156,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 <input
                   type="checkbox"
                   className="mt-1 mr-3 px-2"
-                  onChange={(e) => checkAll(e)}
-                  checked={isAllChecked ? true : false}
+                  onChange={() => checkAll(matterFiles)}
+                  checked={isAllChecked}
                 />
               )}
               <button
@@ -2470,7 +2459,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   )
                                                   .map(
                                                     (background, counter) => (
-                                                      <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
+                                                      <div className="text-xs flex ml-9 mt-8 border-l-2 pt-1.5">
                                                         {index + 1}.
                                                         {counter + 1}
                                                       </div>
@@ -2513,7 +2502,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     )
                                                 )
                                                 .map((background, index) => (
-                                                  <div className="text-xs block mt-2">
+                                                  <div className="text-xs block mt-4">
                                                     <DatePicker
                                                       popperProps={{
                                                         positionFixed: true,
@@ -2711,7 +2700,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     )
                                                 )
                                                 .map((background, index) => (
-                                                  <div className="flex mt-3.5">
+                                                  <div className="flex mt-5">
                                                     <span
                                                       className={
                                                         background.id ===
@@ -2800,7 +2789,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   )
                                                   .map((background, index) => (
                                                     <div
-                                                      className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                      className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
                                                       key={background.id}
                                                       index={index}
                                                     >
@@ -2842,7 +2831,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                           </div>
                         ) : matterFiles.length >= 20 ? (
                           <div className="flex justify-center items-center mt-5">
-                            <img src={imgLoading} width={50} height={100} alt="Loading more data.." />
+                            <img src={imgLoading} width={50} height={100} />
                           </div>
                         ) : (
                           <span></span>

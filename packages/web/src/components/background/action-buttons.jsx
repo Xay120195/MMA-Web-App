@@ -56,7 +56,6 @@ const ActionButtons = (props) => {
   };
 
   const handleDelete = async (item) => {
-    console.log("Deleted IDs: ", item);
     if (item.length === 0) {
       window.alert("Please select row.");
     } else {
@@ -76,7 +75,17 @@ const ActionButtons = (props) => {
         },
       });
 
-      console.log("Response", deletedId);
+      // var temp = background;
+      // var find = deletedId.data.briefBackgroundUntag.id;
+      // console.log("id", find);
+      // var idxs = [];
+      // for(var i = 0 ; i<idxs.length; i++){
+      //   temp.map(
+      //     (x) => x.id === find
+      //     ? temp.splice(idxs[i], 1)
+      //     : x
+      //   );
+      // }
 
       setalertMessage(`Successfully deleted`);
       setMaxLoading(false);
@@ -97,6 +106,7 @@ const ActionButtons = (props) => {
       setTimeout(() => {
         setShowToast(false);
         getBackground();
+        // setBackground([]);
         setcheckAllState(false);
       }, 2000);
     }
