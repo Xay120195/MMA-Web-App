@@ -15,7 +15,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "aws-amplify": "^4.3.3",
+    "aws-amplify": "^4.3.13",
     "bitly-react": "^6.0.12",
     "dateformat": "^5.0.2",
     "moment": "^2.29.1",
