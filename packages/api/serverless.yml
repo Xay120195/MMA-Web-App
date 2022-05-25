@@ -30,8 +30,8 @@ provider:
           Resource: "*"
 plugins:
   - serverless-dynamodb-local
-  - serverless-offline
   - serverless-appsync-simulator
+  - serverless-offline
   - serverless-appsync-plugin
   - serverless-webpack
 
