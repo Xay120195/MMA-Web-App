@@ -397,12 +397,22 @@ const ActionButtons = (props) => {
   };
 
   const handleCheckAll = (e) => {
+    const ids = background.map(({ id }) => ({
+      id,
+      fileName: "",
+    }));
     if (e.target.checked) {
       setSelectedItems(background.map((x) => x.id));
       setcheckAllState(true);
+      setShowDeleteButton(true);
+      setSelectRow(background.map((x) => x));
+      setSelectedRowsBG(ids);
     } else {
       setSelectedItems([]);
       setcheckAllState(false);
+      setShowDeleteButton(false);
+      setSelectRow([]);
+      setSelectedRowsBG([]);
     }
   };
   return (
