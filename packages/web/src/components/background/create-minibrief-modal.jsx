@@ -113,10 +113,10 @@ export default function BriefModal(props) {
 
     const getBriefId = addBrief.data.briefCreate.id;
     const getBriefName = addBrief.data.briefCreate.name;
-    const briefArr = ({
+    const briefArr = {
       label: getBriefName,
       value: getBriefId,
-    });
+    };
     setSelectedBrief(briefArr);
   };
 
@@ -131,10 +131,12 @@ export default function BriefModal(props) {
     };
 
     await API.graphql(params).then((brief) => {
-      const result = brief.data.clientMatter.briefs.items.map(({ id, name }) => ({
-        value: id,
-        label: name,
-      }));
+      const result = brief.data.clientMatter.briefs.items.map(
+        ({ id, name }) => ({
+          value: id,
+          label: name,
+        })
+      );
       var filteredArr = result.filter(function (sel) {
         return sel.value !== props.briefId;
       });
@@ -167,21 +169,20 @@ export default function BriefModal(props) {
       }));
 
       console.log("Merged Array:", resultArray);
-      
+
       await API.graphql({
         query: mBulkUpdateBackgroundOrder,
         variables: {
           arrangement: res,
         },
       });
-
     }
 
     const response = await API.graphql({
       query: mUpdateBrief,
       variables: {
         briefId: selectedBrief.value,
-        background: resultArray
+        background: resultArray,
       },
     });
 
@@ -189,14 +190,13 @@ export default function BriefModal(props) {
     setResultMessage("Successfully Saved!");
     setTimeout(() => {
       setShowToast(false);
-      window.location = 
-        `${
-          AppRoutes.BACKGROUND
-        }/${props.matterId}/${selectedBrief.value}/?matter_name=${utf8_to_b64(
-          props.matter_name
-        )}&client_name=${utf8_to_b64(props.client_name)}`;
+      window.location = `${AppRoutes.BACKGROUND}/${props.matterId}/${
+        selectedBrief.value
+      }/?matter_name=${utf8_to_b64(
+        props.matter_name
+      )}&client_name=${utf8_to_b64(props.client_name)}`;
     }, 2000);
-  }
+  };
 
   function utf8_to_b64(str) {
     return window.btoa(unescape(encodeURIComponent(str)));
@@ -209,7 +209,9 @@ export default function BriefModal(props) {
           <div className="border-0 rounded-lg shadow-lg relative w-full bg-white outline-none focus:outline-none">
             <div className="items-center">
               <div className="flex items-center justify-center p-6 rounded-b">
-                <h3 className="text-2xl font-semibold">Create or Update Brief</h3>
+                <h3 className="text-2xl font-semibold">
+                  Create or Update Brief
+                </h3>
               </div>
               <div className="relative p-6 flex-auto">
                 <p className="font-semi-bold text-sm">Brief Title *</p>
@@ -224,9 +226,7 @@ export default function BriefModal(props) {
                 />
               </div>
               <div className="flex items-center justify-center rounded-b mb-5">
-                <div className="px-5 w-full flex items-center justify-center text-md">
-                
-                </div>
+                <div className="px-5 w-full flex items-center justify-center text-md"></div>
               </div>
 
               <div className="flex items-center justify-end p-6 rounded-b">
@@ -240,11 +240,10 @@ export default function BriefModal(props) {
 
                   <button
                     className={
-                      selectedBrief === null ? "ml-2 bg-green-200 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring disabled:opacity-25 cursor-not-allowed"
-                      : 
-                      "ml-2 bg-green-400 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                      
-                      }
+                      selectedBrief === null
+                        ? "ml-2 bg-green-200 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring disabled:opacity-25 cursor-not-allowed"
+                        : "ml-2 bg-green-400 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                    }
                     onClick={() => handleSaveBriefItems()}
                     type="button"
                     disabled={selectedBrief === null ? true : false}

@@ -305,6 +305,8 @@ Resources:
           AttributeType: S
         - AttributeName: order
           AttributeType: N
+        - AttributeName: date
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -328,6 +330,14 @@ Resources:
             - AttributeName: matterId
               KeyType: HASH
             - AttributeName: order
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byDate
+          KeySchema:
+            - AttributeName: matterId
+              KeyType: HASH
+            - AttributeName: date
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
