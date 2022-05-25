@@ -2470,7 +2470,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   )
                                                   .map(
                                                     (background, counter) => (
-                                                      <div className="text-xs flex ml-9 mt-8 border-l-2 pt-1.5">
+                                                      <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
                                                         {index + 1}.
                                                         {counter + 1}
                                                       </div>
@@ -2513,7 +2513,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     )
                                                 )
                                                 .map((background, index) => (
-                                                  <div className="text-xs block mt-4">
+                                                  <div className="text-xs block mt-2">
                                                     <DatePicker
                                                       popperProps={{
                                                         positionFixed: true,
@@ -2711,7 +2711,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     )
                                                 )
                                                 .map((background, index) => (
-                                                  <div className="flex mt-5">
+                                                  <div className="flex mt-3.5">
                                                     <span
                                                       className={
                                                         background.id ===
@@ -2800,7 +2800,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   )
                                                   .map((background, index) => (
                                                     <div
-                                                      className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                                      className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
                                                       key={background.id}
                                                       index={index}
                                                     >
@@ -2842,7 +2842,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                           </div>
                         ) : matterFiles.length >= 20 ? (
                           <div className="flex justify-center items-center mt-5">
-                            <img src={imgLoading} width={50} height={100} />
+                            <img src={imgLoading} width={50} height={100} alt="Loading more data.." />
                           </div>
                         ) : (
                           <span></span>
