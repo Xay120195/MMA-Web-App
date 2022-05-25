@@ -19,8 +19,7 @@
   "homepage": "https://github.com/reppajm/serverless-appsync-lab#readme",
   "devDependencies": {
     "serverless": "^3.16.0",
-    "serverless-webpack": "^5.6.0",
-    "webpack": "^4.44.2"
+    "serverless-webpack": "^5.6.0"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.49.0",
@@ -29,7 +28,7 @@
     "@aws-sdk/s3-request-presigner": "^3.44.0",
     "@aws-sdk/util-dynamodb": "^3.42.0",
     "serverless-appsync-plugin": "^1.12.1",
-    "serverless-appsync-simulator": "^0.19.2",
+    "serverless-appsync-simulator": "^0.19.6",
     "serverless-dynamodb-local": "^0.2.40",
     "serverless-offline": "^8.4.0",
     "uuid": "^8.3.2"

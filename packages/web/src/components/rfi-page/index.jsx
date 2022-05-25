@@ -38,22 +38,19 @@ export default function RFIPage() {
   const rfiListUrl =
     AppRoutes.MATTERSRFI +
     "/" +
-    getQueryVariable("matter_id") +
+    getParameterByName("matter_id") +
     "/?matter_name=" +
-    getQueryVariable("matter_name") +
+    getParameterByName("matter_name") +
     "&client_name=" +
-    getQueryVariable("client_name");
+    getParameterByName("client_name");
 
-  function getQueryVariable(variable) {
-    var query = window.location.search.substring(1);
-    var vars = query.split("&");
-    for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split("=");
-      if (pair[0] === variable) {
-        return pair[1];
-      }
-    }
-    return false;
+  function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
   function utf8_to_b64(str) {
@@ -79,9 +76,12 @@ export default function RFIPage() {
                 <span className="font-bold text-3xl flex-inline">
                   {" "}
                   <IoIosArrowDropright className="h-8 w-8 absolute -ml-1 " />{" "}
-                  &nbsp;&nbsp;&nbsp;&nbsp; Request For Information {" "}
-                </span>of
-                <span className="text-gray-500 text-3xl ml-2">{b64_to_utf8(getQueryVariable("rfi_name"))}</span>
+                  &nbsp;&nbsp;&nbsp;&nbsp; Request For Information{" "}
+                </span>
+                of
+                <span className="text-gray-500 text-3xl ml-2">
+                  {b64_to_utf8(getParameterByName("rfi_name"))}
+                </span>
               </h1>
             </div>
             <div className="py-3">
