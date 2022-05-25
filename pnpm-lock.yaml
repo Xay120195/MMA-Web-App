@@ -38,6 +38,7 @@ importers:
 
   packages/web:
     specifiers:
+      '@aws-amplify/cli': ^8.3.0
       '@aws-amplify/core': ^4.3.8
       '@aws-amplify/pubsub': ^4.2.2
       '@aws-amplify/ui-components': ^1.9.6
@@ -77,6 +78,7 @@ importers:
       tailwindcss: ^2.2.17
       web-vitals: ^1.0.1
     dependencies:
+      '@aws-amplify/cli': 8.3.0
       '@aws-amplify/core': 4.3.13
       '@aws-amplify/pubsub': 4.2.7
       '@aws-amplify/ui-components': 1.9.6_aws-amplify@4.3.13
@@ -201,6 +203,19 @@ packages:
       '@aws-amplify/core': 4.3.13
     transitivePeerDependencies:
       - react-native
+    dev: false
+
+  /@aws-amplify/cli/8.3.0:
+    resolution: {integrity: sha512-ioI8icfgJE/czrHEqLGUzmD/jpB04V26AZhR7NxIoXuHLrMW/Q8mYeIsDdqjaQHPV3idEV99BuIemIqvV5zPdA==}
+    engines: {node: '>=12.0.0'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      axios: 0.26.1
+      rimraf: 3.0.2
+      tar-stream: 2.2.0
+    transitivePeerDependencies:
+      - debug
     dev: false
 
   /@aws-amplify/core/4.3.13:
@@ -8093,9 +8108,17 @@ packages:
   /axios/0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
     dependencies:
-      follow-redirects: 1.14.7
+      follow-redirects: 1.15.0
     transitivePeerDependencies:
       - debug
+
+  /axios/0.26.1:
+    resolution: {integrity: sha512-fPwcX4EvnSHuInCMItEhAGnaSEXRBjtzh9fOtsE6E1G6p7vl7edEeZe11QHf18+6+9gR5PbKV/sGKNaD8YaMeA==}
+    dependencies:
+      follow-redirects: 1.15.0_debug@4.3.3
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /axobject-query/2.2.0:
     resolution: {integrity: sha512-Td525n+iPOOyUQIeBfcASuG6uJsDOITl7Mds5gFyerkWiX7qhUTdYUBlSgNMyVqtSJqwpt1kXGLdUt6SykLMRA==}
@@ -11752,8 +11775,8 @@ packages:
     resolution: {integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==}
     dev: false
 
-  /follow-redirects/1.14.7:
-    resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
+  /follow-redirects/1.15.0:
+    resolution: {integrity: sha512-aExlJShTV4qOUOL7yF1U5tvLCB0xQuudbf6toyYA0E/acBNw71mvjFTnLaRp50aQaYocMR0a/RMMBIHeZnGyjQ==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -11761,8 +11784,8 @@ packages:
       debug:
         optional: true
 
-  /follow-redirects/1.14.7_debug@4.3.3:
-    resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
+  /follow-redirects/1.15.0_debug@4.3.3:
+    resolution: {integrity: sha512-aExlJShTV4qOUOL7yF1U5tvLCB0xQuudbf6toyYA0E/acBNw71mvjFTnLaRp50aQaYocMR0a/RMMBIHeZnGyjQ==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -12633,7 +12656,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.14.7_debug@4.3.3
+      follow-redirects: 1.15.0_debug@4.3.3
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
