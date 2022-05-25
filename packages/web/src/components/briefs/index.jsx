@@ -204,24 +204,21 @@ export default function Briefs() {
     );
   }
 
-  function getQueryVariable(variable) {
-    var query = window.location.search.substring(1);
-    var vars = query.split("&");
-    for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split("=");
-      if (pair[0] == variable) {
-        return pair[1];
-      }
-    }
-    return false;
+  function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
   function b64_to_utf8(str) {
     return decodeURIComponent(atob(str));
   }
 
-  const m_name = getQueryVariable("matter_name");
-  const c_name = getQueryVariable("client_name");
+  const m_name = getParameterByName("matter_name");
+  const c_name = getParameterByName("client_name");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -310,11 +307,11 @@ export default function Briefs() {
 
   const formatDisplayDate = (val) => {
     let date = new Date(val);
-    const day = date.toLocaleString('default', { day: '2-digit' });
-    const month = date.toLocaleString('default', { month: 'short' });
-    const year = date.toLocaleString('default', { year: 'numeric' });
-    return day + ' ' + month + ' ' + year;
-  }
+    const day = date.toLocaleString("default", { day: "2-digit" });
+    const month = date.toLocaleString("default", { month: "short" });
+    const year = date.toLocaleString("default", { year: "numeric" });
+    return day + " " + month + " " + year;
+  };
 
   const handleColumn = () => {
     if (!showColumn) {
@@ -512,8 +509,6 @@ export default function Briefs() {
                         !showBName && `py-2 px-2 mb-2`
                       } ${!showDate && `py-1 px-1 mb-2`}`}
                     >
-                      
-                    
                       {showBName && (
                         <p
                           suppressContentEditableWarning={true}

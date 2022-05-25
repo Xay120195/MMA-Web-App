@@ -132,8 +132,6 @@ export default function FileBucket() {
     });
   };
 
-  
-
   const contentDiv = {
     margin: "0 0 0 65px",
     position: "sticky",
@@ -229,7 +227,6 @@ export default function FileBucket() {
     setshowRemoveFileModal(false);
     setFilterLabels(false);
   };
-
 
   const mCreateMatterFile = `
       mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
@@ -1641,9 +1638,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     return decodeURIComponent(escape(window.atob(str)));
   }
 
-  const m_name = getQueryVariable("matter_name");
-  const c_name = getQueryVariable("client_name");
-  const backgroundRowId = getQueryVariable("background_id");
+  function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+  }
+
+  const m_name = getParameterByName("matter_name");
+  const c_name = getParameterByName("client_name");
+  const backgroundRowId = getParameterByName("background_id");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -1987,13 +1993,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     const filteredFiles = matterFiles.filter((i) => i.id === fileId);
 
-    const filteredBackground = filteredFiles.map(
-      ({ backgrounds }) => ({
-        id: backgrounds,
-      })
-    );
+    const filteredBackground = filteredFiles.map(({ backgrounds }) => ({
+      id: backgrounds,
+    }));
     getMatterFiles(1);
-
   };
 
   async function updateBackgroundDate(id, data) {
@@ -2413,51 +2416,56 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             {...provider.dragHandleProps}
                                             className="px-2 py-3 align-top"
                                           >
-                                          <div className="grid grid-cols-1 border-l-2">
-                                            <div className="inline-flex mb-16">
-                                              <MdDragIndicator
-                                                className="text-2xl"
-                                                onClick={() =>
-                                                  handleChageBackground(data.id)
-                                                }
-                                              />
-                                              <input
-                                                className="cursor-pointer mr-1"
-                                                onChange={handleSelectItem}
-                                                type="checkbox"
-                                                checked={selectedItems.includes(
-                                                  data.id
-                                                )}
-                                                value={data.id}
-                                                id={`data-${data.id}`}
-                                                disabled={
-                                                  deletingState ? true : false
-                                                }
-                                              />
-
-                                              <span className="text-xs">
-                                                {index + 1}
-                                              </span>
-                                            </div>
-
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
-                                                .sort((a, b) =>
-                                                  a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
+                                            <div className="grid grid-cols-1 border-l-2">
+                                              <div className="inline-flex mb-16">
+                                                <MdDragIndicator
+                                                  className="text-2xl"
+                                                  onClick={() =>
+                                                    handleChageBackground(
+                                                      data.id
                                                     )
-                                                )
-                                                .map((background, counter) => (
-                                                  <div className="text-xs flex ml-9 mt-8 border-l-2 pt-1.5" >
-                                                    {index + 1}.{counter + 1}
-                                                  </div>
-                                              )
-                                            )}
-                                          </div>
+                                                  }
+                                                />
+                                                <input
+                                                  className="cursor-pointer mr-1"
+                                                  onChange={handleSelectItem}
+                                                  type="checkbox"
+                                                  checked={selectedItems.includes(
+                                                    data.id
+                                                  )}
+                                                  value={data.id}
+                                                  id={`data-${data.id}`}
+                                                  disabled={
+                                                    deletingState ? true : false
+                                                  }
+                                                />
+
+                                                <span className="text-xs">
+                                                  {index + 1}
+                                                </span>
+                                              </div>
+
+                                              {data.backgrounds.items !==
+                                                null &&
+                                                data.backgrounds.items
+                                                  .sort((a, b) =>
+                                                    a.order > b.order ? 1 : -1
+                                                  )
+                                                  .filter(
+                                                    (x) =>
+                                                      !Object.values(
+                                                        x
+                                                      ).includes(null)
+                                                  )
+                                                  .map(
+                                                    (background, counter) => (
+                                                      <div className="text-xs flex ml-9 mt-8 border-l-2 pt-1.5">
+                                                        {index + 1}.
+                                                        {counter + 1}
+                                                      </div>
+                                                    )
+                                                  )}
+                                            </div>
                                           </td>
                                           <td className="align-top py-2">
                                             <div className="inline-flex mb-16">
@@ -2494,30 +2502,31 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     )
                                                 )
                                                 .map((background, index) => (
-                                                  <div className="text-xs block mt-4" >
+                                                  <div className="text-xs block mt-4">
                                                     <DatePicker
-                                                    popperProps={{
-                                                      positionFixed: true,
-                                                    }}
-                                                    className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
-                                                    dateFormat="dd MMM yyyy"
-                                                    selected={
-                                                      background.date !== null
-                                                        ? new Date(background.date)
-                                                        : null
-                                                    }
-                                                    placeholderText="No Date"
-                                                    onChange={(selected) =>
-                                                      handleChangeDateBackground(
-                                                        selected,
-                                                        background.id,
-                                                        data.id
-                                                      )
-                                                    }
-                                                  />
-                                                </div>
-                                              )
-                                            )}
+                                                      popperProps={{
+                                                        positionFixed: true,
+                                                      }}
+                                                      className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
+                                                      dateFormat="dd MMM yyyy"
+                                                      selected={
+                                                        background.date !== null
+                                                          ? new Date(
+                                                              background.date
+                                                            )
+                                                          : null
+                                                      }
+                                                      placeholderText="No Date"
+                                                      onChange={(selected) =>
+                                                        handleChangeDateBackground(
+                                                          selected,
+                                                          background.id,
+                                                          data.id
+                                                        )
+                                                      }
+                                                    />
+                                                  </div>
+                                                ))}
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
@@ -2635,7 +2644,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           >
                                             <div className="flex mb-12">
                                               <span
-                                                className={data.id === descriptionClassId ? "w-full p-2 font-poppins h-full mx-2" : "w-96 p-2 font-poppins h-full mx-2 single-line"}
+                                                className={
+                                                  data.id === descriptionClassId
+                                                    ? "w-full p-2 font-poppins h-full mx-2"
+                                                    : "w-96 p-2 font-poppins h-full mx-2 single-line"
+                                                }
                                                 style={{
                                                   cursor: "auto",
                                                   outlineColor:
@@ -2689,7 +2702,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 .map((background, index) => (
                                                   <div className="flex mt-5">
                                                     <span
-                                                      className={background.id === descriptionClassId ? "w-full p-2 font-poppins h-full mx-2" : "w-96 p-2 font-poppins h-full mx-2 single-line"}
+                                                      className={
+                                                        background.id ===
+                                                        descriptionClassId
+                                                          ? "w-full p-2 font-poppins h-full mx-2"
+                                                          : "w-96 p-2 font-poppins h-full mx-2 single-line"
+                                                      }
                                                       style={{
                                                         cursor: "auto",
                                                         outlineColor:
@@ -2697,32 +2715,32 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         outlineWidth: "thin",
                                                       }}
                                                       suppressContentEditableWarning
-                                                    onClick={(event) =>
-                                                      handleDescContent(
-                                                        event,
-                                                        background.description,
-                                                        background.id
-                                                      )
-                                                    }
-                                                    dangerouslySetInnerHTML={{
-                                                      __html: background.description,
-                                                    }}
-                                                    onInput={(event) =>
-                                                      handleChangeDesc(event)
-                                                    }
-                                                    onBlur={(e) =>
-                                                      handleSaveDesc(
-                                                        e,
-                                                        background.description,
-                                                        background.date,
-                                                        background.id
-                                                      )
-                                                    }
-                                                    contentEditable={true}
+                                                      onClick={(event) =>
+                                                        handleDescContent(
+                                                          event,
+                                                          background.description,
+                                                          background.id
+                                                        )
+                                                      }
+                                                      dangerouslySetInnerHTML={{
+                                                        __html:
+                                                          background.description,
+                                                      }}
+                                                      onInput={(event) =>
+                                                        handleChangeDesc(event)
+                                                      }
+                                                      onBlur={(e) =>
+                                                        handleSaveDesc(
+                                                          e,
+                                                          background.description,
+                                                          background.date,
+                                                          background.id
+                                                        )
+                                                      }
+                                                      contentEditable={true}
                                                     ></span>
                                                   </div>
-                                              )
-                                            )}
+                                                ))}
                                           </td>
 
                                           <td
@@ -2755,38 +2773,45 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
                                           >
                                             <div className="grid grid-cols-1">
-                                            <div className="flex mb-24" ></div>
+                                              <div className="flex mb-24"></div>
 
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
-                                                .sort((a, b) =>
-                                                  a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
-                                                    )
-                                                )
-                                                .map((background, index) => (
-                                                  <div
-                                                    className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
-                                                    key={background.id}
-                                                    index={index}
-                                                  >
-                                                    <b>
-                                                      {background.order + 1+". "}
-                                                    </b>
-                                                    {ellipsis(
-                                                      checkFormat(client_name)+"/"+checkFormat(matter_name)+
-                                                        " Background",
-                                                      40
-                                                    )}
-                                                  </div>
-                                              )
-                                            )}
+                                              {data.backgrounds.items !==
+                                                null &&
+                                                data.backgrounds.items
+                                                  .sort((a, b) =>
+                                                    a.order > b.order ? 1 : -1
+                                                  )
+                                                  .filter(
+                                                    (x) =>
+                                                      !Object.values(
+                                                        x
+                                                      ).includes(null)
+                                                  )
+                                                  .map((background, index) => (
+                                                    <div
+                                                      className="p-2 mb-2 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer"
+                                                      key={background.id}
+                                                      index={index}
+                                                    >
+                                                      <b>
+                                                        {background.order +
+                                                          1 +
+                                                          ". "}
+                                                      </b>
+                                                      {ellipsis(
+                                                        checkFormat(
+                                                          client_name
+                                                        ) +
+                                                          "/" +
+                                                          checkFormat(
+                                                            matter_name
+                                                          ) +
+                                                          " Background",
+                                                        40
+                                                      )}
+                                                    </div>
+                                                  ))}
                                             </div>
-
                                           </td>
                                         </tr>
                                       )}
