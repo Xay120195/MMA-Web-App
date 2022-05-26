@@ -1,8 +1,8 @@
 import React from "react";
 import Routes from "./Routes";
 
-import Amplify from "@aws-amplify/core";
-import PubSub from "@aws-amplify/pubsub";
+import {Amplify} from "aws-amplify";
+import {PubSub} from "aws-amplify";
 import awsmobile from "./aws-exports";
 import "./assets/styles/styles.css";
 Amplify.configure(awsmobile);
