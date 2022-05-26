@@ -3,4 +3,6 @@ yarn-error.log
 .DS_Store
 packages/web/.vscode/settings.json
 packages/web/.env
+packages/web/package-lock.json
+packages/api/package-lock.json
 .pnpm-debug.log
