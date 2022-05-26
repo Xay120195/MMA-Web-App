@@ -363,37 +363,34 @@ export async function updateMatterFile(id, data) {
 export async function bulkUpdateMatterFileOrders(data) {
   let resp = [];
   try {
-    const asyncResult = await Promise.all(
-      data.map(async (items) => {
-        const id = items.id;
-        const arrangement = items;
-        delete arrangement.id;
+    data.map(async (items) => {
+      let id = items.id;
+      let arrangement = items;
+      delete arrangement.id;
 
-        resp.push({
-          id,
-          ...items,
-        });
+      resp.push({
+        id,
+        ...items,
+      });
 
-        const {
-          ExpressionAttributeNames,
-          ExpressionAttributeValues,
-          UpdateExpression,
-        } = getUpdateExpressions(arrangement);
+      const {
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+        UpdateExpression,
+      } = getUpdateExpressions(arrangement);
 
-        const cmd = new UpdateItemCommand({
-          TableName: "MatterFileTable",
-          Key: marshall({ id }),
-          UpdateExpression,
-          ExpressionAttributeNames,
-          ExpressionAttributeValues,
-        });
-        console.log(JSON.stringify(cmd));
-        const exec = await ddbClient.send(cmd);
-        console.log(JSON.stringify(exec));
-      })
-    );
-
-    resp = asyncResult;
+      const cmd = new UpdateItemCommand({
+        TableName: "MatterFileTable",
+        Key: marshall({ id }),
+        UpdateExpression,
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+      });
+      console.log(JSON.stringify(cmd));
+      const exec = await ddbClient.send(cmd);
+      console.log(JSON.stringify(exec));
+      return exec;
+    });
   } catch (e) {
     resp = {
       error: e.message,
