@@ -1802,8 +1802,6 @@ const resolvers = {
       return await createMatter(ctx.arguments);
     },
     matterFileCreate: async (ctx) => {
-      console.log("matterFileCreate()");
-      console.log(ctx.arguments);
       return await createMatterFile(ctx.arguments);
     },
     matterFileUpdate: async (ctx) => {
@@ -1825,8 +1823,6 @@ const resolvers = {
     },
 
     matterFileBulkCreate: async (ctx) => {
-      console.log("matterFileBulkCreate()");
-      console.log(ctx.arguments);
       const { files } = ctx.arguments;
       return await bulkCreateMatterFile(files);
     },
@@ -2027,6 +2023,8 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
+  console.log("~aqs.watch:: run mutation >>", ctx.info.fieldName);
+  console.log("~aqs.watch:: arguments >>", ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];
