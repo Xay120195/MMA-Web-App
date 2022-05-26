@@ -69,7 +69,7 @@ export default function Dashboard() {
         access: JSON.parse(localStorage.getItem("access")),
       };
       setuserInfo(ls);
-      console.log("ls",ls);
+      console.log("ls", ls);
     }
 
     if (userInfo) {
@@ -201,15 +201,17 @@ query listClient($companyId: String) {
     });
 
     if (clientsOpt.data.company.clients.items !== null) {
-      result = clientsOpt.data.company.clients.items
-        .map(({ id, name }) => ({
-          value: id,
-          label: name,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label));
+      result = clientsOpt.data.company.clients.items.map(({ id, name }) => ({
+        value: id,
+        label: name,
+      }));
     }
 
-    setClientsOptions(result);
+    var filtered = result.filter(function (el) {
+      return el.label != null && el.value != null;
+    });
+
+    setClientsOptions(filtered.sort((a, b) => a.label - b.label));
   };
 
   const listMatter = `
@@ -236,15 +238,17 @@ query listMatter($companyId: String) {
     });
 
     if (mattersOpt.data.company.matters.items !== null) {
-      result = mattersOpt.data.company.matters.items
-        .map(({ id, name }) => ({
-          value: id,
-          label: name,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label));
+      result = mattersOpt.data.company.matters.items.map(({ id, name }) => ({
+        value: id,
+        label: name,
+      }));
     }
 
-    setMattersOptions(result);
+    var filtered = result.filter(function (el) {
+      return el.label != null && el.value != null;
+    });
+
+    setMattersOptions(filtered.sort((a, b) => a.label - b.label));
   };
 
   const addClient = `

@@ -9,7 +9,7 @@ import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import ToastNotification from "../toast-notification";
 import * as IoIcons from "react-icons/io";
-import { BitlyClient } from 'bitly-react';
+import { BitlyClient } from "bitly-react";
 
 import { API } from "aws-amplify";
 
@@ -445,25 +445,22 @@ const Background = () => {
     }
   };
 
-  function getQueryVariable(variable) {
-    var query = window.location.search.substring(1);
-    var vars = query.split("&");
-    for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split("=");
-      if (pair[0] === variable) {
-        return pair[1];
-      }
-    }
-    return false;
+  function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
   function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
   }
 
-  const m_name = getQueryVariable("matter_name");
-  const c_name = getQueryVariable("client_name");
-  const backgroundRowId = getQueryVariable("background_id");
+  const m_name = getParameterByName("matter_name");
+  const c_name = getParameterByName("client_name");
+  const backgroundRowId = getParameterByName("background_id");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -576,7 +573,7 @@ const Background = () => {
     }
   };
 
-  const bitly = new BitlyClient('e1540f03fd3f2318262342ac1a0d144e5407f7be', {});
+  const bitly = new BitlyClient("e1540f03fd3f2318262342ac1a0d144e5407f7be", {});
   /* To be used when tinyurl is required
   const convertUrl = async () => {
     let result;
@@ -588,7 +585,7 @@ const Background = () => {
     setShareLink(result.url);
   }
   */
-  
+
   return (
     <>
       <div
