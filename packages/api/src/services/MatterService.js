@@ -388,7 +388,8 @@ export async function bulkUpdateMatterFileOrders(data) {
           ExpressionAttributeValues,
         });
         console.log(JSON.stringify(cmd));
-        await ddbClient.send(cmd);
+        const exec = await ddbClient.send(cmd);
+        console.log(JSON.stringify(exec));
       })
     );
 
