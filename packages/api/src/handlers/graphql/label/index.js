@@ -101,7 +101,8 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run label >> ", ctx.info.fieldName);
+  console.log("~aqs.watch:: run label >>", ctx.info.fieldName);
+  console.log("~aqs.watch:: arguments >>", ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];
