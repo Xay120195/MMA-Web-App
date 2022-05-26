@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
@@ -114,7 +114,7 @@ export default function FileBucket() {
   const [copyBgIds, setCopyBgIds] = useState(null);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
-
+  const itemsRef = useRef([]);
   const hideToast = () => {
     setShowToast(false);
   };
@@ -668,7 +668,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         // }
       });
     } else {
-      console.log("Last Result!");
+      //console.log("Last Result!");
       setMaxLoading(true);
     }
   };
@@ -1517,12 +1517,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   const handleOnAction = (event) => {
-    console.log("User did something", event);
     loadMoreMatterFiles();
   };
 
   const handleOnIdle = (event) => {
-    console.log("User is on idle", event);
     loadMoreMatterFiles();
   };
 
@@ -1811,13 +1809,29 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }, 1000);
   };
 
-  const handleDescContent = (e, description, id) => {
+  const handleDescContent = (e, description, id, index) => {
     if (!descAlert) {
       setTextDesc(description);
     }
     setDescriptionClassId(id);
     setDescriptionClass(false);
+
+    const next = itemsRef.current[index];
+    if (next) {
+      next.scrollIntoView({ behavior: 'smooth', block:'center', inline:'center'});
+    }
   };
+
+  const handleChangeDescription = (e, description, id, index) => {
+    console.log("ITEMS", e);
+    setDescriptionClassId(id);
+    setDescriptionClass(false);
+
+    const next = itemsRef.current[index];
+    if (next) {
+      next.scrollIntoView({ behavior: 'smooth', block:'center', inline:'center'});
+    }
+  }
 
   const handleChangeDesc = (event) => {
     setTextDesc(event.currentTarget.textContent);
@@ -2710,7 +2724,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       null
                                                     )
                                                 )
-                                                .map((background, index) => (
+                                                .map((background, i) => (
                                                   <div className="flex mt-3.5">
                                                     <span
                                                       className={
@@ -2730,7 +2744,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         handleDescContent(
                                                           event,
                                                           background.description,
-                                                          background.id
+                                                          background.id,
+                                                          index+"-"+i
                                                         )
                                                       }
                                                       dangerouslySetInnerHTML={{
@@ -2749,6 +2764,17 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         )
                                                       }
                                                       contentEditable={true}
+
+                                                      ref={el => itemsRef.current[index+"-"+i] = el} 
+
+                                                      onFocus={(e) =>
+                                                        handleChangeDescription(
+                                                          e,
+                                                          background.description,
+                                                          background.id,
+                                                          index+"-"+i
+                                                        )
+                                                      }
                                                     ></span>
                                                   </div>
                                                 ))}
