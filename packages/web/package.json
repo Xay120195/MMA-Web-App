@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@aws-amplify/cli": "^8.3.0",
     "@aws-amplify/core": "^4.3.8",
     "@aws-amplify/pubsub": "^4.2.2",
     "@aws-amplify/ui-components": "^1.9.6",
@@ -15,7 +16,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "aws-amplify": "^4.3.3",
+    "aws-amplify": "^4.3.13",
     "bitly-react": "^6.0.12",
     "dateformat": "^5.0.2",
     "moment": "^2.29.1",
@@ -65,7 +66,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.3.7",
-    "postcss": "^8.3.11",
+    "postcss": "^8.4.14",
     "postcss-cli": "^9.0.1",
     "tailwindcss": "^2.2.17"
   }
