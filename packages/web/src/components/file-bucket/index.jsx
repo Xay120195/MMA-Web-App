@@ -1799,13 +1799,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     selectedRows = [];
     selectedCompleteDataRows = [];
-
+    getMatterFiles();
     setTimeout(() => {
       setShowToast(false);
       getBriefs();
       setIsAllChecked(false);
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
+      
     }, 1000);
   };
 
