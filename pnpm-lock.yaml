@@ -38,8 +38,6 @@ importers:
 
   packages/web:
     specifiers:
-      '@aws-amplify/core': ^4.3.8
-      '@aws-amplify/pubsub': ^4.2.2
       '@aws-amplify/ui-components': ^1.9.6
       '@aws-amplify/ui-react': ^1.2.21
       '@fortawesome/fontawesome-svg-core': ^1.2.36
@@ -77,8 +75,6 @@ importers:
       tailwindcss: ^2.2.17
       web-vitals: ^1.0.1
     dependencies:
-      '@aws-amplify/core': 4.3.13
-      '@aws-amplify/pubsub': 4.2.7
       '@aws-amplify/ui-components': 1.9.6_aws-amplify@4.3.13
       '@aws-amplify/ui-react': 1.2.26_f6e9162a1acd9fe279f829e8bc2958c1
       '@fortawesome/fontawesome-svg-core': 1.2.36
