@@ -4,6 +4,7 @@ import { useHistory } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 
 export default function PostRegistration() {
+  console.log(process.env) 
   const [error, setError] = useState(null);
 
   let history = useHistory();
