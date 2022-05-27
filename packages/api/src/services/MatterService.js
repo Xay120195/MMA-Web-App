@@ -144,7 +144,6 @@ export async function getFile(data) {
 }
 
 export async function createMatterFile(data) {
-  console.log("createMatterFile():", data);
   let resp = {};
   try {
     const rawParams = {
@@ -166,9 +165,8 @@ export async function createMatterFile(data) {
       Item: param,
     });
 
-    console.log(JSON.stringify(cmd));
     const request = await ddbClient.send(cmd);
-    console.log(JSON.stringify(request));
+
     resp = unmarshall(param);
   } catch (e) {
     resp = {
@@ -241,7 +239,11 @@ export async function bulkCreateMatterFile(data) {
         createdAt: new Date().toISOString(),
       };
 
-      arrItems.push(params);
+      arrItems.push({
+        PutRequest: {
+          Item: marshall(params),
+        },
+      });
     }
 
     const batches = [];
@@ -276,7 +278,6 @@ export async function bulkCreateMatterFile(data) {
     );
 
     if (asyncResult) {
-      console.log("asyncResult", asyncResult);
       resp = arrItems.map((i) => {
         return unmarshall(i.PutRequest.Item);
       });
@@ -385,9 +386,9 @@ export async function bulkUpdateMatterFileOrders(data) {
         ExpressionAttributeNames,
         ExpressionAttributeValues,
       });
-      console.log(JSON.stringify(cmd));
+
       const exec = await ddbClient.send(cmd);
-      console.log(JSON.stringify(exec));
+
       return exec;
     });
   } catch (e) {
