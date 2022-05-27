@@ -205,15 +205,15 @@ export async function bulkCreateMatterFile(data) {
       arrItems.push(p);
     }
 
-    // const asyncResult = await Promise.all(
+    const asyncResult = await Promise.all(
       arrItems.map(async (i) => {
         return await createMatterFile(i);
       })
-    // );
+    );
 
-    // if (asyncResult) {
+    if (asyncResult) {
       resp = arrItems;
-    // }
+    }
   } catch (e) {
     resp = {
       error: e.message,
