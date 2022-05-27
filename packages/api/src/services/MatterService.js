@@ -276,6 +276,7 @@ export async function bulkCreateMatterFile(data) {
     );
 
     if (asyncResult) {
+      console.log("asyncResult", asyncResult);
       resp = arrItems.map((i) => {
         return unmarshall(i.PutRequest.Item);
       });
