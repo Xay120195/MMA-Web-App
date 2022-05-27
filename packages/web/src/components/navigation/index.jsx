@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FaBars } from "react-icons/fa";
+// import { FaBars } from "react-icons/fa";
 import { Link, useHistory, useLocation } from "react-router-dom";
-import { Auth } from "aws-amplify";
+// import { Auth } from "aws-amplify";
 // import '../../assets/styles/Navbar.css';
 import { IconContext } from "react-icons";
 import Sidebar from "../sidebar";
