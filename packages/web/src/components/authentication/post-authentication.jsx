@@ -5,7 +5,6 @@ import { useHistory } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 
 export default function PostRegistration() {
-  console.log(process.env) 
   const [error, setError] = useState(null);
 
   let history = useHistory();
@@ -54,15 +53,22 @@ export default function PostRegistration() {
             },
           };
           API.graphql(params).then((userInfo) => {
-            
-
-            if(userInfo.data.user["company"]){
+            if (userInfo.data.user["company"]) {
               localStorage.setItem("userId", userId);
               localStorage.setItem("email", userInfo.data.user["email"]);
-              localStorage.setItem("firstName", userInfo.data.user["firstName"]);
+              localStorage.setItem(
+                "firstName",
+                userInfo.data.user["firstName"]
+              );
               localStorage.setItem("lastName", userInfo.data.user["lastName"]);
-              localStorage.setItem("companyId", userInfo.data.user["company"]["id"]);
-              localStorage.setItem("company", userInfo.data.user["company"]["name"]);
+              localStorage.setItem(
+                "companyId",
+                userInfo.data.user["company"]["id"]
+              );
+              localStorage.setItem(
+                "company",
+                userInfo.data.user["company"]["name"]
+              );
               localStorage.setItem("userType", userInfo.data.user["userType"]);
               var params = {
                 query: getAccountAccess,
@@ -73,7 +79,7 @@ export default function PostRegistration() {
               };
 
               API.graphql(params).then((ua) => {
-                if(ua.data.companyAccessType.length !== 0){
+                if (ua.data.companyAccessType.length !== 0) {
                   const userAccess = ua.data.companyAccessType[0].access;
                   localStorage.setItem("access", JSON.stringify(userAccess));
                   history.push(AppRoutes.DASHBOARD);
@@ -82,18 +88,15 @@ export default function PostRegistration() {
                   console.log(ua);
                   history.push("/signout");
                 }
-                
-                
               });
             } else {
               history.push("/signout");
             }
-            
           });
         });
       } catch (e) {
         console.log(e);
-        //setError(e.errors.message);
+        setError(e);
       }
     };
 
