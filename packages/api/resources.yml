@@ -305,8 +305,8 @@ Resources:
           AttributeType: S
         - AttributeName: order
           AttributeType: N
-        # - AttributeName: date
-        #   AttributeType: S
+        - AttributeName: date
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -333,14 +333,14 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-        # - IndexName: byDate
-        #   KeySchema:
-        #     - AttributeName: matterId
-        #       KeyType: HASH
-        #     - AttributeName: date
-        #       KeyType: RANGE
-        #   Projection:
-        #     ProjectionType: ALL
+        - IndexName: byDate
+          KeySchema:
+            - AttributeName: matterId
+              KeyType: HASH
+            - AttributeName: date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
   ClientsTable:
