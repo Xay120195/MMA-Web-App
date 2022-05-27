@@ -2471,26 +2471,17 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 </span>
                                               </div>
 
-                                              {data.backgrounds.items !==
-                                                null &&
-                                                data.backgrounds.items
-                                                  .sort((a, b) =>
-                                                    a.order > b.order ? 1 : -1
+                                              {data.backgrounds.items
+                                                .sort((a, b) =>
+                                                  a.order > b.order ? 1 : -1
+                                                ).map(
+                                                  (background, counter) => (
+                                                    <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
+                                                      {index + 1}.
+                                                      {counter + 1}
+                                                    </div>
                                                   )
-                                                  .filter(
-                                                    (x) =>
-                                                      !Object.values(
-                                                        x
-                                                      ).includes(null)
-                                                  )
-                                                  .map(
-                                                    (background, counter) => (
-                                                      <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
-                                                        {index + 1}.
-                                                        {counter + 1}
-                                                      </div>
-                                                    )
-                                                  )}
+                                              )}
                                             </div>
                                           </td>
                                           <td className="align-top py-2">
@@ -2516,18 +2507,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               />
                                             </div>
 
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
+                                            {data.backgrounds.items
                                                 .sort((a, b) =>
                                                   a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
-                                                    )
-                                                )
-                                                .map((background, index) => (
+                                                ).map((background, index) => (
                                                   <div className="text-xs block mt-2">
                                                     <DatePicker
                                                       popperProps={{
@@ -2714,18 +2697,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               {data.id === detId && descAlert}
                                             </span>
 
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
+                                            {data.backgrounds.items
                                                 .sort((a, b) =>
                                                   a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
-                                                    )
-                                                )
-                                                .map((background, i) => (
+                                                ).map((background, i) => (
                                                   <div className="flex mt-3.5">
                                                     <span
                                                       className={
@@ -2813,19 +2788,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <div className="grid grid-cols-1">
                                               <div className="flex mb-24"></div>
 
-                                              {data.backgrounds.items !==
-                                                null &&
-                                                data.backgrounds.items
-                                                  .sort((a, b) =>
-                                                    a.order > b.order ? 1 : -1
-                                                  )
-                                                  .filter(
-                                                    (x) =>
-                                                      !Object.values(
-                                                        x
-                                                      ).includes(null)
-                                                  )
-                                                  .map((background, index) => (
+                                              {data.backgrounds.items
+                                                .sort((a, b) =>
+                                                  a.order > b.order ? 1 : -1
+                                                ).map((background, index) => (
                                                     <div
                                                       className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
                                                       key={background.id}
