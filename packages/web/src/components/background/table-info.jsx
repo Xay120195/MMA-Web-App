@@ -989,7 +989,7 @@ const TableInfo = ({
           API.graphql({
             query: mUpdateBackgroundFile,
             variables: {
-              backgroundId: id: selectedRowId,
+              backgroundId: selectedRowId,
               files: idTag,
             },
           });
