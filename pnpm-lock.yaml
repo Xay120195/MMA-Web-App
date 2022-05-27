@@ -56,6 +56,8 @@ importers:
       multiselect-react-dropdown: ^2.0.21
       postcss: ^8.3.11
       postcss-cli: ^9.0.1
+      prettier: ^2.6.2
+      prettier-plugin-tailwindcss: ^0.1.11
       react: ^17.0.2
       react-beautiful-dnd: ^13.1.0
       react-bottom-scroll-listener: ^5.0.0
@@ -111,6 +113,8 @@ importers:
       autoprefixer: 10.4.2_postcss@8.4.5
       postcss: 8.4.5
       postcss-cli: 9.1.0_postcss@8.4.5
+      prettier: 2.6.2
+      prettier-plugin-tailwindcss: 0.1.11_prettier@2.6.2
       tailwindcss: 2.2.19_ef48b3b8837f8a23677bffe8f9cd866d
 
   packages/web/amplify/backend/function/S3Trigger1de25018/src:
@@ -17088,6 +17092,21 @@ packages:
   /prepend-http/2.0.0:
     resolution: {integrity: sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=}
     engines: {node: '>=4'}
+
+  /prettier-plugin-tailwindcss/0.1.11_prettier@2.6.2:
+    resolution: {integrity: sha512-a28+1jvpIZQdZ/W97wOXb6VqI762MKE/TxMMuibMEHhyYsSxQA8Ek30KObd5kJI2HF1ldtSYprFayXJXi3pz8Q==}
+    engines: {node: '>=12.17.0'}
+    peerDependencies:
+      prettier: '>=2.2.0'
+    dependencies:
+      prettier: 2.6.2
+    dev: true
+
+  /prettier/2.6.2:
+    resolution: {integrity: sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+    dev: true
 
   /pretty-bytes/5.6.0:
     resolution: {integrity: sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==}
