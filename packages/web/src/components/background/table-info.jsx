@@ -820,9 +820,9 @@ const TableInfo = ({
   }
 
   //UPLOADING FILE THROUGH BG
-  function attachFiles(id) {
+  function attachFiles(itemid) {
     setShowUploadModal(true);
-    setSelectedRowID(id);
+    setSelectedRowID(itemid);
   }
 
   var idTag = [];
@@ -912,6 +912,8 @@ const TableInfo = ({
 
     console.log("result", request);
 
+
+
     if (request.data.matterFileBulkCreate !== null) {
       request.data.matterFileBulkCreate.map((i) => {
         return (idTag = [...idTag, { id: i.id }]);
@@ -943,54 +945,56 @@ const TableInfo = ({
       }
     }`;
 
-    let arrFiles = [];
-    let arrFileResult = [];
-    const seen = new Set();
+        let arrFiles = [];
+        let arrFileResult = [];
+        const seen = new Set();
 
-    // console.log("MID/BID", background_id);
+        // console.log("MID/BID", background_id);
 
-    const backgroundFilesOpt = await API.graphql({
-      query: qlistBackgroundFiles,
-      variables: {
-        id: selectedRowId,
-      },
-    });
+        const backgroundFilesOpt = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: selectedRowId,
+          },
+        });
 
-    if (backgroundFilesOpt.data.background.files !== null) {
-      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-        ({ id }) => ({
-          id: id,
-        })
-      );
+        if (backgroundFilesOpt.data.background.files !== null) {
+          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+            ({ id }) => ({
+              id: id,
+            })
+          );
 
-      idTag.push(...arrFileResult);
-      console.log("updatedidtag", idTag);
+          idTag.push(...arrFileResult);
+          console.log("updatedidtag", idTag);
 
-      const filteredArr = idTag.filter((el) => {
-        const duplicate = seen.has(el.id);
-        seen.add(el.id);
-        return !duplicate;
-      });
+          const filteredArr = idTag.filter((el) => {
+            const duplicate = seen.has(el.id);
+            seen.add(el.id);
+            return !duplicate;
+          });
 
-      console.log("no duplicate file", filteredArr);
+          console.log("rowid", selectedRowId);
 
-      API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: selectedRowId,
-          files: filteredArr,
-        },
-      });
-    } else {
-      API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: selectedRowId,
-          files: idTag,
-        },
-      });
-    }
+          API.graphql({
+            query: mUpdateBackgroundFile,
+            variables: {
+              backgroundId: selectedRowId,
+              files: filteredArr,
+            },
+          });
 
+          
+        } else {
+          API.graphql({
+            query: mUpdateBackgroundFile,
+            variables: {
+              backgroundId: selectedRowId,
+              files: idTag,
+            },
+          });
+        }
+    
     //return request;
   }
 
