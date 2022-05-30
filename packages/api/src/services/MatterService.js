@@ -61,7 +61,7 @@ export async function getMatterFiles(ctx) {
     sortByDate = true;
     nextToken = null;
     limit = undefined;
-    indexName = "byMatter";
+    indexName = "byCreatedAt";
   }
 
   try {
