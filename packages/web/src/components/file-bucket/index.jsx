@@ -926,21 +926,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   async function updateMatterFileDesc(id, data) {
     console.log("data:", data);
-    console.groupEnd();
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mUpdateMatterFileDesc,
-          variables: {
-            id: id,
-            details: data.details,
-          },
-        });
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
+    const request = API.graphql({
+      query: mUpdateMatterFileDesc,
+      variables: {
+        id: id,
+        details: data.details,
+      },
     });
+    console.log(request);
   }
 
   //filename saving
