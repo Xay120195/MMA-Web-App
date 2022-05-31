@@ -72,6 +72,7 @@ const Background = () => {
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
   const [searchDescription, setSearchDescription] = useState("");
   const [shareLink, setShareLink] = useState("");
+  const [holdDelete, setHoldDelete] = useState(false);
 
   useEffect(() => {
     getBackground();
@@ -194,7 +195,7 @@ const Background = () => {
       query: qBriefBackgroundList,
       variables: {
         id: background_id,
-        limit: 100,
+        limit: 50,
         nextToken: null,
         sortOrder: "ORDER_ASC",
       },
@@ -235,7 +236,7 @@ const Background = () => {
       query: getName,
       variables: {
         id: matter_id,
-        limit: 100,
+        limit: 50,
         nextToken: null,
       },
     };
@@ -391,8 +392,9 @@ const Background = () => {
     let result = [];
     setWait(false); // trigger loading ...
     setLoading(false);
-    console.group("trigger loading ...");
-    
+    setMaxLoading(false);
+    setVnextToken(null);
+
     if (ascDesc == null) {
       console.log("set order by Date ASC");
       setAscDesc(true);
@@ -408,16 +410,18 @@ const Background = () => {
       });
 
       if (backgroundOpt.data.brief.backgrounds.items !== null) {
-        result = backgroundOpt.data.brief.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
+        // result = backgroundOpt.data.brief.backgrounds.items.map(
+        //   ({ id, description, date, createdAt, order, files }) => ({
+        //     createdAt: createdAt,
+        //     id: id,
+        //     description: description,
+        //     date: date,
+        //     order: order,
+        //     files: files,
+        //   })
+        // );
+
+        result = backgroundOpt.data.brief.backgrounds.items;
 
         if (background !== null) {
           console.log(result);
@@ -442,16 +446,18 @@ const Background = () => {
       });
 
       if (backgroundOpt.data.brief.backgrounds.items !== null) {
-        result = backgroundOpt.data.brief.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
+        // result = backgroundOpt.data.brief.backgrounds.items.map(
+        //   ({ id, description, date, createdAt, order, files }) => ({
+        //     createdAt: createdAt,
+        //     id: id,
+        //     description: description,
+        //     date: date,
+        //     order: order,
+        //     files: files,
+        //   })
+        // );
+
+        result = backgroundOpt.data.brief.backgrounds.items;
 
         if (background !== null) {
           console.log(result);
@@ -789,6 +795,8 @@ const Background = () => {
             briefId={background_id}
             client_name={client_name}
             matter_name={matter_name}
+            holdDelete={holdDelete}
+            setHoldDelete={setHoldDelete}
           />
 
           {/* {background !== null && background.length !== 0 && ( */}
@@ -874,6 +882,8 @@ const Background = () => {
           SortBydate={SortBydate}
           briefId={background_id}
           searchDescription={searchDescription}
+          holdDelete={holdDelete}
+          setHoldDelete={setHoldDelete}
         />
 
         {showToast && (

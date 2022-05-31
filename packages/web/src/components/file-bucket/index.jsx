@@ -596,7 +596,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 100,
+        limit: 50,
         nextToken: next === 1 ? null : vNextToken,
         sortOrder: sortOrder,
       },
@@ -1709,7 +1709,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       query: listBriefs,
       variables: {
         id: matter_id,
-        limit: 100,
+        limit: 50,
         nextToken: null,
       },
     };
