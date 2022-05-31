@@ -83,6 +83,7 @@ const TableInfo = ({
   setLoading,
   maxLoading,
   sortByOrder,
+  SortBydate,
   briefId,
   searchDescription,
   selectedItems,
@@ -103,7 +104,7 @@ const TableInfo = ({
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
-  const [sortByDate, setSortByDate] = useState([]);
+  //const [sortByDate, setSortByDate] = useState([]);
   const [isShiftDown, setIsShiftDown] = useState(false);
 
   const [lastSelectedItem, setLastSelectedItem] = useState(null);
@@ -511,24 +512,7 @@ const TableInfo = ({
     };
   }
 
-  const SortBydate = async () => {
-    console.group("table-info.jsx: SortBydate()");
-    if (ascDesc == null) {
-      console.log("set order by Date ASC");
-      setAscDesc(true);
-      setBackground(background.sort(compareValues("date")));
-    } else if (ascDesc === true) {
-      console.log("set order by Date DESC");
-      setAscDesc(false);
-      setBackground(background.sort(compareValues("date", "desc")));
-    } else if (!ascDesc) {
-      console.log("set order by DEFAULT: Order ASC");
-      setAscDesc(null); // default to sort by order
-      setBackground(background.sort(compareValues("order")));
-    }
-
-    console.groupEnd();
-  };
+  
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
     if (event.target.checked) {
@@ -713,28 +697,30 @@ const TableInfo = ({
 
       setBackground(tempBackground);
       setSelectRow([arrFileResult]);
-      console.log(arrFileResult);
       setSelectedItems(arrId.map((x) => x.id));
       const result = tempBackground.map(({ id }, index) => ({
         id: id,
-        order: index + 1,
+        order: index,
       }));
 
-      const mUpdateBulkMatterFileOrder = `
-      mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
-        matterFileBulkUpdateOrders(arrangement: $arrangement) {
+      console.log("ROWS ORDER:", result);
+
+      const mBulkUpdateBackgroundOrder = `
+      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        backgroundBulkUpdateOrders(arrangement: $arrangement) {
           id
           order
         }
-      }
-      `;
+      }`;
 
-      await API.graphql({
-        query: mUpdateBulkMatterFileOrder,
+      const requestOrder = await API.graphql({
+        query: mBulkUpdateBackgroundOrder,
         variables: {
           arrangement: result,
         },
       });
+
+      console.log("item-ordered: ", requestOrder);
     });
 
     setShowDeleteButton(false);
