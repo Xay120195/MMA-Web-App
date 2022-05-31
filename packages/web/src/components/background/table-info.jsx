@@ -87,6 +87,8 @@ const TableInfo = ({
   searchDescription,
   selectedItems,
   setSelectedItems,
+  holdDelete,
+  setHoldDelete,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -109,6 +111,8 @@ const TableInfo = ({
   const [selectedRowId, setSelectedRowID] = useState(null);
   const [goToFileBucket, setGoToFileBucket] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const [holdPaste, setHoldPaste] = useState(false);
 
   const location = useLocation();
   const history = useHistory();
@@ -399,8 +403,16 @@ const TableInfo = ({
     }
   `;
 
+  const handleHoldDelete = async (item) => {
+    setHoldDelete(true);
+    setshowRemoveFileModal(false);
+    alert("test");
+  }
+
   const handleDelete = async (item) => {
-    const backgroundFilesOpt = await API.graphql({
+    //setHoldDelete(true);
+
+     const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
         id: item[0].backgroundId,
@@ -455,13 +467,14 @@ const TableInfo = ({
         }
       }, 1000);
     }
-
-    setshowRemoveFileModal(false);
+    // alert("test");
+    // setshowRemoveFileModal(false);
     setalertMessage(`File successfully deleted!`);
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
+   
   };
 
   setTimeout(() => {
@@ -649,7 +662,6 @@ const TableInfo = ({
 
   const handlePasteRow = (targetIndex) => {
     let tempBackground = [...background];
-
     let arrFileResult = [];
 
     setCheckedState(new Array(background.length).fill(false));
@@ -727,12 +739,57 @@ const TableInfo = ({
 
     setShowDeleteButton(false);
     setPasteButton(false);
+    setSelectRow([]);
+    setSelectedItems([]);
+    localStorage.removeItem("selectedRows");
+
+    setHoldPaste(true);
+    setalertMessage("Successfully copied rows. Click HERE to undo action");
+    setShowToast(true);
+    console.log("SI", selectedItems); //use this to delete
+
     setTimeout(() => {
-      setSelectRow([]);
-      setSelectedItems([]);
-      localStorage.removeItem("selectedRows");
-    }, 10000);
+      setShowToast(false);
+    }, 9000);
   };
+
+  function undoAction(){
+    const newArr = Array(background.length).fill(false);
+    setCheckedState(newArr);
+    setSelectedRowsBG([]);
+    setSelectedItems([]);
+    setcheckAllState(false);
+    setHoldPaste(false);
+    setSelectRow([]);
+
+    let temp = selectedItems;
+    let BackgroundInput = [];
+
+    temp.map((x) => BackgroundInput = [...BackgroundInput, {id: x}]);
+    console.log("BI", BackgroundInput);
+
+    const mDeleteBackground = `
+      mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
+        briefBackgroundUntag(briefId: $briefId, background: $background) {
+          id
+        }
+      }
+      `;
+  
+      const deletedId = API.graphql({
+        query: mDeleteBackground,
+        variables: {
+          briefId: briefId,
+          background: BackgroundInput,
+        },
+      });
+
+    setTimeout(() => {
+      setShowToast(false);
+      
+      getBackground();
+    }, 3000);
+  }
 
   // const reOrderFiles = (array, tempBackground, targetIndex) => {
   //   const df = convertArrayToObject(array);
@@ -1189,9 +1246,9 @@ const TableInfo = ({
                                     {(provider, snapshot) => (
                                       <tr
                                         className={
-                                          selectRow.find(
-                                            (x) => x.id === item.id
-                                          ) && "bg-green-300"
+                                          selectRow.find((x) => x.id === item.id) && holdDelete ? "hidden" 
+                                          : selectRow.find((x) => x.id === item.id) ? "bg-green-300" 
+                                          : ""
                                         }
                                         index={index}
                                         key={item.id}
@@ -1621,14 +1678,16 @@ const TableInfo = ({
       {showToast && (
         <div
           onClick={
-            goToFileBucket
-              ? () =>
+            goToFileBucket ? 
+              () =>
                   (window.location = `${
                     AppRoutes.FILEBUCKET
                   }/${matterId}/000/?matter_name=${utf8_to_b64(
                     matter_name
                   )}&client_name=${utf8_to_b64(client_name)}`)
-              : null
+            : holdPaste ?
+              () => undoAction()
+            : null
           }
         >
           <ToastNotification title={alertMessage} hideToast={hideToast} />
