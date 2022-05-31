@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Auth, API } from "aws-amplify";
+import { API } from "aws-amplify";
+import {Auth} from '@aws-amplify/auth'
 import { useHistory } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 
