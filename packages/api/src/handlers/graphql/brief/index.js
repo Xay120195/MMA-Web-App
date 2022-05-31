@@ -81,7 +81,7 @@ async function listBriefBackground(ctx) {
         },
       };
 
-      console.log("backgroundsParams:", backgroundsParams);
+      console.log("backgroundsParams:", JSON.stringify(backgroundsParams));
 
       const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
       const backgroundsResult = await ddbClient.send(backgroundsCommand);
