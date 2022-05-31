@@ -52,12 +52,16 @@ async function listBriefBackground(ctx) {
       briefBackgroundParams.Limit = limit;
     }
 
+    console.log("briefBackgroundParams:", briefBackgroundParams);
+
     const briefBackgroundCommand = new QueryCommand(briefBackgroundParams);
     const briefBackgroundResult = await ddbClient.send(briefBackgroundCommand);
 
     const backgroundIds = briefBackgroundResult.Items.map((i) =>
       unmarshall(i)
     ).map((f) => marshall({ id: f.backgroundId }));
+
+    console.log("backgroundIds:", backgroundIds);
 
     if (backgroundIds.length !== 0) {
       let unique = backgroundIds
@@ -77,8 +81,12 @@ async function listBriefBackground(ctx) {
         },
       };
 
+      console.log("backgroundsParams:", backgroundsParams);
+
       const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
       const backgroundsResult = await ddbClient.send(backgroundsCommand);
+
+      console.log("backgroundsResult:", backgroundsResult);
 
       const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
         (i) => unmarshall(i)
@@ -94,6 +102,8 @@ async function listBriefBackground(ctx) {
         return { ...item, ...filterBackground };
       });
 
+
+      console.log("response:", response);
       if (sortByDate) {
         response.sort(function (a, b) {
           if (a.date === undefined) {
