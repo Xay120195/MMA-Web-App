@@ -64,7 +64,6 @@ const Background = () => {
   const [vNextToken, setVnextToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
-
   const [briefName, setBriefName] = useState("");
   const [briefId, setBriefId] = useState("");
   const [validationAlert, setValidationAlert] = useState("");

@@ -30,7 +30,7 @@ async function listBriefBackground(ctx) {
     // sort result by date
     sortByDate = true;
     nextToken = null;
-    limit = 100;
+    limit = undefined;
     indexName = "byCreatedAt";
   }
 
@@ -52,16 +52,12 @@ async function listBriefBackground(ctx) {
       briefBackgroundParams.Limit = limit;
     }
 
-    console.log("briefBackgroundParams:", briefBackgroundParams);
-
     const briefBackgroundCommand = new QueryCommand(briefBackgroundParams);
     const briefBackgroundResult = await ddbClient.send(briefBackgroundCommand);
 
     const backgroundIds = briefBackgroundResult.Items.map((i) =>
       unmarshall(i)
     ).map((f) => marshall({ id: f.backgroundId }));
-
-    console.log("backgroundIds:", backgroundIds);
 
     if (backgroundIds.length !== 0) {
       let unique = backgroundIds
@@ -73,24 +69,44 @@ async function listBriefBackground(ctx) {
 
       const uniqueBackgroundIds = unique.map((f) => marshall({ id: f }));
 
-      const backgroundsParams = {
-        RequestItems: {
-          BackgroundsTable: {
-            Keys: uniqueBackgroundIds,
-          },
-        },
-      };
+      let batches = [],
+        current_batch = [],
+        item_count = 0;
 
-      console.log("backgroundsParams:", JSON.stringify(backgroundsParams));
+      uniqueBackgroundIds.forEach((data) => {
+        item_count++;
+        current_batch.push(data);
 
-      const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
-      const backgroundsResult = await ddbClient.send(backgroundsCommand);
+        // Chunk items to 25
+        if (item_count % 25 == 0) {
+          batches.push(current_batch);
+          current_batch = [];
+        }
+      });
 
-      console.log("backgroundsResult:", backgroundsResult);
+      // Add the last batch if it has records and is not equal to 25
+      if (current_batch.length > 0 && current_batch.length != 25) {
+        batches.push(current_batch);
+      }
 
-      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
-        (i) => unmarshall(i)
+      const asyncResult = await Promise.all(
+        batches.map(async (data, index) => {
+          const backgroundsParams = {
+            RequestItems: {
+              BackgroundsTable: {
+                Keys: data,
+              },
+            },
+          };
+
+          const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
+          const backgroundsResult = await ddbClient.send(backgroundsCommand);
+          return backgroundsResult.Responses.BackgroundsTable;
+        })
       );
+
+      const objBackgrounds = asyncResult.flat().map((i) => unmarshall(i));
+
       const objBriefBackground = briefBackgroundResult.Items.map((i) =>
         unmarshall(i)
       );
@@ -102,7 +118,6 @@ async function listBriefBackground(ctx) {
         return { ...item, ...filterBackground };
       });
 
-      //console.log("response:", response);
       if (sortByDate) {
         response.sort(function (a, b) {
           if (a.date === undefined) {
