@@ -685,28 +685,30 @@ const TableInfo = ({
 
       setBackground(tempBackground);
       setSelectRow([arrFileResult]);
-      console.log(arrFileResult);
       setSelectedItems(arrId.map((x) => x.id));
       const result = tempBackground.map(({ id }, index) => ({
         id: id,
-        order: index + 1,
+        order: index,
       }));
 
-      const mUpdateBulkMatterFileOrder = `
-      mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
-        matterFileBulkUpdateOrders(arrangement: $arrangement) {
+      console.log("ROWS ORDER:", result);
+
+      const mBulkUpdateBackgroundOrder = `
+      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        backgroundBulkUpdateOrders(arrangement: $arrangement) {
           id
           order
         }
-      }
-      `;
+      }`;
 
-      await API.graphql({
-        query: mUpdateBulkMatterFileOrder,
+      const requestOrder = await API.graphql({
+        query: mBulkUpdateBackgroundOrder,
         variables: {
           arrangement: result,
         },
       });
+
+      console.log("item-ordered: ", requestOrder);
     });
 
     setShowDeleteButton(false);
