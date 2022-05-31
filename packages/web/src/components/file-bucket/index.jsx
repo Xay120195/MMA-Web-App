@@ -1562,9 +1562,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     //   (item) => item.order >= 0 && item.order !== 0
     // );
 
-    console.group("trigger loading ...");
-    setMatterFiles(null);
-    console.log("matterFiles", matterFiles);
+    setMatterFiles(null); // trigger loading ...
 
     if (ascDesc === null) {
       console.log("set order by Date ASC, CreatedAt DESC");
@@ -2054,6 +2052,29 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     });
   }
+
+  const handleRedirectLink = async (e, id) => {
+    const params = {
+      query: qGetFilesByMatter,
+      variables: {
+        background_id: id
+      },
+    };
+    await API.graphql(params).then((result) => {
+      let briefDetails = result.data;
+      console.log("Brief-Details: ", briefDetails);
+
+      setTimeout(() => {
+        setShowToast(false);
+        window.location.href = `${
+          AppRoutes.BACKGROUND
+        }/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(
+          matter_name
+        )}&client_name=${utf8_to_b64(client_name)}`;
+      }, 1000);
+
+    });
+  };
 
   return (
     <>
@@ -2806,21 +2827,26 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               {data.backgrounds.items
                                                 .sort((a, b) =>
                                                   a.order > b.order ? 1 : -1
-                                                )
-                                                .map((background, index) => (
-                                                  <div
-                                                    className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                    key={background.id}
-                                                    index={index}
-                                                  >
-                                                    <b>
-                                                      {background.order +
-                                                        1 +
-                                                        ". "}
-                                                    </b>
-                                                    {ellipsis(
-                                                      checkFormat(client_name) +
-                                                        "/" +
+                                                ).map((background, index) => (
+                                                    <div
+                                                      className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                      key={background.id}
+                                                      index={index}
+                                                      onClick={(event) =>
+                                                        handleRedirectLink(
+                                                          event,
+                                                          background.id,
+                                                        )
+                                                      }
+                                                    >
+                                                      <b>
+                                                        {background.order +
+                                                          1 +
+                                                          ". "}
+                                                      </b>
+                                                      {ellipsis(
+                                                         checkFormat(client_name) +
+                                                         "/" +
                                                         checkFormat(
                                                           matter_name
                                                         ) +

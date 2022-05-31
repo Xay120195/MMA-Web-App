@@ -7,9 +7,15 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listBriefBackground(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+  const { sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  let indexName, isAscending = true;
+  let indexName,
+    isAscending = true,
+    limit = ctx.limit,
+    nextToken = ctx.nextToken,
+    result = [],
+    output = [],
+    sortByDate = false;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -19,6 +25,13 @@ async function listBriefBackground(ctx) {
     indexName = "byCreatedAt";
   } else if (sortOrder.includes("ORDER_")) {
     indexName = "byOrder";
+  } else if (sortOrder.includes("DATE_")) {
+    // bypass limit and token - fetch all
+    // sort result by date
+    sortByDate = true;
+    nextToken = null;
+    limit = undefined;
+    indexName = "byCreatedAt";
   }
 
   try {
@@ -80,6 +93,24 @@ async function listBriefBackground(ctx) {
         );
         return { ...item, ...filterBackground };
       });
+
+      if (sortByDate) {
+        response.sort(function (a, b) {
+          if (a.date === undefined) {
+            a.date = null;
+          }
+          if (b.date === undefined) {
+            b.date = null;
+          }
+  
+          if (isAscending) {
+            return new Date(a.date) - new Date(b.date);
+          } else {
+            return new Date(b.date) - new Date(a.date);
+          }
+        });
+      }
+
       return {
         items: response,
         nextToken: briefBackgroundResult.LastEvaluatedKey

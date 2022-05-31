@@ -155,6 +155,7 @@ const Background = () => {
   `;
 
   const getBackground = async () => {
+    console.log("getBackground()");
     let result = [];
     setWait(false);
 
@@ -220,7 +221,8 @@ const Background = () => {
 
       if (background !== null) {
         console.log(result);
-        setBackground(sortByOrder(result));
+        // setBackground(sortByOrder(result)); // no sorting needed
+        setBackground(result);
         setWait(true);
         setMaxLoading(false);
       }
@@ -342,21 +344,22 @@ const Background = () => {
                 console.log("HELO", searchDescription);
               }
 
-              if (ascDesc !== null) {
-                console.log("sorting is ascending?", ascDesc);
+              // if (ascDesc !== null) {
+              //   console.log("sorting is ascending?", ascDesc);
 
-                if (ascDesc === true) {
-                  console.log("set order by Date ASC");
-                  arrConcat = arrConcat.sort(compareValues("date"));
-                } else if (!ascDesc) {
-                  console.log("set order by Date DESC");
-                  arrConcat = arrConcat.sort(compareValues("date", "desc"));
-                }
+              //   if (ascDesc === true) {
+              //     console.log("set order by Date ASC");
+              //     arrConcat = arrConcat.sort(compareValues("date"));
+              //   } else if (!ascDesc) {
+              //     console.log("set order by Date DESC");
+              //     arrConcat = arrConcat.sort(compareValues("date", "desc"));
+              //   }
 
-                setBackground([...new Set(arrConcat)]);
-              } else {
-                setBackground([...new Set(sortByOrder(arrConcat))]);
-              }
+              //   setBackground([...new Set(arrConcat)]);
+              // } else {
+              //   setBackground([...new Set(sortByOrder(arrConcat))]);
+              // }
+              setBackground([...new Set(sortByOrder(arrConcat))]);
             }, 200);
           }
         }
@@ -366,24 +369,6 @@ const Background = () => {
       }
     }
   };
-
-  function compareValues(key, order = "asc") {
-    return function innerSort(a, b) {
-      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
-        return 0;
-      }
-
-      const varA = new Date(a[key]);
-      const varB = new Date(b[key]);
-      let comparison = 0;
-      if (varA > varB) {
-        comparison = 1;
-      } else if (varA < varB) {
-        comparison = -1;
-      }
-      return order === "desc" ? comparison * -1 : comparison;
-    };
-  }
 
   const handleOnAction = (event) => {
     console.log("User did something", event);
@@ -401,6 +386,87 @@ const Background = () => {
     onIdle: handleOnIdle,
     debounce: 1000,
   });
+
+  const SortBydate = async () => {
+    console.group("index.jsx: SortBydate()");
+    let result = [];
+    setWait(false); // trigger loading ...
+    console.group("trigger loading ...");
+    if (ascDesc == null) {
+      console.log("set order by Date ASC");
+      setAscDesc(true);
+      //setBackground(background.sort(compareValues("date")));
+
+      const backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: {
+          id: background_id,
+          nextToken: null,
+          sortOrder: "DATE_ASC",
+        },
+      });
+
+      if (backgroundOpt.data.brief.backgrounds.items !== null) {
+        result = backgroundOpt.data.brief.backgrounds.items.map(
+          ({ id, description, date, createdAt, order, files }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+            files: files,
+          })
+        );
+
+        if (background !== null) {
+          console.log(result);
+          setBackground(result);
+          setWait(true);
+          setMaxLoading(false);
+        }
+      }
+    } else if (ascDesc === true) {
+      console.log("set order by Date DESC");
+      setAscDesc(false);
+      //setBackground(background.sort(compareValues("date", "desc")));
+
+      const backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: {
+          id: background_id,
+          nextToken: null,
+          sortOrder: "DATE_DESC",
+        },
+      });
+
+      if (backgroundOpt.data.brief.backgrounds.items !== null) {
+        result = backgroundOpt.data.brief.backgrounds.items.map(
+          ({ id, description, date, createdAt, order, files }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+            files: files,
+          })
+        );
+
+        if (background !== null) {
+          console.log(result);
+          setBackground(result);
+          setWait(true);
+          setMaxLoading(false);
+        }
+      }
+    } else if (!ascDesc) {
+      console.log("set order by DEFAULT: Order ASC");
+      setAscDesc(null); // default to sort by order
+      getBackground();
+      //setBackground(background.sort(compareValues("order")));
+    }
+
+    console.groupEnd();
+  };
 
   function sortByOrder(arr) {
     // const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
@@ -559,7 +625,6 @@ const Background = () => {
   };
 
   const filterRecord = (v) => {
-    console.log("filter", v);
     if (v === "") {
       // Refresh page if necessary
       setVnextToken(null);
@@ -569,7 +634,8 @@ const Background = () => {
         x.description.toLowerCase().includes(v.toLowerCase())
       );
       console.log("filterRecord:", filterRecord);
-      setBackground(sortByOrder(filterRecord));
+      // setBackground(sortByOrder(filterRecord));
+      setBackground(filterRecord);
     }
   };
 
@@ -802,6 +868,7 @@ const Background = () => {
           setMaxLoading={setMaxLoading}
           maxLoading={maxLoading}
           sortByOrder={sortByOrder}
+          SortBydate={SortBydate}
           briefId={background_id}
           searchDescription={searchDescription}
         />
