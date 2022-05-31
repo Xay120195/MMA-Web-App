@@ -1562,9 +1562,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     //   (item) => item.order >= 0 && item.order !== 0
     // );
 
-    console.group("trigger loading ...");
-    setMatterFiles(null);
-    console.log("matterFiles", matterFiles);
+    setMatterFiles(null); // trigger loading ...
 
     if (ascDesc === null) {
       console.log("set order by Date ASC, CreatedAt DESC");

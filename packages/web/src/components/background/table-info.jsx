@@ -83,6 +83,7 @@ const TableInfo = ({
   setLoading,
   maxLoading,
   sortByOrder,
+  SortBydate,
   briefId,
   searchDescription,
   selectedItems,
@@ -101,7 +102,7 @@ const TableInfo = ({
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
-  const [sortByDate, setSortByDate] = useState([]);
+  //const [sortByDate, setSortByDate] = useState([]);
   const [isShiftDown, setIsShiftDown] = useState(false);
 
   const [lastSelectedItem, setLastSelectedItem] = useState(null);
@@ -498,24 +499,7 @@ const TableInfo = ({
     };
   }
 
-  const SortBydate = async () => {
-    console.group("table-info.jsx: SortBydate()");
-    if (ascDesc == null) {
-      console.log("set order by Date ASC");
-      setAscDesc(true);
-      setBackground(background.sort(compareValues("date")));
-    } else if (ascDesc === true) {
-      console.log("set order by Date DESC");
-      setAscDesc(false);
-      setBackground(background.sort(compareValues("date", "desc")));
-    } else if (!ascDesc) {
-      console.log("set order by DEFAULT: Order ASC");
-      setAscDesc(null); // default to sort by order
-      setBackground(background.sort(compareValues("order")));
-    }
-
-    console.groupEnd();
-  };
+  
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
     if (event.target.checked) {
