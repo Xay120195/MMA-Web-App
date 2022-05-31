@@ -72,6 +72,7 @@ const Background = () => {
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
   const [searchDescription, setSearchDescription] = useState("");
   const [shareLink, setShareLink] = useState("");
+  const [holdDelete, setHoldDelete] = useState(false);
 
   useEffect(() => {
     getBackground();
@@ -789,6 +790,8 @@ const Background = () => {
             briefId={background_id}
             client_name={client_name}
             matter_name={matter_name}
+            holdDelete={holdDelete}
+            setHoldDelete={setHoldDelete}
           />
 
           {/* {background !== null && background.length !== 0 && ( */}
@@ -874,6 +877,8 @@ const Background = () => {
           SortBydate={SortBydate}
           briefId={background_id}
           searchDescription={searchDescription}
+          holdDelete={holdDelete}
+          setHoldDelete={setHoldDelete}
         />
 
         {showToast && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef  } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
@@ -41,6 +41,8 @@ const ActionButtons = (props) => {
     briefId,
     matter_name,
     client_name,
+    holdDelete,
+    setHoldDelete
   } = props;
 
   const [showToast, setShowToast] = useState(false);
@@ -50,57 +52,129 @@ const ActionButtons = (props) => {
   const [showhideState, setShowHideState] = useState(false);
   const [tableColumnList, setTableColumnList] = useState(null);
   const [showBriefModal, setShowBriefModal] = useState(false);
+  const [deletePermanently, setDeletePermanently] = useState(true);
+
+  const bool = useRef(true);
 
   const hideToast = () => {
     setShowToast(false);
   };
 
-  const handleDelete = async (item) => {
+  const handleDelete = (item) => {
+    const newArr = Array(background.length).fill(false);
+    setCheckedState(newArr);
+    setcheckAllState(false);
+    setshowRemoveFileModal(false);
+    setalertMessage(`Deleting File. Click HERE to undo action`);
+    setShowToast(true);
+
+    setHoldDelete(true);
+
     console.log("Deleted IDs: ", item);
     if (item.length === 0) {
       window.alert("Please select row.");
     } else {
-      const mDeleteBackground = `
-        mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
-          briefBackgroundUntag(briefId: $briefId, background: $background) {
-            id
-          }
+      setTimeout(() => {
+        setShowToast(false);
+      }, 10000);
+      
+      setTimeout(() => {
+        if(bool.current){
+          deleteProper(item);
+        }else{
+          cancelDelete();
         }
-        `;
+      }, 10000);
+    }
+  };
 
-      const deletedId = await API.graphql({
-        query: mDeleteBackground,
-        variables: {
-          briefId: briefId,
-          background: item,
-        },
-      });
+  const deleteProper = (item) =>{
+    const newArr = Array(background.length).fill(false);
+    setCheckedState(newArr);
+    setcheckAllState(false);
 
-      console.log("Response", deletedId);
+    console.log("item", item);
 
-      setalertMessage(`Successfully deleted`);
-      setMaxLoading(false);
+      setHoldDelete(true);
+          const mDeleteBackground = `
+            mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
+              briefBackgroundUntag(briefId: $briefId, background: $background) {
+                id
+              }
+            }
+            `;
+  
+          const deletedId = API.graphql({
+            query: mDeleteBackground,
+            variables: {
+              briefId: briefId,
+              background: item,
+            },
+          });
 
+          
+          setMaxLoading(false);
+          setSelectedRowsBG([]);
+          setSelectRow([]);
+          setSelectedItems([]);
+  
+          if (temp.length > 0) {
+            setShowDeleteButton(true);
+          } else {
+            setShowDeleteButton(false);
+          }
+          setalertMessage(`Successfully Deleted Permanently.`);
+          setShowToast(true);
+  
+          setTimeout(() => {
+            setShowToast(false);
+            setHoldDelete(false);
+            getBackground();
+          }, 2000);
+    
+  }
+
+  const cancelDelete= () => {
       const newArr = Array(background.length).fill(false);
       setCheckedState(newArr);
+      setcheckAllState(false);
+      getBackground();
+      setalertMessage(`Successfully Restored Rows.`);
+      setShowToast(true);
+      setSelectRow([]);
+      setHoldDelete(false);
+      setSelectedItems([]);
       setSelectedRowsBG([]);
 
+      bool.current = false;
+  
       if (temp.length > 0) {
         setShowDeleteButton(true);
       } else {
         setShowDeleteButton(false);
       }
-
-      setShowToast(true);
-      setSelectRow([]);
-      setshowRemoveFileModal(false);
+          
       setTimeout(() => {
         setShowToast(false);
-        getBackground();
         setcheckAllState(false);
       }, 2000);
-    }
-  };
+  }
+
+  function undoAction(){
+    setalertMessage(`Restoring Rows..`);
+    setShowToast(true);
+    const newArr = Array(background.length).fill(false);
+    setCheckedState(newArr);
+    setSelectedRowsBG([]);
+    setSelectedItems([]);
+    setcheckAllState(false);
+    setHoldDelete(false);
+    bool.current = false;
+
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  }
 
   const handleAddRow = async () => {
     console.log("handleAddRow");
@@ -405,6 +479,9 @@ const ActionButtons = (props) => {
       setSelectedRowsBG([]);
     }
   };
+
+
+
   return (
     <>
       <div className="pl-2 py-1 grid grid-cols-1 gap-1.5">
@@ -586,17 +663,29 @@ const ActionButtons = (props) => {
           )}
         </div>
       </div>
-      {showToast && (
+      {/* {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )} */}
+
+      {showToast && (
+        <div
+          onClick={
+            holdDelete
+              ? () => undoAction()
+              : null
+          }
+        >
+          <ToastNotification title={alertMessage} hideToast={hideToast} />
+        </div>
       )}
 
-      {showRemoveFileModal && (
+      {showRemoveFileModal &&
         <RemoveFileModal
           handleSave={handleDelete}
           handleModalClose={handleModalClose}
           selectedRowsBG={selectedRowsBG}
         />
-      )}
+      }
 
       {showBriefModal && (
         <BriefModal
