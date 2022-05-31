@@ -390,7 +390,9 @@ const Background = () => {
     console.group("index.jsx: SortBydate()");
     let result = [];
     setWait(false); // trigger loading ...
+    setLoading(false);
     console.group("trigger loading ...");
+    
     if (ascDesc == null) {
       console.log("set order by Date ASC");
       setAscDesc(true);
@@ -422,6 +424,7 @@ const Background = () => {
           setBackground(result);
           setWait(true);
           setMaxLoading(false);
+          setVnextToken(null);
         }
       }
     } else if (ascDesc === true) {
@@ -455,6 +458,7 @@ const Background = () => {
           setBackground(result);
           setWait(true);
           setMaxLoading(false);
+          setVnextToken(null);
         }
       }
     } else if (!ascDesc) {
