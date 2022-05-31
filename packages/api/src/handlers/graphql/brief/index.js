@@ -11,8 +11,8 @@ async function listBriefBackground(ctx) {
 
   let indexName,
     isAscending = true,
-    limit = ctx.limit,
-    nextToken = ctx.nextToken,
+    limit = ctx.arguments.limit,
+    nextToken = ctx.arguments.nextToken,
     result = [],
     output = [],
     sortByDate = false;
@@ -102,7 +102,6 @@ async function listBriefBackground(ctx) {
         return { ...item, ...filterBackground };
       });
 
-
       console.log("response:", response);
       if (sortByDate) {
         response.sort(function (a, b) {
@@ -112,7 +111,7 @@ async function listBriefBackground(ctx) {
           if (b.date === undefined) {
             b.date = null;
           }
-  
+
           if (isAscending) {
             return new Date(a.date) - new Date(b.date);
           } else {
