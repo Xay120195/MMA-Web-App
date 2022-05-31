@@ -1610,23 +1610,23 @@ const TableInfo = ({
           </div>
         </div>
         <div>
-          {maxLoading ? (
+          {maxLoading && wait ? (
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
-          ) : background.length >= 20 ? (
+          ) : background.length >= 50 && wait ? (
             <div className="flex justify-center items-center mt-5">
-              <img src={imgLoading} width={50} height={100} />
+              <img src={imgLoading} alt="" width={50} height={100} />
             </div>
           ) : (
             <span></span>
           )}
 
-          {!maxLoading && loading ? (
+          {/* {!maxLoading && loading ? (
             <span className="grid"></span>
           ) : (
             <span></span>
-          )}
+          )} */}
         </div>
         <div className="p-2"></div>
       </div>
