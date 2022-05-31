@@ -30,7 +30,7 @@ async function listBriefBackground(ctx) {
     // sort result by date
     sortByDate = true;
     nextToken = null;
-    limit = undefined;
+    limit = 100;
     indexName = "byCreatedAt";
   }
 
@@ -102,7 +102,7 @@ async function listBriefBackground(ctx) {
         return { ...item, ...filterBackground };
       });
 
-      console.log("response:", response);
+      //console.log("response:", response);
       if (sortByDate) {
         response.sort(function (a, b) {
           if (a.date === undefined) {
