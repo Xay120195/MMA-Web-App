@@ -719,8 +719,7 @@ const TableInfo = ({
           arrangement: result,
         },
       });
-
-      console.log("item-ordered: ", requestOrder);
+      console.log("item arranged: ", requestOrder);
     });
 
     setShowDeleteButton(false);

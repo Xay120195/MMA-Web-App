@@ -440,6 +440,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   `;
 
+  const qListBriefId = `
+  query getBriefsByBackground($id: ID) {
+    background(id: $id) {
+      briefs {
+        items {
+          id
+          name
+        }
+      }
+    }
+  }
+  `;
+  
+
   async function tagBackgroundFile() {
     let arrFiles = [];
     let arrFileResult = [];
@@ -2054,26 +2068,33 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   const handleRedirectLink = async (e, id) => {
-    const params = {
-      query: qGetFilesByMatter,
+    var arrBackgroundResult = [];
+    const backgroundRedirect = await API.graphql({
+      query: qListBriefId,
       variables: {
-        background_id: id
+        id: id,
       },
-    };
-    await API.graphql(params).then((result) => {
-      let briefDetails = result.data;
-      console.log("Brief-Details: ", briefDetails);
+    });
 
+    if (backgroundRedirect.data.background.briefs !== null) {
+      arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+
+      console.log("Brief ID:", arrBackgroundResult);
       setTimeout(() => {
         setShowToast(false);
         window.location.href = `${
           AppRoutes.BACKGROUND
-        }/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(
+        }/${matter_id}/${arrBackgroundResult[0].id}/?matter_name=${utf8_to_b64(
           matter_name
         )}&client_name=${utf8_to_b64(client_name)}`;
-      }, 1000);
-
-    });
+      }, 200);
+    } else {
+      alert("Error encountered!");
+    }
   };
 
   return (
