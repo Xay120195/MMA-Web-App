@@ -65,7 +65,7 @@ const ActionButtons = (props) => {
     setCheckedState(newArr);
     setcheckAllState(false);
     setshowRemoveFileModal(false);
-    setalertMessage(`Deleting File. Click HERE to undo action`);
+    setalertMessage(`Deleting Rows. Click HERE to undo action`);
     setShowToast(true);
 
     setHoldDelete(true);

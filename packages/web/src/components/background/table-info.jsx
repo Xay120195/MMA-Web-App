@@ -114,6 +114,11 @@ const TableInfo = ({
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const [holdPaste, setHoldPaste] = useState(false);
+  const [bgInput, setBgInput] = useState([]);
+
+  const [holdDeleteFile, setHoldDeleteFile] = useState(false);
+  const bool = useRef(true);
+  const [selectedFileId, setSelectedFileId] = useState(null);
 
   const location = useLocation();
   const history = useHistory();
@@ -135,6 +140,7 @@ const TableInfo = ({
     ];
     setselectedFileBG(tempIndex);
     setshowRemoveFileModal(true);
+    setSelectedFileId(id);
   };
 
   const handleModalClose = () => {
@@ -404,16 +410,28 @@ const TableInfo = ({
     }
   `;
 
-  const handleHoldDelete = async (item) => {
-    setHoldDelete(true);
-    setshowRemoveFileModal(false);
-    alert("test");
-  }
-
   const handleDelete = async (item) => {
-    //setHoldDelete(true);
+    setHoldDeleteFile(true);
+    setalertMessage(`Deleting File. Click HERE to undo action`);
+    setShowToast(true);
+    setshowRemoveFileModal(false);
 
-     const backgroundFilesOpt = await API.graphql({
+    setTimeout(() => {
+      setShowToast(false);
+    }, 9000);
+
+    setTimeout(() => {
+      if(bool.current){
+        deleteFileProper(item);
+      }else{
+        cancelDeleteFile();
+      }
+    }, 10000);
+
+  };
+
+  const deleteFileProper = async (item) =>{
+      const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
         id: item[0].backgroundId,
@@ -468,15 +486,34 @@ const TableInfo = ({
         }
       }, 1000);
     }
-    // alert("test");
-    // setshowRemoveFileModal(false);
-    setalertMessage(`File successfully deleted!`);
+    getBackground();
+    setalertMessage(`Successfully Deleted File.`);
     setShowToast(true);
+
+    setTimeout(() => {
+      setShowToast(false);
+      setHoldDeleteFile(false);
+    }, 2000);
+  }
+
+  const cancelDeleteFile= () => {
+    bool.current = false;
+    setHoldDeleteFile(false);
+  }
+
+
+  function undoDeleteFile(){
+    bool.current = false;
+    setalertMessage(`Restored File.`);
+    setShowToast(true);
+    setHoldDeleteFile(false);
+    
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
-   
-  };
+  }
+
+  //end
 
   setTimeout(() => {
     setHighlightRows("bg-white");
@@ -647,6 +684,7 @@ const TableInfo = ({
   const handlePasteRow = (targetIndex) => {
     let tempBackground = [...background];
     let arrFileResult = [];
+    let cloneIds = [];
 
     setCheckedState(new Array(background.length).fill(false));
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
@@ -662,7 +700,7 @@ const TableInfo = ({
           order
         }
       }
-  `;
+      `;
 
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
@@ -684,6 +722,8 @@ const TableInfo = ({
       };
 
       const arrId = [{ id: createBackgroundRow.data.backgroundCreate.id }];
+      bgInput.push({ id: createBackgroundRow.data.backgroundCreate.id });
+      console.log("correct", cloneIds);
 
       const request = await API.graphql({
         query: mUpdateBackgroundFile,
@@ -727,12 +767,12 @@ const TableInfo = ({
     setPasteButton(false);
     setSelectRow([]);
     setSelectedItems([]);
+    setSelectedRowsBG([]);
     localStorage.removeItem("selectedRows");
 
     setHoldPaste(true);
     setalertMessage("Successfully copied rows. Click HERE to undo action");
     setShowToast(true);
-    console.log("SI", selectedItems); //use this to delete
 
     setTimeout(() => {
       setShowToast(false);
@@ -742,18 +782,7 @@ const TableInfo = ({
   function undoAction(){
     const newArr = Array(background.length).fill(false);
     setCheckedState(newArr);
-    setSelectedRowsBG([]);
-    setSelectedItems([]);
-    setcheckAllState(false);
-    setHoldPaste(false);
-    setSelectRow([]);
-
-    let temp = selectedItems;
-    let BackgroundInput = [];
-
-    temp.map((x) => BackgroundInput = [...BackgroundInput, {id: x}]);
-    console.log("BI", BackgroundInput);
-
+    console.log("BI", bgInput);
     const mDeleteBackground = `
       mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
         briefBackgroundUntag(briefId: $briefId, background: $background) {
@@ -766,15 +795,21 @@ const TableInfo = ({
         query: mDeleteBackground,
         variables: {
           briefId: briefId,
-          background: BackgroundInput,
+          background: bgInput,
         },
       });
 
-    setTimeout(() => {
-      setShowToast(false);
-      
-      getBackground();
-    }, 3000);
+      setSelectedRowsBG([]);
+      setSelectedItems([]);
+      setcheckAllState(false);
+      setHoldPaste(false);
+      setSelectRow([]);
+
+      setTimeout(() => {
+        setShowToast(false);
+        
+        getBackground();
+      }, 3000);
   }
 
   // const reOrderFiles = (array, tempBackground, targetIndex) => {
@@ -1475,7 +1510,13 @@ const TableInfo = ({
                                                             index
                                                           }
                                                         />
-                                                        <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                        <p className={
+                                                          selectedFileId === items.id && holdDeleteFile 
+                                                          ? "hidden"
+                                                          : "break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100"
+                                                        }
+                                                        
+                                                        >
                                                           {activateButton ? (
                                                             <input
                                                               type="checkbox"
@@ -1527,7 +1568,7 @@ const TableInfo = ({
                                                             <BsFillTrashFill
                                                               className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                               onClick={() =>
-                                                                showModal(
+                                                                "align-middle cursor-pointer"(
                                                                   items.id,
                                                                   item.id
                                                                 )
@@ -1673,6 +1714,8 @@ const TableInfo = ({
                   )}&client_name=${utf8_to_b64(client_name)}`)
             : holdPaste ?
               () => undoAction()
+            : holdDeleteFile ?
+              () => undoDeleteFile()
             : null
           }
         >
