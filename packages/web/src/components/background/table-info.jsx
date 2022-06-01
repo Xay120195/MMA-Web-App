@@ -29,6 +29,7 @@ import ScrollToTop from "react-scroll-to-top";
 import UploadLinkModal from "../file-bucket/file-upload-modal";
 import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
+import { ConsoleLogger } from ".pnpm/@aws-amplify+core@4.3.13/node_modules/@aws-amplify/core";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -117,9 +118,6 @@ const TableInfo = ({
 
   const location = useLocation();
   const history = useHistory();
-
-  const searchItem = location.search;
-  const counter = new URLSearchParams(searchItem).get("count");
 
   const queryParams = new URLSearchParams(location.search);
 
@@ -644,17 +642,9 @@ const TableInfo = ({
     }, 2000);
   };
 
-  const handlePasteRow = (targetIndex) => {
-    let tempBackground = [...background];
-    let arrFileResult = [];
-
-    setCheckedState(new Array(background.length).fill(false));
-    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
-
-    storedItemRows.map(async function (x) {
-      const mCreateBackground = `
-      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
-        backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+  const mCreateBackground = `
+      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime, $order: Int) {
+        backgroundCreate(briefId: $briefId, description: $description, date: $date, order: $order) {
           id
           createdAt
           date
@@ -664,6 +654,24 @@ const TableInfo = ({
       }
   `;
 
+  const mBulkUpdateBackgroundOrder = `
+      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        backgroundBulkUpdateOrders(arrangement: $arrangement) {
+          id
+          order
+        }
+      }`;
+
+  const handlePasteRow = (targetIndex) => {
+    let tempBackground = [...background];
+    let arrFileResultBG = [];
+
+    setCheckedState(new Array(background.length).fill(false));
+
+    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
+    var counter = 1;
+    storedItemRows.map(async function (x) {
+      
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
@@ -671,10 +679,11 @@ const TableInfo = ({
           description: x.details,
           date: x.date,
           files: { items: [] },
+          order: counter++
         },
       });
 
-      const arrFileResult = {
+      var arrResult = {
         createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
         id: createBackgroundRow.data.backgroundCreate.id,
         files: { items: x.files.items },
@@ -683,7 +692,11 @@ const TableInfo = ({
         order: createBackgroundRow.data.backgroundCreate.order,
       };
 
-      const arrId = [{ id: createBackgroundRow.data.backgroundCreate.id }];
+      console.log("orginal", arrResult);
+
+      arrFileResultBG.push(...[arrResult]);
+
+      //const arrId = [{ id: createBackgroundRow.data.backgroundCreate.id }];
 
       const request = await API.graphql({
         query: mUpdateBackgroundFile,
@@ -693,35 +706,81 @@ const TableInfo = ({
         },
       });
 
-      tempBackground.splice(targetIndex + 1, 0, arrFileResult);
+    });
+
+    setTimeout( async function () {
+      console.log("Updated Arr", sortByOrder(arrFileResultBG));
+
+      sortByOrder(arrFileResultBG).splice(0).reverse().map(async function (x) {
+        var resultBG = {
+          createdAt: x.createdAt,
+          id: x.id,
+          files: { items: x.files.items },
+          date: x.date,
+          description: x.description,
+          order: x.order,
+        };
+
+        tempBackground.splice(targetIndex + 1, 0, resultBG);
+
+        setBackground(tempBackground);
+        setSelectRow([]);
+        //setSelectedItems(arrId.map((x) => x.id));
+
+        const result = tempBackground.map(({ id }, index) => ({
+          id: id,
+          order: index,
+        }));
+
+        console.log("Item", result);
+
+        await API.graphql({
+          query: mBulkUpdateBackgroundOrder,
+          variables: {
+            arrangement: result,
+          },
+        });
+      })
+
+      /*const arrayUpdated = arrFileResultBG.map(({ id }, index) => ({
+        id: id,
+        order: index,
+      }));*/
+
+      /*tempBackground.splice(targetIndex + 1, 0, arrFileResultBG);
 
       setBackground(tempBackground);
-      setSelectRow([arrFileResult]);
-      setSelectedItems(arrId.map((x) => x.id));
+      setSelectRow([]);
+      //setSelectedItems(arrId.map((x) => x.id));
+
       const result = tempBackground.map(({ id }, index) => ({
         id: id,
         order: index,
       }));
 
-      console.log("ROWS ORDER:", result);
+      await API.graphql({
+        query: mBulkUpdateBackgroundOrder,
+        variables: {
+          arrangement: result,
+        },
+      });*/
 
-      const mBulkUpdateBackgroundOrder = `
-      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
-        backgroundBulkUpdateOrders(arrangement: $arrangement) {
-          id
-          order
-        }
-      }`;
+    }, 1500);
 
-      const requestOrder = await API.graphql({
+    /*setTimeout(async function() {
+      const result = tempBackground.map(({ id }, index) => ({
+        id: id,
+        order: index,
+      }));
+
+      await API.graphql({
         query: mBulkUpdateBackgroundOrder,
         variables: {
           arrangement: result,
         },
       });
-
-      console.log("item-ordered: ", requestOrder);
-    });
+    }, 1000);*/
+    
 
     setShowDeleteButton(false);
     setPasteButton(false);
