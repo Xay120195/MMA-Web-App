@@ -9,7 +9,7 @@ async function listBackgroundFiles(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
   try {
-    const cmFilesParam = {
+    const backgroundFilesParam = {
       TableName: "BackgroundFileTable",
       IndexName: "byBackground",
       KeyConditionExpression: "backgroundId = :backgroundId",
@@ -23,14 +23,14 @@ async function listBackgroundFiles(ctx) {
     };
 
     if (limit !== undefined) {
-      cmFilesParam.Limit = limit;
+      backgroundFilesParam.Limit = limit;
     }
 
-    const cmFilesCmd = new QueryCommand(cmFilesParam);
-    const cmFilesResult = await client.send(cmFilesCmd);
+    const backgroundFilesCmd = new QueryCommand(backgroundFilesParam);
+    const backgroundFilesResult = await client.send(backgroundFilesCmd);
 
-    const fileIds = cmFilesResult.Items.map((i) => unmarshall(i)).map((f) =>
-      marshall({ id: f.fileId })
+    const fileIds = backgroundFilesResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.fileId })
     );
 
     if (fileIds.length !== 0) {
@@ -48,18 +48,97 @@ async function listBackgroundFiles(ctx) {
       const objFiles = filesResult.Responses.MatterFileTable.map((i) =>
         unmarshall(i)
       );
-      const objCMFiles = cmFilesResult.Items.map((i) => unmarshall(i));
+      const objBackgroundFiles = backgroundFilesResult.Items.map((i) =>
+        unmarshall(i)
+      );
 
-      const response = objCMFiles.map((item) => {
+      const response = objBackgroundFiles.map((item) => {
         const filterFile = objFiles.find((u) => u.id === item.fileId);
         return { ...item, ...filterFile };
       });
 
       return {
         items: response,
-        nextToken: cmFilesResult.LastEvaluatedKey
+        nextToken: backgroundFilesResult.LastEvaluatedKey
           ? Buffer.from(
-              JSON.stringify(cmFilesResult.LastEvaluatedKey)
+              JSON.stringify(backgroundFilesResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
+async function listBackgroundBrief(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+
+  try {
+    const backgroundBriefsParam = {
+      TableName: "BriefBackgroundTable",
+      IndexName: "byBackground",
+      KeyConditionExpression: "backgroundId = :backgroundId",
+      ExpressionAttributeValues: marshall({
+        ":backgroundId": id,
+      }),
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      backgroundBriefsParam.Limit = limit;
+    }
+
+    const backgroundBriefsCmd = new QueryCommand(backgroundBriefsParam);
+    const backgroundBriefsResult = await client.send(backgroundBriefsCmd);
+
+    const briefIds = backgroundBriefsResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.briefId })
+    );
+
+    if (briefIds.length !== 0) {
+      const briefsParam = {
+        RequestItems: {
+          BriefTable: {
+            Keys: briefIds,
+          },
+        },
+      };
+
+      const briefsCommand = new BatchGetItemCommand(briefsParam);
+      const briefsResult = await client.send(briefsCommand);
+
+      const objBriefs = briefsResult.Responses.BriefTable.map((i) =>
+        unmarshall(i)
+      );
+      const objBackgroundBriefs = backgroundBriefsResult.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objBackgroundBriefs.map((item) => {
+        const filterBrief = objBriefs.find((u) => u.id === item.briefId);
+        return { ...item, ...filterBrief };
+      });
+
+      return {
+        items: response,
+        nextToken: backgroundBriefsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(backgroundBriefsResult.LastEvaluatedKey)
             ).toString("base64")
           : null,
       };
@@ -83,6 +162,9 @@ const resolvers = {
   Background: {
     files: async (ctx) => {
       return listBackgroundFiles(ctx);
+    },
+    briefs: async (ctx) => {
+      return listBackgroundBrief(ctx);
     },
   },
 };

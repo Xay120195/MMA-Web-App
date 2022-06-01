@@ -233,11 +233,6 @@ custom:
         field: files
         request: false
         response: false
-      - dataSource: LambdaBackgroundDS
-        type: Background
-        field: files
-        request: false
-        response: false
       - dataSource: LambdaLabelDS
         type: Label
         field: files
@@ -509,6 +504,16 @@ custom:
       - dataSource: LambdaFileDS
         type: File
         field: backgrounds
+        request: false
+        response: false
+      - dataSource: LambdaBackgroundDS
+        type: Background
+        field: files
+        request: false
+        response: false
+      - dataSource: LambdaBackgroundDS
+        type: Background
+        field: briefs
         request: false
         response: false
       - dataSource: LambdaClientMatterDS
