@@ -22,6 +22,7 @@ type Background {
   description: String
   order: Int
   files(limit: Int, nextToken: String): BackgroundFileConn
+  briefs(limit: Int, nextToken: String): BackgroundBriefConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -312,6 +313,11 @@ input RepresentativeInput {
 # Relationships / Conns
 type BackgroundFileConn {
   items: [File]
+  nextToken: String
+}
+
+type BackgroundBriefConn {
+  items: [Brief]
   nextToken: String
 }
 
