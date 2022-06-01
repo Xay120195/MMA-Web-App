@@ -440,6 +440,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   `;
 
+  const qListBriefId = `
+  query getBriefsByBackground($id: ID) {
+    background(id: $id) {
+      briefs {
+        items {
+          id
+          name
+        }
+      }
+    }
+  }
+  `;
+  
+
   async function tagBackgroundFile() {
     let arrFiles = [];
     let arrFileResult = [];
@@ -596,7 +610,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 100,
+        limit: 50,
         nextToken: next === 1 ? null : vNextToken,
         sortOrder: sortOrder,
       },
@@ -1709,7 +1723,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       query: listBriefs,
       variables: {
         id: matter_id,
-        limit: 100,
+        limit: 50,
         nextToken: null,
       },
     };
@@ -2053,27 +2067,35 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
   }
 
-  const handleRedirectLink = async (e, id) => {
-    const params = {
-      query: qGetFilesByMatter,
+  const handleRedirectLink = async (e, backgroundId) => {
+    var arrBackgroundResult = [];
+    const backgroundRedirect = await API.graphql({
+      query: qListBriefId,
       variables: {
-        background_id: id
+        id: backgroundId,
       },
-    };
-    await API.graphql(params).then((result) => {
-      let briefDetails = result.data;
-      console.log("Brief-Details: ", briefDetails);
+    });
 
-      setTimeout(() => {
+    if (backgroundRedirect.data.background.briefs !== null) {
+      arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+
+      console.log("Brief ID:", backgroundRedirect.data.background.briefs);
+      console.log("Background ID:", backgroundId);
+      /*setTimeout(() => {
         setShowToast(false);
         window.location.href = `${
           AppRoutes.BACKGROUND
-        }/${matter_id}/${background_id}/?matter_name=${utf8_to_b64(
+        }/${matter_id}/${arrBackgroundResult[0].id}/?matter_name=${utf8_to_b64(
           matter_name
         )}&client_name=${utf8_to_b64(client_name)}`;
-      }, 1000);
-
-    });
+      }, 200);*/
+    } else {
+      alert("Error encountered!");
+    }
   };
 
   return (
