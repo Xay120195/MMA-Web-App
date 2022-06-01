@@ -2067,12 +2067,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
   }
 
-  const handleRedirectLink = async (e, id) => {
+  const handleRedirectLink = async (e, backgroundId) => {
     var arrBackgroundResult = [];
     const backgroundRedirect = await API.graphql({
       query: qListBriefId,
       variables: {
-        id: id,
+        id: backgroundId,
       },
     });
 
@@ -2083,15 +2083,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         })
       );
 
-      console.log("Brief ID:", arrBackgroundResult);
-      setTimeout(() => {
+      console.log("Brief ID:", backgroundRedirect.data.background.briefs);
+      console.log("Background ID:", backgroundId);
+      /*setTimeout(() => {
         setShowToast(false);
         window.location.href = `${
           AppRoutes.BACKGROUND
         }/${matter_id}/${arrBackgroundResult[0].id}/?matter_name=${utf8_to_b64(
           matter_name
         )}&client_name=${utf8_to_b64(client_name)}`;
-      }, 200);
+      }, 200);*/
     } else {
       alert("Error encountered!");
     }
