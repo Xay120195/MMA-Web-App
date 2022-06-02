@@ -29,7 +29,6 @@ import ScrollToTop from "react-scroll-to-top";
 import UploadLinkModal from "../file-bucket/file-upload-modal";
 import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
-import { ConsoleLogger } from ".pnpm/@aws-amplify+core@4.3.13/node_modules/@aws-amplify/core";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
