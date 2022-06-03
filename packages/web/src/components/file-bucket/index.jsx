@@ -440,6 +440,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   `;
 
+  const qListBriefId = `
+  query getBriefsByBackground($id: ID) {
+    background(id: $id) {
+      briefs {
+        items {
+          id
+          name
+        }
+      }
+    }
+  }
+  `;
+  
+
   async function tagBackgroundFile() {
     let arrFiles = [];
     let arrFileResult = [];
@@ -596,7 +610,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       variables: {
         matterId: matter_id,
         isDeleted: false,
-        limit: 100,
+        limit: 50,
         nextToken: next === 1 ? null : vNextToken,
         sortOrder: sortOrder,
       },
@@ -926,21 +940,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   async function updateMatterFileDesc(id, data) {
     console.log("data:", data);
-    console.groupEnd();
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mUpdateMatterFileDesc,
-          variables: {
-            id: id,
-            details: data.details,
-          },
-        });
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
+    const request = API.graphql({
+      query: mUpdateMatterFileDesc,
+      variables: {
+        id: id,
+        details: data.details,
+      },
     });
+    console.log(request);
   }
 
   //filename saving
@@ -1569,44 +1576,55 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     //   (item) => item.order >= 0 && item.order !== 0
     // );
 
-    console.log("matterFiles", matterFiles);
-    if (ascDesc == null) {
+    setMatterFiles(null); // trigger loading ...
+
+    if (ascDesc === null) {
       console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
 
-      setMatterFiles(
-        matterFiles
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(a.date) - new Date(b.date) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+      const params = {
+        query: qGetFilesByMatter,
+        variables: {
+          matterId: matter_id,
+          isDeleted: false,
+          nextToken: null,
+          sortOrder: "DATE_ASC",
+        },
+      };
+
+      await API.graphql(params).then((files) => {
+        let matterFilesList = files.data.matterFiles.items;
+        console.log("matterFilesList: ", sortOrder, matterFilesList);
+        setVnextToken(files.data.matterFiles.nextToken);
+        setFiles(matterFilesList);
+        setMatterFiles(matterFilesList); // no need to use sortByOrder
+        setMaxLoading(false);
+      });
     } else if (ascDesc === true) {
       console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
-      setMatterFiles(
-        matterFiles
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(b.date) - new Date(a.date) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      );
+      const params = {
+        query: qGetFilesByMatter,
+        variables: {
+          matterId: matter_id,
+          isDeleted: false,
+          nextToken: null,
+          sortOrder: "DATE_DESC",
+        },
+      };
+
+      await API.graphql(params).then((files) => {
+        let matterFilesList = files.data.matterFiles.items;
+        console.log("matterFilesList: ", sortOrder, matterFilesList);
+        setVnextToken(files.data.matterFiles.nextToken);
+        setFiles(matterFilesList);
+        setMatterFiles(matterFilesList); // no need to use sortByOrder
+        setMaxLoading(false);
+      });
     } else if (!ascDesc) {
-      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
       setAscDesc(null);
-      setMatterFiles(
-        matterFiles
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(a.order) - new Date(b.order) ||
-              new Date(b.createdAt) - new Date(a.createdAt)
-          )
-      ); // default to sort by order
+      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
+      getMatterFiles();
     }
 
     console.groupEnd();
@@ -1705,7 +1723,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       query: listBriefs,
       variables: {
         id: matter_id,
-        limit: 100,
+        limit: 50,
         nextToken: null,
       },
     };
@@ -1806,7 +1824,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setIsAllChecked(false);
       const newArr = Array(files.length).fill(false);
       setCheckedState(newArr);
-      
     }, 1000);
   };
 
@@ -1819,7 +1836,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     const next = itemsRef.current[index];
     if (next) {
-      next.scrollIntoView({ behavior: 'smooth', block:'center', inline:'center'});
+      next.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
     }
   };
 
@@ -1830,9 +1851,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     const next = itemsRef.current[index];
     if (next) {
-      next.scrollIntoView({ behavior: 'smooth', block:'center', inline:'center'});
+      next.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
     }
-  }
+  };
 
   const handleChangeDesc = (event) => {
     setTextDesc(event.currentTarget.textContent);
@@ -2041,6 +2066,37 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     });
   }
+
+  const handleRedirectLink = async (e, backgroundId) => {
+    var arrBackgroundResult = [];
+    const backgroundRedirect = await API.graphql({
+      query: qListBriefId,
+      variables: {
+        id: backgroundId,
+      },
+    });
+
+    if (backgroundRedirect.data.background.briefs !== null) {
+      arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+
+      console.log("Brief ID:", backgroundRedirect.data.background.briefs);
+      console.log("Background ID:", backgroundId);
+      setTimeout(() => {
+        setShowToast(false);
+        window.location.href = `${
+          AppRoutes.BACKGROUND
+        }/${matter_id}/${arrBackgroundResult[0].id}/?matter_name=${utf8_to_b64(
+          matter_name
+        )}&client_name=${utf8_to_b64(client_name)}`;
+      }, 200);
+    } else {
+      alert("Error encountered!");
+    }
+  };
 
   return (
     <>
@@ -2471,26 +2527,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 </span>
                                               </div>
 
-                                              {data.backgrounds.items !==
-                                                null &&
-                                                data.backgrounds.items
-                                                  .sort((a, b) =>
-                                                    a.order > b.order ? 1 : -1
-                                                  )
-                                                  .filter(
-                                                    (x) =>
-                                                      !Object.values(
-                                                        x
-                                                      ).includes(null)
-                                                  )
-                                                  .map(
-                                                    (background, counter) => (
-                                                      <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
-                                                        {index + 1}.
-                                                        {counter + 1}
-                                                      </div>
-                                                    )
-                                                  )}
+                                              {data.backgrounds.items
+                                                .sort((a, b) =>
+                                                  a.order > b.order ? 1 : -1
+                                                )
+                                                .map((background, counter) => (
+                                                  <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
+                                                    {index + 1}.{counter + 1}
+                                                  </div>
+                                                ))}
                                             </div>
                                           </td>
                                           <td className="align-top py-2">
@@ -2516,43 +2561,36 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               />
                                             </div>
 
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
-                                                .sort((a, b) =>
-                                                  a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
-                                                    )
-                                                )
-                                                .map((background, index) => (
-                                                  <div className="text-xs block mt-2">
-                                                    <DatePicker
-                                                      popperProps={{
-                                                        positionFixed: true,
-                                                      }}
-                                                      className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
-                                                      dateFormat="dd MMM yyyy"
-                                                      selected={
-                                                        background.date !== null
-                                                          ? new Date(
-                                                              background.date
-                                                            )
-                                                          : null
-                                                      }
-                                                      placeholderText="No Date"
-                                                      onChange={(selected) =>
-                                                        handleChangeDateBackground(
-                                                          selected,
-                                                          background.id,
-                                                          data.id
-                                                        )
-                                                      }
-                                                    />
-                                                  </div>
-                                                ))}
+                                            {data.backgrounds.items
+                                              .sort((a, b) =>
+                                                a.order > b.order ? 1 : -1
+                                              )
+                                              .map((background, index) => (
+                                                <div className="text-xs block mt-2">
+                                                  <DatePicker
+                                                    popperProps={{
+                                                      positionFixed: true,
+                                                    }}
+                                                    className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
+                                                    dateFormat="dd MMM yyyy"
+                                                    selected={
+                                                      background.date !== null
+                                                        ? new Date(
+                                                            background.date
+                                                          )
+                                                        : null
+                                                    }
+                                                    placeholderText="No Date"
+                                                    onChange={(selected) =>
+                                                      handleChangeDateBackground(
+                                                        selected,
+                                                        background.id,
+                                                        data.id
+                                                      )
+                                                    }
+                                                  />
+                                                </div>
+                                              ))}
                                           </td>
                                           <td
                                             {...provider.dragHandleProps}
@@ -2714,71 +2752,66 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               {data.id === detId && descAlert}
                                             </span>
 
-                                            {data.backgrounds.items !== null &&
-                                              data.backgrounds.items
-                                                .sort((a, b) =>
-                                                  a.order > b.order ? 1 : -1
-                                                )
-                                                .filter(
-                                                  (x) =>
-                                                    !Object.values(x).includes(
-                                                      null
-                                                    )
-                                                )
-                                                .map((background, i) => (
-                                                  <div className="flex mt-3.5">
-                                                    <span
-                                                      className={
-                                                        background.id ===
-                                                        descriptionClassId
-                                                          ? "w-full p-2 font-poppins h-full mx-2"
-                                                          : "w-96 p-2 font-poppins h-full mx-2 single-line"
-                                                      }
-                                                      style={{
-                                                        cursor: "auto",
-                                                        outlineColor:
-                                                          "rgb(204, 204, 204, 0.5)",
-                                                        outlineWidth: "thin",
-                                                      }}
-                                                      suppressContentEditableWarning
-                                                      onClick={(event) =>
-                                                        handleDescContent(
-                                                          event,
-                                                          background.description,
-                                                          background.id,
-                                                          index+"-"+i
-                                                        )
-                                                      }
-                                                      dangerouslySetInnerHTML={{
-                                                        __html:
-                                                          background.description,
-                                                      }}
-                                                      onInput={(event) =>
-                                                        handleChangeDesc(event)
-                                                      }
-                                                      onBlur={(e) =>
-                                                        handleSaveDesc(
-                                                          e,
-                                                          background.description,
-                                                          background.date,
-                                                          background.id
-                                                        )
-                                                      }
-                                                      contentEditable={true}
-
-                                                      ref={el => itemsRef.current[index+"-"+i] = el} 
-
-                                                      onFocus={(e) =>
-                                                        handleChangeDescription(
-                                                          e,
-                                                          background.description,
-                                                          background.id,
-                                                          index+"-"+i
-                                                        )
-                                                      }
-                                                    ></span>
-                                                  </div>
-                                                ))}
+                                            {data.backgrounds.items
+                                              .sort((a, b) =>
+                                                a.order > b.order ? 1 : -1
+                                              )
+                                              .map((background, i) => (
+                                                <div className="flex mt-3.5">
+                                                  <span
+                                                    className={
+                                                      background.id ===
+                                                      descriptionClassId
+                                                        ? "w-full p-2 font-poppins h-full mx-2"
+                                                        : "w-96 p-2 font-poppins h-full mx-2 single-line"
+                                                    }
+                                                    style={{
+                                                      cursor: "auto",
+                                                      outlineColor:
+                                                        "rgb(204, 204, 204, 0.5)",
+                                                      outlineWidth: "thin",
+                                                    }}
+                                                    suppressContentEditableWarning
+                                                    onClick={(event) =>
+                                                      handleDescContent(
+                                                        event,
+                                                        background.description,
+                                                        background.id,
+                                                        index + "-" + i
+                                                      )
+                                                    }
+                                                    dangerouslySetInnerHTML={{
+                                                      __html:
+                                                        background.description,
+                                                    }}
+                                                    onInput={(event) =>
+                                                      handleChangeDesc(event)
+                                                    }
+                                                    onBlur={(e) =>
+                                                      handleSaveDesc(
+                                                        e,
+                                                        background.description,
+                                                        background.date,
+                                                        background.id
+                                                      )
+                                                    }
+                                                    contentEditable={true}
+                                                    ref={(el) =>
+                                                      (itemsRef.current[
+                                                        index + "-" + i
+                                                      ] = el)
+                                                    }
+                                                    onFocus={(e) =>
+                                                      handleChangeDescription(
+                                                        e,
+                                                        background.description,
+                                                        background.id,
+                                                        index + "-" + i
+                                                      )
+                                                    }
+                                                  ></span>
+                                                </div>
+                                              ))}
                                           </td>
 
                                           <td
@@ -2813,23 +2846,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <div className="grid grid-cols-1">
                                               <div className="flex mb-24"></div>
 
-                                              {data.backgrounds.items !==
-                                                null &&
-                                                data.backgrounds.items
-                                                  .sort((a, b) =>
-                                                    a.order > b.order ? 1 : -1
-                                                  )
-                                                  .filter(
-                                                    (x) =>
-                                                      !Object.values(
-                                                        x
-                                                      ).includes(null)
-                                                  )
-                                                  .map((background, index) => (
+                                              {data.backgrounds.items
+                                                .sort((a, b) =>
+                                                  a.order > b.order ? 1 : -1
+                                                ).map((background, index) => (
                                                     <div
                                                       className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
                                                       key={background.id}
                                                       index={index}
+                                                      onClick={(event) =>
+                                                        handleRedirectLink(
+                                                          event,
+                                                          background.id,
+                                                        )
+                                                      }
                                                     >
                                                       <b>
                                                         {background.order +
@@ -2837,18 +2867,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                           ". "}
                                                       </b>
                                                       {ellipsis(
+                                                         checkFormat(client_name) +
+                                                         "/" +
                                                         checkFormat(
-                                                          client_name
+                                                          matter_name
                                                         ) +
-                                                          "/" +
-                                                          checkFormat(
-                                                            matter_name
-                                                          ) +
-                                                          " Background",
-                                                        40
-                                                      )}
-                                                    </div>
-                                                  ))}
+                                                        " Background",
+                                                      40
+                                                    )}
+                                                  </div>
+                                                ))}
                                             </div>
                                           </td>
                                         </tr>
@@ -2869,7 +2897,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                           </div>
                         ) : matterFiles.length >= 20 ? (
                           <div className="flex justify-center items-center mt-5">
-                            <img src={imgLoading} width={50} height={100} alt="Loading more data.." />
+                            <img
+                              src={imgLoading}
+                              width={50}
+                              height={100}
+                              alt="Loading more data.."
+                            />
                           </div>
                         ) : (
                           <span></span>

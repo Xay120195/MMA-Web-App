@@ -29,7 +29,7 @@ export default function RemoveModal(props) {
 
   //console.log(rowsToDelete);
   //confirm deletion function
-  const handleDelete = async () => {
+  const handleHoldDelete = async () => {
     if (rowsToDelete.length !== 0) {
       props.handleSave(rowsToDelete);
     }
@@ -88,7 +88,7 @@ export default function RemoveModal(props) {
                   <button
                     className="ml-2 bg-red-400 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                     type="button"
-                    onClick={() => handleDelete()}
+                    onClick={() => handleHoldDelete()}
                     disabled={rowsToDelete.length > 0 ? false : true}
                   >
                     Remove Attachment &nbsp; <FaTimes />

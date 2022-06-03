@@ -7,9 +7,15 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listBriefBackground(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+  const { sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  let indexName, isAscending = true;
+  let indexName,
+    isAscending = true,
+    limit = ctx.arguments.limit,
+    nextToken = ctx.arguments.nextToken,
+    result = [],
+    output = [],
+    sortByDate = false;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -19,6 +25,13 @@ async function listBriefBackground(ctx) {
     indexName = "byCreatedAt";
   } else if (sortOrder.includes("ORDER_")) {
     indexName = "byOrder";
+  } else if (sortOrder.includes("DATE_")) {
+    // bypass limit and token - fetch all
+    // sort result by date
+    sortByDate = true;
+    nextToken = null;
+    limit = undefined;
+    indexName = "byCreatedAt";
   }
 
   try {
@@ -56,20 +69,44 @@ async function listBriefBackground(ctx) {
 
       const uniqueBackgroundIds = unique.map((f) => marshall({ id: f }));
 
-      const backgroundsParams = {
-        RequestItems: {
-          BackgroundsTable: {
-            Keys: uniqueBackgroundIds,
-          },
-        },
-      };
+      let batches = [],
+        current_batch = [],
+        item_count = 0;
 
-      const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
-      const backgroundsResult = await ddbClient.send(backgroundsCommand);
+      uniqueBackgroundIds.forEach((data) => {
+        item_count++;
+        current_batch.push(data);
 
-      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
-        (i) => unmarshall(i)
+        // Chunk items to 25
+        if (item_count % 25 == 0) {
+          batches.push(current_batch);
+          current_batch = [];
+        }
+      });
+
+      // Add the last batch if it has records and is not equal to 25
+      if (current_batch.length > 0 && current_batch.length != 25) {
+        batches.push(current_batch);
+      }
+
+      const asyncResult = await Promise.all(
+        batches.map(async (data, index) => {
+          const backgroundsParams = {
+            RequestItems: {
+              BackgroundsTable: {
+                Keys: data,
+              },
+            },
+          };
+
+          const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
+          const backgroundsResult = await ddbClient.send(backgroundsCommand);
+          return backgroundsResult.Responses.BackgroundsTable;
+        })
       );
+
+      const objBackgrounds = asyncResult.flat().map((i) => unmarshall(i));
+
       const objBriefBackground = briefBackgroundResult.Items.map((i) =>
         unmarshall(i)
       );
@@ -80,6 +117,24 @@ async function listBriefBackground(ctx) {
         );
         return { ...item, ...filterBackground };
       });
+
+      if (sortByDate) {
+        response.sort(function (a, b) {
+          if (a.date === undefined) {
+            a.date = null;
+          }
+          if (b.date === undefined) {
+            b.date = null;
+          }
+
+          if (isAscending) {
+            return new Date(a.date) - new Date(b.date);
+          } else {
+            return new Date(b.date) - new Date(a.date);
+          }
+        });
+      }
+
       return {
         items: response,
         nextToken: briefBackgroundResult.LastEvaluatedKey

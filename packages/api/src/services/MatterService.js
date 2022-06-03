@@ -35,19 +35,17 @@ export async function generatePresignedUrl(Key, src) {
 }
 
 export async function getMatterFiles(ctx) {
-  const {
-    matterId,
-    isDeleted = false,
-    limit,
-    sortOrder = "CREATED_DESC",
-  } = ctx;
+  const { matterId, isDeleted = false, sortOrder = "CREATED_DESC" } = ctx;
 
   let resp = {},
     indexName,
     isAscending = true,
     read = true,
+    limit = ctx.limit,
     nextToken = ctx.nextToken,
-    result = [];
+    result = [],
+    output = [],
+    sortByDate = false;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -58,7 +56,12 @@ export async function getMatterFiles(ctx) {
   } else if (sortOrder.includes("ORDER_")) {
     indexName = "byOrder";
   } else if (sortOrder.includes("DATE_")) {
-    indexName = "byDate";
+    // bypass limit and token - fetch all
+    // sort result by date
+    sortByDate = true;
+    nextToken = null;
+    limit = undefined;
+    indexName = "byCreatedAt";
   }
 
   try {
@@ -103,8 +106,27 @@ export async function getMatterFiles(ctx) {
       }
     }
 
+    output = result.map((d) => unmarshall(d));
+
+    if (sortByDate) {
+      output.sort(function (a, b) {
+        if (a.date === undefined) {
+          a.date = null;
+        }
+        if (b.date === undefined) {
+          b.date = null;
+        }
+
+        if (isAscending) {
+          return new Date(a.date) - new Date(b.date);
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      });
+    }
+
     resp = {
-      items: result.map((d) => unmarshall(d)),
+      items: output,
       nextToken: nextToken
         ? Buffer.from(JSON.stringify(nextToken)).toString("base64")
         : undefined,
@@ -254,13 +276,13 @@ export async function bulkCreateMatterFile(data) {
       item_count++;
       current_batch.push(data);
 
-      if (item_count % 5 == 0) {
+      if (item_count % 20 == 0) {
         batches.push(current_batch);
         current_batch = [];
       }
     });
 
-    if (current_batch.length > 0 && current_batch.length != 5) {
+    if (current_batch.length > 0 && current_batch.length != 20) {
       batches.push(current_batch);
     }
 

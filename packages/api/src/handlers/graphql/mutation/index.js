@@ -564,13 +564,13 @@ async function tagUserColumnSettings(id, data) {
 async function bulkDeleteBackground(data) {
   let resp = {};
   try {
-    let backgroundId = data.id;
+    let backgroundIds = data.id;
     const arrBackgroundItems = [];
-    const arrCompBackgroundItems = [];
+    const arrBriefBackgroundItems = [];
     const arrBackgroundIds = [];
 
-    for (var a = 0; a < backgroundId.length; a++) {
-      var bId = { id: backgroundId[a] };
+    for (var a = 0; a < backgroundIds.length; a++) {
+      var bId = { id: backgroundIds[a] };
 
       arrBackgroundIds.push(bId);
 
@@ -585,8 +585,9 @@ async function bulkDeleteBackground(data) {
         IndexName: "byBackground",
         KeyConditionExpression: "backgroundId = :backgroundId",
         ExpressionAttributeValues: marshall({
-          ":backgroundId": backgroundId[a],
+          ":backgroundId": backgroundIds[a],
         }),
+        ProjectionExpression: "id",
       };
 
       const briefBackgroundCmd = new QueryCommand(briefBackgroundParams);
@@ -594,7 +595,7 @@ async function bulkDeleteBackground(data) {
 
       for (var b = 0; b < briefBackgroundRes.Items.length; b++) {
         var briefBackgroundId = { id: briefBackgroundRes.Items[b].id };
-        arrCompBackgroundItems.push({
+        arrBriefBackgroundItems.push({
           DeleteRequest: {
             Key: briefBackgroundId,
           },
@@ -602,30 +603,74 @@ async function bulkDeleteBackground(data) {
       }
     }
 
-    const backgroundParams = {
-      RequestItems: {
-        BackgroundsTable: arrBackgroundItems,
-      },
-    };
+    const bb_batches = [];
+    let bb_current_batch = [],
+      bb_item_count = 0;
 
-    const backgroundCommand = new BatchWriteItemCommand(backgroundParams);
-    const backgroundResult = await ddbClient.send(backgroundCommand);
+    arrBriefBackgroundItems.forEach((data) => {
+      bb_item_count++;
+      bb_current_batch.push(data);
 
-    if (backgroundResult) {
-      const deleteCompBackgroundParams = {
-        RequestItems: {
-          BriefBackgroundTable: arrCompBackgroundItems,
-        },
-      };
+      if (bb_item_count % 25 == 0) {
+        bb_batches.push(bb_current_batch);
+        bb_current_batch = [];
+      }
+    });
 
-      const deleteCompBackgroundCmd = new BatchWriteItemCommand(
-        deleteCompBackgroundParams
+    if (bb_current_batch.length > 0 && bb_current_batch.length != 25) {
+      bb_batches.push(bb_current_batch);
+    }
+
+    const asyncDeleteBBResult = await Promise.all(
+      bb_batches.map(async (data) => {
+        const delBriefBackgroundParams = {
+          RequestItems: {
+            BriefBackgroundTable: data,
+          },
+        };
+
+        const delBriefBackgroundCmd = new BatchWriteItemCommand(
+          delBriefBackgroundParams
+        );
+        return await ddbClient.send(delBriefBackgroundCmd);
+      })
+    );
+
+    if (asyncDeleteBBResult) {
+      const b_batches = [];
+      let b_current_batch = [],
+        b_item_count = 0;
+
+      arrBackgroundItems.forEach((data) => {
+        b_item_count++;
+        b_current_batch.push(data);
+
+        if (b_item_count % 25 == 0) {
+          b_batches.push(b_current_batch);
+          b_current_batch = [];
+        }
+      });
+
+      if (b_current_batch.length > 0 && b_current_batch.length != 25) {
+        b_batches.push(b_current_batch);
+      }
+
+      const asyncDeleteBResult = await Promise.all(
+        b_batches.map(async (data) => {
+          const delBackgroundParams = {
+            RequestItems: {
+              BackgroundsTable: data,
+            },
+          };
+
+          const delBackgroundCmd = new BatchWriteItemCommand(
+            delBackgroundParams
+          );
+          return await ddbClient.send(delBackgroundCmd);
+        })
       );
-      const deleteCompBackgroundRes = await ddbClient.send(
-        deleteCompBackgroundCmd
-      );
 
-      resp = deleteCompBackgroundRes ? arrBackgroundIds : {};
+      resp = asyncDeleteBResult ? arrBackgroundIds : {};
     }
   } catch (e) {
     resp = {
