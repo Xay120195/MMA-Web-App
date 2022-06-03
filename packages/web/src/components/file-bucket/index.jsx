@@ -2132,14 +2132,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
       console.log("Brief ID:", backgroundRedirect.data.background.briefs);
       console.log("Background ID:", backgroundId);
-      /*setTimeout(() => {
+      setTimeout(() => {
         setShowToast(false);
         window.location.href = `${
           AppRoutes.BACKGROUND
         }/${matter_id}/${arrBackgroundResult[0].id}/?matter_name=${utf8_to_b64(
           matter_name
         )}&client_name=${utf8_to_b64(client_name)}`;
-      }, 200);*/
+      }, 200);
     } else {
       alert("Error encountered!");
     }
