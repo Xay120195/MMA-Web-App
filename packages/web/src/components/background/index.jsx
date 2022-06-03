@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
@@ -12,6 +12,11 @@ import * as IoIcons from "react-icons/io";
 import { BitlyClient } from "bitly-react";
 
 import { API } from "aws-amplify";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import { Auth } from "aws-amplify";
+import { Redirect, useHistory } from "react-router-dom";
+
+
 
 // const contentDiv = {
 //   margin: "0 0 0 65px",
@@ -73,6 +78,12 @@ const Background = () => {
   const [searchDescription, setSearchDescription] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [holdDelete, setHoldDelete] = useState(false);
+
+  let history = useHistory();
+  const check = useRef(false);
+  const [showSessionTimeout, setShowSessionTimeout] = useState(false);
+
+
 
   useEffect(() => {
     getBackground();
@@ -373,11 +384,46 @@ const Background = () => {
   const handleOnAction = (event) => {
     console.log("User did something", event);
     loadMoreBackground();
+
+    //function for detecting if user moved/clicked.
+    //if modal is active and user moved, automatic logout (session expired)
+    check.current = false;
+    if(showSessionTimeout){
+      setTimeout(() => {
+        Auth.signOut().then(() => {
+          clearLocalStorage();
+          console.log("Sign out completed.");
+          history.push("/");
+        });
+      
+        function clearLocalStorage() {
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
+        }
+      }, 3000);
+    }
+
   };
 
   const handleOnIdle = (event) => {
     console.log("User is on idle");
     loadMoreBackground();
+
+     //function for detecting if user is on idle.
+    //after 30 mins, session-timeout modal will show
+    check.current = true;
+    setTimeout(() => {
+      if(check.current){
+        setShowSessionTimeout(true);
+      }
+    }, 60000*30);
+
   };
 
   useIdleTimer({
@@ -888,6 +934,10 @@ const Background = () => {
 
         {showToast && (
           <ToastNotification title={alertMessage} hideToast={hideToast} />
+        )}
+
+        {showSessionTimeout && (
+          <SessionTimeout/>
         )}
       </div>
     </>
