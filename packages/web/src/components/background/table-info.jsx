@@ -83,10 +83,13 @@ const TableInfo = ({
   setLoading,
   maxLoading,
   sortByOrder,
+  SortBydate,
   briefId,
   searchDescription,
   selectedItems,
   setSelectedItems,
+  holdDelete,
+  setHoldDelete,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -101,7 +104,7 @@ const TableInfo = ({
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
   const [selectedFileBG, setselectedFileBG] = useState([]);
   const [highlightRows, setHighlightRows] = useState("bg-green-200");
-  const [sortByDate, setSortByDate] = useState([]);
+  //const [sortByDate, setSortByDate] = useState([]);
   const [isShiftDown, setIsShiftDown] = useState(false);
 
   const [lastSelectedItem, setLastSelectedItem] = useState(null);
@@ -110,11 +113,15 @@ const TableInfo = ({
   const [goToFileBucket, setGoToFileBucket] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
+  const [holdPaste, setHoldPaste] = useState(false);
+  const [bgInput, setBgInput] = useState([]);
+
+  const [holdDeleteFile, setHoldDeleteFile] = useState(false);
+  const bool = useRef(true);
+  const [selectedFileId, setSelectedFileId] = useState(null);
+
   const location = useLocation();
   const history = useHistory();
-
-  const searchItem = location.search;
-  const counter = new URLSearchParams(searchItem).get("count");
 
   const queryParams = new URLSearchParams(location.search);
 
@@ -130,6 +137,7 @@ const TableInfo = ({
     ];
     setselectedFileBG(tempIndex);
     setshowRemoveFileModal(true);
+    setSelectedFileId(id);
   };
 
   const handleModalClose = () => {
@@ -400,7 +408,27 @@ const TableInfo = ({
   `;
 
   const handleDelete = async (item) => {
-    const backgroundFilesOpt = await API.graphql({
+    setHoldDeleteFile(true);
+    setalertMessage(`Deleting File. Click HERE to undo action`);
+    setShowToast(true);
+    setshowRemoveFileModal(false);
+
+    setTimeout(() => {
+      setShowToast(false);
+    }, 9000);
+
+    setTimeout(() => {
+      if(bool.current){
+        deleteFileProper(item);
+      }else{
+        cancelDeleteFile();
+      }
+    }, 10000);
+
+  };
+
+  const deleteFileProper = async (item) =>{
+      const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
         id: item[0].backgroundId,
@@ -455,14 +483,34 @@ const TableInfo = ({
         }
       }, 1000);
     }
-
-    setshowRemoveFileModal(false);
-    setalertMessage(`File successfully deleted!`);
+    getBackground();
+    setalertMessage(`Successfully Deleted File.`);
     setShowToast(true);
+
+    setTimeout(() => {
+      setShowToast(false);
+      setHoldDeleteFile(false);
+    }, 2000);
+  }
+
+  const cancelDeleteFile= () => {
+    bool.current = false;
+    setHoldDeleteFile(false);
+  }
+
+
+  function undoDeleteFile(){
+    bool.current = false;
+    setalertMessage(`Restored File.`);
+    setShowToast(true);
+    setHoldDeleteFile(false);
+    
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
-  };
+  }
+
+  //end
 
   setTimeout(() => {
     setHighlightRows("bg-white");
@@ -498,24 +546,7 @@ const TableInfo = ({
     };
   }
 
-  const SortBydate = async () => {
-    console.group("table-info.jsx: SortBydate()");
-    if (ascDesc == null) {
-      console.log("set order by Date ASC");
-      setAscDesc(true);
-      setBackground(background.sort(compareValues("date")));
-    } else if (ascDesc === true) {
-      console.log("set order by Date DESC");
-      setAscDesc(false);
-      setBackground(background.sort(compareValues("date", "desc")));
-    } else if (!ascDesc) {
-      console.log("set order by DEFAULT: Order ASC");
-      setAscDesc(null); // default to sort by order
-      setBackground(background.sort(compareValues("order")));
-    }
-
-    console.groupEnd();
-  };
+  
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
     if (event.target.checked) {
@@ -647,18 +678,9 @@ const TableInfo = ({
     }, 2000);
   };
 
-  const handlePasteRow = (targetIndex) => {
-    let tempBackground = [...background];
-
-    let arrFileResult = [];
-
-    setCheckedState(new Array(background.length).fill(false));
-    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
-
-    storedItemRows.map(async function (x) {
-      const mCreateBackground = `
-      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
-        backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+  const mCreateBackground = `
+      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime, $order: Int) {
+        backgroundCreate(briefId: $briefId, description: $description, date: $date, order: $order) {
           id
           createdAt
           date
@@ -666,8 +688,26 @@ const TableInfo = ({
           order
         }
       }
-  `;
+      `;
 
+  const mBulkUpdateBackgroundOrder = `
+      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        backgroundBulkUpdateOrders(arrangement: $arrangement) {
+          id
+          order
+        }
+      }`;
+
+  const handlePasteRow = (targetIndex) => {
+    let tempBackground = [...background];
+    let arrFileResultBG = [];
+
+    setCheckedState(new Array(background.length).fill(false));
+
+    const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
+    var counter = 1;
+    storedItemRows.map(async function (x) {
+      
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
@@ -675,10 +715,11 @@ const TableInfo = ({
           description: x.details,
           date: x.date,
           files: { items: [] },
+          order: counter++
         },
       });
 
-      const arrFileResult = {
+      var arrResult = {
         createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
         id: createBackgroundRow.data.backgroundCreate.id,
         files: { items: x.files.items },
@@ -688,6 +729,10 @@ const TableInfo = ({
       };
 
       const arrId = [{ id: createBackgroundRow.data.backgroundCreate.id }];
+      bgInput.push({ id: createBackgroundRow.data.backgroundCreate.id });
+      arrFileResultBG.push(...[arrResult]);
+
+      //const arrId = [{ id: createBackgroundRow.data.backgroundCreate.id }];
 
       const request = await API.graphql({
         query: mUpdateBackgroundFile,
@@ -697,42 +742,130 @@ const TableInfo = ({
         },
       });
 
-      tempBackground.splice(targetIndex + 1, 0, arrFileResult);
+    });
+
+    setTimeout( async function () {
+      console.log("Updated Arr", sortByOrder(arrFileResultBG));
+
+      sortByOrder(arrFileResultBG).splice(0).reverse().map(async function (x) {
+        var resultBG = {
+          createdAt: x.createdAt,
+          id: x.id,
+          files: { items: x.files.items },
+          date: x.date,
+          description: x.description,
+          order: x.order,
+        };
+
+        tempBackground.splice(targetIndex + 1, 0, resultBG);
+
+        setBackground(tempBackground);
+        setSelectRow([]);
+        //setSelectedItems(arrId.map((x) => x.id));
+
+        const result = tempBackground.map(({ id }, index) => ({
+          id: id,
+          order: index,
+        }));
+
+        console.log("Item", result);
+
+        await API.graphql({
+          query: mBulkUpdateBackgroundOrder,
+          variables: {
+            arrangement: result,
+          },
+        });
+      })
+
+      /*const arrayUpdated = arrFileResultBG.map(({ id }, index) => ({
+        id: id,
+        order: index,
+      }));*/
+
+      /*tempBackground.splice(targetIndex + 1, 0, arrFileResultBG);
 
       setBackground(tempBackground);
-      setSelectRow([arrFileResult]);
-      console.log(arrFileResult);
-      setSelectedItems(arrId.map((x) => x.id));
+      setSelectRow([]);
+      //setSelectedItems(arrId.map((x) => x.id));
+
       const result = tempBackground.map(({ id }, index) => ({
         id: id,
-        order: index + 1,
+        order: index,
       }));
 
-      const mUpdateBulkMatterFileOrder = `
-      mutation bulkUpdateMatterFileOrders($arrangement: [ArrangementInput]) {
-        matterFileBulkUpdateOrders(arrangement: $arrangement) {
-          id
-          order
-        }
-      }
-      `;
+      await API.graphql({
+        query: mBulkUpdateBackgroundOrder,
+        variables: {
+          arrangement: result,
+        },
+      });*/
+
+    }, 1500);
+
+    /*setTimeout(async function() {
+      const result = tempBackground.map(({ id }, index) => ({
+        id: id,
+        order: index,
+      }));
 
       await API.graphql({
-        query: mUpdateBulkMatterFileOrder,
+        query: mBulkUpdateBackgroundOrder,
         variables: {
           arrangement: result,
         },
       });
-    });
+    }, 1000);*/
+    
 
     setShowDeleteButton(false);
     setPasteButton(false);
+    setSelectRow([]);
+    setSelectedItems([]);
+    setSelectedRowsBG([]);
+    localStorage.removeItem("selectedRows");
+
+    setHoldPaste(true);
+    setalertMessage("Successfully copied rows. Click HERE to undo action");
+    setShowToast(true);
+
     setTimeout(() => {
-      setSelectRow([]);
-      setSelectedItems([]);
-      localStorage.removeItem("selectedRows");
-    }, 10000);
+      setShowToast(false);
+    }, 9000);
   };
+
+  function undoAction(){
+    const newArr = Array(background.length).fill(false);
+    setCheckedState(newArr);
+    console.log("BI", bgInput);
+    const mDeleteBackground = `
+      mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
+        briefBackgroundUntag(briefId: $briefId, background: $background) {
+          id
+        }
+      }
+      `;
+  
+      const deletedId = API.graphql({
+        query: mDeleteBackground,
+        variables: {
+          briefId: briefId,
+          background: bgInput,
+        },
+      });
+
+      setSelectedRowsBG([]);
+      setSelectedItems([]);
+      setcheckAllState(false);
+      setHoldPaste(false);
+      setSelectRow([]);
+
+      setTimeout(() => {
+        setShowToast(false);
+        
+        getBackground();
+      }, 3000);
+  }
 
   // const reOrderFiles = (array, tempBackground, targetIndex) => {
   //   const df = convertArrayToObject(array);
@@ -820,9 +953,9 @@ const TableInfo = ({
   }
 
   //UPLOADING FILE THROUGH BG
-  function attachFiles(id) {
+  function attachFiles(itemid) {
     setShowUploadModal(true);
-    setSelectedRowID(id);
+    setSelectedRowID(itemid);
   }
 
   var idTag = [];
@@ -912,6 +1045,8 @@ const TableInfo = ({
 
     console.log("result", request);
 
+
+
     if (request.data.matterFileBulkCreate !== null) {
       request.data.matterFileBulkCreate.map((i) => {
         return (idTag = [...idTag, { id: i.id }]);
@@ -943,54 +1078,56 @@ const TableInfo = ({
       }
     }`;
 
-    let arrFiles = [];
-    let arrFileResult = [];
-    const seen = new Set();
+        let arrFiles = [];
+        let arrFileResult = [];
+        const seen = new Set();
 
-    // console.log("MID/BID", background_id);
+        // console.log("MID/BID", background_id);
 
-    const backgroundFilesOpt = await API.graphql({
-      query: qlistBackgroundFiles,
-      variables: {
-        id: selectedRowId,
-      },
-    });
+        const backgroundFilesOpt = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: selectedRowId,
+          },
+        });
 
-    if (backgroundFilesOpt.data.background.files !== null) {
-      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-        ({ id }) => ({
-          id: id,
-        })
-      );
+        if (backgroundFilesOpt.data.background.files !== null) {
+          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+            ({ id }) => ({
+              id: id,
+            })
+          );
 
-      idTag.push(...arrFileResult);
-      console.log("updatedidtag", idTag);
+          idTag.push(...arrFileResult);
+          console.log("updatedidtag", idTag);
 
-      const filteredArr = idTag.filter((el) => {
-        const duplicate = seen.has(el.id);
-        seen.add(el.id);
-        return !duplicate;
-      });
+          const filteredArr = idTag.filter((el) => {
+            const duplicate = seen.has(el.id);
+            seen.add(el.id);
+            return !duplicate;
+          });
 
-      console.log("no duplicate file", filteredArr);
+          console.log("rowid", selectedRowId);
 
-      API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: selectedRowId,
-          files: filteredArr,
-        },
-      });
-    } else {
-      API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: selectedRowId,
-          files: idTag,
-        },
-      });
-    }
+          API.graphql({
+            query: mUpdateBackgroundFile,
+            variables: {
+              backgroundId: selectedRowId,
+              files: filteredArr,
+            },
+          });
 
+          
+        } else {
+          API.graphql({
+            query: mUpdateBackgroundFile,
+            variables: {
+              backgroundId: selectedRowId,
+              files: idTag,
+            },
+          });
+        }
+    
     //return request;
   }
 
@@ -1185,9 +1322,9 @@ const TableInfo = ({
                                     {(provider, snapshot) => (
                                       <tr
                                         className={
-                                          selectRow.find(
-                                            (x) => x.id === item.id
-                                          ) && "bg-green-300"
+                                          selectRow.find((x) => x.id === item.id) && holdDelete ? "hidden" 
+                                          : selectRow.find((x) => x.id === item.id) ? "bg-green-300" 
+                                          : ""
                                         }
                                         index={index}
                                         key={item.id}
@@ -1428,7 +1565,13 @@ const TableInfo = ({
                                                             index
                                                           }
                                                         />
-                                                        <p className="break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100">
+                                                        <p className={
+                                                          selectedFileId === items.id && holdDeleteFile 
+                                                          ? "hidden"
+                                                          : "break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100"
+                                                        }
+                                                        
+                                                        >
                                                           {activateButton ? (
                                                             <input
                                                               type="checkbox"
@@ -1480,7 +1623,7 @@ const TableInfo = ({
                                                             <BsFillTrashFill
                                                               className="text-red-400 hover:text-red-500 my-1 text-1xl cursor-pointer inline-block float-right"
                                                               onClick={() =>
-                                                                showModal(
+                                                                "align-middle cursor-pointer"(
                                                                   items.id,
                                                                   item.id
                                                                 )
@@ -1563,23 +1706,23 @@ const TableInfo = ({
           </div>
         </div>
         <div>
-          {maxLoading ? (
+          {maxLoading && wait ? (
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
-          ) : background.length >= 20 ? (
+          ) : background.length >= 50 && wait ? (
             <div className="flex justify-center items-center mt-5">
-              <img src={imgLoading} width={50} height={100} />
+              <img src={imgLoading} alt="" width={50} height={100} />
             </div>
           ) : (
             <span></span>
           )}
 
-          {!maxLoading && loading ? (
+          {/* {!maxLoading && loading ? (
             <span className="grid"></span>
           ) : (
             <span></span>
-          )}
+          )} */}
         </div>
         <div className="p-2"></div>
       </div>
@@ -1617,14 +1760,18 @@ const TableInfo = ({
       {showToast && (
         <div
           onClick={
-            goToFileBucket
-              ? () =>
+            goToFileBucket ? 
+              () =>
                   (window.location = `${
                     AppRoutes.FILEBUCKET
                   }/${matterId}/000/?matter_name=${utf8_to_b64(
                     matter_name
                   )}&client_name=${utf8_to_b64(client_name)}`)
-              : null
+            : holdPaste ?
+              () => undoAction()
+            : holdDeleteFile ?
+              () => undoDeleteFile()
+            : null
           }
         >
           <ToastNotification title={alertMessage} hideToast={hideToast} />

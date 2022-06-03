@@ -11,6 +11,7 @@ import { CgLogOut } from "react-icons/cg";
 import { FaReact } from "react-icons/fa";
 import { HiChevronDoubleRight } from "react-icons/hi";
 import AccessControl from "../../shared/accessControl";
+import ReactTooltip from "react-tooltip";
 
 function Navbar() {
   const [sidebar, setSidebar] = useState(false);
@@ -91,9 +92,11 @@ function Navbar() {
             />
             <button>
               <HiChevronDoubleRight
+               data-tip="Expand Menu" 
                 onClick={showSidebar}
                 style={{ color: "var(--mysteryGrey)" }}
               />
+                <ReactTooltip />
             </button>
           </div>
           <ul className="nav-menus">
@@ -109,11 +112,15 @@ function Navbar() {
                     key={index}
                   >
                     <Link
+                   data-tip={item.name === "DASHBOARD" ? "Dashboard" : item.name === "USERTYPEACCESS" ? "User Type Access" :"Account Settings" }
+                   onMouseDown={()=> ReactTooltip.show()}
+                    
                       className="nav-item-collapsed nav-item"
                       to={item.path}
                     >
                       {item.icon}
                     </Link>
+                    <ReactTooltip />
                   </li>
                 ) : null;
               })}
@@ -122,8 +129,10 @@ function Navbar() {
           <div
             className="logout-btn-collapsed logout-btn"
             onClick={clickLogout}
+           
           >
-            <CgLogOut style={{ color: "var(--mysteryGrey)" }} />
+            <CgLogOut  data-tip="Logout" style={{ color: "var(--mysteryGrey)" }} />
+            <ReactTooltip />
           </div>
         </div>
         <div>
