@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import BlankState from "../blank-state";
+import { Redirect, useHistory } from "react-router-dom";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
@@ -16,7 +17,9 @@ import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
+import { Auth } from "aws-amplify";
 //import AccessControl from "../../shared/accessControl";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
@@ -44,6 +47,8 @@ import ScrollToTop from "react-scroll-to-top";
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
+
+
 
 export default function FileBucket() {
   let tempArr = [];
@@ -115,9 +120,16 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const itemsRef = useRef([]);
+  const bool = useRef(false);
+  let history = useHistory();
+
+
+
   const hideToast = () => {
     setShowToast(false);
   };
+
+  const [showSessionTimeout, setShowSessionTimeout] = useState(false);
 
   const previewAndDownloadFile = async (id) => {
     const params = {
@@ -1523,12 +1535,47 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }, 1000);
   }
 
-  const handleOnAction = (event) => {
+  const handleOnAction =  (event) => {
     loadMoreMatterFiles();
+    console.log("user is clicking");
+
+    //function for detecting if user moved/clicked.
+    //if modal is active and user moved, automatic logout (session expired)
+    bool.current = false;
+    if(showSessionTimeout){
+      setTimeout(() => {
+        Auth.signOut().then(() => {
+          clearLocalStorage();
+          console.log("Sign out completed.");
+          history.push("/");
+        });
+      
+        function clearLocalStorage() {
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
+        }
+      }, 3000);
+    }
   };
 
   const handleOnIdle = (event) => {
     loadMoreMatterFiles();
+    console.log("user is idle");
+
+    //function for detecting if user is on idle.
+    //after 30 mins, session-timeout modal will show
+    bool.current = true;
+    setTimeout(() => {
+      if(bool.current){
+        setShowSessionTimeout(true);
+      }
+    }, 60000*30);
   };
 
   useIdleTimer({
@@ -2957,6 +3004,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       )}
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
+      )}
+      {showSessionTimeout && (
+        <SessionTimeout/>
       )}
     </>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import BlankState from "../dynamic-blankstate";
 import { MdArrowForwardIos } from "react-icons/md";
 import ToastNotification from "../toast-notification";
@@ -9,10 +9,18 @@ import BlankQuestion from "../../assets/images/RFI_Blank_State.svg";
 import BlankAnswer from "../../assets/images/RFI_Blank_Answer.svg";
 import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
+import { useIdleTimer } from "react-idle-timer";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import { Auth } from "aws-amplify";
+import { Redirect, useHistory } from "react-router-dom";
 
 export default function RFIPage() {
   const [showToast, setShowToast] = useState(false);
   const [alertMessage, setalertMessage] = useState();
+  let history = useHistory();
+  const bool = useRef(false);
+  const [showSessionTimeout, setShowSessionTimeout] = useState(false);
+
 
   const hideToast = () => {
     setShowToast(false);
@@ -27,13 +35,6 @@ export default function RFIPage() {
     gridtemplatecolumn: "1fr auto",
   };
 
-  var dummyData = [
-    { id: 111, name: "RFI 1", datecreated: "Jan 01, 2022" },
-    { id: 112, name: "RFI 2", datecreated: "Jan 02, 2022" },
-    { id: 113, name: "RFI 3", datecreated: "Jan 03, 2022" },
-    { id: 114, name: "RFI 4", datecreated: "Jan 04, 2022" },
-    { id: 115, name: "RFI 5", datecreated: "Jan 05, 2022" },
-  ];
 
   const rfiListUrl =
     AppRoutes.MATTERSRFI +
@@ -60,6 +61,54 @@ export default function RFIPage() {
   function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
   }
+
+  const handleOnAction =  (event) => {
+    console.log("user is clicking");
+
+    //function for detecting if user moved/clicked.
+    //if modal is active and user moved, automatic logout (session expired)
+    bool.current = false;
+    if(showSessionTimeout){
+      setTimeout(() => {
+        Auth.signOut().then(() => {
+          clearLocalStorage();
+          console.log("Sign out completed.");
+          history.push("/");
+        });
+      
+        function clearLocalStorage() {
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
+        }
+      }, 3000);
+    }
+  };
+
+  const handleOnIdle = (event) => {
+    console.log("user is idle");
+
+    //function for detecting if user is on idle.
+    //after 30 mins, session-timeout modal will show
+    bool.current = true;
+    setTimeout(() => {
+      if(bool.current){
+        setShowSessionTimeout(true);
+      }
+    }, 60000*30);
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
 
   return (
     <>
@@ -151,6 +200,9 @@ export default function RFIPage() {
 
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
+      {showSessionTimeout && (
+        <SessionTimeout/>
       )}
     </>
   );
