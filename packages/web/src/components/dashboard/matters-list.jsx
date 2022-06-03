@@ -32,6 +32,7 @@ export function ClientMatters() {
     var arrEmails = [
         "mmatest.khr+uat@gmail.com",
         "mmatest.khr+access@gmail.com",
+        "meredith.ziegler@contractsspecialist.com.au",
       ],
       arrClientMatters = [
         "d9f93246-e0dd-49d1-9dd8-f148df2f30bb",
