@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef     } from "react";
 import { useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
 import { HiOutlinePlusCircle } from "react-icons/hi";
@@ -13,9 +13,12 @@ import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import { useParams } from "react-router-dom";
 import { API } from "aws-amplify";
 import { Link } from "react-router-dom";
+import { useIdleTimer } from "react-idle-timer";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import { Auth } from "aws-amplify";
+
 
 export default function MattersRFI() {
-  let history = useHistory();
   const { matter_id } = useParams();
 
   const modalRFIAlertMsg = "RFI Name successfully created.";
@@ -29,6 +32,11 @@ export default function MattersRFI() {
   const [allowUpdateQuestion, setAllowUpdateQuestion] = useState(false);
   const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
+
+  let history = useHistory();
+  const bool = useRef(false);
+  const [showSessionTimeout, setShowSessionTimeout] = useState(false);
+
 
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
@@ -192,6 +200,56 @@ export default function MattersRFI() {
     return day + " " + month + " " + year;
   };
 
+  //SESSION TIMEOUT
+  const handleOnAction =  (event) => {
+    console.log("user is clicking");
+
+    //function for detecting if user moved/clicked.
+    //if modal is active and user moved, automatic logout (session expired)
+    bool.current = false;
+    if(showSessionTimeout){
+      setTimeout(() => {
+        Auth.signOut().then(() => {
+          clearLocalStorage();
+          console.log("Sign out completed.");
+          history.push("/");
+        });
+      
+        function clearLocalStorage() {
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
+        }
+      }, 3000);
+    }
+  };
+
+  const handleOnIdle = (event) => {
+    console.log("user is idle");
+
+    //function for detecting if user is on idle.
+    //after 30 mins, session-timeout modal will show
+    bool.current = true;
+    setTimeout(() => {
+      if(bool.current){
+        setShowSessionTimeout(true);
+      }
+    }, 60000*30);
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
+
+
   return (
     <>
       <div
@@ -333,6 +391,9 @@ export default function MattersRFI() {
       )}
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
+      {showSessionTimeout && (
+        <SessionTimeout/>
       )}
     </>
   );
