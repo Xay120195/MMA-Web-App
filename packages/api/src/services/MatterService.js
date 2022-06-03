@@ -276,13 +276,13 @@ export async function bulkCreateMatterFile(data) {
       item_count++;
       current_batch.push(data);
 
-      if (item_count % 5 == 0) {
+      if (item_count % 20 == 0) {
         batches.push(current_batch);
         current_batch = [];
       }
     });
 
-    if (current_batch.length > 0 && current_batch.length != 5) {
+    if (current_batch.length > 0 && current_batch.length != 20) {
       batches.push(current_batch);
     }
 
