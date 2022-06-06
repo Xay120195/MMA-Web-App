@@ -1,10 +1,15 @@
-const { PutItemCommand, GetItemCommand, ScanCommand } = require("@aws-sdk/client-dynamodb");
+const {
+  PutItemCommand,
+  GetItemCommand,
+  ScanCommand,
+} = require("@aws-sdk/client-dynamodb");
 import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import ddbClient from "../lib/dynamodb-client";
 import identityClient from "../lib/cognito-identity-provider-client";
 import randomString from "../shared/randomString";
 import { v4 } from "uuid";
+const { toUTC, toLocalTime } = require("../shared/toUTC");
 
 export async function getUser(data) {
   let resp = {};
@@ -61,7 +66,7 @@ export async function createUser(data) {
       email: data.email,
       userType: data.userType,
       company: data.company,
-      createdAt: new Date().toISOString(),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -76,8 +81,7 @@ export async function createUser(data) {
       id: v4(),
       userId: data.id,
       companyId: data.company.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: toUTC(new Date()),
     };
     const putCompUserCmd = new PutItemCommand({
       TableName: "CompanyUserTable",

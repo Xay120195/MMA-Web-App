@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef  } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
@@ -42,7 +42,7 @@ const ActionButtons = (props) => {
     matter_name,
     client_name,
     holdDelete,
-    setHoldDelete
+    setHoldDelete,
   } = props;
 
   const [showToast, setShowToast] = useState(false);
@@ -55,6 +55,8 @@ const ActionButtons = (props) => {
   const [deletePermanently, setDeletePermanently] = useState(true);
 
   const bool = useRef(true);
+
+  var moment = require("moment");
 
   const hideToast = () => {
     setShowToast(false);
@@ -77,90 +79,88 @@ const ActionButtons = (props) => {
       setTimeout(() => {
         setShowToast(false);
       }, 10000);
-      
+
       setTimeout(() => {
-        if(bool.current){
+        if (bool.current) {
           deleteProper(item);
-        }else{
+        } else {
           cancelDelete();
         }
       }, 10000);
     }
   };
 
-  const deleteProper = (item) =>{
+  const deleteProper = (item) => {
     const newArr = Array(background.length).fill(false);
     setCheckedState(newArr);
     setcheckAllState(false);
 
     console.log("item", item);
 
-      setHoldDelete(true);
-          const mDeleteBackground = `
+    setHoldDelete(true);
+    const mDeleteBackground = `
             mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
               briefBackgroundUntag(briefId: $briefId, background: $background) {
                 id
               }
             }
             `;
-  
-          const deletedId = API.graphql({
-            query: mDeleteBackground,
-            variables: {
-              briefId: briefId,
-              background: item,
-            },
-          });
 
-          
-          setMaxLoading(false);
-          setSelectedRowsBG([]);
-          setSelectRow([]);
-          setSelectedItems([]);
-  
-          if (temp.length > 0) {
-            setShowDeleteButton(true);
-          } else {
-            setShowDeleteButton(false);
-          }
-          setalertMessage(`Successfully Deleted Permanently.`);
-          setShowToast(true);
-  
-          setTimeout(() => {
-            setShowToast(false);
-            setHoldDelete(false);
-            getBackground();
-          }, 2000);
-    
-  }
+    const deletedId = API.graphql({
+      query: mDeleteBackground,
+      variables: {
+        briefId: briefId,
+        background: item,
+      },
+    });
 
-  const cancelDelete= () => {
-      const newArr = Array(background.length).fill(false);
-      setCheckedState(newArr);
-      setcheckAllState(false);
-      getBackground();
-      setalertMessage(`Successfully Restored Rows.`);
-      setShowToast(true);
-      setSelectRow([]);
+    setMaxLoading(false);
+    setSelectedRowsBG([]);
+    setSelectRow([]);
+    setSelectedItems([]);
+
+    if (temp.length > 0) {
+      setShowDeleteButton(true);
+    } else {
+      setShowDeleteButton(false);
+    }
+    setalertMessage(`Successfully Deleted Permanently.`);
+    setShowToast(true);
+
+    setTimeout(() => {
+      setShowToast(false);
       setHoldDelete(false);
-      setSelectedItems([]);
-      setSelectedRowsBG([]);
+      getBackground();
+    }, 2000);
+  };
 
-      bool.current = false;
-  
-      if (temp.length > 0) {
-        setShowDeleteButton(true);
-      } else {
-        setShowDeleteButton(false);
-      }
-          
-      setTimeout(() => {
-        setShowToast(false);
-        setcheckAllState(false);
-      }, 2000);
-  }
+  const cancelDelete = () => {
+    const newArr = Array(background.length).fill(false);
+    setCheckedState(newArr);
+    setcheckAllState(false);
+    getBackground();
+    setalertMessage(`Successfully Restored Rows.`);
+    setShowToast(true);
+    setSelectRow([]);
+    setHoldDelete(false);
+    setSelectedItems([]);
+    setSelectedRowsBG([]);
 
-  function undoAction(){
+    bool.current = false;
+
+    if (temp.length > 0) {
+      setShowDeleteButton(true);
+    } else {
+      setShowDeleteButton(false);
+    }
+
+    setTimeout(() => {
+      setShowToast(false);
+      setcheckAllState(false);
+    }, 2000);
+  };
+
+  function undoAction() {
     setalertMessage(`Restoring Rows..`);
     setShowToast(true);
     const newArr = Array(background.length).fill(false);
@@ -178,7 +178,9 @@ const ActionButtons = (props) => {
 
   const handleAddRow = async () => {
     console.log("handleAddRow");
-    const dateToday = new Date().toISOString();
+    const dateToday = moment
+      .utc(moment(new Date(), "YYYY-MM-DD"))
+      .toISOString();
 
     const mCreateBackground = `
         mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
@@ -480,8 +482,6 @@ const ActionButtons = (props) => {
     }
   };
 
-
-
   return (
     <>
       <div className="pl-2 py-1 grid grid-cols-1 gap-1.5">
@@ -668,24 +668,18 @@ const ActionButtons = (props) => {
       )} */}
 
       {showToast && (
-        <div
-          onClick={
-            holdDelete
-              ? () => undoAction()
-              : null
-          }
-        >
+        <div onClick={holdDelete ? () => undoAction() : null}>
           <ToastNotification title={alertMessage} hideToast={hideToast} />
         </div>
       )}
 
-      {showRemoveFileModal &&
+      {showRemoveFileModal && (
         <RemoveFileModal
           handleSave={handleDelete}
           handleModalClose={handleModalClose}
           selectedRowsBG={selectedRowsBG}
         />
-      }
+      )}
 
       {showBriefModal && (
         <BriefModal
