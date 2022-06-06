@@ -20,8 +20,6 @@ import { useIdleTimer } from "react-idle-timer";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 
-
-
 export default function Briefs() {
   const { matter_id } = useParams();
 
@@ -52,7 +50,6 @@ export default function Briefs() {
   const bool = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
 
-
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
     setshowCreateRFIModal(true);
@@ -61,6 +58,8 @@ export default function Briefs() {
   const hideToast = () => {
     setShowToast(false);
   };
+
+  var moment = require("moment");
 
   const [RFI, setRFI] = useState(null);
 
@@ -159,7 +158,7 @@ export default function Briefs() {
       variables: {
         clientMatterId: matter_id,
         name: briefname,
-        date: new Date(),
+        date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
         order: 0,
       },
     });
@@ -355,20 +354,20 @@ export default function Briefs() {
   };
 
   //session timeout
-  const handleOnAction =  (event) => {
+  const handleOnAction = (event) => {
     console.log("user is clicking");
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
     bool.current = false;
-    if(showSessionTimeout){
+    if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
           console.log("Sign out completed.");
           history.push("/");
         });
-      
+
         function clearLocalStorage() {
           localStorage.removeItem("userId");
           localStorage.removeItem("email");
@@ -390,10 +389,10 @@ export default function Briefs() {
     //after 30 mins, session-timeout modal will show
     bool.current = true;
     setTimeout(() => {
-      if(bool.current){
+      if (bool.current) {
         setShowSessionTimeout(true);
       }
-    }, 60000*30);
+    }, 60000 * 30);
   };
 
   useIdleTimer({
@@ -402,7 +401,6 @@ export default function Briefs() {
     onIdle: handleOnIdle,
     debounce: 1000,
   });
-
 
   return (
     <>
@@ -637,9 +635,7 @@ export default function Briefs() {
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
-      {showSessionTimeout && (
-        <SessionTimeout/>
-      )}
+      {showSessionTimeout && <SessionTimeout />}
     </>
   );
 }

@@ -21,7 +21,6 @@ export const ModalParagraph = ({
     console.log("handleNewParagraph");
     const arrParagraph = paragraph.split("\n\n");
 
-    const dateToday = new Date().toISOString();
     arrParagraph.map(async function (x) {
       //   const mCreateBackground = `
       //     mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
