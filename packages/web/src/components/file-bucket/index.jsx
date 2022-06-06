@@ -48,8 +48,6 @@ export var selectedRows = [];
 export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
 
-
-
 export default function FileBucket() {
   let tempArr = [];
   let nameArr = [];
@@ -123,7 +121,7 @@ export default function FileBucket() {
   const bool = useRef(false);
   let history = useHistory();
 
-
+  var moment = require("moment");
 
   const hideToast = () => {
     setShowToast(false);
@@ -464,7 +462,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   }
   `;
-  
 
   async function tagBackgroundFile() {
     let arrFiles = [];
@@ -1059,7 +1056,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             id: id,
             date:
               data.date !== null && data.date !== "null" && data.date !== ""
-                ? new Date(data.date).toISOString()
+                ? moment.utc(new Date(data.date)).toISOString()
                 : null,
           },
         });
@@ -1509,7 +1506,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           description: arrFiles[i].details,
           date:
             arrFiles[i].date !== null
-              ? new Date(arrFiles[i].date).toISOString()
+              ? moment.utc(new Date(arrFiles[i].date)).toISOString()
               : null,
         },
       });
@@ -1535,21 +1532,21 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }, 1000);
   }
 
-  const handleOnAction =  (event) => {
+  const handleOnAction = (event) => {
     loadMoreMatterFiles();
     console.log("user is clicking");
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
     bool.current = false;
-    if(showSessionTimeout){
+    if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
           console.log("Sign out completed.");
           history.push("/");
         });
-      
+
         function clearLocalStorage() {
           localStorage.removeItem("userId");
           localStorage.removeItem("email");
@@ -1572,10 +1569,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     //after 30 mins, session-timeout modal will show
     bool.current = true;
     setTimeout(() => {
-      if(bool.current){
+      if (bool.current) {
         setShowSessionTimeout(true);
       }
-    }, 60000*30);
+    }, 60000 * 30);
   };
 
   useIdleTimer({
@@ -1836,8 +1833,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             description: arrFiles[i].details,
             date:
               arrFiles[i].date !== null
-                ? new Date(arrFiles[i].date).toISOString()
-                : new Date().toISOString(),
+                ? moment.utc(new Date(arrFiles[i].date)).toISOString()
+                : moment.utc(new Date()).toISOString(),
           },
         });
 
@@ -2104,7 +2101,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           query: mUpdateBackgroundDate,
           variables: {
             id: id,
-            date: data.date !== null ? new Date(data.date).toISOString() : null,
+            date:
+              data.date !== null
+                ? moment.utc(new Date(data.date)).toISOString()
+                : null,
           },
         });
         resolve(request);
@@ -2134,11 +2134,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       console.log("Background ID:", backgroundId);
       setTimeout(() => {
         setShowToast(false);
-        window.location.href = `${
-          AppRoutes.BACKGROUND
-        }/${matter_id}/${arrBackgroundResult[0].id}/?matter_name=${utf8_to_b64(
-          matter_name
-        )}&client_name=${utf8_to_b64(client_name)}`;
+        window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
+          arrBackgroundResult[0].id
+        }/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(
+          client_name
+        )}`;
       }, 200);
     } else {
       alert("Error encountered!");
@@ -2896,26 +2896,27 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               {data.backgrounds.items
                                                 .sort((a, b) =>
                                                   a.order > b.order ? 1 : -1
-                                                ).map((background, index) => (
-                                                    <div
-                                                      className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                      key={background.id}
-                                                      index={index}
-                                                      onClick={(event) =>
-                                                        handleRedirectLink(
-                                                          event,
-                                                          background.id,
-                                                        )
-                                                      }
-                                                    >
-                                                      <b>
-                                                        {background.order +
-                                                          1 +
-                                                          ". "}
-                                                      </b>
-                                                      {ellipsis(
-                                                         checkFormat(client_name) +
-                                                         "/" +
+                                                )
+                                                .map((background, index) => (
+                                                  <div
+                                                    className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                    key={background.id}
+                                                    index={index}
+                                                    onClick={(event) =>
+                                                      handleRedirectLink(
+                                                        event,
+                                                        background.id
+                                                      )
+                                                    }
+                                                  >
+                                                    <b>
+                                                      {background.order +
+                                                        1 +
+                                                        ". "}
+                                                    </b>
+                                                    {ellipsis(
+                                                      checkFormat(client_name) +
+                                                        "/" +
                                                         checkFormat(
                                                           matter_name
                                                         ) +
@@ -3005,9 +3006,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
-      {showSessionTimeout && (
-        <SessionTimeout/>
-      )}
+      {showSessionTimeout && <SessionTimeout />}
     </>
   );
 }

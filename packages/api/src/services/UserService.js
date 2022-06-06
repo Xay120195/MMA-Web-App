@@ -66,7 +66,7 @@ export async function createUser(data) {
       email: data.email,
       userType: data.userType,
       company: data.company,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -81,7 +81,7 @@ export async function createUser(data) {
       id: v4(),
       userId: data.id,
       companyId: data.company.id,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
     const putCompUserCmd = new PutItemCommand({
       TableName: "CompanyUserTable",

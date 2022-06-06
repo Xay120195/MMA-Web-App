@@ -26,7 +26,7 @@ async function createCompany(data) {
       id: v4(),
       name: data.name,
       representative: data.representative,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -57,7 +57,7 @@ async function createPage(data) {
       label: data.label,
       route: data.route,
       features: data.features,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -87,7 +87,7 @@ async function createFeature(data) {
       name: data.name,
       label: data.label,
       page: data.page,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -122,7 +122,7 @@ async function createUserColumnSettings(data) {
             userId: data.userId,
             columnSettings: data.columnSettings[i],
             isVisible: true,
-            createdAt: toUTC(new Date().toISOString()),
+            createdAt: toUTC(new Date()),
           }),
         },
       });
@@ -157,7 +157,7 @@ async function createCompanyAccessType(data) {
       companyId: data.companyId,
       userType: data.userType,
       access: data.access,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -219,7 +219,7 @@ async function createClient(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -233,7 +233,7 @@ async function createClient(data) {
       id: v4(),
       clientId: rawParams.id,
       companyId: data.companyId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const companyClientCommand = new PutItemCommand({
@@ -261,7 +261,7 @@ async function createLabel(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -275,7 +275,7 @@ async function createLabel(data) {
       id: v4(),
       labelId: rawParams.id,
       clientMatterId: data.clientMatterId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const clientMatterLabelCommand = new PutItemCommand({
@@ -312,7 +312,7 @@ async function bulkCreateLabel(clientMatterId, labels) {
           Item: marshall({
             id: labelId,
             name: labels[i].name,
-            createdAt: toUTC(new Date().toISOString()),
+            createdAt: toUTC(new Date()),
           }),
         },
       });
@@ -323,7 +323,7 @@ async function bulkCreateLabel(clientMatterId, labels) {
             id: v4(),
             labelId: labelId,
             clientMatterId: clientMatterId,
-            createdAt: toUTC(new Date().toISOString()),
+            createdAt: toUTC(new Date()),
           }),
         },
       });
@@ -725,7 +725,7 @@ async function createClientMatter(data) {
       id: v4(),
       matter: data.matter,
       client: data.client,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -739,7 +739,7 @@ async function createClientMatter(data) {
       id: v4(),
       clientMatterId: rawParams.id,
       companyId: data.companyId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const companyClientMatterCmd = new PutItemCommand({
@@ -767,7 +767,7 @@ async function createMatter(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -782,7 +782,7 @@ async function createMatter(data) {
       id: v4(),
       matterId: rawParams.id,
       companyId: data.companyId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const companyMatterCommand = new PutItemCommand({
@@ -807,21 +807,14 @@ async function createMatter(data) {
 async function createBackground(data) {
   let resp = {};
   try {
-    // const dateInput = data.date;
-
-    // const a = toUTC(dateInput);
-
-    // console.log("\nOUTPUT:",a);
-
     const rawParams = {
       id: v4(),
       description: data.description,
-      date: data.date ? toUTC(new Date(data.date).toISOString()) : null,
-      createdAt: toUTC(new Date().toISOString()),
+      date: data.date ? data.date : null,
+      createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
     };
 
-    console.log(rawParams);
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
       TableName: "BackgroundsTable",
@@ -833,7 +826,7 @@ async function createBackground(data) {
     //   id: v4(),
     //   backgroundId: rawParams.id,
     //   clientMatterId: data.clientMatterId,
-    //   createdAt: toUTC(new Date().toISOString()),
+    //   createdAt: toUTC(new Date()),
     // };
 
     // const briefBackgroundCmd = new PutItemCommand({
@@ -847,7 +840,7 @@ async function createBackground(data) {
       id: v4(),
       backgroundId: rawParams.id,
       briefId: data.briefId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
     };
 
@@ -885,7 +878,7 @@ export async function tagBriefBackground(data) {
             briefId: data.briefId,
             backgroundId: data.background[i].id,
             order: data.background[i].order,
-            createdAt: toUTC(new Date().toISOString()),
+            createdAt: toUTC(new Date()),
           }),
         },
       });
@@ -1025,7 +1018,7 @@ async function createRFI(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
     };
 
@@ -1040,7 +1033,7 @@ async function createRFI(data) {
       id: v4(),
       rfiId: rawParams.id,
       clientMatterId: data.clientMatterId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const clientMatterRFICommand = new PutItemCommand({
@@ -1069,7 +1062,7 @@ async function createRequest(data) {
       id: v4(),
       question: data.question,
       answer: data.answer,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
       itemNo: data.itemNo,
     };
@@ -1085,7 +1078,7 @@ async function createRequest(data) {
       id: v4(),
       requestId: rawParams.id,
       rfiId: data.rfiId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const rfiRequestCmd = new PutItemCommand({
@@ -1113,8 +1106,8 @@ async function createBrief(data) {
     const rawParams = {
       id: v4(),
       name: data.name,
-      date: data.date ? toUTC(new Date(data.date).toISOString()) : null,
-      createdAt: toUTC(new Date().toISOString()),
+      date: data.date ? data.date : null,
+      createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
     };
 
@@ -1128,7 +1121,7 @@ async function createBrief(data) {
       id: v4(),
       briefId: rawParams.id,
       clientMatterId: data.clientMatterId,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const clientMatterBriefCommand = new PutItemCommand({
@@ -1161,7 +1154,7 @@ async function createColumnSettings(data) {
       name: data.name,
       label: data.label,
       tableName: data.tableName,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -1861,7 +1854,7 @@ const resolvers = {
       const { id, name, details, order, date } = ctx.arguments;
 
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
       if (name !== undefined) data.name = name;
@@ -1870,7 +1863,7 @@ const resolvers = {
 
       if (order !== undefined) data.order = order;
 
-      if (date !== undefined) data.date = toUTC(new Date(date).toISOString());
+      if (date !== undefined) data.date = date;
 
       return await updateMatterFile(id, data);
     },
@@ -1893,7 +1886,7 @@ const resolvers = {
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
         isDeleted: true,
       };
 
@@ -1912,7 +1905,7 @@ const resolvers = {
     labelUpdate: async (ctx) => {
       const { id, name, description } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
       if (name !== undefined) data.name = name;
@@ -1927,7 +1920,7 @@ const resolvers = {
     companyAccessTypeUpdate: async (ctx) => {
       const { id, access } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
       if (access !== undefined) data.access = access;
@@ -1955,10 +1948,10 @@ const resolvers = {
     backgroundUpdate: async (ctx) => {
       const { id, date, description, order } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
-      if (date !== undefined) data.date = toUTC(new Date(date).toISOString());
+      if (date !== undefined) data.date = date;
 
       if (description !== undefined) data.description = description;
 
@@ -2000,7 +1993,7 @@ const resolvers = {
     userColumnSettingsUpdate: async (ctx) => {
       const { id, isVisible } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
       if (isVisible !== undefined) data.isVisible = isVisible;
@@ -2013,7 +2006,7 @@ const resolvers = {
     rfiUpdate: async (ctx) => {
       const { id, name, description, order } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
       if (name !== undefined) data.name = name;
@@ -2034,7 +2027,7 @@ const resolvers = {
     requestUpdate: async (ctx) => {
       const { id, question, answer, itemNo, order } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
       if (question !== undefined) data.question = question;
@@ -2057,10 +2050,10 @@ const resolvers = {
     briefUpdate: async (ctx) => {
       const { id, date, name, order } = ctx.arguments;
       const data = {
-        updatedAt: toUTC(new Date().toISOString()),
+        updatedAt: toUTC(new Date()),
       };
 
-      if (date !== undefined) data.date = toUTC(new Date(date).toISOString());
+      if (date !== undefined) data.date = date;
 
       if (name !== undefined) data.name = name;
 

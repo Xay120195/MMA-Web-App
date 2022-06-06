@@ -179,7 +179,7 @@ export async function createMatterFile(data) {
       isDeleted: false,
       date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
-      createdAt: toUTC(new Date().toISOString()),
+      createdAt: toUTC(new Date()),
     };
 
     const param = marshall(rawParams);
@@ -218,7 +218,7 @@ export async function createMatterFile(data) {
 //         isDeleted: false,
 //         date: data[i].date ? data[i].date : null,
 //         order: data[i].order ? data[i].order : 0,
-//         createdAt: toUTC(new Date().toISOString()),
+//         createdAt: toUTC(new Date()),
 //       };
 //       arrItems.push(p);
 //     }
@@ -259,7 +259,7 @@ export async function bulkCreateMatterFile(data) {
         isDeleted: false,
         date: data[i].date ? data[i].date : null,
         order: data[i].order ? data[i].order : 0,
-        createdAt: toUTC(new Date().toISOString()),
+        createdAt: toUTC(new Date()),
       };
 
       arrItems.push({
