@@ -12,6 +12,7 @@ import ddbClient from "../lib/dynamodb-client";
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { toUTC, toLocalTime } = require("../shared/toUTC");
 
 export async function generatePresignedUrl(Key, src) {
   const request = {
@@ -178,7 +179,7 @@ export async function createMatterFile(data) {
       isDeleted: false,
       date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
-      createdAt: new Date().toISOString(),
+      createdAt: toUTC(new Date().toISOString()),
     };
 
     const param = marshall(rawParams);
@@ -217,7 +218,7 @@ export async function createMatterFile(data) {
 //         isDeleted: false,
 //         date: data[i].date ? data[i].date : null,
 //         order: data[i].order ? data[i].order : 0,
-//         createdAt: new Date().toISOString(),
+//         createdAt: toUTC(new Date().toISOString()),
 //       };
 //       arrItems.push(p);
 //     }
@@ -258,7 +259,7 @@ export async function bulkCreateMatterFile(data) {
         isDeleted: false,
         date: data[i].date ? data[i].date : null,
         order: data[i].order ? data[i].order : 0,
-        createdAt: new Date().toISOString(),
+        createdAt: toUTC(new Date().toISOString()),
       };
 
       arrItems.push({
