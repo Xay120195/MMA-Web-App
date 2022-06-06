@@ -1056,10 +1056,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             id: id,
             date:
               data.date !== null && data.date !== "null" && data.date !== ""
-                ? moment.utc(new Date(data.date)).toISOString()
+                ? moment
+                    .utc(moment(new Date(data.date), "YYYY-MM-DD"))
+                    .toISOString()
                 : null,
           },
         });
+
         resolve(request);
       } catch (e) {
         reject(e.errors[0].message);
@@ -1506,7 +1509,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           description: arrFiles[i].details,
           date:
             arrFiles[i].date !== null
-              ? moment.utc(new Date(arrFiles[i].date)).toISOString()
+              ? moment
+                  .utc(moment(new Date(arrFiles[i].date), "YYYY-MM-DD"))
+                  .toISOString()
               : null,
         },
       });
@@ -1833,8 +1838,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             description: arrFiles[i].details,
             date:
               arrFiles[i].date !== null
-                ? moment.utc(new Date(arrFiles[i].date)).toISOString()
-                : moment.utc(new Date()).toISOString(),
+                ? moment
+                    .utc(moment(new Date(arrFiles[i].date), "YYYY-MM-DD"))
+                    .toISOString()
+                : moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
           },
         });
 
@@ -2103,10 +2110,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             id: id,
             date:
               data.date !== null
-                ? moment.utc(new Date(data.date)).toISOString()
+                ? moment
+                    .utc(moment(new Date(data.date), "YYYY-MM-DD"))
+                    .toISOString()
                 : null,
           },
         });
+
         resolve(request);
       } catch (e) {
         reject(e.errors[0].message);

@@ -158,7 +158,7 @@ export default function Briefs() {
       variables: {
         clientMatterId: matter_id,
         name: briefname,
-        date: moment.utc(new Date()).toISOString(),
+        date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
         order: 0,
       },
     });

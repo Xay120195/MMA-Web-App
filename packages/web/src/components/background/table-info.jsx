@@ -215,7 +215,6 @@ const TableInfo = ({
   };
 
   useEffect(() => {
-    
     setTimeout(() => {
       setLoading(false);
     }, 1000);
@@ -329,7 +328,9 @@ const TableInfo = ({
             id: id,
             date:
               data.date !== null
-                ? moment.utc(new Date(data.date)).toISOString()
+                ? moment
+                    .utc(moment(new Date(data.date), "YYYY-MM-DD"))
+                    .toISOString()
                 : null,
           },
         });
@@ -931,7 +932,9 @@ const TableInfo = ({
           filteredBackground[0].date !== null &&
           filteredBackground[0].date !== "null" &&
           filteredBackground[0].date !== ""
-            ? moment.utc(new Date(filteredBackground[0].date)).toISOString()
+            ? moment
+                .utc(moment(new Date(filteredBackground[0].date), "YYYY-MM-DD"))
+                .toISOString()
             : null,
       },
     });

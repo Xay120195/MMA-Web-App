@@ -178,7 +178,9 @@ const ActionButtons = (props) => {
 
   const handleAddRow = async () => {
     console.log("handleAddRow");
-    const dateToday = moment.utc(new Date()).toISOString();
+    const dateToday = moment
+      .utc(moment(new Date(), "YYYY-MM-DD"))
+      .toISOString();
 
     const mCreateBackground = `
         mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
