@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ChangePassword from "../change-password";
 import { AccountSettingsHeader } from "./account-settings-header";
 import { AccountSettingsCategory } from "./account-settings-category";
@@ -8,9 +8,21 @@ import WaveIllustration from "../../assets/images/wave-illustration.svg";
 import { BiUser } from "react-icons/bi";
 import { FaUserCog } from "react-icons/fa";
 import "../../assets/styles/AccountSettings.css";
+import { useIdleTimer } from "react-idle-timer";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import { Auth } from "aws-amplify";
+import { Redirect, useHistory } from "react-router-dom";
+
+
 
 function AccountSettings() {
   const [userInfo, setuserInfo] = useState(null);
+
+  let history = useHistory();
+  const bool = useRef(false);
+  const [showSessionTimeout, setShowSessionTimeout] = useState(false);
+  
+
 
   useEffect(() => {
     if (userInfo === null) {
@@ -23,6 +35,56 @@ function AccountSettings() {
       setuserInfo(ls);
     }
   }, [userInfo]);
+
+  //session timeout
+  const handleOnAction =  (event) => {
+    console.log("user is clicking");
+
+    //function for detecting if user moved/clicked.
+    //if modal is active and user moved, automatic logout (session expired)
+    bool.current = false;
+    if(showSessionTimeout){
+      setTimeout(() => {
+        Auth.signOut().then(() => {
+          clearLocalStorage();
+          console.log("Sign out completed.");
+          history.push("/");
+        });
+      
+        function clearLocalStorage() {
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
+        }
+      }, 3000);
+    }
+  };
+
+  const handleOnIdle = (event) => {
+    console.log("user is idle");
+
+    //function for detecting if user is on idle.
+    //after 30 mins, session-timeout modal will show
+    bool.current = true;
+    setTimeout(() => {
+      if(bool.current){
+        setShowSessionTimeout(true);
+      }
+    }, 60000*30);
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
+
 
   return (
     <>
@@ -116,6 +178,9 @@ function AccountSettings() {
       <div className="wave-illustration">
         <img src={WaveIllustration} className="w-full" alt="illusion" />
       </div>
+      {showSessionTimeout && (
+        <SessionTimeout/>
+      )}
     </>
   );
 }

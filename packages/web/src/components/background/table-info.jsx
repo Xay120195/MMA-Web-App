@@ -123,6 +123,8 @@ const TableInfo = ({
   const location = useLocation();
   const history = useHistory();
 
+  var moment = require("moment");
+
   const queryParams = new URLSearchParams(location.search);
 
   const hideToast = () => {
@@ -316,13 +318,20 @@ const TableInfo = ({
 `;
 
   async function updateBackgroundDate(id, data) {
+    console.log("updateBackgroundDate:", data);
+
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
           query: mUpdateBackgroundDate,
           variables: {
             id: id,
-            date: data.date !== null ? new Date(data.date).toISOString() : null,
+            date:
+              data.date !== null
+                ? moment
+                    .utc(moment(new Date(data.date), "YYYY-MM-DD"))
+                    .toISOString()
+                : null,
           },
         });
         resolve(request);
@@ -418,17 +427,16 @@ const TableInfo = ({
     }, 9000);
 
     setTimeout(() => {
-      if(bool.current){
+      if (bool.current) {
         deleteFileProper(item);
-      }else{
+      } else {
         cancelDeleteFile();
       }
     }, 10000);
-
   };
 
-  const deleteFileProper = async (item) =>{
-      const backgroundFilesOpt = await API.graphql({
+  const deleteFileProper = async (item) => {
+    const backgroundFilesOpt = await API.graphql({
       query: qlistBackgroundFiles,
       variables: {
         id: item[0].backgroundId,
@@ -491,20 +499,19 @@ const TableInfo = ({
       setShowToast(false);
       setHoldDeleteFile(false);
     }, 2000);
-  }
+  };
 
-  const cancelDeleteFile= () => {
+  const cancelDeleteFile = () => {
     bool.current = false;
     setHoldDeleteFile(false);
-  }
+  };
 
-
-  function undoDeleteFile(){
+  function undoDeleteFile() {
     bool.current = false;
     setalertMessage(`Restored File.`);
     setShowToast(true);
     setHoldDeleteFile(false);
-    
+
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
@@ -545,8 +552,6 @@ const TableInfo = ({
       return order === "desc" ? comparison * -1 : comparison;
     };
   }
-
-  
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
     if (event.target.checked) {
@@ -707,7 +712,6 @@ const TableInfo = ({
     const storedItemRows = JSON.parse(localStorage.getItem("selectedRows"));
     var counter = 1;
     storedItemRows.map(async function (x) {
-      
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
@@ -715,7 +719,7 @@ const TableInfo = ({
           description: x.details,
           date: x.date,
           files: { items: [] },
-          order: counter++
+          order: counter++,
         },
       });
 
@@ -741,42 +745,44 @@ const TableInfo = ({
           files: x.files.items,
         },
       });
-
     });
 
-    setTimeout( async function () {
+    setTimeout(async function () {
       console.log("Updated Arr", sortByOrder(arrFileResultBG));
 
-      sortByOrder(arrFileResultBG).splice(0).reverse().map(async function (x) {
-        var resultBG = {
-          createdAt: x.createdAt,
-          id: x.id,
-          files: { items: x.files.items },
-          date: x.date,
-          description: x.description,
-          order: x.order,
-        };
+      sortByOrder(arrFileResultBG)
+        .splice(0)
+        .reverse()
+        .map(async function (x) {
+          var resultBG = {
+            createdAt: x.createdAt,
+            id: x.id,
+            files: { items: x.files.items },
+            date: x.date,
+            description: x.description,
+            order: x.order,
+          };
 
-        tempBackground.splice(targetIndex + 1, 0, resultBG);
+          tempBackground.splice(targetIndex + 1, 0, resultBG);
 
-        setBackground(tempBackground);
-        setSelectRow([]);
-        //setSelectedItems(arrId.map((x) => x.id));
+          setBackground(tempBackground);
+          setSelectRow([]);
+          //setSelectedItems(arrId.map((x) => x.id));
 
-        const result = tempBackground.map(({ id }, index) => ({
-          id: id,
-          order: index,
-        }));
+          const result = tempBackground.map(({ id }, index) => ({
+            id: id,
+            order: index,
+          }));
 
-        console.log("Item", result);
+          console.log("Item", result);
 
-        await API.graphql({
-          query: mBulkUpdateBackgroundOrder,
-          variables: {
-            arrangement: result,
-          },
+          await API.graphql({
+            query: mBulkUpdateBackgroundOrder,
+            variables: {
+              arrangement: result,
+            },
+          });
         });
-      })
 
       /*const arrayUpdated = arrFileResultBG.map(({ id }, index) => ({
         id: id,
@@ -800,7 +806,6 @@ const TableInfo = ({
           arrangement: result,
         },
       });*/
-
     }, 1500);
 
     /*setTimeout(async function() {
@@ -816,7 +821,6 @@ const TableInfo = ({
         },
       });
     }, 1000);*/
-    
 
     setShowDeleteButton(false);
     setPasteButton(false);
@@ -834,7 +838,7 @@ const TableInfo = ({
     }, 9000);
   };
 
-  function undoAction(){
+  function undoAction() {
     const newArr = Array(background.length).fill(false);
     setCheckedState(newArr);
     console.log("BI", bgInput);
@@ -845,26 +849,26 @@ const TableInfo = ({
         }
       }
       `;
-  
-      const deletedId = API.graphql({
-        query: mDeleteBackground,
-        variables: {
-          briefId: briefId,
-          background: bgInput,
-        },
-      });
 
-      setSelectedRowsBG([]);
-      setSelectedItems([]);
-      setcheckAllState(false);
-      setHoldPaste(false);
-      setSelectRow([]);
+    const deletedId = API.graphql({
+      query: mDeleteBackground,
+      variables: {
+        briefId: briefId,
+        background: bgInput,
+      },
+    });
 
-      setTimeout(() => {
-        setShowToast(false);
-        
-        getBackground();
-      }, 3000);
+    setSelectedRowsBG([]);
+    setSelectedItems([]);
+    setcheckAllState(false);
+    setHoldPaste(false);
+    setSelectRow([]);
+
+    setTimeout(() => {
+      setShowToast(false);
+
+      getBackground();
+    }, 3000);
   }
 
   // const reOrderFiles = (array, tempBackground, targetIndex) => {
@@ -928,10 +932,16 @@ const TableInfo = ({
           filteredBackground[0].date !== null &&
           filteredBackground[0].date !== "null" &&
           filteredBackground[0].date !== ""
-            ? new Date(filteredBackground[0].date).toISOString()
+            ? moment
+                .utc(moment(new Date(filteredBackground[0].date), "YYYY-MM-DD"))
+                .toISOString()
             : null,
       },
     });
+
+    if (!dateRequest) {
+      console.log("Error", dateRequest);
+    }
 
     const descRequest = API.graphql({
       query: mUpdateMatterFileDesc,
@@ -940,6 +950,10 @@ const TableInfo = ({
         details: filteredBackground[0].description,
       },
     });
+
+    if (!descRequest) {
+      console.log("Error", descRequest);
+    }
 
     setalertMessage(`Successfully synced to File Bucket `);
     setShowToast(true);
@@ -1045,8 +1059,6 @@ const TableInfo = ({
 
     console.log("result", request);
 
-
-
     if (request.data.matterFileBulkCreate !== null) {
       request.data.matterFileBulkCreate.map((i) => {
         return (idTag = [...idTag, { id: i.id }]);
@@ -1078,56 +1090,54 @@ const TableInfo = ({
       }
     }`;
 
-        let arrFiles = [];
-        let arrFileResult = [];
-        const seen = new Set();
+    let arrFiles = [];
+    let arrFileResult = [];
+    const seen = new Set();
 
-        // console.log("MID/BID", background_id);
+    // console.log("MID/BID", background_id);
 
-        const backgroundFilesOpt = await API.graphql({
-          query: qlistBackgroundFiles,
-          variables: {
-            id: selectedRowId,
-          },
-        });
+    const backgroundFilesOpt = await API.graphql({
+      query: qlistBackgroundFiles,
+      variables: {
+        id: selectedRowId,
+      },
+    });
 
-        if (backgroundFilesOpt.data.background.files !== null) {
-          arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-            ({ id }) => ({
-              id: id,
-            })
-          );
+    if (backgroundFilesOpt.data.background.files !== null) {
+      arrFileResult = backgroundFilesOpt.data.background.files.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
 
-          idTag.push(...arrFileResult);
-          console.log("updatedidtag", idTag);
+      idTag.push(...arrFileResult);
+      console.log("updatedidtag", idTag);
 
-          const filteredArr = idTag.filter((el) => {
-            const duplicate = seen.has(el.id);
-            seen.add(el.id);
-            return !duplicate;
-          });
+      const filteredArr = idTag.filter((el) => {
+        const duplicate = seen.has(el.id);
+        seen.add(el.id);
+        return !duplicate;
+      });
 
-          console.log("rowid", selectedRowId);
+      console.log("rowid", selectedRowId);
 
-          API.graphql({
-            query: mUpdateBackgroundFile,
-            variables: {
-              backgroundId: selectedRowId,
-              files: filteredArr,
-            },
-          });
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: filteredArr,
+        },
+      });
+    } else {
+      API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: selectedRowId,
+          files: idTag,
+        },
+      });
+    }
 
-          
-        } else {
-          API.graphql({
-            query: mUpdateBackgroundFile,
-            variables: {
-              backgroundId: selectedRowId,
-              files: idTag,
-            },
-          });
-        }
-    
     //return request;
   }
 
@@ -1322,9 +1332,15 @@ const TableInfo = ({
                                     {(provider, snapshot) => (
                                       <tr
                                         className={
-                                          selectRow.find((x) => x.id === item.id) && holdDelete ? "hidden" 
-                                          : selectRow.find((x) => x.id === item.id) ? "bg-green-300" 
-                                          : ""
+                                          selectRow.find(
+                                            (x) => x.id === item.id
+                                          ) && holdDelete
+                                            ? "hidden"
+                                            : selectRow.find(
+                                                (x) => x.id === item.id
+                                              )
+                                            ? "bg-green-300"
+                                            : ""
                                         }
                                         index={index}
                                         key={item.id}
@@ -1565,12 +1581,14 @@ const TableInfo = ({
                                                             index
                                                           }
                                                         />
-                                                        <p className={
-                                                          selectedFileId === items.id && holdDeleteFile 
-                                                          ? "hidden"
-                                                          : "break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100"
-                                                        }
-                                                        
+                                                        <p
+                                                          className={
+                                                            selectedFileId ===
+                                                              items.id &&
+                                                            holdDeleteFile
+                                                              ? "hidden"
+                                                              : "break-normal border-dotted border-2 border-gray-500 p-1 rounded-lg mb-2 bg-gray-100"
+                                                          }
                                                         >
                                                           {activateButton ? (
                                                             <input
@@ -1760,18 +1778,18 @@ const TableInfo = ({
       {showToast && (
         <div
           onClick={
-            goToFileBucket ? 
-              () =>
+            goToFileBucket
+              ? () =>
                   (window.location = `${
                     AppRoutes.FILEBUCKET
                   }/${matterId}/000/?matter_name=${utf8_to_b64(
                     matter_name
                   )}&client_name=${utf8_to_b64(client_name)}`)
-            : holdPaste ?
-              () => undoAction()
-            : holdDeleteFile ?
-              () => undoDeleteFile()
-            : null
+              : holdPaste
+              ? () => undoAction()
+              : holdDeleteFile
+              ? () => undoDeleteFile()
+              : null
           }
         >
           <ToastNotification title={alertMessage} hideToast={hideToast} />

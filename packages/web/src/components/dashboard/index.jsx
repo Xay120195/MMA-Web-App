@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useReducer } from "react";
+import React, { useState, useEffect, createContext, useReducer, useRef } from "react";
 import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";
 import imgDocs from "../../assets/images/docs.svg";
@@ -13,6 +13,11 @@ import CreatableSelect from "react-select/creatable";
 import { API } from "aws-amplify";
 import { initialState } from "./initialState";
 import { clientMatterReducers } from "./reducers";
+import { useIdleTimer } from "react-idle-timer";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import { Auth } from "aws-amplify";
+import { useHistory } from "react-router-dom";
+
 
 import {
   getMatterList,
@@ -46,6 +51,11 @@ export default function Dashboard() {
   const [selectedClient, setSelectedClient] = useState();
   const [selectedMatter, setSelectedMatter] = useState();
   const [selectedClientMatter, setSelectedClientMatter] = useState();
+
+  let history = useHistory();
+  const bool = useRef(false);
+  const [showSessionTimeout, setShowSessionTimeout] = useState(false);
+
 
   //restructure data from matterlist
   const { listmatters, loading, errorMatter, toastMessage, toast } = matterlist;
@@ -319,6 +329,56 @@ mutation addMatter($companyId: String, $name: String) {
     }
   };
 
+  //Session timeout
+  const handleOnAction =  (event) => {
+    console.log("user is clicking");
+
+    //function for detecting if user moved/clicked.
+    //if modal is active and user moved, automatic logout (session expired)
+    bool.current = false;
+    if(showSessionTimeout){
+      setTimeout(() => {
+        Auth.signOut().then(() => {
+          clearLocalStorage();
+          console.log("Sign out completed.");
+          history.push("/");
+        });
+      
+        function clearLocalStorage() {
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
+        }
+      }, 3000);
+    }
+  };
+
+  const handleOnIdle = (event) => {
+    console.log("user is idle");
+
+    //function for detecting if user is on idle.
+    //after 30 mins, session-timeout modal will show
+    bool.current = true;
+    setTimeout(() => {
+      if(bool.current){
+        setShowSessionTimeout(true);
+      }
+    }, 60000*30);
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
+
+
   return userInfo ? (
     <>
       <div className="p-5 font-sans" style={contentDiv}>
@@ -465,6 +525,10 @@ mutation addMatter($companyId: String, $name: String) {
               title={toastMessage}
             />
           )}
+          {showSessionTimeout && (
+            <SessionTimeout/>
+          )}
+
         </div>
       </div>
     </>
