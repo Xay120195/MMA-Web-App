@@ -554,7 +554,7 @@ const ActionButtons = (props) => {
               </button>
             )}
             {showhideState && (
-              <div className="w-64 h-38 z-500 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none">
+              <div className="w-64 h-38 z-500 bg-white absolute mt-10 ml-2 rounded border-0 shadow outline-none z-40">
                 <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
                   TABLE COLUMN OPTIONS
                 </p>
