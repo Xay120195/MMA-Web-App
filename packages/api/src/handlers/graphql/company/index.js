@@ -231,7 +231,8 @@ async function listCompanyClientMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  let indexName, isAscending = true;
+  let indexName,
+    isAscending = true;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -255,6 +256,7 @@ async function listCompanyClientMatters(ctx) {
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
         : undefined,
+      ProjectionExpression: "clientMatterId",
     };
 
     if (limit !== undefined) {
@@ -268,21 +270,45 @@ async function listCompanyClientMatters(ctx) {
       (f) => marshall({ id: f.clientMatterId })
     );
 
-    if (clientMatterIds !== 0) {
-      const clientmattersParam = {
-        RequestItems: {
-          ClientMatterTable: {
-            Keys: clientMatterIds,
-          },
-        },
-      };
+    if (clientMatterIds.length !== 0) {
+      let batches = [],
+        current_batch = [],
+        item_count = 0;
 
-      const cmCmd = new BatchGetItemCommand(clientmattersParam);
-      const cmResult = await client.send(cmCmd);
+      clientMatterIds.forEach((data) => {
+        item_count++;
+        current_batch.push(data);
 
-      const objCM = cmResult.Responses.ClientMatterTable.map((i) =>
-        unmarshall(i)
+        // Chunk items to 25
+        if (item_count % 25 == 0) {
+          batches.push(current_batch);
+          current_batch = [];
+        }
+      });
+
+      // Add the last batch if it has records and is not equal to 25
+      if (current_batch.length > 0 && current_batch.length != 25) {
+        batches.push(current_batch);
+      }
+
+      const asyncResult = await Promise.all(
+        batches.map(async (data, index) => {
+          const clientmattersParam = {
+            RequestItems: {
+              ClientMatterTable: {
+                Keys: data,
+              },
+            },
+          };
+
+          const cmCmd = new BatchGetItemCommand(clientmattersParam);
+          const cmResult = await client.send(cmCmd);
+          return cmResult.Responses.ClientMatterTable;
+        })
       );
+
+      const objCM = asyncResult.flat().map((i) => unmarshall(i));
+
       const objCompCM = compCMResult.Items.map((i) => unmarshall(i));
 
       const response = objCompCM.map((item) => {
