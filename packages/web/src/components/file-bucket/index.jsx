@@ -628,8 +628,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       let matterFilesList = files.data.matterFiles.items;
       console.log("matterFilesList: ", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      setFiles(matterFilesList);
-      setMatterFiles(matterFilesList); // no need to use sortByOrder
+      setFiles(sortByOrder(matterFilesList));
+      setMatterFiles(sortByOrder(matterFilesList)); // no need to use sortByOrder
       setMaxLoading(false);
     });
   };
@@ -679,7 +679,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           setMatterFiles([...new Set(arrConcat)]);
         } else {
           //setMatterFiles([...new Set(sortByOrder(arrConcat))]);
-          setMatterFiles([...new Set(arrConcat)]);
+          setMatterFiles([...new Set(sortByOrder(arrConcat))]);
         }
 
         // if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
@@ -1084,15 +1084,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   //sorting files function
   function sortByOrder(arr) {
-    // const isAllNotZero = arr.every(
-    //   (item) => item.order >= 0 && item.order !== 0
-    // );
     let sort;
-    // if (isAllNotZero) {
-    sort = arr.sort((a, b) => a.order - b.order);
-    // } else {
-    //   sort = arr;
-    // }
+
+    if (arr) {
+      sort = arr.sort((a, b) =>
+        a.order - b.order === 0
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : a.order - b.order
+      );
+    } else {
+      sort = arr;
+    }
+
     return sort;
   }
 
