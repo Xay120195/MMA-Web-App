@@ -28,6 +28,8 @@ export const ModalParagraph = ({
   const handleNewParagraph = async (e) => {
     console.log("handleNewParagraph");
     const arrParagraph = paragraph.split("\n\n");
+    
+    setParagraph("");
 
     const rowArrangement = background.map(({ id }, index) => ({
       id: id,
@@ -49,6 +51,7 @@ export const ModalParagraph = ({
         },
     });
     console.log(response);
+    setShowModalParagraph(false);
  
     for(let i=0; i<arrParagraph.length; i++){
       const createBackgroundRow = await API.graphql({
@@ -61,13 +64,12 @@ export const ModalParagraph = ({
         },
       });
     }
-      setShowModalParagraph(false);
-      setParagraph("");
+      getBackground();
       setcheckAllState(false);
       setCheckedState(new Array(background.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
-      getBackground();
+      
   };
   const countRow = paragraph.split("\n\n");
 
