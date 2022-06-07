@@ -17,99 +17,57 @@ export const ModalParagraph = ({
 }) => {
   let buttonBg = "bg-green-500";
 
+  const mCreateBackground = `
+      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime, $order: Int) {
+            backgroundCreate(briefId: $briefId, description: $description, date: $date, order: $order) {
+              id
+            }
+          }
+      `;
+
   const handleNewParagraph = async (e) => {
     console.log("handleNewParagraph");
     const arrParagraph = paragraph.split("\n\n");
 
-    const dateToday = new Date().toISOString();
-    arrParagraph.map(async function (x) {
-      //   const mCreateBackground = `
-      //     mutation createBackground($clientMatterId: String, $description: String, $date: AWSDateTime) {
-      //       backgroundCreate(clientMatterId: $clientMatterId, description: $description, date: $date) {
-      //         id
-      //         date
-      //         description
-      //         order
-      //         createdAt
-      //       }
-      //     }
-      // `;
+    const rowArrangement = background.map(({ id }, index) => ({
+      id: id,
+      order: index + arrParagraph.length,
+    }));
 
-      //   const createBackgroundRow = await API.graphql({
-      //     query: mCreateBackground,
-      //     variables: {
-      //       clientMatterId: matterId,
-      //       description: x,
-      //       date: null,
-      //       files: { items: [] },
-      //     },
-      //   });
-      const mCreateBackground = `
-    mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
-      backgroundCreate(briefId: $briefId, description: $description, date: $date) {
-        id
-        description
-        order
-      }
-    }
-`;
+    const mUpdateBackgroundOrder = `
+      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+        backgroundBulkUpdateOrders(arrangement: $arrangement) {
+          id
+          order
+        }
+      }`;
 
+    const response = await API.graphql({
+        query: mUpdateBackgroundOrder,
+        variables: {
+          arrangement: rowArrangement,
+        },
+    });
+    console.log(response);
+ 
+    for(let i=0; i<arrParagraph.length; i++){
       const createBackgroundRow = await API.graphql({
         query: mCreateBackground,
         variables: {
           briefId: briefId,
-          description: x,
+          description: arrParagraph[i],
           date: null,
+          order: parseInt(i),
         },
       });
-
-      let newData = [];
-      newData.push({
-        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
-        date: null,
-        description: createBackgroundRow.data.backgroundCreate.description,
-        id: createBackgroundRow.data.backgroundCreate.id,
-        order: 0,
-        files: { items: [] },
-      });
-
-      if (newData.length >= 0) {
-        const [xs] = [...newData];
-
-        background.splice(0, 0, xs);
-
-        setShowModalParagraph(false);
-        setParagraph("");
-
-        console.log(background);
-
-        const rowArrangement = background.map(({ id }, index) => ({
-          id: id,
-          order: index + 1,
-        }));
-
-        const mUpdateBackgroundOrder = `
-          mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
-            backgroundBulkUpdateOrders(arrangement: $arrangement) {
-              id
-              order
-            }
-          }`;
-        const response = await API.graphql({
-          query: mUpdateBackgroundOrder,
-          variables: {
-            arrangement: rowArrangement,
-          },
-        });
-        console.log(response);
-
-        setcheckAllState(false);
-
-        setCheckedState(new Array(background.length).fill(false));
-        setSelectedRowsBG([]);
-        setShowDeleteButton(false);
-      }
-    });
+    }
+      setShowModalParagraph(false);
+      setParagraph("");
+      setcheckAllState(false);
+      setCheckedState(new Array(background.length).fill(false));
+      setSelectedRowsBG([]);
+      setShowDeleteButton(false);
+      getBackground();
   };
   const countRow = paragraph.split("\n\n");
 
