@@ -16,8 +16,6 @@ import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 import { Redirect, useHistory } from "react-router-dom";
 
-
-
 // const contentDiv = {
 //   margin: "0 0 0 65px",
 // };
@@ -82,8 +80,6 @@ const Background = () => {
   let history = useHistory();
   const check = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
-
-
 
   useEffect(() => {
     getBackground();
@@ -388,14 +384,14 @@ const Background = () => {
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
     check.current = false;
-    if(showSessionTimeout){
+    if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
           console.log("Sign out completed.");
           history.push("/");
         });
-      
+
         function clearLocalStorage() {
           localStorage.removeItem("userId");
           localStorage.removeItem("email");
@@ -408,22 +404,20 @@ const Background = () => {
         }
       }, 3000);
     }
-
   };
 
   const handleOnIdle = (event) => {
     console.log("User is on idle");
     loadMoreBackground();
 
-     //function for detecting if user is on idle.
+    //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
     check.current = true;
     setTimeout(() => {
-      if(check.current){
+      if (check.current) {
         setShowSessionTimeout(true);
       }
-    }, 60000*30);
-
+    }, 60000 * 30);
   };
 
   useIdleTimer({
@@ -732,8 +726,8 @@ const Background = () => {
           style={{ position: "sticky", top: "0" }}
           className="py-5 z-30 ml-4 bg-white"
         >
-          <p className="font-bold text-xl ">
-            <div className="flex">
+          <div className="flex font-bold text-xl">
+            
               <p
                 className="px-1 text-xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
                 dangerouslySetInnerHTML={{
@@ -744,13 +738,13 @@ const Background = () => {
               <span className="font-semibold text-xl">
                 {client_name}/{matter_name}
               </span>
-            </div>
-          </p>
+            
+          </div>
         </div>
 
         <div className="py-5 bg-white z-40 absolute -mt-20 ml-5">
-          <p className="font-bold text-3xl ">
-            <div className="flex">
+          <div className="flex font-bold text-3xl">
+            
               <p
                 suppressContentEditableWarning={true}
                 style={{
@@ -772,8 +766,8 @@ const Background = () => {
               <span className="font-semibold text-3xl">
                 {client_name}/{matter_name}
               </span>
-            </div>
-          </p>
+            
+          </div>
         </div>
 
         <div
@@ -936,9 +930,7 @@ const Background = () => {
           <ToastNotification title={alertMessage} hideToast={hideToast} />
         )}
 
-        {showSessionTimeout && (
-          <SessionTimeout/>
-        )}
+        {showSessionTimeout && <SessionTimeout />}
       </div>
     </>
   );
