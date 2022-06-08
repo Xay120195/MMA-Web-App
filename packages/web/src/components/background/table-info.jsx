@@ -972,9 +972,20 @@ const TableInfo = ({
     setSelectedRowID(itemid);
   }
 
+  //single matter upload
+  const mCreateMatterFile = `
+  mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
+      matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
+        id
+        name
+        order
+      }
+    }
+  `;
+
   var idTag = [];
   //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
-  const handleUploadLink = async (uf) => {
+  const handleUploadLink = (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
 
     //Add order to new files
@@ -984,47 +995,52 @@ const TableInfo = ({
 
     var addOrder = sortedFiles.map((x) => ({ ...x, order: 0 }));
     // console.log("SF",sortedFiles);
-    // console.log("AO",addOrder);
+    console.log("AO",addOrder);
 
     //insert in matter file list
-    await bulkCreateMatterFile(addOrder);
+    bulkCreateMatterFile(addOrder);
 
-    console.log("idtag", idTag);
-
-    //set background content
-    setTimeout(async () => {
-      const backgroundFilesOptReq = await API.graphql({
-        query: qlistBackgroundFiles,
-        variables: {
-          id: selectedRowId,
-        },
-      });
-
-      // if (backgroundFilesOptReq.data.background.files !== null) {
-      const newFilesResult =
-        backgroundFilesOptReq.data.background.files.items.map(
-          ({ id, name, description }) => ({
-            id: id,
-            name: name,
-            description: description,
-          })
-        );
-
-      const updateArrFiles = background.map((obj) => {
-        if (obj.id === selectedRowId) {
-          return { ...obj, files: { items: newFilesResult } };
-        }
-        return obj;
-      });
-
-      console.log("new filess", newFilesResult);
-      setBackground(updateArrFiles);
-      // }
-    }, 3000);
+    // for(var i=0; i<addOrder.length; i++){
+    //     delete addOrder[i].oderSelected;
+    //     setTimeout(()=>{
+    //       createMatterFile(addOrder[i]);
+    //     }, 5000)
+    // }
+      //set background content
+      setTimeout(async () => {
+        const backgroundFilesOptReq = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: selectedRowId,
+          },
+        });
+  
+        // if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description }) => ({
+              id: id,
+              name: name,
+              description: description,
+            })
+          );
+  
+        const updateArrFiles = background.map((obj) => {
+          if (obj.id === selectedRowId) {
+            return { ...obj, files: { items: newFilesResult } };
+          }
+          return obj;
+        });
+  
+        console.log("new filess", newFilesResult);
+        setBackground(updateArrFiles);
+        // }
+      }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
     setShowToast(true);
     setGoToFileBucket(true);
+    getBackground();
 
     handleModalClose();
     setTimeout(() => {
@@ -1033,29 +1049,42 @@ const TableInfo = ({
     }, 5000);
   };
 
-  const mBulkCreateMatterFile = `
-        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
-          matterFileBulkCreate(files: $files) {
-            id
-            name
-            order
-          }
-        }
-    `;
 
+  function createMatterFile(param) {
+  //don't delete for single upload trial
+    const request = API.graphql({
+      query: mCreateMatterFile,
+      variables: param,
+    });
+
+    console.log("result", request);
+  }
+
+  const mBulkCreateMatterFile = `
+    mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+      matterFileBulkCreate(files: $files) {
+        id
+        name
+        order
+      }
+    }
+  `;
+  
   async function bulkCreateMatterFile(param) {
     console.log("bulkCreateMatterFile");
 
     param.forEach(function (i) {
       delete i.oderSelected; // remove orderSelected
     });
-
-    const request = await API.graphql({
-      query: mBulkCreateMatterFile,
-      variables: {
-        files: param,
-      },
-    });
+    
+    setTimeout(async () => {
+      const request = await API.graphql({
+        query: mBulkCreateMatterFile,
+        variables: {
+          files: param,
+        },
+      });
+    
 
     console.log("result", request);
 
@@ -1137,7 +1166,7 @@ const TableInfo = ({
         },
       });
     }
-
+  }, 1000);
     //return request;
   }
 
