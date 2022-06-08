@@ -1290,11 +1290,11 @@ const TableInfo = ({
                           style={{ position: "sticky", top: "190px" }}
                         >
                           <tr>
-                            <th className="px-2 py-4 text-center whitespace-nowrap">
-                              No
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-10">
+                            Item No.
                             </th>
                             {checkDate && (
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-10">
                                 Date &nbsp;
                                 {(() => {
                                   if (ascDesc == null) {
@@ -1332,12 +1332,12 @@ const TableInfo = ({
                               </th>
                             )}
                             {checkDesc && (
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
                                 Description of Background
                               </th>
                             )}
                             {checkDocu && (
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Document
                               </th>
                             )}
@@ -1386,7 +1386,7 @@ const TableInfo = ({
                                       >
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="px-1 py-3 align-top"
+                                          className="px-1 py-3 align-top w-10"
                                         >
                                           <div className="flex items-center ">
                                             <MdDragIndicator
@@ -1432,7 +1432,7 @@ const TableInfo = ({
 
                                         {checkDate && (
                                           <td
-                                            className="align-top py-3"
+                                            className="align-top py-3 w-10"
                                             {...provider.dragHandleProps}
                                           >
                                             <div>
@@ -1461,7 +1461,7 @@ const TableInfo = ({
                                         {checkDesc && (
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="w-10/12 px-2 py-3 align-top place-items-center relative flex-wrap"
+                                            className="px-2 py-3 align-top place-items-center relative w-3/6"
                                           >
                                             <div
                                               className="p-2 w-full h-full font-poppins"
@@ -1503,7 +1503,7 @@ const TableInfo = ({
                                         {checkDocu && (
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="py-3 px-3 w-80 text-sm text-gray-500 align-top"
+                                            className="py-3 px-3 text-sm text-gray-500 align-top w-1/6 whitespace-nowrap"
                                           >
                                             {selectRow.find(
                                               (x) => x.id === item.id
