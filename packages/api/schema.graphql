@@ -22,7 +22,7 @@ type Background {
   description: String
   order: Int
   files(limit: Int, nextToken: String): BackgroundFileConn
-  briefs(limit: Int, nextToken: String): BackgroundBriefConn
+  briefs(limit: Int, nextToken: String, isDeleted: Boolean): BackgroundBriefConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -38,6 +38,7 @@ type Brief {
   ): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+  isDeleted: Boolean
 }
 
 type Client {
@@ -58,7 +59,7 @@ type ClientMatter {
   ): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
   rfis(limit: Int, nextToken: String): ClientMatterRFIConn
-  briefs(limit: Int, nextToken: String): ClientMatterBriefConn
+  briefs(limit: Int, nextToken: String, isDeleted: Boolean): ClientMatterBriefConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -461,6 +462,7 @@ type Mutation {
   ): Brief
   briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
+  briefSoftDelete(id: ID): Brief
   briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int): Brief
   clientCreate(name: String, companyId: String): Client
   clientMatterCreate(
