@@ -379,12 +379,14 @@ const Background = () => {
     }
   };
 
+  var timeoutId;
+
   const handleOnAction = (event) => {
     loadMoreBackground();
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
-    check.current = false;
+    //check.current = false;
     if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
@@ -405,6 +407,8 @@ const Background = () => {
         }
       }, 3000);
     }
+
+    clearTimeout(timeoutId);
   };
 
   const handleOnIdle = (event) => {
@@ -412,12 +416,11 @@ const Background = () => {
 
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
-    check.current = true;
-    setTimeout(() => {
-      if (check.current) {
-        setShowSessionTimeout(true);
-      }
-    }, 60000 * 30);
+    // check.current = true;
+    timeoutId = setTimeout(() => {
+      setShowSessionTimeout(true);
+    }, 60000 * 40);
+
   };
 
   useIdleTimer({
