@@ -1512,12 +1512,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }, 1000);
   }
 
+  var timeoutId;
+
   const handleOnAction = (event) => {
     loadMoreMatterFiles();
-
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
-    bool.current = false;
+    // bool.current = false;
     if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
@@ -1538,19 +1539,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }
       }, 3000);
     }
+
+    clearTimeout(timeoutId);
   };
 
   const handleOnIdle = (event) => {
     loadMoreMatterFiles();
-
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
-    bool.current = true;
-    setTimeout(() => {
-      if (bool.current) {
+    // bool.current = true;
+    timeoutId = setTimeout(() => {
         setShowSessionTimeout(true);
-      }
-    }, 60000 * 30);
+    }, 60000 * 40);
   };
 
   useIdleTimer({
