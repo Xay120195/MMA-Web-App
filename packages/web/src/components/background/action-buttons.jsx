@@ -140,13 +140,13 @@ const ActionButtons = (props) => {
       }
       `;
 
-    /*const deletedId = API.graphql({
+    const deletedId = API.graphql({
       query: mDeleteBackground,
       variables: {
         briefId: briefId,
         background: item,
       },
-    });*/
+    });
 
     setMaxLoading(false);
     setSelectedRowsBG([]);
