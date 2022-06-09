@@ -1108,6 +1108,7 @@ async function createBrief(data) {
       name: data.name,
       date: data.date ? data.date : null,
       createdAt: toUTC(new Date()),
+      isDeleted: false,
       order: data.order ? data.order : 0,
     };
 
