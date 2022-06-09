@@ -76,6 +76,7 @@ const Background = () => {
   const [searchDescription, setSearchDescription] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [holdDelete, setHoldDelete] = useState(false);
+  const [targetRow, setTargetRow] = useState("");
 
   let history = useHistory();
   const check = useRef(false);
@@ -378,7 +379,6 @@ const Background = () => {
   };
 
   const handleOnAction = (event) => {
-    console.log("User did something", event);
     loadMoreBackground();
 
     //function for detecting if user moved/clicked.
@@ -407,7 +407,6 @@ const Background = () => {
   };
 
   const handleOnIdle = (event) => {
-    console.log("User is on idle");
     loadMoreBackground();
 
     //function for detecting if user is on idle.
@@ -428,7 +427,6 @@ const Background = () => {
   });
 
   const SortBydate = async () => {
-    console.group("index.jsx: SortBydate()");
     let result = [];
     setWait(false); // trigger loading ...
     setLoading(false);
@@ -436,7 +434,6 @@ const Background = () => {
     setVnextToken(null);
 
     if (ascDesc == null) {
-      console.log("set order by Date ASC");
       setAscDesc(true);
       //setBackground(background.sort(compareValues("date")));
 
@@ -837,6 +834,8 @@ const Background = () => {
             matter_name={matter_name}
             holdDelete={holdDelete}
             setHoldDelete={setHoldDelete}
+            setTargetRow={setTargetRow}
+            targetRow={targetRow}
           />
 
           {/* {background !== null && background.length !== 0 && ( */}
@@ -924,6 +923,8 @@ const Background = () => {
           searchDescription={searchDescription}
           holdDelete={holdDelete}
           setHoldDelete={setHoldDelete}
+          setTargetRow={setTargetRow}
+          targetRow={targetRow}
         />
 
         {showToast && (

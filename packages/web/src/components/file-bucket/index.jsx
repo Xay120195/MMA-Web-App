@@ -1542,7 +1542,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   const handleOnAction = (event) => {
     loadMoreMatterFiles();
-    console.log("user is clicking");
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
@@ -1571,7 +1570,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   const handleOnIdle = (event) => {
     loadMoreMatterFiles();
-    console.log("user is idle");
 
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
@@ -2912,7 +2910,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 )
                                                 .map((background, index) => (
                                                   <div
-                                                    className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                    className="h-10.5 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
                                                     key={background.id}
                                                     index={index}
                                                     onClick={(event) =>

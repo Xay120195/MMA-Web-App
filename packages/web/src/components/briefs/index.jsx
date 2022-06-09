@@ -556,10 +556,10 @@ export default function Briefs() {
             {Briefs.map((item) => (
               <div
                 className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
-                hover:border-black"
+                hover:border-black cursor-pointer"
                 key={item.id}
               >
-                <div>
+                <div onClick={() => visitBrief(item.id)} >
                   <div className="grid grid-cols-4 gap-4">
                     <div
                       className={`col-span-2 ${
@@ -577,13 +577,14 @@ export default function Briefs() {
                           onClick={(e) =>
                             handleNameContent(e, item.name, item.id)
                           }
+                          onClickCapture={e => e.stopPropagation()} 
                           contentEditable={true}
                           tabIndex="0"
                           onInput={(e) => handleOnChangeBiefName(e)}
                           onBlur={(e) =>
                             handleSaveBriefName(e, item.name, item.id)
                           }
-                          className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12"
+                          className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12 z-50"
                           dangerouslySetInnerHTML={{
                             __html: item.name,
                           }}
