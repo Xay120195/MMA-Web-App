@@ -46,6 +46,8 @@ const ActionButtons = (props) => {
     setHoldDelete,
     setTargetRow,
     targetRow,
+    highlightRow,
+    setHighlightRow,
   } = props;
 
   const [showToast, setShowToast] = useState(false);
@@ -140,13 +142,13 @@ const ActionButtons = (props) => {
       }
       `;
 
-    /*const deletedId = API.graphql({
+    const deletedId = API.graphql({
       query: mDeleteBackground,
       variables: {
         briefId: briefId,
         background: item,
       },
-    });*/
+    });
 
     setMaxLoading(false);
     setSelectedRowsBG([]);
@@ -571,16 +573,11 @@ const ActionButtons = (props) => {
 
         setAddRowState(false);
 
-        localStorage.setItem('rowItem', targetRow);
+        setHighlightRow(targetRow);
+        setBackground(tempBackground);
 
         setTimeout(() => {
-          setBackground(tempBackground);
-        }, 500);
-
-        setTimeout(() => {
-          setTargetRow("");
-          localStorage.removeItem('rowItem');
-          setBackground(tempBackground);
+          setHighlightRow(null);
         }, 3000);
 
     }

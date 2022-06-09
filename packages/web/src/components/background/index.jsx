@@ -77,6 +77,7 @@ const Background = () => {
   const [shareLink, setShareLink] = useState("");
   const [holdDelete, setHoldDelete] = useState(false);
   const [targetRow, setTargetRow] = useState("");
+  const [highlightRow, setHighlightRow] = useState(null);
 
   let history = useHistory();
   const check = useRef(false);
@@ -836,6 +837,8 @@ const Background = () => {
             setHoldDelete={setHoldDelete}
             setTargetRow={setTargetRow}
             targetRow={targetRow}
+            highlightRow={highlightRow}
+            setHighlightRow={setHighlightRow}
           />
 
           {/* {background !== null && background.length !== 0 && ( */}
@@ -925,6 +928,8 @@ const Background = () => {
           setHoldDelete={setHoldDelete}
           setTargetRow={setTargetRow}
           targetRow={targetRow}
+          highlightRow={highlightRow}
+          setHighlightRow={setHighlightRow}
         />
 
         {showToast && (
