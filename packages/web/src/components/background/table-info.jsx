@@ -92,6 +92,8 @@ const TableInfo = ({
   setHoldDelete,
   setTargetRow,
   targetRow,
+  highlightRow,
+  setHighlightRow,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -1438,7 +1440,7 @@ const TableInfo = ({
                                                 (x) => x.id === item.id
                                               )
                                             ? "bg-green-300"
-                                            : (index === (localStorage.getItem('rowItem') - 1)
+                                            : (index === highlightRow - 1
                                             )
                                             ? "bg-green-300"
                                             : ""
