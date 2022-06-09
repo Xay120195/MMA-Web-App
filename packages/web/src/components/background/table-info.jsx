@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste, FaSync, FaSort } from "react-icons/fa";
+import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
 
 import {
@@ -90,6 +90,8 @@ const TableInfo = ({
   setSelectedItems,
   holdDelete,
   setHoldDelete,
+  setTargetRow,
+  targetRow,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -1262,6 +1264,73 @@ const TableInfo = ({
     };
   }, [handleKeyUp, handleKeyDown]);
 
+  const handleAddRow = async () => {
+    console.log("handleAddRow");
+    const dateToday = moment
+      .utc(moment(new Date(), "YYYY-MM-DD"))
+      .toISOString();
+
+    const mCreateBackground = `
+        mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+          backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+            id
+          }
+        }
+    `;
+
+    const createBackgroundRow = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        briefId: briefId,
+        description: "",
+        date: null,
+      },
+    });
+
+    if (createBackgroundRow) {
+      const result = {
+        createdAt: dateToday,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        description: "",
+        date: null,
+        order: 0,
+        files: { items: [] },
+      };
+
+      let concatResult = background.concat(result);
+
+      setBackground((background) => concatResult);
+
+
+      const rowArrangement = concatResult.map(({ id }, index) => ({
+        id: id,
+        order: index + 1,
+      }));
+
+      const mUpdateBackgroundOrder = `
+        mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+          backgroundBulkUpdateOrders(arrangement: $arrangement) {
+            id
+            order
+          }
+        }`;
+      const response = await API.graphql({
+        query: mUpdateBackgroundOrder,
+        variables: {
+          arrangement: rowArrangement,
+        },
+      });
+      console.log(response);
+
+      setcheckAllState(false);
+      setCheckedState(new Array(concatResult.length).fill(false));
+      setSelectedRowsBG([]);
+      setShowDeleteButton(false);
+
+      setBackground(concatResult);
+    }
+  };
+
   return (
     <>
       <div className="px-7">
@@ -1368,6 +1437,9 @@ const TableInfo = ({
                                             : selectRow.find(
                                                 (x) => x.id === item.id
                                               )
+                                            ? "bg-green-300"
+                                            : (index === (localStorage.getItem('rowItem') - 1)
+                                            )
                                             ? "bg-green-300"
                                             : ""
                                         }
@@ -1754,9 +1826,18 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading && wait ? (
+            <>
+            <div className="mt-1">
+              <button className="bg-green-400 hover:bg-green-500 text-white text-sm p-3 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+              onClick={handleAddRow}
+              >
+                <FaPlus />
+              </button>
+            </div>
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
+            </>
           ) : background.length >= 50 && wait ? (
             <div className="flex justify-center items-center mt-5">
               <img src={imgLoading} alt="" width={50} height={100} />

@@ -3,7 +3,8 @@ import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import RemoveFileModal from "../file-bucket/remove-file-modal";
 import BriefModal from "../background/create-minibrief-modal";
-import { AiFillFile, AiFillEye } from "react-icons/ai";
+import { AiFillFile, AiFillEye, AiFillSave} from "react-icons/ai";
+import { FaChevronDown } from "react-icons/fa";
 
 const ActionButtons = (props) => {
   const {
@@ -43,6 +44,8 @@ const ActionButtons = (props) => {
     client_name,
     holdDelete,
     setHoldDelete,
+    setTargetRow,
+    targetRow,
   } = props;
 
   const [showToast, setShowToast] = useState(false);
@@ -53,6 +56,36 @@ const ActionButtons = (props) => {
   const [tableColumnList, setTableColumnList] = useState(null);
   const [showBriefModal, setShowBriefModal] = useState(false);
   const [deletePermanently, setDeletePermanently] = useState(true);
+  const [addRowState, setAddRowState] = useState(false);
+
+  const mCreateBackground = `
+      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+        backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+          id
+          id
+          createdAt
+          date
+          description
+          order
+        }
+      }
+  `;
+
+  const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+  const mBulkUpdateBackgroundOrder = `
+    mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+      backgroundBulkUpdateOrders(arrangement: $arrangement) {
+        id
+        order
+      }
+    }`;
 
   const bool = useRef(true);
 
@@ -95,24 +128,25 @@ const ActionButtons = (props) => {
     setCheckedState(newArr);
     setcheckAllState(false);
 
-    console.log("item", item);
+    console.log("briefID", briefId);
+    console.log("rows", item);
 
     setHoldDelete(true);
     const mDeleteBackground = `
-            mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
-              briefBackgroundUntag(briefId: $briefId, background: $background) {
-                id
-              }
-            }
-            `;
+      mutation untagBriefBackground($briefId: ID, $background: [BackgroundInput]) {
+        briefBackgroundUntag(briefId: $briefId, background: $background) {
+          id
+        }
+      }
+      `;
 
-    const deletedId = API.graphql({
+    /*const deletedId = API.graphql({
       query: mDeleteBackground,
       variables: {
         briefId: briefId,
         background: item,
       },
-    });
+    });*/
 
     setMaxLoading(false);
     setSelectedRowsBG([]);
@@ -177,18 +211,9 @@ const ActionButtons = (props) => {
   }
 
   const handleAddRow = async () => {
-    console.log("handleAddRow");
     const dateToday = moment
       .utc(moment(new Date(), "YYYY-MM-DD"))
       .toISOString();
-
-    const mCreateBackground = `
-        mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
-          backgroundCreate(briefId: $briefId, description: $description, date: $date) {
-            id
-          }
-        }
-    `;
 
     const createBackgroundRow = await API.graphql({
       query: mCreateBackground,
@@ -320,6 +345,14 @@ const ActionButtons = (props) => {
       setShowHideState(false);
     } else {
       setShowHideState(true);
+    }
+  };
+
+  const handleAddRowState = () => {
+    if (addRowState) {
+      setAddRowState(false);
+    } else {
+      setAddRowState(true);
     }
   };
 
@@ -482,6 +515,82 @@ const ActionButtons = (props) => {
     }
   };
 
+  const handlePasteRow = async () => {
+    if(targetRow !== "" || targetRow !== undefined) {
+      let tempBackground = [...background];
+      let arrFileResultBG = [];
+
+      const createBackgroundRow = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          briefId: briefId,
+          description: "",
+          date: null,
+          order: targetRow,
+        },
+      });
+
+      var arrResult = {
+        createdAt: createBackgroundRow.data.backgroundCreate.createdAt,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        date: createBackgroundRow.data.backgroundCreate.date,
+        description: createBackgroundRow.data.backgroundCreate.description,
+        files: { items: [] },
+        order: createBackgroundRow.data.backgroundCreate.order,
+      };
+
+      arrFileResultBG.push(...[arrResult]);
+
+          sortByOrder(arrFileResultBG)
+          .splice(0)
+          .reverse()
+          .map(async function (x) {
+          var resultBG = {
+            createdAt: x.createdAt,
+            id: x.id,
+            files: { items: x.files.items },
+            date: x.date,
+            description: x.description,
+            order: x.order,
+          };
+
+          tempBackground.splice(targetRow - 1, 0, resultBG);
+
+          const result = tempBackground.map(({ id }, index) => ({
+            id: id,
+            order: index,
+          }));
+
+          await API.graphql({
+            query: mBulkUpdateBackgroundOrder,
+            variables: {
+              arrangement: result,
+            },
+          });
+        });
+
+        setAddRowState(false);
+
+        localStorage.setItem('rowItem', targetRow);
+
+        setTimeout(() => {
+          setBackground(tempBackground);
+        }, 500);
+
+        setTimeout(() => {
+          setTargetRow("");
+          localStorage.removeItem('rowItem');
+          setBackground(tempBackground);
+        }, 3000);
+
+    }
+  };
+
+
+  const handleChangeRow = (e) => {
+    setTargetRow(e.target.value);
+  };
+
   return (
     <>
       <div className="pl-2 py-1 grid grid-cols-1 gap-1.5">
@@ -496,27 +605,68 @@ const ActionButtons = (props) => {
             className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
           {!showDeleteButton && (
-            <button
-              onClick={handleAddRow}
-              type="button"
-              className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
-            >
-              Add row
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mx-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </button>
+            <>
+              <div class="inline-flex rounded-md shadow-sm" role="group">
+                <button
+                  onClick={handleAddRow}
+                  type="button"
+                  className="inline-flex items-center bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2 rounded-l"
+                >
+                  Add row
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mx-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className={
+                    "inline-flex items-center bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring rounded-r cursor:pointer"
+                  }
+                  onClick={() => handleAddRowState()}
+                >
+                  <FaChevronDown />
+                </button>
+              </div>
+              {addRowState && (
+              <div className="w-64 h-38 z-500 bg-white absolute mt-1 ml-32 rounded border-0 shadow outline-none z-40">
+                <p className="px-2 py-2 text-gray-400 text-xs font-semibold">
+                  MORE OPTIONS
+                </p>
+                
+                <div className="px-2 py-1 inline-flex align-middle">
+                  <span className="text-xs mr-2">Add New Row</span>
+                    <input
+                      className="w-28 text-xs mr-1 rounded"
+                      onKeyPress={(event) => {
+                        if (!/[0-9]/.test(event.key)) {
+                          event.preventDefault();
+                        }
+                      }}
+                      value={targetRow}
+                      onChange={handleChangeRow}
+                      placeholder="Insert Row"
+                      style={{ border: "solid 1px gray" }}
+                    />
+                  <AiFillSave 
+                    className="text-blue-400 cursor-pointer" 
+                    onClick={() => handlePasteRow()}
+                  />
+                </div>
+                
+              </div>
+              )}
+            </>
           )}
           {!showDeleteButton && (
             <button
