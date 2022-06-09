@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
 import { HiOutlinePlusCircle } from "react-icons/hi";
-import { MdArrowForwardIos, MdDownload } from "react-icons/md";
+import { MdArrowForwardIos, MdDownload, MdEdit, MdDelete } from "react-icons/md";
 // import { matter_rfi, questions } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 // import CreateRFIModal from "./create-RFI-modal";
@@ -49,6 +49,7 @@ export default function Briefs() {
   let history = useHistory();
   const bool = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
@@ -402,6 +403,14 @@ export default function Briefs() {
     debounce: 1000,
   });
 
+  const handleMouseOver = () => {
+    setIsHovering(true);
+  };
+
+  const handleMouseOut = () => {
+    setIsHovering(false);
+  };
+
   return (
     <>
       <div
@@ -558,6 +567,8 @@ export default function Briefs() {
                 className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
                 hover:border-black cursor-pointer"
                 key={item.id}
+                onMouseOver={handleMouseOver} 
+                onMouseOut={handleMouseOut}
               >
                 <div onClick={() => visitBrief(item.id)} >
                   <div className="grid grid-cols-4 gap-4">
@@ -567,28 +578,43 @@ export default function Briefs() {
                       } ${!showDate && `py-1 px-1 mb-2`}`}
                     >
                       {showBName && (
-                        <p
-                          suppressContentEditableWarning={true}
-                          style={{
-                            cursor: "auto",
-                            outlineColor: "rgb(204, 204, 204, 0.5)",
-                            outlineWidth: "thin",
-                          }}
-                          onClick={(e) =>
-                            handleNameContent(e, item.name, item.id)
-                          }
-                          onClickCapture={e => e.stopPropagation()} 
-                          contentEditable={true}
-                          tabIndex="0"
-                          onInput={(e) => handleOnChangeBiefName(e)}
-                          onBlur={(e) =>
-                            handleSaveBriefName(e, item.name, item.id)
-                          }
-                          className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12 z-50"
-                          dangerouslySetInnerHTML={{
-                            __html: item.name,
-                          }}
-                        />
+                        <>
+                          <div className="inline-flex w-full" >
+                            <p
+                              suppressContentEditableWarning={true}
+                              style={{
+                                cursor: "auto",
+                                outlineColor: "rgb(204, 204, 204, 0.5)",
+                                outlineWidth: "thin",
+                              }}
+                              onClick={(e) =>
+                                handleNameContent(e, item.name, item.id)
+                              }
+                              onClickCapture={e => e.stopPropagation()} 
+                              contentEditable={true}
+                              tabIndex="0"
+                              onInput={(e) => handleOnChangeBiefName(e)}
+                              onBlur={(e) =>
+                                handleSaveBriefName(e, item.name, item.id)
+                              }
+                              className="inline-flex items-center focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12 z-50"
+                              dangerouslySetInnerHTML={{
+                                __html: item.name,
+                              }}
+                            />
+                            {isHovering && (
+                              <div
+                                onMouseOver={handleMouseOver} 
+                                onMouseOut={handleMouseOut}
+                              >
+                                <MdEdit className="text-blue-500 hover:text-blue-300 inline-flex items-center ml-2 mr-1" onClickCapture={e => e.stopPropagation()} />
+                                {/*<MdDelete className="text-red-500 hover:text-red-300 inline-flex items-center " onClickCapture={e => e.stopPropagation()}
+                                onMouseOver={handleMouseOver} 
+                            onMouseOut={handleMouseOut}  />*/}
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
 
                       {showDate && (
