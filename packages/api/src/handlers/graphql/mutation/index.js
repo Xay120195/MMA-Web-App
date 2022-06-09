@@ -1108,6 +1108,7 @@ async function createBrief(data) {
       name: data.name,
       date: data.date ? data.date : null,
       createdAt: toUTC(new Date()),
+      isDeleted: false,
       order: data.order ? data.order : 0,
     };
 
@@ -1680,6 +1681,40 @@ export async function deleteBrief(id) {
   return resp;
 }
 
+export async function softDeleteBrief(id, data) {
+  let resp = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "BriefTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await ddbClient.send(cmd);
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 export async function deleteRequest(id) {
   let resp = {};
   try {
@@ -2064,6 +2099,15 @@ const resolvers = {
     briefDelete: async (ctx) => {
       const { id } = ctx.arguments;
       return await deleteBrief(id);
+    },
+    briefSoftDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+        isDeleted: true,
+      };
+
+      return await softDeleteBrief(id, data);
     },
   },
 };

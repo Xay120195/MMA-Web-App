@@ -83,7 +83,7 @@ async function listBackgroundFiles(ctx) {
 
 async function listBackgroundBrief(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { limit, nextToken, isDeleted = false } = ctx.arguments;
 
   try {
     const backgroundBriefsParam = {
@@ -125,14 +125,30 @@ async function listBackgroundBrief(ctx) {
       const objBriefs = briefsResult.Responses.BriefTable.map((i) =>
         unmarshall(i)
       );
+
+      let filterObjBrief;
+
+      if (isDeleted === false) {
+        // for old data
+        filterObjBrief = objBriefs.filter(
+          (u) => u.isDeleted === false || u.isDeleted === undefined
+        );
+      } else {
+        filterObjBrief = objBriefs.filter((u) => u.isDeleted === isDeleted);
+      }
+
       const objBackgroundBriefs = backgroundBriefsResult.Items.map((i) =>
         unmarshall(i)
       );
 
-      const response = objBackgroundBriefs.map((item) => {
-        const filterBrief = objBriefs.find((u) => u.id === item.briefId);
-        return { ...item, ...filterBrief };
-      });
+      const response = objBackgroundBriefs
+        .map((item) => {
+          const filterBrief = filterObjBrief.find((u) => u.id === item.briefId);
+          if (filterBrief !== undefined) {
+            return { ...item, ...filterBrief };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
