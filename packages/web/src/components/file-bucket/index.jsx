@@ -747,123 +747,95 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     top: 0,
   };
 
-  const handleLabelChanged = async (options, id) => {
+  const handleLabelChanged = async (options, id, e, existingLabels) => {
     const newlabel = options.filter((x) => x.__isNew__);
-    if (options.length <= 0 && newlabel.length <= 0) {
-      const request = API.graphql({
-        query: mTagFileLabel,
+    // console.log("e",e);
+    // console.log("existing", existingLabels);
+
+    if(e.action === 'create-option'){ //create new
+      const createLabel = await API.graphql({
+        query: mCreateLabel,
         variables: {
-          fileId: id,
-          labels: [],
+          clientMatterId: matter_id,
+          name: e.option.value,
         },
       });
-      console.log(request);
-      if (request) {
+
+      let updateLabel = labels;
+      updateLabel.push({
+        value: createLabel.data.labelCreate.id,
+        label: createLabel.data.labelCreate.name,
+      });
+
+      setLabels(updateLabel);
+
+      var updatedLabel = [...existingLabels, {id: createLabel.data.labelCreate.id, name: createLabel.data.labelCreate.name}]
+
+      const request = API.graphql({
+          query: mTagFileLabel,
+          variables: {
+          fileId: id,
+          labels: updatedLabel,
+      },
+      });
+                
+      console.log("success", request);
+      
         setResultMessage("Updating labels");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          getMatterFiles();
         }, 1000);
-      }
-    } else if (options.length >= 0 && newlabel.length <= 0) {
-      const newOptions = options.map(({ label: name, value: id }) => ({
-        id,
-        name,
-      }));
+      
+    }else if(e.action === 'select-option'){ //select existing
+      var updatedLabel = [...existingLabels, {id: e.option.value, name: e.option.label}]
+
       const request = API.graphql({
-        query: mTagFileLabel,
-        variables: {
-          fileId: id,
-          labels: newOptions,
-        },
+          query: mTagFileLabel,
+            variables: {
+            fileId: id,
+            labels: updatedLabel,
+          },
       });
+              
       console.log("success", request);
       if (request) {
         setResultMessage("Updating labels");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          getMatterFiles();
         }, 1000);
       }
-    } else if (newlabel !== [] && options.length >= 0) {
-      const existlabel = convertArrayToObject(newlabel);
-      if (existlabel) {
-        const label = existlabel.item.label.trim();
+    }else{ //removevalue
+      var updatedLabel = existingLabels;
+      var saveNewLabels = [];
+      var index;
 
-        const checkexist = labels.some((x) => x.label === label);
-        //if label is already exist
-        if (checkexist) {
-          const oldlabel = options.filter((x) => !x.__isNew__);
-          const ops = oldlabel.map(({ value, label }) => ({
-            id: value,
-            name: label,
-          }));
-          const request = API.graphql({
-            query: mTagFileLabel,
-            variables: {
-              fileId: id,
-              labels: ops,
-            },
-          });
-          console.log("success", request);
-          if (request) {
-            setResultMessage("Updating labels");
-            setShowToast(true);
-            setTimeout(() => {
-              setShowToast(false);
-            }, 1000);
-          }
-        }
-        if (checkexist === false) {
-          const createLabel = await API.graphql({
-            query: mCreateLabel,
-            variables: {
-              clientMatterId: matter_id,
-              name: existlabel.item.label,
-            },
-          });
-          let updateLabel = labels;
-          updateLabel.push({
-            value: createLabel.data.labelCreate.id,
-            label: createLabel.data.labelCreate.name,
-          });
+      updatedLabel.map((x)=>x.name === e.removedValue.label ? index = updatedLabel.indexOf(x) : x)
+      updatedLabel.splice(index, 1);
 
-          setLabels(updateLabel);
-          if (createLabel) {
-            const updatedNewlabel = options.map((obj) => {
-              if (obj.label === existlabel.item.label.trim()) {
-                return {
-                  ...obj,
-                  value: createLabel.data.labelCreate.id,
-                };
-              }
-              return obj;
-            });
-            const ops = updatedNewlabel.map(({ value, label }) => ({
-              id: value,
-              name: label,
-            }));
-            console.log(ops);
-
-            const request = API.graphql({
-              query: mTagFileLabel,
-              variables: {
-                fileId: id,
-                labels: ops,
-              },
-            });
-            console.log("success", request);
-            if (request) {
-              setResultMessage("Updating labels");
-              setShowToast(true);
-              setTimeout(() => {
-                setShowToast(false);
-              }, 1000);
-            }
-          }
-        }
+      const request = API.graphql({
+        query: mTagFileLabel,
+          variables: {
+          fileId: id,
+          labels: saveNewLabels,
+        },
+      });
+              
+      console.log("success", request);
+      if (request) {
+        setResultMessage("Updating labels");
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+          getMatterFiles();
+        }, 1000);
       }
     }
+
+    
   };
 
   const convertArrayToObject = (array) => {
@@ -2887,10 +2859,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               isClearable
                                               isSearchable
                                               openMenuOnClick={true}
-                                              onChange={(options) =>
+                                              onChange={(options, e) =>
                                                 handleLabelChanged(
                                                   options,
-                                                  data.id
+                                                  data.id, e,
+                                                  data.labels.items
                                                 )
                                               }
                                               placeholder="Labels"
