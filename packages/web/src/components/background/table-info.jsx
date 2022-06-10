@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste, FaSync, FaSort } from "react-icons/fa";
+import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
 
 import {
@@ -90,6 +90,10 @@ const TableInfo = ({
   setSelectedItems,
   holdDelete,
   setHoldDelete,
+  setTargetRow,
+  targetRow,
+  highlightRow,
+  setHighlightRow,
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -972,9 +976,20 @@ const TableInfo = ({
     setSelectedRowID(itemid);
   }
 
+  //single matter upload
+  const mCreateMatterFile = `
+  mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int) {
+      matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order) {
+        id
+        name
+        order
+      }
+    }
+  `;
+
   var idTag = [];
   //UPLOAD FILES IN FILEBUCKET FROM BACKGROUND
-  const handleUploadLink = async (uf) => {
+  const handleUploadLink = (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matterId }));
 
     //Add order to new files
@@ -984,47 +999,52 @@ const TableInfo = ({
 
     var addOrder = sortedFiles.map((x) => ({ ...x, order: 0 }));
     // console.log("SF",sortedFiles);
-    // console.log("AO",addOrder);
+    console.log("AO",addOrder);
 
     //insert in matter file list
-    await bulkCreateMatterFile(addOrder);
+    bulkCreateMatterFile(addOrder);
 
-    console.log("idtag", idTag);
-
-    //set background content
-    setTimeout(async () => {
-      const backgroundFilesOptReq = await API.graphql({
-        query: qlistBackgroundFiles,
-        variables: {
-          id: selectedRowId,
-        },
-      });
-
-      // if (backgroundFilesOptReq.data.background.files !== null) {
-      const newFilesResult =
-        backgroundFilesOptReq.data.background.files.items.map(
-          ({ id, name, description }) => ({
-            id: id,
-            name: name,
-            description: description,
-          })
-        );
-
-      const updateArrFiles = background.map((obj) => {
-        if (obj.id === selectedRowId) {
-          return { ...obj, files: { items: newFilesResult } };
-        }
-        return obj;
-      });
-
-      console.log("new filess", newFilesResult);
-      setBackground(updateArrFiles);
-      // }
-    }, 3000);
+    // for(var i=0; i<addOrder.length; i++){
+    //     delete addOrder[i].oderSelected;
+    //     setTimeout(()=>{
+    //       createMatterFile(addOrder[i]);
+    //     }, 5000)
+    // }
+      //set background content
+      setTimeout(async () => {
+        const backgroundFilesOptReq = await API.graphql({
+          query: qlistBackgroundFiles,
+          variables: {
+            id: selectedRowId,
+          },
+        });
+  
+        // if (backgroundFilesOptReq.data.background.files !== null) {
+        const newFilesResult =
+          backgroundFilesOptReq.data.background.files.items.map(
+            ({ id, name, description }) => ({
+              id: id,
+              name: name,
+              description: description,
+            })
+          );
+  
+        const updateArrFiles = background.map((obj) => {
+          if (obj.id === selectedRowId) {
+            return { ...obj, files: { items: newFilesResult } };
+          }
+          return obj;
+        });
+  
+        console.log("new filess", newFilesResult);
+        setBackground(updateArrFiles);
+        // }
+      }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
     setShowToast(true);
     setGoToFileBucket(true);
+    //getBackground();
 
     handleModalClose();
     setTimeout(() => {
@@ -1033,29 +1053,42 @@ const TableInfo = ({
     }, 5000);
   };
 
-  const mBulkCreateMatterFile = `
-        mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
-          matterFileBulkCreate(files: $files) {
-            id
-            name
-            order
-          }
-        }
-    `;
 
+  function createMatterFile(param) {
+  //don't delete for single upload trial
+    const request = API.graphql({
+      query: mCreateMatterFile,
+      variables: param,
+    });
+
+    console.log("result", request);
+  }
+
+  const mBulkCreateMatterFile = `
+    mutation bulkCreateMatterFile ($files: [MatterFileInput]) {
+      matterFileBulkCreate(files: $files) {
+        id
+        name
+        order
+      }
+    }
+  `;
+  
   async function bulkCreateMatterFile(param) {
     console.log("bulkCreateMatterFile");
 
     param.forEach(function (i) {
       delete i.oderSelected; // remove orderSelected
     });
-
-    const request = await API.graphql({
-      query: mBulkCreateMatterFile,
-      variables: {
-        files: param,
-      },
-    });
+    
+    setTimeout(async () => {
+      const request = await API.graphql({
+        query: mBulkCreateMatterFile,
+        variables: {
+          files: param,
+        },
+      });
+    
 
     console.log("result", request);
 
@@ -1137,7 +1170,7 @@ const TableInfo = ({
         },
       });
     }
-
+  }, 1000);
     //return request;
   }
 
@@ -1233,6 +1266,73 @@ const TableInfo = ({
     };
   }, [handleKeyUp, handleKeyDown]);
 
+  const handleAddRow = async () => {
+    console.log("handleAddRow");
+    const dateToday = moment
+      .utc(moment(new Date(), "YYYY-MM-DD"))
+      .toISOString();
+
+    const mCreateBackground = `
+        mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+          backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+            id
+          }
+        }
+    `;
+
+    const createBackgroundRow = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        briefId: briefId,
+        description: "",
+        date: null,
+      },
+    });
+
+    if (createBackgroundRow) {
+      const result = {
+        createdAt: dateToday,
+        id: createBackgroundRow.data.backgroundCreate.id,
+        description: "",
+        date: null,
+        order: 0,
+        files: { items: [] },
+      };
+
+      let concatResult = background.concat(result);
+
+      setBackground((background) => concatResult);
+
+
+      const rowArrangement = concatResult.map(({ id }, index) => ({
+        id: id,
+        order: index + 1,
+      }));
+
+      const mUpdateBackgroundOrder = `
+        mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+          backgroundBulkUpdateOrders(arrangement: $arrangement) {
+            id
+            order
+          }
+        }`;
+      const response = await API.graphql({
+        query: mUpdateBackgroundOrder,
+        variables: {
+          arrangement: rowArrangement,
+        },
+      });
+      console.log(response);
+
+      setcheckAllState(false);
+      setCheckedState(new Array(concatResult.length).fill(false));
+      setSelectedRowsBG([]);
+      setShowDeleteButton(false);
+
+      setBackground(concatResult);
+    }
+  };
+
   return (
     <>
       <div className="px-7">
@@ -1261,11 +1361,11 @@ const TableInfo = ({
                           style={{ position: "sticky", top: "190px" }}
                         >
                           <tr>
-                            <th className="px-2 py-4 text-center whitespace-nowrap">
-                              No
+                            <th className="px-2 py-4 text-center whitespace-nowrap w-8">
+                            Item No.
                             </th>
                             {checkDate && (
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-8">
                                 Date &nbsp;
                                 {(() => {
                                   if (ascDesc == null) {
@@ -1303,12 +1403,12 @@ const TableInfo = ({
                               </th>
                             )}
                             {checkDesc && (
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-4/6">
                                 Description of Background
                               </th>
                             )}
                             {checkDocu && (
-                              <th className="px-2 py-4 text-center whitespace-nowrap">
+                              <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
                                 Document
                               </th>
                             )}
@@ -1340,6 +1440,9 @@ const TableInfo = ({
                                                 (x) => x.id === item.id
                                               )
                                             ? "bg-green-300"
+                                            : (index === highlightRow - 1
+                                            )
+                                            ? "bg-green-300"
                                             : ""
                                         }
                                         index={index}
@@ -1357,7 +1460,7 @@ const TableInfo = ({
                                       >
                                         <td
                                           {...provider.dragHandleProps}
-                                          className="px-1 py-3 align-top"
+                                          className="px-1 py-3 align-top w-8"
                                         >
                                           <div className="flex items-center ">
                                             <MdDragIndicator
@@ -1403,7 +1506,7 @@ const TableInfo = ({
 
                                         {checkDate && (
                                           <td
-                                            className="align-top py-3"
+                                            className="align-top py-3 w-8"
                                             {...provider.dragHandleProps}
                                           >
                                             <div>
@@ -1432,7 +1535,7 @@ const TableInfo = ({
                                         {checkDesc && (
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="w-10/12 px-2 py-3 align-top place-items-center relative flex-wrap"
+                                            className="px-2 py-3 align-top place-items-center relative w-4/6"
                                           >
                                             <div
                                               className="p-2 w-full h-full font-poppins"
@@ -1474,7 +1577,7 @@ const TableInfo = ({
                                         {checkDocu && (
                                           <td
                                             {...provider.dragHandleProps}
-                                            className="py-3 px-3 w-80 text-sm text-gray-500 align-top"
+                                            className="py-3 px-3 text-sm text-gray-500 align-top w-1/6 whitespace-nowrap"
                                           >
                                             {selectRow.find(
                                               (x) => x.id === item.id
@@ -1725,9 +1828,18 @@ const TableInfo = ({
         </div>
         <div>
           {maxLoading && wait ? (
+            <>
+            <div className="mt-1">
+              <button className="bg-green-400 hover:bg-green-500 text-white text-sm p-3 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+              onClick={handleAddRow}
+              >
+                <FaPlus />
+              </button>
+            </div>
             <div className="flex justify-center items-center mt-5">
               <p>All data has been loaded.</p>
             </div>
+            </>
           ) : background.length >= 50 && wait ? (
             <div className="flex justify-center items-center mt-5">
               <img src={imgLoading} alt="" width={50} height={100} />

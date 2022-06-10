@@ -447,6 +447,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: briefSoftDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: briefBackgroundTag
         request: false
         response: false
@@ -474,6 +479,11 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: backgroundCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: backgroundBulkCreate
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -582,7 +592,6 @@ custom:
         name: LambdaUserDS
         config:
           functionName: user-fn
-      
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

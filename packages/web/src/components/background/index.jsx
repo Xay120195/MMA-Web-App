@@ -76,6 +76,8 @@ const Background = () => {
   const [searchDescription, setSearchDescription] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [holdDelete, setHoldDelete] = useState(false);
+  const [targetRow, setTargetRow] = useState("");
+  const [highlightRow, setHighlightRow] = useState(null);
 
   let history = useHistory();
   const check = useRef(false);
@@ -377,13 +379,14 @@ const Background = () => {
     }
   };
 
+  var timeoutId;
+
   const handleOnAction = (event) => {
-    console.log("User did something", event);
     loadMoreBackground();
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
-    check.current = false;
+    //check.current = false;
     if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
@@ -404,20 +407,20 @@ const Background = () => {
         }
       }, 3000);
     }
+
+    clearTimeout(timeoutId);
   };
 
   const handleOnIdle = (event) => {
-    console.log("User is on idle");
     loadMoreBackground();
 
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
-    check.current = true;
-    setTimeout(() => {
-      if (check.current) {
-        setShowSessionTimeout(true);
-      }
-    }, 60000 * 30);
+    // check.current = true;
+    timeoutId = setTimeout(() => {
+      setShowSessionTimeout(true);
+    }, 60000 * 40);
+
   };
 
   useIdleTimer({
@@ -428,7 +431,6 @@ const Background = () => {
   });
 
   const SortBydate = async () => {
-    console.group("index.jsx: SortBydate()");
     let result = [];
     setWait(false); // trigger loading ...
     setLoading(false);
@@ -436,7 +438,6 @@ const Background = () => {
     setVnextToken(null);
 
     if (ascDesc == null) {
-      console.log("set order by Date ASC");
       setAscDesc(true);
       //setBackground(background.sort(compareValues("date")));
 
@@ -837,6 +838,10 @@ const Background = () => {
             matter_name={matter_name}
             holdDelete={holdDelete}
             setHoldDelete={setHoldDelete}
+            setTargetRow={setTargetRow}
+            targetRow={targetRow}
+            highlightRow={highlightRow}
+            setHighlightRow={setHighlightRow}
           />
 
           {/* {background !== null && background.length !== 0 && ( */}
@@ -924,6 +929,10 @@ const Background = () => {
           searchDescription={searchDescription}
           holdDelete={holdDelete}
           setHoldDelete={setHoldDelete}
+          setTargetRow={setTargetRow}
+          targetRow={targetRow}
+          highlightRow={highlightRow}
+          setHighlightRow={setHighlightRow}
         />
 
         {showToast && (

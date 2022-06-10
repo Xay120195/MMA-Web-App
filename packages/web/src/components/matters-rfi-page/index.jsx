@@ -200,6 +200,7 @@ export default function MattersRFI() {
     return day + " " + month + " " + year;
   };
 
+  var timeoutId;
   //SESSION TIMEOUT
   const handleOnAction =  (event) => {
     console.log("user is clicking");
@@ -227,19 +228,18 @@ export default function MattersRFI() {
         }
       }, 3000);
     }
+
+    clearTimeout(timeoutId);
   };
 
   const handleOnIdle = (event) => {
-    console.log("user is idle");
-
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
-    bool.current = true;
-    setTimeout(() => {
-      if(bool.current){
-        setShowSessionTimeout(true);
-      }
-    }, 60000*30);
+    //bool.current = true;
+    timeoutId = setTimeout(() => {
+      setShowSessionTimeout(true);
+    }, 60000 * 40);
+
   };
 
   useIdleTimer({

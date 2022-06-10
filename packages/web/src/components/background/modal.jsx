@@ -1,5 +1,4 @@
 import React from "react";
-
 import { API } from "aws-amplify";
 
 export const ModalParagraph = ({
@@ -11,63 +10,76 @@ export const ModalParagraph = ({
   background,
   setSelectedRowsBG,
   setShowDeleteButton,
-  matterId,
   setcheckAllState,
   briefId,
 }) => {
   let buttonBg = "bg-green-500";
 
-  const mCreateBackground = `
-      mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime, $order: Int) {
-            backgroundCreate(briefId: $briefId, description: $description, date: $date, order: $order) {
+  const handleNewParagraph = async (e) => {
+    console.group("handleNewParagraph()");
+
+    setParagraph("");
+    setShowModalParagraph(false);
+
+    // Remove by AQS:
+    // No need to rearrange before inserting new items
+    // since we are requesting all backgrounds after saving
+
+    // const mUpdateBackgroundOrder = `
+    //   mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+    //     backgroundBulkUpdateOrders(arrangement: $arrangement) {
+    //       id
+    //       order
+    //     }
+    //   }`;
+
+    // const rowArrangement = background.map(({ id }, index) => ({
+    //   id: id,
+    //   order: index + arrParagraph.length,
+    // }));
+
+    // const updateBGOrderResp = await API.graphql({
+    //   query: mUpdateBackgroundOrder,
+    //   variables: {
+    //     arrangement: rowArrangement,
+    //   },
+    // });
+
+    const arrParagraph = paragraph.split("\n\n");
+    let backgroundParams = [];
+    for (let i = 0; i < arrParagraph.length; i++) {
+      backgroundParams.push({
+        description: arrParagraph[i],
+        date: null,
+        order: parseInt(i),
+      });
+    }
+
+    const mBulkCreateBackground = `
+      mutation bulkCreateBackground($briefId: String, $backgrounds: [BackgroundInput]) {
+            backgroundBulkCreate(briefId: $briefId, backgrounds: $backgrounds) {
               id
             }
           }
       `;
 
-  const handleNewParagraph = async (e) => {
-    console.log("handleNewParagraph");
-    const arrParagraph = paragraph.split("\n\n");
-
-    const rowArrangement = background.map(({ id }, index) => ({
-      id: id,
-      order: index + arrParagraph.length,
-    }));
-
-    const mUpdateBackgroundOrder = `
-      mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
-        backgroundBulkUpdateOrders(arrangement: $arrangement) {
-          id
-          order
-        }
-      }`;
-
-    const response = await API.graphql({
-        query: mUpdateBackgroundOrder,
-        variables: {
-          arrangement: rowArrangement,
-        },
+    const createBackgroundRow = await API.graphql({
+      query: mBulkCreateBackground,
+      variables: {
+        briefId: briefId,
+        backgrounds: backgroundParams,
+      },
     });
-    console.log(response);
- 
-    for(let i=0; i<arrParagraph.length; i++){
-      const createBackgroundRow = await API.graphql({
-        query: mCreateBackground,
-        variables: {
-          briefId: briefId,
-          description: arrParagraph[i],
-          date: null,
-          order: parseInt(i),
-        },
-      });
-    }
-      setShowModalParagraph(false);
-      setParagraph("");
+
+    if (createBackgroundRow) {
+      getBackground();
       setcheckAllState(false);
       setCheckedState(new Array(background.length).fill(false));
       setSelectedRowsBG([]);
       setShowDeleteButton(false);
-      getBackground();
+    } else {
+      console.error(createBackgroundRow.errors);
+    }
   };
   const countRow = paragraph.split("\n\n");
 

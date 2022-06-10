@@ -628,8 +628,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       let matterFilesList = files.data.matterFiles.items;
       console.log("matterFilesList: ", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
-      setFiles(matterFilesList);
-      setMatterFiles(matterFilesList); // no need to use sortByOrder
+      setFiles(sortByOrder(matterFilesList));
+      setMatterFiles(sortByOrder(matterFilesList)); // no need to use sortByOrder
       setMaxLoading(false);
     });
   };
@@ -679,7 +679,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           setMatterFiles([...new Set(arrConcat)]);
         } else {
           //setMatterFiles([...new Set(sortByOrder(arrConcat))]);
-          setMatterFiles([...new Set(arrConcat)]);
+          setMatterFiles([...new Set(sortByOrder(arrConcat))]);
         }
 
         // if (files.data.matterFiles.items.length !== 0 && vNextToken !== null) {
@@ -747,123 +747,95 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     top: 0,
   };
 
-  const handleLabelChanged = async (options, id) => {
+  const handleLabelChanged = async (options, id, e, existingLabels) => {
     const newlabel = options.filter((x) => x.__isNew__);
-    if (options.length <= 0 && newlabel.length <= 0) {
-      const request = API.graphql({
-        query: mTagFileLabel,
+    // console.log("e",e);
+    // console.log("existing", existingLabels);
+
+    if(e.action === 'create-option'){ //create new
+      const createLabel = await API.graphql({
+        query: mCreateLabel,
         variables: {
-          fileId: id,
-          labels: [],
+          clientMatterId: matter_id,
+          name: e.option.value,
         },
       });
-      console.log(request);
-      if (request) {
+
+      let updateLabel = labels;
+      updateLabel.push({
+        value: createLabel.data.labelCreate.id,
+        label: createLabel.data.labelCreate.name,
+      });
+
+      setLabels(updateLabel);
+
+      var updatedLabel = [...existingLabels, {id: createLabel.data.labelCreate.id, name: createLabel.data.labelCreate.name}]
+
+      const request = await API.graphql({
+          query: mTagFileLabel,
+          variables: {
+          fileId: id,
+          labels: updatedLabel,
+      },
+      });
+                
+      console.log("success", request);
+      
         setResultMessage("Updating labels");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          getMatterFiles();
         }, 1000);
-      }
-    } else if (options.length >= 0 && newlabel.length <= 0) {
-      const newOptions = options.map(({ label: name, value: id }) => ({
-        id,
-        name,
-      }));
-      const request = API.graphql({
-        query: mTagFileLabel,
-        variables: {
-          fileId: id,
-          labels: newOptions,
-        },
+      
+    }else if(e.action === 'select-option'){ //select existing
+      var updatedLabel = [...existingLabels, {id: e.option.value, name: e.option.label}]
+
+      const request = await API.graphql({
+          query: mTagFileLabel,
+            variables: {
+            fileId: id,
+            labels: updatedLabel,
+          },
       });
+              
       console.log("success", request);
       if (request) {
         setResultMessage("Updating labels");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
+          getMatterFiles();
         }, 1000);
       }
-    } else if (newlabel !== [] && options.length >= 0) {
-      const existlabel = convertArrayToObject(newlabel);
-      if (existlabel) {
-        const label = existlabel.item.label.trim();
+    }else{ //removevalue
+      var updatedLabel = existingLabels;
+      var saveNewLabels = [];
+      var index;
 
-        const checkexist = labels.some((x) => x.label === label);
-        //if label is already exist
-        if (checkexist) {
-          const oldlabel = options.filter((x) => !x.__isNew__);
-          const ops = oldlabel.map(({ value, label }) => ({
-            id: value,
-            name: label,
-          }));
-          const request = API.graphql({
-            query: mTagFileLabel,
-            variables: {
-              fileId: id,
-              labels: ops,
-            },
-          });
-          console.log("success", request);
-          if (request) {
-            setResultMessage("Updating labels");
-            setShowToast(true);
-            setTimeout(() => {
-              setShowToast(false);
-            }, 1000);
-          }
-        }
-        if (checkexist === false) {
-          const createLabel = await API.graphql({
-            query: mCreateLabel,
-            variables: {
-              clientMatterId: matter_id,
-              name: existlabel.item.label,
-            },
-          });
-          let updateLabel = labels;
-          updateLabel.push({
-            value: createLabel.data.labelCreate.id,
-            label: createLabel.data.labelCreate.name,
-          });
+      updatedLabel.map((x)=>x.name === e.removedValue.label ? index = updatedLabel.indexOf(x) : x)
+      updatedLabel.splice(index, 1);
 
-          setLabels(updateLabel);
-          if (createLabel) {
-            const updatedNewlabel = options.map((obj) => {
-              if (obj.label === existlabel.item.label.trim()) {
-                return {
-                  ...obj,
-                  value: createLabel.data.labelCreate.id,
-                };
-              }
-              return obj;
-            });
-            const ops = updatedNewlabel.map(({ value, label }) => ({
-              id: value,
-              name: label,
-            }));
-            console.log(ops);
-
-            const request = API.graphql({
-              query: mTagFileLabel,
-              variables: {
-                fileId: id,
-                labels: ops,
-              },
-            });
-            console.log("success", request);
-            if (request) {
-              setResultMessage("Updating labels");
-              setShowToast(true);
-              setTimeout(() => {
-                setShowToast(false);
-              }, 1000);
-            }
-          }
-        }
+      const request = await API.graphql({
+        query: mTagFileLabel,
+          variables: {
+          fileId: id,
+          labels: saveNewLabels,
+        },
+      });
+              
+      console.log("success", request);
+      if (request) {
+        setResultMessage("Updating labels");
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+          getMatterFiles();
+        }, 1000);
       }
     }
+
+    
   };
 
   const convertArrayToObject = (array) => {
@@ -1084,15 +1056,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   //sorting files function
   function sortByOrder(arr) {
-    // const isAllNotZero = arr.every(
-    //   (item) => item.order >= 0 && item.order !== 0
-    // );
     let sort;
-    // if (isAllNotZero) {
-    sort = arr.sort((a, b) => a.order - b.order);
-    // } else {
-    //   sort = arr;
-    // }
+
+    if (arr) {
+        sort = arr.sort((a, b) =>
+            (a.order === null || b.order === null)
+            ? a 
+            : (a.order - b.order === 0)
+            ? new Date(b.createdAt) - new Date(a.createdAt)
+            : a.order - b.order
+        );
+    } else {
+      sort = arr;
+    }
+
     return sort;
   }
 
@@ -1537,13 +1514,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }, 1000);
   }
 
+  var timeoutId;
+
   const handleOnAction = (event) => {
     loadMoreMatterFiles();
-    console.log("user is clicking");
-
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
-    bool.current = false;
+    // bool.current = false;
     if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
@@ -1564,20 +1541,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }
       }, 3000);
     }
+
+    clearTimeout(timeoutId);
   };
 
   const handleOnIdle = (event) => {
     loadMoreMatterFiles();
-    console.log("user is idle");
-
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
-    bool.current = true;
-    setTimeout(() => {
-      if (bool.current) {
+    // bool.current = true;
+    timeoutId = setTimeout(() => {
         setShowSessionTimeout(true);
-      }
-    }, 60000 * 30);
+    }, 60000 * 40);
   };
 
   useIdleTimer({
@@ -2886,10 +2861,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               isClearable
                                               isSearchable
                                               openMenuOnClick={true}
-                                              onChange={(options) =>
+                                              onChange={(options, e) =>
                                                 handleLabelChanged(
                                                   options,
-                                                  data.id
+                                                  data.id, e,
+                                                  data.labels.items
                                                 )
                                               }
                                               placeholder="Labels"
@@ -2909,7 +2885,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 )
                                                 .map((background, index) => (
                                                   <div
-                                                    className="p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                    className="h-10.5 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
                                                     key={background.id}
                                                     index={index}
                                                     onClick={(event) =>
