@@ -771,7 +771,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
       var updatedLabel = [...existingLabels, {id: createLabel.data.labelCreate.id, name: createLabel.data.labelCreate.name}]
 
-      const request = API.graphql({
+      const request = await API.graphql({
           query: mTagFileLabel,
           variables: {
           fileId: id,
@@ -791,7 +791,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }else if(e.action === 'select-option'){ //select existing
       var updatedLabel = [...existingLabels, {id: e.option.value, name: e.option.label}]
 
-      const request = API.graphql({
+      const request = await API.graphql({
           query: mTagFileLabel,
             variables: {
             fileId: id,
@@ -816,7 +816,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       updatedLabel.map((x)=>x.name === e.removedValue.label ? index = updatedLabel.indexOf(x) : x)
       updatedLabel.splice(index, 1);
 
-      const request = API.graphql({
+      const request = await API.graphql({
         query: mTagFileLabel,
           variables: {
           fileId: id,
@@ -1059,11 +1059,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     let sort;
 
     if (arr) {
-      sort = arr.sort((a, b) =>
-        a.order - b.order === 0
-          ? new Date(b.createdAt) - new Date(a.createdAt)
-          : a.order - b.order
-      );
+        sort = arr.sort((a, b) =>
+            (a.order === null || b.order === null)
+            ? a 
+            : (a.order - b.order === 0)
+            ? new Date(b.createdAt) - new Date(a.createdAt)
+            : a.order - b.order
+        );
     } else {
       sort = arr;
     }
