@@ -1044,7 +1044,7 @@ const TableInfo = ({
     setalertMessage(`File has been added! Go to File bucket`);
     setShowToast(true);
     setGoToFileBucket(true);
-    getBackground();
+    //getBackground();
 
     handleModalClose();
     setTimeout(() => {
