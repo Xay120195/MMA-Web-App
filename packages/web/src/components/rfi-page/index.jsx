@@ -62,12 +62,12 @@ export default function RFIPage() {
     return decodeURIComponent(escape(window.atob(str)));
   }
 
-  const handleOnAction =  (event) => {
-    console.log("user is clicking");
+  var timeoutId;
 
+  const handleOnAction =  (event) => {
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
-    bool.current = false;
+    //bool.current = false;
     if(showSessionTimeout){
       setTimeout(() => {
         Auth.signOut().then(() => {
@@ -88,19 +88,19 @@ export default function RFIPage() {
         }
       }, 3000);
     }
+
+    clearTimeout(timeoutId);
+
   };
 
   const handleOnIdle = (event) => {
-    console.log("user is idle");
-
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
-    bool.current = true;
-    setTimeout(() => {
-      if(bool.current){
-        setShowSessionTimeout(true);
-      }
-    }, 60000*30);
+    //bool.current = true;
+    timeoutId = setTimeout(() => {
+      setShowSessionTimeout(true);
+    }, 60000 * 40);
+
   };
 
   useIdleTimer({

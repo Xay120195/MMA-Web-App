@@ -84,7 +84,8 @@ async function listClientMatterBackgrounds(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  let indexName, isAscending = true;
+  let indexName,
+    isAscending = true;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -174,9 +175,15 @@ async function listClientMatterBackgrounds(ctx) {
 
 async function listClientMatterBriefs(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+  const {
+    limit,
+    nextToken,
+    sortOrder = "CREATED_DESC",
+    isDeleted = false,
+  } = ctx.arguments;
 
-  let indexName, isAscending = true;
+  let indexName,
+    isAscending = true;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -225,14 +232,30 @@ async function listClientMatterBriefs(ctx) {
       const briefCommand = new BatchGetItemCommand(briefParam);
       const briefResult = await client.send(briefCommand);
 
-      const objBrief = briefResult.Responses.BriefTable.map((i) =>
+      const objBriefs = briefResult.Responses.BriefTable.map((i) =>
         unmarshall(i)
       );
 
-      const response = objCMBrief.map((item) => {
-        const filterBrief = objBrief.find((u) => u.id === item.briefId);
-        return { ...item, ...filterBrief };
-      });
+      let filterObjBrief;
+
+      if (isDeleted === false) {
+        // for old data
+        filterObjBrief = objBriefs.filter(
+          (u) => u.isDeleted === false || u.isDeleted === undefined
+        );
+      } else {
+        filterObjBrief = objBriefs.filter((u) => u.isDeleted === isDeleted);
+      }
+
+      const response = objCMBrief
+        .map((item) => {
+          const filterBrief = filterObjBrief.find((u) => u.id === item.briefId);
+
+          if (filterBrief !== undefined) {
+            return { ...item, ...filterBrief };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,

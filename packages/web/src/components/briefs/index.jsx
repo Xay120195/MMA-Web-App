@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
 import { HiOutlinePlusCircle } from "react-icons/hi";
-import { MdArrowForwardIos, MdDownload } from "react-icons/md";
+import { MdArrowForwardIos, MdDownload, MdEdit, MdDelete } from "react-icons/md";
 // import { matter_rfi, questions } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 // import CreateRFIModal from "./create-RFI-modal";
@@ -10,6 +10,8 @@ import ToastNotification from "../toast-notification";
 import AccessControl from "../../shared/accessControl";
 import { FaUserCircle } from "react-icons/fa";
 import { AiOutlineFolderOpen } from "react-icons/ai";
+import { BsFillTrashFill } from "react-icons/bs";
+import * as FaIcons from "react-icons/fa";
 import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import { useParams } from "react-router-dom";
 import { API } from "aws-amplify";
@@ -19,6 +21,7 @@ import { AiFillEye } from "react-icons/ai";
 import { useIdleTimer } from "react-idle-timer";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
+import RemoveBriefModal from "../briefs/remove-brief-modal";
 
 export default function Briefs() {
   const { matter_id } = useParams();
@@ -49,6 +52,11 @@ export default function Briefs() {
   let history = useHistory();
   const bool = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isHoveringId, setIsHoveringId] = useState(null);
+  const [showRemoveBrief, setshowRemoveBrief] = useState(false);
+  const [removeBriefId, setRemoveBriefId] = useState(null);
+  
 
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
@@ -183,6 +191,8 @@ export default function Briefs() {
 
   const handleModalClose = () => {
     setshowCreateBriefsModal(false);
+    setshowRemoveBrief(false);
+    setRemoveBriefId(null);
   };
 
   const contentDiv = {
@@ -353,6 +363,8 @@ export default function Briefs() {
     }
   };
 
+  var timeoutId;
+  
   //session timeout
   const handleOnAction = (event) => {
     console.log("user is clicking");
@@ -380,19 +392,19 @@ export default function Briefs() {
         }
       }, 3000);
     }
+
+    clearTimeout(timeoutId);
   };
 
   const handleOnIdle = (event) => {
     console.log("user is idle");
-
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
-    bool.current = true;
-    setTimeout(() => {
-      if (bool.current) {
-        setShowSessionTimeout(true);
-      }
-    }, 60000 * 30);
+    //bool.current = true;
+    timeoutId = setTimeout(() => {
+      setShowSessionTimeout(true);
+    }, 60000 * 40);
+
   };
 
   useIdleTimer({
@@ -401,6 +413,55 @@ export default function Briefs() {
     onIdle: handleOnIdle,
     debounce: 1000,
   });
+
+  const hoverRef = React.useRef(null);
+
+  const handleMouseOver = (event) => {
+    setIsHovering(true);
+    setIsHoveringId(event.target.dataset.info);
+  };
+
+  
+
+  const handleMouseOut = () => {
+    setIsHovering(false);
+    setIsHoveringId(null);
+  };
+
+  const handleShowRemoveModal = (briefId) => {
+    setshowRemoveBrief(true);
+    setRemoveBriefId(briefId);
+  };
+
+  const handleDelete = (id) => {
+    const mSoftDeleteBrief = `
+      mutation softDeleteBriefById($id: ID) {
+        briefSoftDelete(id: $id) {
+          id
+        }
+      }
+      
+      `;
+
+    const deletedId = API.graphql({
+      query: mSoftDeleteBrief,
+      variables: {
+        id: id,
+      },
+    });
+
+    
+    setalertMessage(`Successfully Deleted.`);
+    setShowToast(true);
+    setshowRemoveBrief(false);
+
+    setTimeout(() => {
+      setShowToast(false);
+      setRemoveBriefId(null);
+      getBriefs();
+    }, 2000);
+    
+  };
 
   return (
     <>
@@ -556,42 +617,68 @@ export default function Briefs() {
             {Briefs.map((item) => (
               <div
                 className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
-                hover:border-black"
+                hover:border-black cursor-pointer"
                 key={item.id}
+                data-info={item.id}
+                onMouseOver={handleMouseOver} 
+                onMouseOut={handleMouseOut}
               >
-                <div>
-                  <div className="grid grid-cols-4 gap-4">
+                <div >
+                  <div className="grid grid-cols-4 gap-4" onClick={() => visitBrief(item.id)} >
                     <div
                       className={`col-span-2 ${
                         !showBName && `py-2 px-2 mb-2`
                       } ${!showDate && `py-1 px-1 mb-2`}`}
                     >
                       {showBName && (
-                        <p
-                          suppressContentEditableWarning={true}
-                          style={{
-                            cursor: "auto",
-                            outlineColor: "rgb(204, 204, 204, 0.5)",
-                            outlineWidth: "thin",
-                          }}
-                          onClick={(e) =>
-                            handleNameContent(e, item.name, item.id)
-                          }
-                          contentEditable={true}
-                          tabIndex="0"
-                          onInput={(e) => handleOnChangeBiefName(e)}
-                          onBlur={(e) =>
-                            handleSaveBriefName(e, item.name, item.id)
-                          }
-                          className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 w-8/12"
-                          dangerouslySetInnerHTML={{
-                            __html: item.name,
-                          }}
-                        />
+                        <>
+                          <div className="inline-flex w-full" 
+                          data-info={item.id}
+                          onMouseOver={handleMouseOver} 
+                          onMouseOut={handleMouseOut}
+                          >
+                            <p
+                              suppressContentEditableWarning={true}
+                              style={{
+                                cursor: "auto",
+                                outlineColor: "rgb(204, 204, 204, 0.5)",
+                                outlineWidth: "thin",
+                              }}
+                              data-info={item.id}
+                              onMouseOver={handleMouseOver} 
+                              onMouseOut={handleMouseOut}
+                              onClick={(e) =>
+                                handleNameContent(e, item.name, item.id)
+                              }
+                              onClickCapture={e => e.stopPropagation()} 
+                              contentEditable={true}
+                              tabIndex="0"
+                              onInput={(e) => handleOnChangeBiefName(e)}
+                              onBlur={(e) =>
+                                handleSaveBriefName(e, item.name, item.id)
+                              }
+                              className="inline-flex items-center focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 z-50"
+                              dangerouslySetInnerHTML={{
+                                __html: item.name,
+                              }}
+                            />
+                            {isHovering && isHoveringId === item.id && (
+                              <div
+                              >
+                                <MdEdit className="text-blue-500 hover:text-blue-300 inline-flex items-center ml-2 mr-1" 
+                                onClickCapture={e => e.stopPropagation()}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
 
                       {showDate && (
                         <p
+                          data-info={item.id}
+                          onMouseOver={handleMouseOver} 
+                          onMouseOut={handleMouseOut}
                           tabIndex="0"
                           className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                         >
@@ -601,9 +688,9 @@ export default function Briefs() {
                     </div>
                   </div>
 
-                  <div className="float-right inline-flex -mt-10">
+                  <div className="float-right inline-flex -mt-10 mr-8" onClick={() => visitBrief(item.id)} >
                     {showTag && <FaUserCircle className={`h-10 w-10 `} />}
-                    <svg
+                    {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className={`h-7 w-7 my-1 mx-1 cursor-pointer ${
                         !showBName && !showDate && !showTag && `mt-3`
@@ -617,7 +704,30 @@ export default function Briefs() {
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                         clipRule="evenodd"
                       />
-                    </svg>
+                    </svg> */}
+                  </div>
+                  <div className="float-right inline-flex -mt-8 ml-4" >
+                      {/* <BsFillTrashFill className="float-right text-md mb-10 text-red-500 hover:text-red-300 inline-flex items-center " 
+                      onClick={(e) => handleShowRemoveModal(item.id) }
+                      /> */}
+
+                      <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
+                        <div className="dropdown">
+                          <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
+                            <FaIcons.FaEllipsisH />
+                          </button>
+                          <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded z-50 -ml-8">
+                              <li
+                                className="p-2 cursor-pointer"
+                                onClick={() =>
+                                  handleShowRemoveModal(item.id)
+                                }
+                              >
+                                Delete
+                              </li>
+                          </ul>
+                        </div>
+                      </div>
                   </div>
                 </div>
               </div>
@@ -636,6 +746,14 @@ export default function Briefs() {
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
       {showSessionTimeout && <SessionTimeout />}
+
+      {showRemoveBrief && (
+        <RemoveBriefModal
+          handleSave={handleDelete}
+          handleModalClose={handleModalClose}
+          removeBriefId={removeBriefId}
+        />
+      )}
     </>
   );
 }

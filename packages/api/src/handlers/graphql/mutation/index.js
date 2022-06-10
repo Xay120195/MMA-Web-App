@@ -938,7 +938,6 @@ export async function untagBriefBackground(data) {
   try {
     const arrItems = [];
     const backgroundIDs = data.background.map((i) => i.id);
-
     const briefBackgroundParams = {
       TableName: "BriefBackgroundTable",
       IndexName: "byBrief",
@@ -967,8 +966,8 @@ export async function untagBriefBackground(data) {
       });
     }
 
-    let batches = [],
-      current_batch = [],
+    const batches = [];
+    let current_batch = [],
       item_count = 0;
 
     arrItems.forEach((data) => {
@@ -987,20 +986,24 @@ export async function untagBriefBackground(data) {
       batches.push(current_batch);
     }
 
-    batches.forEach(async (data, index) => {
-      const deleteBriefBackgroundParams = {
-        RequestItems: {
-          BriefBackgroundTable: data,
-        },
-      };
+    const asyncRemoveConection = await Promise.all(
+      batches.map(async (data) => {
+        const untagBriefBackgroundParams = {
+          RequestItems: {
+            BriefBackgroundTable: data,
+          },
+        };
 
-      const deleteBriefBackgroundCmd = new BatchWriteItemCommand(
-        deleteBriefBackgroundParams
-      );
-      const request = await ddbClient.send(deleteBriefBackgroundCmd);
-    });
+        const untagBriefBackgroundCmd = new BatchWriteItemCommand(
+          untagBriefBackgroundParams
+        );
+        return await ddbClient.send(untagBriefBackgroundCmd);
+      })
+    );
 
-    resp = { id: data.briefId };
+    if (asyncRemoveConection) {
+      resp = { id: data.briefId };
+    }
   } catch (e) {
     resp = {
       error: e.message,
@@ -1108,6 +1111,7 @@ async function createBrief(data) {
       name: data.name,
       date: data.date ? data.date : null,
       createdAt: toUTC(new Date()),
+      isDeleted: false,
       order: data.order ? data.order : 0,
     };
 
@@ -1680,6 +1684,40 @@ export async function deleteBrief(id) {
   return resp;
 }
 
+export async function softDeleteBrief(id, data) {
+  let resp = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "BriefTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await ddbClient.send(cmd);
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 export async function deleteRequest(id) {
   let resp = {};
   try {
@@ -2064,6 +2102,15 @@ const resolvers = {
     briefDelete: async (ctx) => {
       const { id } = ctx.arguments;
       return await deleteBrief(id);
+    },
+    briefSoftDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+        isDeleted: true,
+      };
+
+      return await softDeleteBrief(id, data);
     },
   },
 };
