@@ -676,6 +676,9 @@ export default function Briefs() {
 
                       {showDate && (
                         <p
+                          data-info={item.id}
+                          onMouseOver={handleMouseOver} 
+                          onMouseOut={handleMouseOut}
                           tabIndex="0"
                           className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                         >
