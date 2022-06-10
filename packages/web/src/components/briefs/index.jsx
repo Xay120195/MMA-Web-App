@@ -657,7 +657,7 @@ export default function Briefs() {
                               onBlur={(e) =>
                                 handleSaveBriefName(e, item.name, item.id)
                               }
-                              className="inline-flex items-center focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 z-50"
+                              className="inline-flex items-center focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1"
                               dangerouslySetInnerHTML={{
                                 __html: item.name,
                               }}
