@@ -483,6 +483,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: backgroundBulkCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: backgroundUpdate
         request: false
         response: false
@@ -587,7 +592,6 @@ custom:
         name: LambdaUserDS
         config:
           functionName: user-fn
-      
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

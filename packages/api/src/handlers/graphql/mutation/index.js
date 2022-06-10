@@ -822,34 +822,22 @@ async function createBackground(data) {
     });
     const request = await ddbClient.send(cmd);
 
-    // const briefBackgroundParams = {
-    //   id: v4(),
-    //   backgroundId: rawParams.id,
-    //   clientMatterId: data.clientMatterId,
-    //   createdAt: toUTC(new Date()),
-    // };
+    if (request) {
+      const briefBackgroundParams = {
+        id: v4(),
+        backgroundId: rawParams.id,
+        briefId: data.briefId,
+        createdAt: toUTC(new Date()),
+        order: data.order ? data.order : 0,
+      };
 
-    // const briefBackgroundCmd = new PutItemCommand({
-    //   TableName: "BriefBackgroundTable",
-    //   Item: marshall(briefBackgroundParams),
-    // });
+      const briefBackgroundCmd = new PutItemCommand({
+        TableName: "BriefBackgroundTable",
+        Item: marshall(briefBackgroundParams),
+      });
 
-    // await ddbClient.send(briefBackgroundCmd);
-
-    const briefBackgroundParams = {
-      id: v4(),
-      backgroundId: rawParams.id,
-      briefId: data.briefId,
-      createdAt: toUTC(new Date()),
-      order: data.order ? data.order : 0,
-    };
-
-    const briefBackgroundCmd = new PutItemCommand({
-      TableName: "BriefBackgroundTable",
-      Item: marshall(briefBackgroundParams),
-    });
-
-    await ddbClient.send(briefBackgroundCmd);
+      await ddbClient.send(briefBackgroundCmd);
+    }
 
     resp = rawParams;
   } catch (e) {
@@ -863,7 +851,130 @@ async function createBackground(data) {
   return resp;
 }
 
-export async function tagBriefBackground(data) {
+async function bulkCreateBackground(briefId, data) {
+  let resp = {};
+  try {
+    const arrBackgroundItems = [],
+      arrBriefBackgroundItems = [];
+
+    for (var i = 0; i < data.length; i++) {
+      var backgroundParams = {
+        id: v4(),
+        description: data[i].description,
+        date: data[i].date ? data[i].date : null,
+        order: data[i].order ? data[i].order : 0,
+        createdAt: toUTC(new Date()),
+      };
+
+      var briefBackgroundParams = {
+        id: v4(),
+        backgroundId: backgroundParams.id,
+        briefId: briefId,
+        createdAt: toUTC(new Date()),
+        order: backgroundParams.order,
+      };
+
+      arrBackgroundItems.push({
+        PutRequest: {
+          Item: marshall(backgroundParams),
+        },
+      });
+
+      arrBriefBackgroundItems.push({
+        PutRequest: {
+          Item: marshall(briefBackgroundParams),
+        },
+      });
+    }
+
+    const bb_batches = [];
+    let bb_current_batch = [],
+      bb_item_count = 0;
+
+    arrBriefBackgroundItems.forEach((data) => {
+      bb_item_count++;
+      bb_current_batch.push(data);
+
+      if (bb_item_count % 25 == 0) {
+        bb_batches.push(bb_current_batch);
+        bb_current_batch = [];
+      }
+    });
+
+    if (bb_current_batch.length > 0 && bb_current_batch.length != 25) {
+      bb_batches.push(bb_current_batch);
+    }
+
+    const asyncCreateBBResult = await Promise.all(
+      bb_batches.map(async (data) => {
+        const createBriefBackgroundParams = {
+          RequestItems: {
+            BriefBackgroundTable: data,
+          },
+        };
+
+        const createBriefBackgroundCmd = new BatchWriteItemCommand(
+          createBriefBackgroundParams
+        );
+        return await ddbClient.send(createBriefBackgroundCmd);
+      })
+    );
+
+    if (asyncCreateBBResult) {
+      
+
+      const b_batches = [];
+      let b_current_batch = [],
+        b_item_count = 0;
+
+      arrBackgroundItems.forEach((data) => {
+        b_item_count++;
+        b_current_batch.push(data);
+
+        if (b_item_count % 25 == 0) {
+          b_batches.push(b_current_batch);
+          b_current_batch = [];
+        }
+      });
+
+      if (b_current_batch.length > 0 && b_current_batch.length != 25) {
+        b_batches.push(b_current_batch);
+      }
+
+      const asyncCreateBResult = await Promise.all(
+        b_batches.map(async (data) => {
+          const createBackgroundParams = {
+            RequestItems: {
+              BackgroundsTable: data,
+            },
+          };
+
+          const createBackgroundCmd = new BatchWriteItemCommand(
+            createBackgroundParams
+          );
+          return await ddbClient.send(createBackgroundCmd);
+        })
+      );
+
+
+      resp = asyncCreateBResult
+        ? arrBackgroundItems.map((i) => {
+            return unmarshall(i.PutRequest.Item);
+          })
+        : [];
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function tagBriefBackground(data) {
   let resp = {};
   try {
     const arrItems = [],
@@ -933,7 +1044,7 @@ export async function tagBriefBackground(data) {
   return resp;
 }
 
-export async function untagBriefBackground(data) {
+async function untagBriefBackground(data) {
   let resp = {};
   try {
     const arrItems = [];
@@ -1590,7 +1701,7 @@ export function getUpdateExpressions(data) {
   };
 }
 
-export async function deleteBackground(id) {
+async function deleteBackground(id) {
   let resp = {};
   try {
     const briefBackgroundParams = {
@@ -1637,7 +1748,7 @@ export async function deleteBackground(id) {
   return resp;
 }
 
-export async function deleteBrief(id) {
+async function deleteBrief(id) {
   let resp = {};
   try {
     const clientMatterBriefParams = {
@@ -1684,7 +1795,7 @@ export async function deleteBrief(id) {
   return resp;
 }
 
-export async function softDeleteBrief(id, data) {
+async function softDeleteBrief(id, data) {
   let resp = {};
 
   try {
@@ -1718,7 +1829,7 @@ export async function softDeleteBrief(id, data) {
   return resp;
 }
 
-export async function deleteRequest(id) {
+async function deleteRequest(id) {
   let resp = {};
   try {
     const rfiRequestParams = {
@@ -1765,7 +1876,7 @@ export async function deleteRequest(id) {
   return resp;
 }
 
-export async function deleteRFI(id) {
+async function deleteRFI(id) {
   let resp = {};
   try {
     const clientMatterRFIParams = {
@@ -1812,7 +1923,7 @@ export async function deleteRFI(id) {
   return resp;
 }
 
-export async function deleteClientMatter(id) {
+async function deleteClientMatter(id) {
   let resp = {};
 
   try {
@@ -1974,6 +2085,11 @@ const resolvers = {
     },
     backgroundCreate: async (ctx) => {
       return await createBackground(ctx.arguments);
+    },
+
+    backgroundBulkCreate: async (ctx) => {
+      const { briefId, backgrounds } = ctx.arguments;
+      return await bulkCreateBackground(briefId, backgrounds);
     },
 
     briefBackgroundTag: async (ctx) => {
