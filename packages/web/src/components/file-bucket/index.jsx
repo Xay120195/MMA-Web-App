@@ -1260,14 +1260,30 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   //delete function
+  const mBulkSoftDelete =
+  `mutation bulkSoftDeleteMatterFiles($id: [ID]) {
+    matterFileBulkSoftDelete(id: $id) {
+        id
+    }
+  }`;
+
   const handleDeleteFile = async (fileID) => {
     setDeletingState(true);
-    fileID.map(async (id) => {
-      await deleteMatterFile(id);
+    var idArray = [];
+
+    fileID.map((x) => 
+      idArray = [...idArray, x.id]
+    );
+
+    const request = await API.graphql({
+      query: mBulkSoftDelete,
+      variables: {
+        id: idArray
+      },
     });
+
     selectedRows = [];
     selectedCompleteDataRows = [];
-    var next = 1;
     setshowRemoveFileButton(false);
     setShowCopyToBackgroundButton(false);
     setResultMessage(`Deleting File`);
@@ -1280,26 +1296,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setResultMessage(`Successfully Deleted!`);
       setShowToast(true);
       setTimeout(() => {
-        getMatterFiles(next);
+        getMatterFiles(1);
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
     }, 1000);
-  };
-
-  const deleteMatterFile = (fileID) => {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mSoftDeleteMatterFile,
-          variables: fileID,
-        });
-
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
   };
 
   const handleChageBackground = (id) => {
