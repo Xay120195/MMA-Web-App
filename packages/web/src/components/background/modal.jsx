@@ -15,38 +15,44 @@ export const ModalParagraph = ({
 }) => {
   let buttonBg = "bg-green-500";
 
+  const mUpdateBackgroundOrder = `
+  mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
+    backgroundBulkUpdateOrders(arrangement: $arrangement) {
+      id
+      order
+    }
+  }`;
+
+  const mBulkCreateBackground = `
+  mutation bulkCreateBackground($briefId: String, $backgrounds: [BackgroundInput]) {
+        backgroundBulkCreate(briefId: $briefId, backgrounds: $backgrounds) {
+          id
+        }
+      }
+  `;
+
   const handleNewParagraph = async (e) => {
-    console.group("handleNewParagraph()");
+    const arrParagraph = paragraph.split("\n\n");
+    let backgroundParams = [];
+    //console.group("handleNewParagraph()");
 
     setParagraph("");
     setShowModalParagraph(false);
 
-    // Remove by AQS:
-    // No need to rearrange before inserting new items
-    // since we are requesting all backgrounds after saving
+    //Update existing row order
+    const existingRowOrder = background.map(({ id }, index) => ({
+      id: id,
+      order: index + arrParagraph.length,
+    }));
 
-    // const mUpdateBackgroundOrder = `
-    //   mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
-    //     backgroundBulkUpdateOrders(arrangement: $arrangement) {
-    //       id
-    //       order
-    //     }
-    //   }`;
+    const updateBGOrderResp = await API.graphql({
+      query: mUpdateBackgroundOrder,
+      variables: {
+        arrangement: existingRowOrder,
+      },
+    });
 
-    // const rowArrangement = background.map(({ id }, index) => ({
-    //   id: id,
-    //   order: index + arrParagraph.length,
-    // }));
-
-    // const updateBGOrderResp = await API.graphql({
-    //   query: mUpdateBackgroundOrder,
-    //   variables: {
-    //     arrangement: rowArrangement,
-    //   },
-    // });
-
-    const arrParagraph = paragraph.split("\n\n");
-    let backgroundParams = [];
+    //Add paragraph by order
     for (let i = 0; i < arrParagraph.length; i++) {
       backgroundParams.push({
         description: arrParagraph[i],
@@ -54,14 +60,6 @@ export const ModalParagraph = ({
         order: parseInt(i),
       });
     }
-
-    const mBulkCreateBackground = `
-      mutation bulkCreateBackground($briefId: String, $backgrounds: [BackgroundInput]) {
-            backgroundBulkCreate(briefId: $briefId, backgrounds: $backgrounds) {
-              id
-            }
-          }
-      `;
 
     const createBackgroundRow = await API.graphql({
       query: mBulkCreateBackground,
