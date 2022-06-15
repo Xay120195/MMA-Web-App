@@ -6,9 +6,8 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listLabelFiles(ctx) {
-  console.log("listLabelFiles()");
   const { id } = ctx.source;
-  const { limit, nextToken, isDeleted = false } = ctx.arguments;
+  const { limit, nextToken } = ctx.arguments;
 
   try {
     const cmFilesParam = {
@@ -56,14 +55,9 @@ async function listLabelFiles(ctx) {
         unmarshall(i)
       );
 
-      if (isDeleted === false) {
-        // for old data
-        filterObjBrief = objFiles.filter(
-          (u) => u.isDeleted === false || u.isDeleted === undefined
-        );
-      } else {
-        filterObjBrief = objFiles.filter((u) => u.isDeleted === isDeleted);
-      }
+      const filterObjBrief = objFiles.filter(
+        (u) => u.isDeleted === false || u.isDeleted === undefined
+      );
 
       const objCMFiles = cmFilesResult.Items.map((i) => unmarshall(i));
 
@@ -75,8 +69,6 @@ async function listLabelFiles(ctx) {
           }
         })
         .filter((a) => a !== undefined);
-
-      //console.log("Batch Get Files:", response);
 
       return {
         items: response,
