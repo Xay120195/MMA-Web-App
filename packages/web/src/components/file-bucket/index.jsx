@@ -597,9 +597,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       getBriefs();
     }
 
-    if (briefNames === null){
-      loadBriefNames();
-    }
+    // if (briefNames === null){
+    //   loadBriefNames();
+    // }
 
     console.log("searchFile", searchFile);
     console.log("matterFiles", matterFiles);
