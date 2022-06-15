@@ -139,7 +139,7 @@ type Label {
   id: ID!
   name: String
   description: String
-  files(limit: Int, nextToken: String, isDeleted: Boolean): LabelFileConn
+  files(limit: Int, nextToken: String): LabelFileConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
