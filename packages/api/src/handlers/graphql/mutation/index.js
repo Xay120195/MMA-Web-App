@@ -17,6 +17,7 @@ const {
   softDeleteMatterFile,
   bulkUpdateMatterFileOrders,
   bulkCreateMatterFile,
+  bulkSoftDeleteMatterFile
 } = require("../../../services/MatterService");
 
 async function createCompany(data) {
@@ -2040,6 +2041,9 @@ const resolvers = {
       };
 
       return await softDeleteMatterFile(id, data);
+    },
+    matterFileBulkSoftDelete: async (ctx) => {
+      return await bulkSoftDeleteMatterFile(ctx.arguments);
     },
     labelCreate: async (ctx) => {
       return await createLabel(ctx.arguments);

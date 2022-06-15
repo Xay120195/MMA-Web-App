@@ -383,6 +383,32 @@ export async function updateMatterFile(id, data) {
   return resp;
 }
 
+export async function bulkSoftDeleteMatterFile(data) {
+  let resp = [];
+  try {
+    const asyncResult = await Promise.all(
+      data.id.map(async (id) => {
+        const data = {
+          updatedAt: toUTC(new Date()),
+          isDeleted: true,
+        };
+
+        resp.push({ id });
+
+        await softDeleteMatterFile(id, data);
+      })
+    );
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 export async function bulkUpdateMatterFileOrders(data) {
   let resp = [];
   try {
