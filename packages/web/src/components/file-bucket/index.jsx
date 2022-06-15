@@ -121,6 +121,10 @@ export default function FileBucket() {
   const bool = useRef(false);
   let history = useHistory();
 
+  const [briefNames, setBriefNames] = useState(null); 
+
+  
+
   var moment = require("moment");
 
   const hideToast = () => {
@@ -591,6 +595,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     if (Briefs === null) {
       getBriefs();
+    }
+
+    if (briefNames === null){
+      loadBriefNames();
     }
 
     console.log("searchFile", searchFile);
@@ -1764,7 +1772,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         (x) => (opts = [...opts, { label: x.name, value: x.id }])
       );
       setCopyBgOptions(opts);
+      setBriefs(briefList);
     });
+
+   
   };
 
   const handleFilterChange = (evt) => {
@@ -2104,16 +2115,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
   }
 
-  const getBriefName = async (backgroundId) => {
-    var arrBackgroundResult = [];
-    const backgroundRedirect = await API.graphql({
-      query: qListBriefId,
-      variables: {
-        id: backgroundId,
-      },
-    });
+  const getBriefName = (backgroundId) => {
+   
 
-    console.log("brr", backgroundRedirect);
+    console.log("brr", Briefs);
+    console.log("bgid", backgroundId);
+
+    return backgroundId;
 
     // if (backgroundRedirect.data.background.briefs !== null) {
     //   arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
@@ -2138,6 +2146,37 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   };
 
+  const loadBriefNames = async () => {
+    var arrBackgroundResult = [];
+    const backgroundRedirect = await API.graphql({
+      query: qListBriefId,
+      variables: {
+        id: background_id,
+      },
+    });
+
+    if (backgroundRedirect.data.background.briefs !== null) {
+      arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
+        ({ id }) => ({
+          id: id,
+        })
+      );
+
+      console.log("itemssss:", backgroundRedirect.data.background.briefs.items);
+    
+      // setTimeout(() => {
+      //   setShowToast(false);
+        // window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
+        //   arrBackgroundResult[0].id
+        // }/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(
+        //   client_name
+        // )}`;
+      //}, 200);
+    } else {
+      console.log("Error encountered!");
+    }
+  }
+
   const handleRedirectLink = async (e, backgroundId) => {
     var arrBackgroundResult = [];
     const backgroundRedirect = await API.graphql({
@@ -2154,20 +2193,22 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         })
       );
 
-      console.log("Brief ID:", backgroundRedirect.data.background.briefs);
+      console.log("Brief ID:", backgroundRedirect.data.background.briefs.items);
       console.log("Background ID:", backgroundId);
       setTimeout(() => {
         setShowToast(false);
-        window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
-          arrBackgroundResult[0].id
-        }/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(
-          client_name
-        )}`;
+        // window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
+        //   arrBackgroundResult[0].id
+        // }/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(
+        //   client_name
+        // )}`;
       }, 200);
     } else {
       alert("Error encountered!");
     }
   };
+
+
 
   return (
     <>
@@ -2950,7 +2991,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         ". "}
                                                     </b>
                                                     {ellipsis(
-                                                      "test",
+                                                      getBriefName(background.id),
                                                       40
                                                     )}
                                                   </div>
