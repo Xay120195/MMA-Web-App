@@ -1354,7 +1354,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const mGetFilesByLabel = `
     query getFilesByLabel($id: [ID]) {
       multipleLabels(id: $id) {
-        files {
+        files(isDeleted: $isDeleted) {
         items {
           id
           name
@@ -2103,6 +2103,40 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     });
   }
+
+  const getBriefName = async (backgroundId) => {
+    var arrBackgroundResult = [];
+    const backgroundRedirect = await API.graphql({
+      query: qListBriefId,
+      variables: {
+        id: backgroundId,
+      },
+    });
+
+    console.log("brr", backgroundRedirect);
+
+    // if (backgroundRedirect.data.background.briefs !== null) {
+    //   arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
+    //     ({ id }) => ({
+    //       id: id,
+    //     })
+    //   );
+
+
+
+    //   console.log("Brief ID:", backgroundRedirect.data.background.briefs);
+    //   console.log("Background ID:", backgroundId);
+
+    //   setTimeout(() => {
+    //     setShowToast(false);
+    //     // return arrBackgroundResult[0].id
+        
+    //   }, 200);
+    // } else {
+    //   alert("Error encountered!");
+    // }
+
+  };
 
   const handleRedirectLink = async (e, backgroundId) => {
     var arrBackgroundResult = [];
@@ -2916,12 +2950,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         ". "}
                                                     </b>
                                                     {ellipsis(
-                                                      checkFormat(client_name) +
-                                                        "/" +
-                                                        checkFormat(
-                                                          matter_name
-                                                        ) +
-                                                        " Background",
+                                                      "test",
                                                       40
                                                     )}
                                                   </div>
