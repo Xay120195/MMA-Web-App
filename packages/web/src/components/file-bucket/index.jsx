@@ -1362,7 +1362,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const mGetFilesByLabel = `
     query getFilesByLabel($id: [ID]) {
       multipleLabels(id: $id) {
-        files(isDeleted: $isDeleted) {
+        files {
         items {
           id
           name
@@ -1432,9 +1432,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       const result = await API.graphql({
         query: mGetFilesByLabel,
         variables: {
-          id: uniqueIds,
-          matter_id: matter_id,
-
+          id: uniqueIds
         },
       });
 
@@ -2116,66 +2114,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   const getBriefName = (backgroundId) => {
-   
-
-    console.log("brr", Briefs);
-    console.log("bgid", backgroundId);
-
-    return backgroundId;
-
-    // if (backgroundRedirect.data.background.briefs !== null) {
-    //   arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
-    //     ({ id }) => ({
-    //       id: id,
-    //     })
-    //   );
-
-
-
-    //   console.log("Brief ID:", backgroundRedirect.data.background.briefs);
-    //   console.log("Background ID:", backgroundId);
-
-    //   setTimeout(() => {
-    //     setShowToast(false);
-    //     // return arrBackgroundResult[0].id
-        
-    //   }, 200);
-    // } else {
-    //   alert("Error encountered!");
-    // }
+      return backgroundId;
+    
 
   };
 
-  const loadBriefNames = async () => {
-    var arrBackgroundResult = [];
-    const backgroundRedirect = await API.graphql({
-      query: qListBriefId,
-      variables: {
-        id: background_id,
-      },
-    });
 
-    if (backgroundRedirect.data.background.briefs !== null) {
-      arrBackgroundResult = backgroundRedirect.data.background.briefs.items.map(
-        ({ id }) => ({
-          id: id,
-        })
-      );
-
-      console.log("itemssss:", backgroundRedirect.data.background.briefs.items);
-    
-      // setTimeout(() => {
-      //   setShowToast(false);
-        // window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
-        //   arrBackgroundResult[0].id
-        // }/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(
-        //   client_name
-        // )}`;
-      //}, 200);
-    } else {
-      console.log("Error encountered!");
-    }
-  }
 
   const handleRedirectLink = async (e, backgroundId) => {
     var arrBackgroundResult = [];
@@ -2197,11 +2141,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       console.log("Background ID:", backgroundId);
       setTimeout(() => {
         setShowToast(false);
-        // window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
-        //   arrBackgroundResult[0].id
-        // }/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(
-        //   client_name
-        // )}`;
+        window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
+          arrBackgroundResult[0].id
+        }/?matter_name=${utf8_to_b64(matter_name)}&client_name=${utf8_to_b64(
+          client_name
+        )}`;
       }, 200);
     } else {
       alert("Error encountered!");
