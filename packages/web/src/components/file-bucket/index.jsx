@@ -1380,6 +1380,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               id
               order
               description
+              date
             }
           }
           createdAt
@@ -2603,9 +2604,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 className="border w-28 rounded text-xs py-2 px-1 border-gray-300"
                                                 dateFormat="dd MMM yyyy"
                                                 selected={
-                                                  data.date !== null
-                                                    ? new Date(data.date)
-                                                    : null
+                                                  data.date === null ? null : data.date === undefined ? null : new Date(data.date)
                                                 }
                                                 placeholderText="No Date"
                                                 onChange={(selected) =>
@@ -2615,6 +2614,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   )
                                                 }
                                               />
+                                              {/* <p>{data.date === undefined? "null" : data.date}</p> */}
                                             </div>
 
                                             {data.backgrounds.items
@@ -2630,11 +2630,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
                                                     dateFormat="dd MMM yyyy"
                                                     selected={
-                                                      background.date !== null
-                                                        ? new Date(
-                                                            background.date
-                                                          )
-                                                        : null
+                                                      background.date === null ? null : background.date === undefined ? null : new Date(background.date)
                                                     }
                                                     placeholderText="No Date"
                                                     onChange={(selected) =>
@@ -2871,11 +2867,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       )
                                                     }
                                                   ></span>
-                                                  {(background.description === null || background.description === undefined || background.description === "" || background.description < 47) 
-                                              ? <p></p>
-                                              : (background.id === descriptionClassId) 
-                                              ? <p></p>
-                                              : <p className="py-2 -ml-1">...</p>}
+                                                  {(background.description === null || background.description === undefined || background.description === "" || background.description.length < 47) 
+                                                  ? <p></p>
+                                                  : (background.id === descriptionClassId) 
+                                                  ? <p></p>
+                                                  : <p className="py-2 -ml-1">...</p>}
                                                 </div>
                                               ))}
                                           </td>
