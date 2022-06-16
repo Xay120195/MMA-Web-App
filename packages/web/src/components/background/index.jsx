@@ -231,7 +231,7 @@ const Background = () => {
       if (background !== null) {
         console.log(result);
         // setBackground(sortByOrder(result)); // no sorting needed
-        setBackground(result);
+        setBackground(sortByOrder(result));
         setWait(true);
         setMaxLoading(false);
       }
