@@ -1459,7 +1459,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
         console.log("putinmatterfiles", removeDuplicateObjectFromArray(newFiles2, 'id'));
         // setMatterFiles(sortByOrder(newFiles2));
-        setFilteredFiles(removeDuplicateObjectFromArray(newFiles2, 'id'));
+        setFilteredFiles(sortByOrder(removeDuplicateObjectFromArray(newFiles2, 'id')));
         setFilterState(true);
 
         console.log("res", result);
