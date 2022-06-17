@@ -220,6 +220,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: matterFileBulkSoftDelete
+        request: false
+        response: false  
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: matterFileBulkCreate
         request: false
         response: false

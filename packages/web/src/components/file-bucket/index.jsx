@@ -121,6 +121,10 @@ export default function FileBucket() {
   const bool = useRef(false);
   let history = useHistory();
 
+  const [briefNames, setBriefNames] = useState(null); 
+
+  
+
   var moment = require("moment");
 
   const hideToast = () => {
@@ -372,6 +376,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           order
           description
           date
+          briefs {
+            items {
+              id
+              name
+            }
+          }
         }
       }
       createdAt
@@ -593,6 +603,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       getBriefs();
     }
 
+    // if (briefNames === null){
+    //   loadBriefNames();
+    // }
+
     console.log("searchFile", searchFile);
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
@@ -748,9 +762,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleLabelChanged = async (options, id, e, existingLabels) => {
-    const newlabel = options.filter((x) => x.__isNew__);
-    // console.log("e",e);
-    // console.log("existing", existingLabels);
 
     if(e.action === 'create-option'){ //create new
       const createLabel = await API.graphql({
@@ -774,19 +785,17 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       const request = await API.graphql({
           query: mTagFileLabel,
           variables: {
-          fileId: id,
-          labels: updatedLabel,
-      },
+            fileId: id
+          },
       });
                 
       console.log("success", request);
-      
-        setResultMessage("Updating labels");
-        setShowToast(true);
-        setTimeout(() => {
-          setShowToast(false);
-          getMatterFiles();
-        }, 1000);
+      setResultMessage("Updating labels");
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        getMatterFiles();
+      }, 1000);
       
     }else if(e.action === 'select-option'){ //select existing
       var updatedLabel = [...existingLabels, {id: e.option.value, name: e.option.label}]
@@ -833,9 +842,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           getMatterFiles();
         }, 1000);
       }
-    }
-
-    
+    }  
   };
 
   const convertArrayToObject = (array) => {
@@ -1260,14 +1267,30 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   //delete function
+  const mBulkSoftDelete =
+  `mutation bulkSoftDeleteMatterFiles($id: [ID]) {
+    matterFileBulkSoftDelete(id: $id) {
+        id
+    }
+  }`;
+
   const handleDeleteFile = async (fileID) => {
     setDeletingState(true);
-    fileID.map(async (id) => {
-      await deleteMatterFile(id);
+    var idArray = [];
+
+    fileID.map((x) => 
+      idArray = [...idArray, x.id]
+    );
+
+    const request = await API.graphql({
+      query: mBulkSoftDelete,
+      variables: {
+        id: idArray
+      },
     });
+
     selectedRows = [];
     selectedCompleteDataRows = [];
-    var next = 1;
     setshowRemoveFileButton(false);
     setShowCopyToBackgroundButton(false);
     setResultMessage(`Deleting File`);
@@ -1280,26 +1303,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setResultMessage(`Successfully Deleted!`);
       setShowToast(true);
       setTimeout(() => {
-        getMatterFiles(next);
+        getMatterFiles(1);
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
     }, 1000);
-  };
 
-  const deleteMatterFile = (fileID) => {
-    return new Promise((resolve, reject) => {
-      try {
-        const request = API.graphql({
-          query: mSoftDeleteMatterFile,
-          variables: fileID,
-        });
 
-        resolve(request);
-      } catch (e) {
-        reject(e.errors[0].message);
-      }
-    });
+
   };
 
   const handleChageBackground = (id) => {
@@ -1378,6 +1389,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               id
               order
               description
+              date
+              briefs {
+                items {
+                  id
+                  name
+                }
+              }
             }
           }
           createdAt
@@ -1430,30 +1448,39 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       const result = await API.graphql({
         query: mGetFilesByLabel,
         variables: {
-          id: uniqueIds,
+          id: uniqueIds
         },
       });
 
-      var newFiles = result.data.multipleLabels;
+      setTimeout(() => { 
+        console.log("ssss", result);
+        var newFiles = result.data.multipleLabels;
 
-      var newFiles1 = [];
-      var newFiles2 = [];
+        var newFiles1 = [];
+        var newFiles2 = [];
 
-      if (result === null) {
-        newFiles2 = [];
-      } else {
-        result.data.multipleLabels.map(
-          (x) => (newFiles1 = [...newFiles1, x.files.items])
-        );
-        newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
-      }
+        if (result === null) {
+          newFiles2 = [];
+        } else {
+          result.data.multipleLabels.map(
+            (x) => (newFiles1 = [...newFiles1, x.files.items])
+          );
+          newFiles1.map((x) => x.map((y) => (newFiles2 = [...newFiles2, y])));
+        }
 
-      console.log("putinmatterfiles", newFiles2);
-      // setMatterFiles(sortByOrder(newFiles2));
-      setFilteredFiles(sortByOrder(newFiles2));
-      setFilterState(true);
+        function removeDuplicateObjectFromArray(array, key) {
+          var check = new Set();
+          return array.filter(obj => !check.has(obj[key]) && check.add(obj[key]));
+        }
 
-      console.log("res", result);
+        console.log("putinmatterfiles", removeDuplicateObjectFromArray(newFiles2, 'id'));
+        // setMatterFiles(sortByOrder(newFiles2));
+        setFilteredFiles(sortByOrder(removeDuplicateObjectFromArray(newFiles2, 'id')));
+        setFilterState(true);
+
+        console.log("res", result);
+      }, 5000);
+      
     }
   };
 
@@ -1759,7 +1786,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         (x) => (opts = [...opts, { label: x.name, value: x.id }])
       );
       setCopyBgOptions(opts);
+      setBriefs(briefList);
     });
+
+   
   };
 
   const handleFilterChange = (evt) => {
@@ -1897,6 +1927,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return obj;
     });
 
+    // matterFiles.map((obj) => {
+    //   if (obj.id === id) {
+        
+    //   }
+    // });
+
     setDescriptionClass(true);
     setDescriptionClassId("");
 
@@ -1927,6 +1963,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
       setTimeout(() => {
         setShowToast(false);
+        getMatterFiles(1);
       }, 1000);
     }
   };
@@ -2099,6 +2136,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
   }
 
+  const getBriefName = (backgroundId) => {
+      return backgroundId;
+    
+
+  };
+
+
+
   const handleRedirectLink = async (e, backgroundId) => {
     var arrBackgroundResult = [];
     const backgroundRedirect = await API.graphql({
@@ -2114,9 +2159,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           id: id,
         })
       );
-
-      console.log("Brief ID:", backgroundRedirect.data.background.briefs);
-      console.log("Background ID:", backgroundId);
       setTimeout(() => {
         setShowToast(false);
         window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
@@ -2129,6 +2171,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       alert("Error encountered!");
     }
   };
+
+
 
   return (
     <>
@@ -2579,9 +2623,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 className="border w-28 rounded text-xs py-2 px-1 border-gray-300"
                                                 dateFormat="dd MMM yyyy"
                                                 selected={
-                                                  data.date !== null
-                                                    ? new Date(data.date)
-                                                    : null
+                                                  data.date === null ? null : data.date === undefined ? null : new Date(data.date)
                                                 }
                                                 placeholderText="No Date"
                                                 onChange={(selected) =>
@@ -2591,6 +2633,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   )
                                                 }
                                               />
+                                              {/* <p>{data.date === undefined? "null" : data.date}</p> */}
                                             </div>
 
                                             {data.backgrounds.items
@@ -2606,11 +2649,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
                                                     dateFormat="dd MMM yyyy"
                                                     selected={
-                                                      background.date !== null
-                                                        ? new Date(
-                                                            background.date
-                                                          )
-                                                        : null
+                                                      background.date === null ? null : background.date === undefined ? null : new Date(background.date)
                                                     }
                                                     placeholderText="No Date"
                                                     onChange={(selected) =>
@@ -2778,6 +2817,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   __html: data.details,
                                                 }}
                                               ></span>
+                                              {(data.details === null || data.details === undefined || data.details === "" || data.details.length < 47) 
+                                              ? <p></p>
+                                              : (data.id === descriptionClassId) 
+                                              ? <p></p>
+                                              : <p className="py-2 -ml-1">...</p>}
                                             </div>
                                             <br />
                                             <span className="text-red-400 filename-validation">
@@ -2842,6 +2886,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       )
                                                     }
                                                   ></span>
+                                                  {(background.description === null || background.description === undefined || background.description === "" || background.description.length < 47) 
+                                                  ? <p></p>
+                                                  : (background.id === descriptionClassId) 
+                                                  ? <p></p>
+                                                  : <p className="py-2 -ml-1">...</p>}
                                                 </div>
                                               ))}
                                           </td>
@@ -2884,32 +2933,30 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   a.order > b.order ? 1 : -1
                                                 )
                                                 .map((background, index) => (
-                                                  <div
-                                                    className="h-10.5 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                    key={background.id}
-                                                    index={index}
-                                                    onClick={(event) =>
-                                                      handleRedirectLink(
-                                                        event,
-                                                        background.id
-                                                      )
-                                                    }
-                                                  >
-                                                    <b>
-                                                      {background.order +
-                                                        1 +
-                                                        ". "}
-                                                    </b>
-                                                    {ellipsis(
-                                                      checkFormat(client_name) +
-                                                        "/" +
-                                                        checkFormat(
-                                                          matter_name
-                                                        ) +
-                                                        " Background",
-                                                      40
-                                                    )}
-                                                  </div>
+                                                  
+                                                    (background.briefs.items[0] === null || background.briefs.items[0] === undefined)
+                                                    ?
+                                                    <div
+                                                      className="h-10.5 py-3 p-1 mb-1.5"
+                                                      key={background.id}
+                                                      index={index}
+            
+                                                    ></div>
+                                                    : 
+                                                    <div
+                                                      className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                      key={background.id}
+                                                      index={index}
+                                                      onClick={(event) =>  handleRedirectLink(event,background.id)}
+                                                    >
+                                                      <b>
+                                                      {((background.order + 1) + ". " + background.briefs.items[0].name) }
+                                                        
+                                                      </b>
+                                                    
+                                                    </div>
+                                                  
+                                                  
                                                 ))}
                                             </div>
                                           </td>
