@@ -79,6 +79,8 @@ const Background = () => {
   const [targetRow, setTargetRow] = useState("");
   const [highlightRow, setHighlightRow] = useState(null);
 
+  const [pastedRows, setPastedRows] = useState([]);
+
   let history = useHistory();
   const check = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
@@ -231,7 +233,7 @@ const Background = () => {
       if (background !== null) {
         console.log(result);
         // setBackground(sortByOrder(result)); // no sorting needed
-        setBackground(result);
+        setBackground(sortByOrder(result));
         setWait(true);
         setMaxLoading(false);
       }
@@ -544,7 +546,8 @@ const Background = () => {
   }
 
   const handleManageFiles = () => {
-    setActivateButton(!activateButton);
+      setPastedRows([]);
+      setActivateButton(!activateButton);
   };
 
   let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
@@ -842,6 +845,8 @@ const Background = () => {
             targetRow={targetRow}
             highlightRow={highlightRow}
             setHighlightRow={setHighlightRow}
+            pastedRows={pastedRows}
+            setPastedRows={setPastedRows}
           />
 
           {/* {background !== null && background.length !== 0 && ( */}
@@ -933,6 +938,8 @@ const Background = () => {
           targetRow={targetRow}
           highlightRow={highlightRow}
           setHighlightRow={setHighlightRow}
+          pastedRows={pastedRows}
+          setPastedRows={setPastedRows}
         />
 
         {showToast && (

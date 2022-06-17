@@ -504,6 +504,7 @@ type Mutation {
     date: AWSDateTime
   ): File
   matterFileSoftDelete(id: ID): File
+  matterFileBulkSoftDelete(id: [ID]): [File]
   matterFileUpdate(
     id: ID
     name: String

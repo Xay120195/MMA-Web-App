@@ -29,6 +29,7 @@ import ScrollToTop from "react-scroll-to-top";
 import UploadLinkModal from "../file-bucket/file-upload-modal";
 import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
+import { check } from "prettier";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -94,6 +95,8 @@ const TableInfo = ({
   targetRow,
   highlightRow,
   setHighlightRow,
+  pastedRows,
+  setPastedRows
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -126,6 +129,9 @@ const TableInfo = ({
 
   const location = useLocation();
   const history = useHistory();
+
+
+  
 
   var moment = require("moment");
 
@@ -558,6 +564,9 @@ const TableInfo = ({
   }
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
+    var temp = pastedRows;
+    
+
     if (event.target.checked) {
       if (!files.includes({ uniqueId: event.target.name })) {
         if (
@@ -565,12 +574,18 @@ const TableInfo = ({
             tempFiles.find((temppFiles) => temppFiles.id === id)
           ) > -1
         ) {
+          temp.map((x)=> x === background_id ? temp.splice(temp.indexOf(x), 1) : x)
+          setPastedRows(temp);
         } else {
           tempFiles = [
             ...tempFiles,
             { id: id, files: files_id, backgroundId: background_id },
           ];
           selectedRowsBGFilesPass = tempFiles;
+
+          temp = [...temp, background_id];
+          console.log("selected", temp);
+          setPastedRows(temp);
           setSelectedRowsBGFiles(tempFiles);
         }
       }
@@ -586,6 +601,28 @@ const TableInfo = ({
           ),
           1
         );
+        console.log("bgid", background_id);
+        console.log("temp", temp);
+        // temp.splice(
+        //   temp.indexOf(
+        //     temp.find(background_id)
+        //   ),
+        //   1
+        // );
+
+        // temp.map((x)=> x === background_id ? temp.splice(temp.indexOf(temp.find(x)), 1) : x)
+
+        var pass = []
+
+        for(var i = 0; i<temp.length; i++){
+          if(temp[i] === background_id){
+            pass = pass;
+          }else{
+            pass = [...pass, temp[i]];
+          }
+        }
+        console.log("passdata", pass);
+        setPastedRows(pass);
         setSelectedRowsBGFiles(tempFiles);
         selectedRowsBGFilesPass = tempFiles;
       }
@@ -614,6 +651,10 @@ const TableInfo = ({
   }`;
 
   const pasteFilestoBackground = async (background_id) => {
+    var temp = pastedRows;
+    temp = [...temp, background_id];
+    setPastedRows(temp);
+    console.log("rows", temp);
     let arrCopyFiles = [];
     let arrFileResult = [];
     const seen = new Set();
@@ -1333,6 +1374,11 @@ const TableInfo = ({
     }
   };
 
+  function rowClicked(itemid) {
+    const found = pastedRows.find(element => element === itemid);
+    return found;
+  }
+
   return (
     <>
       <div className="px-7">
@@ -1622,10 +1668,11 @@ const TableInfo = ({
                                                 </span>
                                               )
                                             ) : (
-                                              <span
+                                              <button
                                                 className={
-                                                  selectedId === item.id
-                                                    ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                  
+                                                  rowClicked(item.id)
+                                                    ? "w-60 bg-gray-300 border border-gray-500 text-gray-500 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium "
                                                     : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 }
                                                 onClick={() => {
@@ -1633,14 +1680,15 @@ const TableInfo = ({
                                                     item.id
                                                   );
                                                 }}
+                                                disabled={rowClicked(item.id) ? true : false}
                                               >
                                                 {" "}
-                                                {selectedId === item.id
-                                                  ? "Pasted"
+                                                {rowClicked(item.id)
+                                                  ? "Paste"
                                                   : "Paste"}
                                                 &nbsp;
                                                 <FaPaste />
-                                              </span>
+                                              </button>
                                             )}
                                             {item.files.items === null ||
                                             item.files.items.length === 0 ? (
