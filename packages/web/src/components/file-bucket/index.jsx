@@ -1390,6 +1390,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               order
               description
               date
+              briefs {
+                items {
+                  id
+                  name
+                }
+              }
             }
           }
           createdAt
@@ -2927,30 +2933,30 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   a.order > b.order ? 1 : -1
                                                 )
                                                 .map((background, index) => (
-                                                  <div
-                                                    className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                    key={background.id}
-                                                    index={index}
-                                                    onClick={(event) =>
-                                                      handleRedirectLink(
-                                                        event,
-                                                        background.id
-                                                      )
-                                                    }
-                                                  >
-                                                    <b>
-
-                                                      {
-                                                      (background.briefs.length > 0 || background.briefs !== null || background.briefs !== undefined)
-                                                      ? ((background.order + 1) + ". " + ellipsis(background.briefs.items[0].name, 40) )
-                                                      : "Cannot Retrieve Data"
-                                                      
-                                                      
-                                                      
-                                                      }
-                                                    </b>
-                                                   
-                                                  </div>
+                                                  
+                                                    (background.briefs.items[0] === null || background.briefs.items[0] === undefined)
+                                                    ?
+                                                    <div
+                                                      className="h-10.5 py-3 p-1 mb-1.5"
+                                                      key={background.id}
+                                                      index={index}
+            
+                                                    ></div>
+                                                    : 
+                                                    <div
+                                                      className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                      key={background.id}
+                                                      index={index}
+                                                      onClick={(event) =>  handleRedirectLink(event,background.id)}
+                                                    >
+                                                      <b>
+                                                      {((background.order + 1) + ". " + background.briefs.items[0].name) }
+                                                        
+                                                      </b>
+                                                    
+                                                    </div>
+                                                  
+                                                  
                                                 ))}
                                             </div>
                                           </td>
