@@ -1344,9 +1344,7 @@ const TableInfo = ({
   };
 
   function rowClicked(itemid) {
-    
     const found = pastedRows.find(element => element === itemid);
-    console.log("dgsdvd", found);
     return found;
   }
 
