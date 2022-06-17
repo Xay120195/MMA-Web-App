@@ -1921,6 +1921,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return obj;
     });
 
+    // matterFiles.map((obj) => {
+    //   if (obj.id === id) {
+        
+    //   }
+    // });
+
     setDescriptionClass(true);
     setDescriptionClassId("");
 
@@ -1951,6 +1957,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
       setTimeout(() => {
         setShowToast(false);
+        getMatterFiles(1);
       }, 1000);
     }
   };
