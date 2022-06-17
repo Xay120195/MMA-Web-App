@@ -1303,7 +1303,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setResultMessage(`Successfully Deleted!`);
       setShowToast(true);
       setTimeout(() => {
-        //getMatterFiles(1);
+        getMatterFiles(1);
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
@@ -2928,7 +2928,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 )
                                                 .map((background, index) => (
                                                   <div
-                                                    className="h-10.5 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                    className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
                                                     key={background.id}
                                                     index={index}
                                                     onClick={(event) =>
