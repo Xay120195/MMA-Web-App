@@ -29,6 +29,7 @@ import ScrollToTop from "react-scroll-to-top";
 import UploadLinkModal from "../file-bucket/file-upload-modal";
 import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
+import { check } from "prettier";
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -94,6 +95,8 @@ const TableInfo = ({
   targetRow,
   highlightRow,
   setHighlightRow,
+  pastedRows,
+  setPastedRows
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -126,6 +129,9 @@ const TableInfo = ({
 
   const location = useLocation();
   const history = useHistory();
+
+
+  
 
   var moment = require("moment");
 
@@ -614,6 +620,10 @@ const TableInfo = ({
   }`;
 
   const pasteFilestoBackground = async (background_id) => {
+    var temp = pastedRows;
+    temp = [...temp, background_id];
+    setPastedRows(temp);
+    console.log("rows", temp);
     let arrCopyFiles = [];
     let arrFileResult = [];
     const seen = new Set();
@@ -1333,6 +1343,13 @@ const TableInfo = ({
     }
   };
 
+  function rowClicked(itemid) {
+    
+    const found = pastedRows.find(element => element === itemid);
+    console.log("dgsdvd", found);
+    return found;
+  }
+
   return (
     <>
       <div className="px-7">
@@ -1622,10 +1639,11 @@ const TableInfo = ({
                                                 </span>
                                               )
                                             ) : (
-                                              <span
+                                              <button
                                                 className={
-                                                  selectedId === item.id
-                                                    ? "w-60 bg-white-400 border border-green-400 text-green-400 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                  
+                                                  rowClicked(item.id)
+                                                    ? "w-60 bg-gray-300 border border-gray-500 text-gray-500 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium "
                                                     : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 }
                                                 onClick={() => {
@@ -1633,14 +1651,15 @@ const TableInfo = ({
                                                     item.id
                                                   );
                                                 }}
+                                                disabled={rowClicked(item.id) ? true : false}
                                               >
                                                 {" "}
-                                                {selectedId === item.id
-                                                  ? "Pasted"
+                                                {rowClicked(item.id)
+                                                  ? "Pasted Files"
                                                   : "Paste"}
                                                 &nbsp;
                                                 <FaPaste />
-                                              </span>
+                                              </button>
                                             )}
                                             {item.files.items === null ||
                                             item.files.items.length === 0 ? (
