@@ -376,6 +376,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           order
           description
           date
+          briefs {
+            items {
+              id
+              name
+            }
+          }
         }
       }
       createdAt
@@ -1297,11 +1303,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setResultMessage(`Successfully Deleted!`);
       setShowToast(true);
       setTimeout(() => {
-        getMatterFiles(1);
+        //getMatterFiles(1);
         setShowToast(false);
         setDeletingState(false);
       }, 3000);
     }, 1000);
+
+
+
   };
 
   const handleChageBackground = (id) => {
@@ -1912,6 +1921,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return obj;
     });
 
+    // matterFiles.map((obj) => {
+    //   if (obj.id === id) {
+        
+    //   }
+    // });
+
     setDescriptionClass(true);
     setDescriptionClassId("");
 
@@ -1942,6 +1957,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
       setTimeout(() => {
         setShowToast(false);
+        getMatterFiles(1);
       }, 1000);
     }
   };
@@ -2137,9 +2153,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           id: id,
         })
       );
-
-      console.log("Brief ID:", backgroundRedirect.data.background.briefs.items);
-      console.log("Background ID:", backgroundId);
       setTimeout(() => {
         setShowToast(false);
         window.location.href = `${AppRoutes.BACKGROUND}/${matter_id}/${
@@ -2928,12 +2941,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     <b>
                                                       {background.order +
                                                         1 +
-                                                        ". "}
+                                                        ". " + ellipsis(background.briefs.items[0].name, 40) }
                                                     </b>
-                                                    {ellipsis(
-                                                      getBriefName(background.id),
-                                                      40
-                                                    )}
+                                                   
                                                   </div>
                                                 ))}
                                             </div>
