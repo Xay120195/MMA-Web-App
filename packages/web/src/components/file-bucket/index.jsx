@@ -794,7 +794,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-        getMatterFiles();
+        getMatterFiles(1);
       }, 1000);
       
     }else if(e.action === 'select-option'){ //select existing
@@ -814,7 +814,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
-          getMatterFiles();
+          getMatterFiles(1);
         }, 1000);
       }
     }else{ //removevalue
@@ -839,7 +839,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
-          getMatterFiles();
+          getMatterFiles(1);
         }, 1000);
       }
     }  
