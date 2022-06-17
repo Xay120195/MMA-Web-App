@@ -2939,9 +2939,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     }
                                                   >
                                                     <b>
-                                                      {background.order +
-                                                        1 +
-                                                        ". " + ellipsis(background.briefs.items[0].name, 40) }
+
+                                                      {
+                                                      (background.briefs.items[0].name !== null || background.briefs.items[0].name !== undefined)
+                                                      ? (background.order + 1) + ". " + ellipsis(background.briefs.items[0].name, 40) 
+                                                      : "Cannot Retrieve Data"
+                                                      
+                                                      
+                                                      
+                                                      }
                                                     </b>
                                                    
                                                   </div>
