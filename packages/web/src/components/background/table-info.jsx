@@ -564,6 +564,9 @@ const TableInfo = ({
   }
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
+    var temp = pastedRows;
+    
+
     if (event.target.checked) {
       if (!files.includes({ uniqueId: event.target.name })) {
         if (
@@ -571,12 +574,18 @@ const TableInfo = ({
             tempFiles.find((temppFiles) => temppFiles.id === id)
           ) > -1
         ) {
+          temp.map((x)=> x === background_id ? temp.splice(temp.indexOf(x), 1) : x)
+          setPastedRows(temp);
         } else {
           tempFiles = [
             ...tempFiles,
             { id: id, files: files_id, backgroundId: background_id },
           ];
           selectedRowsBGFilesPass = tempFiles;
+
+          temp = [...temp, background_id];
+          console.log("selected", temp);
+          setPastedRows(temp);
           setSelectedRowsBGFiles(tempFiles);
         }
       }
@@ -592,6 +601,28 @@ const TableInfo = ({
           ),
           1
         );
+        console.log("bgid", background_id);
+        console.log("temp", temp);
+        // temp.splice(
+        //   temp.indexOf(
+        //     temp.find(background_id)
+        //   ),
+        //   1
+        // );
+
+        // temp.map((x)=> x === background_id ? temp.splice(temp.indexOf(temp.find(x)), 1) : x)
+
+        var pass = []
+
+        for(var i = 0; i<temp.length; i++){
+          if(temp[i] === background_id){
+            pass = pass;
+          }else{
+            pass = [...pass, temp[i]];
+          }
+        }
+        console.log("passdata", pass);
+        setPastedRows(pass);
         setSelectedRowsBGFiles(tempFiles);
         selectedRowsBGFilesPass = tempFiles;
       }
@@ -1653,7 +1684,7 @@ const TableInfo = ({
                                               >
                                                 {" "}
                                                 {rowClicked(item.id)
-                                                  ? "Pasted Files"
+                                                  ? "Paste"
                                                   : "Paste"}
                                                 &nbsp;
                                                 <FaPaste />
