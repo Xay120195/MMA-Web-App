@@ -2950,7 +2950,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       onClick={(event) =>  handleRedirectLink(event,background.id)}
                                                     >
                                                       <b>
-                                                      {((background.order + 1) + ". " + background.briefs.items[0].name) }
+                                                      {((background.order) + ". " + background.briefs.items[0].name) }
                                                         
                                                       </b>
                                                     
