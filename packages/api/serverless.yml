@@ -39,25 +39,27 @@ useDotenv: true
 
 functions:
   query-fn:
-    handler: src/handlers/graphql/query/index.handler
+    handler: src/functions/graphql/query/index.handler
   mutation-fn:
-    handler: src/handlers/graphql/mutation/index.handler
+    handler: src/functions/graphql/mutation/index.handler
   file-fn:
-    handler: src/handlers/graphql/file/index.handler
+    handler: src/functions/graphql/file/index.handler
   company-fn:
-    handler: src/handlers/graphql/company/index.handler
+    handler: src/functions/graphql/company/index.handler
   clientmatter-fn:
-    handler: src/handlers/graphql/clientMatter/index.handler
+    handler: src/functions/graphql/clientMatter/index.handler
   background-fn:
-    handler: src/handlers/graphql/background/index.handler
+    handler: src/functions/graphql/background/index.handler
   label-fn:
-    handler: src/handlers/graphql/label/index.handler
+    handler: src/functions/graphql/label/index.handler
   brief-fn:
-    handler: src/handlers/graphql/brief/index.handler
+    handler: src/functions/graphql/brief/index.handler
   rfi-fn:
-    handler: src/handlers/graphql/rfi/index.handler
+    handler: src/functions/graphql/rfi/index.handler
   user-fn:
-    handler: src/handlers/graphql/user/index.handler
+    handler: src/functions/graphql/user/index.handler
+  gmailmessage-fn:
+    handler: src/functions/graphql/gmailMessage/index.handler
 custom:
   dynamodb:
     # If you only want to use DynamoDB Local in some stages, declare them here
@@ -160,8 +162,8 @@ custom:
         field: users
         request: false
         response: false
+      # Page
       - dataSource: LambdaQueryDS
-        # Page
         type: Query
         field: page
         request: false
@@ -222,7 +224,7 @@ custom:
         type: Mutation
         field: matterFileBulkSoftDelete
         request: false
-        response: false  
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: matterFileBulkCreate
@@ -552,6 +554,59 @@ custom:
         field: columnSettingsCreate
         request: false
         response: false
+      # Gmail Messages
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: gmailMessages
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: gmailMessage
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: gmailMessages
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageSave
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageSoftDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageBulkSoftDelete
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageClientMatterTag
+        request: false
+        response: false
+      - dataSource: LambdaGmailMessageDS
+        type: GmailMessage
+        field: clientMatters
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAddToken
+        request: false
+        response: false
+
+    # Data Sources
     dataSources:
       - type: AWS_LAMBDA
         name: LambdaQueryDS
@@ -597,6 +652,10 @@ custom:
         name: LambdaUserDS
         config:
           functionName: user-fn
+      - type: AWS_LAMBDA
+        name: LambdaGmailMessageDS
+        config:
+          functionName: gmailmessage-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}
