@@ -4,6 +4,7 @@ import ActionButtons from "./action-buttons";
 import TableInfo from "./table-info";
 import GoogleBtn from './google-btn';
 import { gapi } from 'gapi-script';
+import googleLogin from "../../assets/images/google-login.png";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -104,44 +105,54 @@ const Inbox = () => {
   };
   
   const [loginData, setLoginData] = useState(
-    localStorage.getItem('loginData')
-      ? JSON.parse(localStorage.getItem('loginData'))
+    localStorage.getItem('signInData')
+      ? JSON.parse(localStorage.getItem('signInData'))
       : null
   );
-  /*
-  const handleFailure = (result) => {
-    alert(result);
-  };
-
-  const handleLogin = async (googleData) => {
-    const res = await fetch('/api/google-login', {
-      method: 'POST',
-      body: JSON.stringify({
-        token: googleData.tokenId,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await res.json();
-    setLoginData(data);
-    localStorage.setItem('loginData', JSON.stringify(data));
-  };
-  const handleLogout = () => {
-    localStorage.removeItem('loginData');
-    setLoginData(null);
-  };
-  */
 
   return (
     <>
+
+      { !loginData ?
+      <div
+        className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
+        style={contentDiv}
+      >
+        <div className="h-screen flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 relative">
+            <div className="col-span-3 pl-8 pt-20">
+              <h5 className="text-black text-2xl font-bold">AFFIDAVITS & RFI</h5>
+              <div className="text-black text-xl font-normal my-5 leading-10">
+                Looks like you're not yet connected with your Google Account
+              </div>
+              <div className="text-gray-400 text-lg font-medium">
+                Lets make your trip fun and simple
+              </div><br/>
+              <GoogleBtn
+                loginData={loginData}
+                setLoginData={setLoginData}
+              />
+            </div>
+            <div className="col-span-7">
+              <div className="h-screen float-right">
+                <img src={googleLogin} alt="" className="h-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        : 
+
       <div
         className="p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
         style={contentDiv}
       >
-        <div>
-          <GoogleBtn/>
+        <div className="float-right" >
+          <GoogleBtn
+            loginData={loginData}
+            setLoginData={setLoginData}
+          />
         </div>
         <div style={mainGrid}>
           <div className="grid grid-rows grid-flow-col">
@@ -200,34 +211,35 @@ const Inbox = () => {
             setSelectMessage={setSelectMessage}
           />
         </div>
+        <TableInfo
+          data={data}
+          totalChecked={totalChecked}
+          setTotalChecked={setTotalChecked}
+          totalReadChecked={totalReadChecked}
+          setTotalReadChecked={setTotalReadChecked}
+          totalUnReadChecked={totalUnReadChecked}
+          setTotalUnReadChecked={setTotalUnReadChecked}
+          checkedStateRead={checkedStateRead}
+          setCheckedStateRead={setCheckedStateRead}
+          checkedStateUnRead={checkedStateUnRead}
+          setCheckedStateUnreRead={setCheckedStateUnreRead}
+          unReadData={unReadData}
+          readData={readData}
+          readdata={readdata}
+          unreaddata={unreaddata}
+          setUnreadData={setUnreadData}
+          setReadData={setReadData}
+          getIdUnread={getIdUnread}
+          setIdUnread={setIdUnread}
+          setIdRead={setIdRead}
+          getIdRead={getIdRead}
+          searchRow={searchRow}
+          setSearchRow={setSearchRow}
+          selectedMessage={selectedMessage}
+          setSelectMessage={setSelectMessage}
+        />
       </div>
-      <TableInfo
-        data={data}
-        totalChecked={totalChecked}
-        setTotalChecked={setTotalChecked}
-        totalReadChecked={totalReadChecked}
-        setTotalReadChecked={setTotalReadChecked}
-        totalUnReadChecked={totalUnReadChecked}
-        setTotalUnReadChecked={setTotalUnReadChecked}
-        checkedStateRead={checkedStateRead}
-        setCheckedStateRead={setCheckedStateRead}
-        checkedStateUnRead={checkedStateUnRead}
-        setCheckedStateUnreRead={setCheckedStateUnreRead}
-        unReadData={unReadData}
-        readData={readData}
-        readdata={readdata}
-        unreaddata={unreaddata}
-        setUnreadData={setUnreadData}
-        setReadData={setReadData}
-        getIdUnread={getIdUnread}
-        setIdUnread={setIdUnread}
-        setIdRead={setIdRead}
-        getIdRead={getIdRead}
-        searchRow={searchRow}
-        setSearchRow={setSearchRow}
-        selectedMessage={selectedMessage}
-        setSelectMessage={setSelectMessage}
-      />
+      }
     </>
   );
 };

@@ -5,11 +5,10 @@ class GoogleBtn extends Component {
    constructor(props) {
     super(props);
     this.state = {
-      isLogined: false,
-      accessToken: ''
+      isLogined: localStorage.getItem('signInData')
+      ? JSON.parse(localStorage.getItem('signInData'))
+      : null,
     };
-
-    this.state = { logStatus: null };
 
     this.login = this.login.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this);
@@ -20,21 +19,18 @@ class GoogleBtn extends Component {
   login (response) {
     if(response.accessToken){
       this.setState(state => ({
-        isLogined: true,
-        accessToken: response.accessToken
+        isLogined: response,
       }));
       console.log(response);
-      this.setState(state => ({
-        logStatus: "Logout - "+response.profileObj.givenName+" ("+response.profileObj.email+")"
-      }))
+      localStorage.setItem('signInData', JSON.stringify(response));
     }
   }
 
   logout (response) {
     this.setState(state => ({
-      isLogined: false,
-      accessToken: ''
+      isLogined: null,
     }));
+    localStorage.removeItem('signInData');
   }
 
   handleLoginFailure (response) {
@@ -51,7 +47,7 @@ class GoogleBtn extends Component {
       { this.state.isLogined ?
         <GoogleLogout
           clientId={ process.env.REACT_APP_GOOGLE_CLIENT_ID }
-          buttonText={this.state.logStatus}
+          buttonText={"Logout - "+this.state.isLogined.profileObj.givenName+" ("+this.state.isLogined.profileObj.email+")"}
           onLogoutSuccess={ this.logout }
           onFailure={ this.handleLogoutFailure }
         >
@@ -64,7 +60,6 @@ class GoogleBtn extends Component {
           responseType='code,token'
         />
       }
-
     </div>
     )
   }
