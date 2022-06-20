@@ -12,6 +12,8 @@ importers:
       '@aws-sdk/client-s3': ^3.44.0
       '@aws-sdk/s3-request-presigner': ^3.44.0
       '@aws-sdk/util-dynamodb': ^3.42.0
+      aws-sdk: ^2.1147.0
+      axios: ^0.27.2
       moment: ^2.29.1
       serverless: ^2.66.1
       serverless-appsync-plugin: ^1.12.1
@@ -27,6 +29,8 @@ importers:
       '@aws-sdk/client-s3': 3.49.0
       '@aws-sdk/s3-request-presigner': 3.49.0
       '@aws-sdk/util-dynamodb': 3.49.0
+      aws-sdk: 2.1157.0
+      axios: 0.27.2
       moment: 2.29.1
       serverless-appsync-plugin: 1.12.1
       serverless-appsync-simulator: 0.19.3
@@ -7527,7 +7531,7 @@ packages:
     resolution: {integrity: sha512-WN6zy4b4wXCrIx2+JQ6tcsJNiijlNG/vNLcx0V+1/8Phl/n9ycVzZJVIjBRD0zvilBSwnTE8KsgsdxIRDhDcKA==}
     dependencies:
       amplify-velocity-template: 1.4.5
-      aws-sdk: 2.1066.0
+      aws-sdk: 2.1157.0
       chalk: 4.1.2
       cors: 2.8.5
       dataloader: 2.0.0
@@ -8050,8 +8054,8 @@ packages:
       - react-native
     dev: false
 
-  /aws-sdk/2.1066.0:
-    resolution: {integrity: sha512-9BZPdJgIvau8Jf2l3PxInNqQd733uKLqGGDywMV71duxNTLgdBZe2zvCkbgl22+ldC8R2LVMdS64DzchfQIxHg==}
+  /aws-sdk/2.1157.0:
+    resolution: {integrity: sha512-30t+zhCECib8uaggd0Du8ifab4vtJjgVvNKxHWTpiLa3deTnM+0K7x3pwM99zxw0gLDxAUet/oURaoPJHwk/5Q==}
     engines: {node: '>= 10.0.0'}
     dependencies:
       buffer: 4.9.2
@@ -8061,22 +8065,7 @@ packages:
       querystring: 0.2.0
       sax: 1.2.1
       url: 0.10.3
-      uuid: 3.3.2
-      xml2js: 0.4.19
-    dev: false
-
-  /aws-sdk/2.1125.0:
-    resolution: {integrity: sha512-2syNkKDqDcDmB/chc61a5xx+KYzaarLs1/KshE0b1Opp2oSq2FARyUBbk59HgwKaDUB61uPF33ZG9sHiIVx2hQ==}
-    engines: {node: '>= 10.0.0'}
-    dependencies:
-      buffer: 4.9.2
-      events: 1.1.1
-      ieee754: 1.1.13
-      jmespath: 0.16.0
-      querystring: 0.2.0
-      sax: 1.2.1
-      url: 0.10.3
-      uuid: 3.3.2
+      uuid: 8.0.0
       xml2js: 0.4.19
 
   /aws-sign2/0.7.0:
@@ -8098,6 +8087,15 @@ packages:
       follow-redirects: 1.14.7
     transitivePeerDependencies:
       - debug
+
+  /axios/0.27.2:
+    resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
+    dependencies:
+      follow-redirects: 1.15.1
+      form-data: 4.0.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /axobject-query/2.2.0:
     resolution: {integrity: sha512-Td525n+iPOOyUQIeBfcASuG6uJsDOITl7Mds5gFyerkWiX7qhUTdYUBlSgNMyVqtSJqwpt1kXGLdUt6SykLMRA==}
@@ -11228,7 +11226,7 @@ packages:
     dev: false
 
   /events/1.1.1:
-    resolution: {integrity: sha1-nr23Y1rQmccNzEwqH1AEKI6L2SQ=}
+    resolution: {integrity: sha512-kEcvvCBByWXGnZy6JUlgAp2gBIUjfCAV6P6TgT1/aaQKcmuAEC4OZTV1I4EWQLz2gxZw76atuVyvHhTxvi0Flw==}
     engines: {node: '>=0.4.x'}
 
   /events/3.3.0:
@@ -11775,6 +11773,16 @@ packages:
       debug: 4.3.3_supports-color@6.1.0
     dev: false
 
+  /follow-redirects/1.15.1:
+    resolution: {integrity: sha512-yLAMQs+k0b2m7cVxpS1VKJVvoz7SS9Td1zss3XRwXj+ZDH00RJgnuLx7E44wx02kQLrdM3aOOy+FpzS7+8OizA==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dev: false
+
   /for-in/1.0.2:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
     engines: {node: '>=0.10.0'}
@@ -11816,6 +11824,15 @@ packages:
 
   /form-data/3.0.1:
     resolution: {integrity: sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==}
+    engines: {node: '>= 6'}
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      mime-types: 2.1.34
+    dev: false
+
+  /form-data/4.0.0:
+    resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
     engines: {node: '>= 6'}
     dependencies:
       asynckit: 0.4.0
@@ -17272,10 +17289,10 @@ packages:
       pump: 2.0.1
 
   /punycode/1.3.2:
-    resolution: {integrity: sha1-llOgNvt8HuQjQvIyXM7v6jkmxI0=}
+    resolution: {integrity: sha512-RofWgt/7fL5wP1Y7fxE7/EmTLzQVnB0ycyibJ0OOHIlJqTNzglYFxVwETOcIoJqJmpDXJ9xImDv+Fq34F/d4Dw==}
 
   /punycode/1.4.1:
-    resolution: {integrity: sha1-wNWmOycYgArY4esPpSachN1BhF4=}
+    resolution: {integrity: sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ==}
 
   /punycode/2.1.1:
     resolution: {integrity: sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==}
@@ -17346,7 +17363,7 @@ packages:
     engines: {node: '>=0.4.x'}
 
   /querystring/0.2.0:
-    resolution: {integrity: sha1-sgmEkgO7Jd+CDadW50cAWHhSFiA=}
+    resolution: {integrity: sha512-X/xY82scca2tau62i9mDyU9K+I+djTMUsvwf7xnUX5GLvVzgJybOJf4Y6o9Zx3oJK/LSXg5tTZBjwzqVPaPO2g==}
     engines: {node: '>=0.4.x'}
     deprecated: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
 
@@ -18626,7 +18643,7 @@ packages:
     resolution: {integrity: sha512-RglUfNtmy0KQNLdrtlwqn4BClgQpHzDoTWZOo6gs9RvULlv72SPVCSODVIqJUT6hjwdIC60t+IkVv2MwtSYNuw==}
     dependencies:
       '@graphql-tools/merge': 6.2.17_graphql@14.7.0
-      aws-sdk: 2.1066.0
+      aws-sdk: 2.1157.0
       chalk: 2.4.2
       globby: 11.1.0
       graphql: 14.7.0
@@ -18645,7 +18662,7 @@ packages:
       '@graphql-tools/merge': 8.2.1
       amplify-appsync-simulator: 1.27.8
       amplify-nodejs-function-runtime-provider: 1.6.15
-      aws-sdk: 2.1066.0
+      aws-sdk: 2.1157.0
       axios: 0.21.4
       babel-jest: 26.6.3
       bluebird: 3.7.2
@@ -18674,7 +18691,7 @@ packages:
     resolution: {integrity: sha512-8wPtFxeJnRKTN3u8x1jG7Cs5VlkO0GkUPfb+DCKIDzjGM5n+qjHXoVsr4YZ/TPwET9kMUgH1Jv39oaEyeSJvYQ==}
     engines: {node: '>=4.0'}
     dependencies:
-      aws-sdk: 2.1066.0
+      aws-sdk: 2.1157.0
       bluebird: 3.7.2
       dynamodb-localhost: 0.0.9
       lodash: 4.17.21
@@ -18689,7 +18706,7 @@ packages:
       '@hapi/boom': 9.1.4
       '@hapi/h2o2': 9.1.0
       '@hapi/hapi': 20.2.1
-      aws-sdk: 2.1125.0
+      aws-sdk: 2.1157.0
       boxen: 5.1.2
       chalk: 4.1.2
       cuid: 2.1.8
@@ -18762,7 +18779,7 @@ packages:
       ajv: 6.12.6
       ajv-keywords: 3.5.2_ajv@6.12.6
       archiver: 5.3.1
-      aws-sdk: 2.1125.0
+      aws-sdk: 2.1157.0
       bluebird: 3.7.2
       boxen: 5.1.2
       cachedir: 2.3.0
@@ -20488,6 +20505,7 @@ packages:
     resolution: {integrity: sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
     hasBin: true
+    dev: false
 
   /uuid/3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
@@ -20498,6 +20516,10 @@ packages:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
     hasBin: true
     dev: false
+
+  /uuid/8.0.0:
+    resolution: {integrity: sha512-jOXGuXZAWdsTH7eZLtyXMqUb9EcWMGZNbL9YcGBJl4MH4nrxHmZJhEHvyLFrkxo+28uLb/NYRcStH48fnD0Vzw==}
+    hasBin: true
 
   /uuid/8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
@@ -21155,7 +21177,7 @@ packages:
       xmlbuilder: 9.0.7
 
   /xmlbuilder/9.0.7:
-    resolution: {integrity: sha1-Ey7mPS7FVlxVfiD0wi35rKaGsQ0=}
+    resolution: {integrity: sha512-7YXTQc3P2l9+0rjaUbLwMKRhtmwg1M1eDf6nag7urC7pIPYLD9W/jmzQ4ptRSUbodw5S0jfoGTflLemQibSpeQ==}
     engines: {node: '>=4.0'}
 
   /xmlchars/2.2.0:

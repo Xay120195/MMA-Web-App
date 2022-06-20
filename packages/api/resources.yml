@@ -206,8 +206,6 @@ Resources:
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
-  
-
   UserClientMatterTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -835,3 +833,85 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
+
+  CompanyGmailMessageTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyGmailMessageTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: gmailMessageId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byGmailMessage
+          KeySchema:
+            - AttributeName: gmailMessageId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+  GmailMessageTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GmailMessageTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  GmailMessageClientMatterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GmailMessageClientMatterTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: gmailMessageId
+          AttributeType: S
+        - AttributeName: clientMatterId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byGmailMessage
+          KeySchema:
+            - AttributeName: gmailMessageId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byClientMatter
+          KeySchema:
+            - AttributeName: clientMatterId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+  GmailTokenTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GmailTokenTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+    
