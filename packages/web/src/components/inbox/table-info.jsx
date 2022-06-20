@@ -119,7 +119,7 @@ const TableInfo = ({
   };
 
   return (
-    <div style={{ padding: "1.5rem", marginLeft: "4rem" }}>
+    <div>
       {selectedMessage && (
         <div
           className="shadow-lg overflow-hidden border-b border-gray-200 sm:rounded-lg mb-3 "

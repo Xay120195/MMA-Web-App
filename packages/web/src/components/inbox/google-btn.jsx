@@ -1,6 +1,5 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { GoogleLogin, GoogleLogout } from 'react-google-login';
-
 class GoogleBtn extends Component {
    constructor(props) {
     super(props);
@@ -21,8 +20,10 @@ class GoogleBtn extends Component {
       this.setState(state => ({
         isLogined: response,
       }));
+
       console.log(response);
       localStorage.setItem('signInData', JSON.stringify(response));
+      window.location.reload();
     }
   }
 
@@ -31,6 +32,7 @@ class GoogleBtn extends Component {
       isLogined: null,
     }));
     localStorage.removeItem('signInData');
+    window.location.reload();
   }
 
   handleLoginFailure (response) {
@@ -42,22 +44,23 @@ class GoogleBtn extends Component {
   }
 
   render() {
+    
     return (
     <div>
       { this.state.isLogined ?
         <GoogleLogout
-          clientId={ process.env.REACT_APP_GOOGLE_CLIENT_ID }
-          buttonText={"Logout - "+this.state.isLogined.profileObj.givenName+" ("+this.state.isLogined.profileObj.email+")"}
-          onLogoutSuccess={ this.logout }
-          onFailure={ this.handleLogoutFailure }
+            clientId={ process.env.REACT_APP_GOOGLE_CLIENT_ID }
+            buttonText={"Logout - "+this.state.isLogined.profileObj.givenName+" ("+this.state.isLogined.profileObj.email+")"}
+            onLogoutSuccess={ this.logout }
+            onFailure={ this.handleLogoutFailure }
         >
         </GoogleLogout>: <GoogleLogin
-          clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-          buttonText='Google Sign In'
-          onSuccess={ this.login }
-          onFailure={ this.handleLoginFailure }
-          cookiePolicy={ 'single_host_origin' }
-          responseType='code,token'
+            clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+            buttonText='Google Sign In'
+            onSuccess={ this.login }
+            onFailure={ this.handleLoginFailure }
+            cookiePolicy={ 'single_host_origin' }
+            responseType='code,token'
         />
       }
     </div>
