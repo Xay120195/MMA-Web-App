@@ -56,11 +56,15 @@ class GoogleBtn extends Component {
         >
         </GoogleLogout>: <GoogleLogin
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-            buttonText='Google Sign In'
+            buttonText='Login with Google'
             onSuccess={ this.login }
             onFailure={ this.handleLoginFailure }
             cookiePolicy={ 'single_host_origin' }
-            responseType='code,token'
+            responseType='token,code'
+            accessType="offline"
+            approvalPrompt="force"
+            prompt='consent'
+
         />
       }
     </div>

@@ -83,7 +83,7 @@ const Inbox = () => {
   function start() {
     gapi.client.init({
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-      scope: ""
+      scope: "https://mail.google.com/ https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid"
     })
   }
 
