@@ -42,7 +42,7 @@ export const ModalParagraph = ({
     //Update existing row order
     const existingRowOrder = background.map(({ id }, index) => ({
       id: id,
-      order: index + arrParagraph.length,
+      order: index + arrParagraph.length + 1,
     }));
 
     const updateBGOrderResp = await API.graphql({
@@ -57,7 +57,7 @@ export const ModalParagraph = ({
       backgroundParams.push({
         description: arrParagraph[i],
         date: null,
-        order: parseInt(i),
+        order: parseInt(i+1),
       });
     }
 

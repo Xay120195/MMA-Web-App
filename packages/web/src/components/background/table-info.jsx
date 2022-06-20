@@ -1668,6 +1668,7 @@ const TableInfo = ({
                                                 </span>
                                               )
                                             ) : (
+                                              <span>
                                               <button
                                                 className={
                                                   
@@ -1675,12 +1676,17 @@ const TableInfo = ({
                                                     ? "w-60 bg-gray-300 border border-gray-500 text-gray-500 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium "
                                                     : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 }
-                                                onClick={() => {
+                                                onClick={
+                                                  rowClicked(item.id) ? null :
+                                                  () => {
                                                   pasteFilestoBackground(
                                                     item.id
                                                   );
-                                                }}
-                                                disabled={rowClicked(item.id) ? true : false}
+                                                  }
+                              
+                                                }
+                                                // disabled={rowClicked(item.id) ? true : false}
+                                                data-tip data-for={item.id}
                                               >
                                                 {" "}
                                                 {rowClicked(item.id)
@@ -1689,6 +1695,15 @@ const TableInfo = ({
                                                 &nbsp;
                                                 <FaPaste />
                                               </button>
+                                              {
+                                              rowClicked(item.id)
+                                              &&
+                                              <ReactTooltip id={item.id} place="bottom" effect="solid">
+                                                Cannot Paste Files Here
+                                              </ReactTooltip>
+                                              }
+                                              </span>
+                        
                                             )}
                                             {item.files.items === null ||
                                             item.files.items.length === 0 ? (
