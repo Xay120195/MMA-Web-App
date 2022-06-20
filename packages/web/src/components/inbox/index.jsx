@@ -2,6 +2,8 @@ import React, { useState, useEffect, useReducer } from "react";
 import { inbox } from "./data-source";
 import ActionButtons from "./action-buttons";
 import TableInfo from "./table-info";
+import GoogleBtn from './google-btn';
+import { gapi } from 'gapi-script';
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -73,6 +75,17 @@ const Inbox = () => {
     setReadData(readdata);
   }, [checkedStateRead, checkedStateUnRead, data]);
 
+  useEffect(() => {
+    gapi.load('client:auth2', start);
+  });
+
+  function start() {
+    gapi.client.init({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      scope: ""
+    })
+  }
+
   const handleSearch = (event) => {
     setSearch(event.target.value);
     var dm = event.target.value;
@@ -89,6 +102,37 @@ const Inbox = () => {
       setSearchRow(true);
     }
   };
+  
+  const [loginData, setLoginData] = useState(
+    localStorage.getItem('loginData')
+      ? JSON.parse(localStorage.getItem('loginData'))
+      : null
+  );
+  /*
+  const handleFailure = (result) => {
+    alert(result);
+  };
+
+  const handleLogin = async (googleData) => {
+    const res = await fetch('/api/google-login', {
+      method: 'POST',
+      body: JSON.stringify({
+        token: googleData.tokenId,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await res.json();
+    setLoginData(data);
+    localStorage.setItem('loginData', JSON.stringify(data));
+  };
+  const handleLogout = () => {
+    localStorage.removeItem('loginData');
+    setLoginData(null);
+  };
+  */
 
   return (
     <>
@@ -96,6 +140,9 @@ const Inbox = () => {
         className="p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
         style={contentDiv}
       >
+        <div>
+          <GoogleBtn/>
+        </div>
         <div style={mainGrid}>
           <div className="grid grid-rows grid-flow-col">
             <div className="col-span-11 ">
