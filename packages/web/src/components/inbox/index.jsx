@@ -110,6 +110,8 @@ const Inbox = () => {
       : null
   );
 
+  console.log("Google login: ", loginData);
+
   return (
     <>
       { !loginData ?
@@ -127,10 +129,7 @@ const Inbox = () => {
               <div className="text-gray-400 text-lg font-medium">
                 Lets make your trip fun and simple
               </div><br/>
-              <GoogleBtn
-                loginData={loginData}
-                setLoginData={setLoginData}
-              />
+              <GoogleBtn />
             </div>
             <div className="col-span-7">
               <div className="h-screen float-right">
@@ -180,10 +179,7 @@ const Inbox = () => {
                   </button>
                 </div>
                   <div class="ml-5">
-                    <GoogleBtn
-                      loginData={loginData}
-                      setLoginData={setLoginData}
-                    />
+                    <GoogleBtn />
                   </div>
                   </div>
                   </div>
@@ -210,7 +206,7 @@ const Inbox = () => {
             setSelectMessage={setSelectMessage}
           />
         </div>
-        
+
         <div className="h-screen flex-1 bg-gray-50">
         <div className="p-3">
           <div className="flex justify-between">
