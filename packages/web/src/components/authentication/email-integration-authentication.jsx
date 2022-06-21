@@ -20,8 +20,6 @@ class GmailIntegration extends Component {
       this.setState(state => ({
         isLogined: response,
       }));
-
-      console.log(response);
       localStorage.setItem('signInData', JSON.stringify(response));
       window.location.reload();
     }

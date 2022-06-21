@@ -5,6 +5,7 @@ import TableInfo from "./table-info";
 import GmailIntegration from '../authentication/email-integration-authentication';
 import { gapi } from 'gapi-script';
 import googleLogin from "../../assets/images/google-login.png";
+import TabsRender from "./tabs";
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -15,67 +16,7 @@ const mainGrid = {
   gridtemplatecolumn: "1fr auto",
 };
 
-const ACTIONS = {
-  DELETE_DATA: "delete_data",
-  SAVE_READ: "save_read",
-  MARK_UNREAD: "mark_unread",
-  SEARCH_MESSAGE: "search_message",
-};
-
-const reducer = (data, action) => {
-  switch (action.type) {
-    case ACTIONS.DELETE_DATA:
-      return data.filter((item) => !action.payload.id.includes(item.id));
-    case ACTIONS.SAVE_READ:
-      return [...data, action.payload.data];
-    case ACTIONS.MARK_UNREAD:
-      return [...data, action.payload.data];
-    case ACTIONS.SEARCH_MESSAGE:
-      return inbox.filter(
-        (x) =>
-          x.title.includes(action.payload.data) ||
-          x.firstname.includes(action.payload.data) ||
-          x.lastname.includes(action.payload.data) ||
-          x.email.includes(action.payload.data)
-      );
-    default:
-      return data;
-  }
-};
-
 const Inbox = () => {
-  const [data, dispatch] = useReducer(reducer, inbox);
-  const [totalChecked, setTotalChecked] = useState(0);
-  const [totalReadChecked, setTotalReadChecked] = useState(0);
-  const [totalUnReadChecked, setTotalUnReadChecked] = useState(0);
-  const [getId, setId] = useState([]);
-  const [getIdUnread, setIdUnread] = useState([]);
-  const [getIdRead, setIdRead] = useState([]);
-  const [checkAllState, setcheckAllState] = useState(false);
-  const [unReadData, setUnreadData] = useState([]);
-  const [readData, setReadData] = useState([]);
-  const [search, setSearch] = useState("");
-  const [searchRow, setSearchRow] = useState(false);
-  const [selectedMessage, setSelectMessage] = useState(false);
-
-  const unreaddata = data.filter((datas) => datas.status === true);
-  const readdata = data.filter((datas) => datas.status === false);
-
-  const [checkedStateRead, setCheckedStateRead] = useState(
-    new Array(readdata.length).fill(false)
-  );
-
-  const [checkedStateUnRead, setCheckedStateUnreRead] = useState(
-    new Array(unreaddata.length).fill(false)
-  );
-  console.log(getId);
-
-  useEffect(() => {
-    setTotalChecked(totalReadChecked + totalUnReadChecked);
-    setUnreadData(unreaddata);
-    setReadData(readdata);
-  }, [checkedStateRead, checkedStateUnRead, data]);
-
   useEffect(() => {
     gapi.load('client:auth2', start);
   });
@@ -87,30 +28,13 @@ const Inbox = () => {
     })
   }
 
-  const handleSearch = (event) => {
-    setSearch(event.target.value);
-    var dm = event.target.value;
-    var str = dm.toString();
-
-    dispatch({
-      type: ACTIONS.SEARCH_MESSAGE,
-      payload: { data: str },
-    });
-
-    if (!dm) {
-      setSearchRow(false);
-    } else {
-      setSearchRow(true);
-    }
-  };
-  
   const [loginData, setLoginData] = useState(
     localStorage.getItem('signInData')
       ? JSON.parse(localStorage.getItem('signInData'))
       : null
   );
 
-  console.log("Google login: ", loginData);
+  const [openTab, setOpenTab] = React.useState(1);
 
   return (
     <>
@@ -186,28 +110,11 @@ const Inbox = () => {
 
         <div style={mainGrid}>
           <ActionButtons
-            data={data}
-            ACTIONS={ACTIONS}
-            dispatch={dispatch}
-            totalChecked={totalChecked}
-            setCheckedStateRead={setCheckedStateRead}
-            setCheckedStateUnreRead={setCheckedStateUnreRead}
-            readdata={readdata}
-            unreaddata={unreaddata}
-            setTotalReadChecked={setTotalReadChecked}
-            setTotalUnReadChecked={setTotalUnReadChecked}
-            getIdUnread={getIdUnread}
-            getIdRead={getIdRead}
-            checkAllState={checkAllState}
-            setcheckAllState={setcheckAllState}
-            setId={setId}
-            getId={getId}
-            setTotalChecked={setTotalChecked}
-            setSelectMessage={setSelectMessage}
+            
           />
         </div>
 
-        <div className="h-screen flex-1 bg-gray-50">
+        {/*<div className="h-screen flex-1 bg-gray-50">
         <div className="p-3">
           <div className="flex justify-between">
             <ul className="flex gap-x-3">
@@ -244,37 +151,18 @@ const Inbox = () => {
           <div
             className={`bg-white rounded-xl`}
           >
-            {/*** Content Table here */}
           </div>
         </div>
-      </div>
+      </div>*/}
+
+      <TabsRender 
+        color = "gray"
+        openTab={openTab}
+        setOpenTab={setOpenTab}
+      />
 
       <TableInfo
-          data={data}
-          totalChecked={totalChecked}
-          setTotalChecked={setTotalChecked}
-          totalReadChecked={totalReadChecked}
-          setTotalReadChecked={setTotalReadChecked}
-          totalUnReadChecked={totalUnReadChecked}
-          setTotalUnReadChecked={setTotalUnReadChecked}
-          checkedStateRead={checkedStateRead}
-          setCheckedStateRead={setCheckedStateRead}
-          checkedStateUnRead={checkedStateUnRead}
-          setCheckedStateUnreRead={setCheckedStateUnreRead}
-          unReadData={unReadData}
-          readData={readData}
-          readdata={readdata}
-          unreaddata={unreaddata}
-          setUnreadData={setUnreadData}
-          setReadData={setReadData}
-          getIdUnread={getIdUnread}
-          setIdUnread={setIdUnread}
-          setIdRead={setIdRead}
-          getIdRead={getIdRead}
-          searchRow={searchRow}
-          setSearchRow={setSearchRow}
-          selectedMessage={selectedMessage}
-          setSelectMessage={setSelectMessage}
+          
         />
 
       </div>
