@@ -16,7 +16,7 @@ class GmailIntegration extends Component {
   }
 
   login (response) {
-    if(response.accessToken){
+    if(response){
       this.setState(state => ({
         isLogined: response,
       }));
@@ -48,7 +48,8 @@ class GmailIntegration extends Component {
       { this.state.isLogined ?
         <GoogleLogout
             clientId={ process.env.REACT_APP_GOOGLE_CLIENT_ID }
-            buttonText={"Logout - "+this.state.isLogined.profileObj.givenName+" ("+this.state.isLogined.profileObj.email+")"}
+            //buttonText={"Logout - "+this.state.isLogined.profileObj.givenName+" ("+this.state.isLogined.profileObj.email+")"}
+            buttonText={"Logout"}
             onLogoutSuccess={ this.logout }
             onFailure={ this.handleLogoutFailure }
         >
@@ -58,11 +59,9 @@ class GmailIntegration extends Component {
             onSuccess={ this.login }
             onFailure={ this.handleLoginFailure }
             cookiePolicy={ 'single_host_origin' }
-            responseType='token,code'
-            accessType="offline"
+            responseType="code"
             approvalPrompt="force"
             prompt='consent'
-
         />
       }
     </div>

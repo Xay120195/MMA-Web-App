@@ -36,6 +36,8 @@ const Inbox = () => {
 
   const [openTab, setOpenTab] = React.useState(1);
 
+  console.log("refreshToken: ", loginData);
+
   return (
     <>
       { !loginData ?
@@ -161,9 +163,20 @@ const Inbox = () => {
         setOpenTab={setOpenTab}
       />
 
-      <TableInfo
-          
-        />
+      <TableInfo />
+
+      <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+        <div className="px-4 py-5 flex-auto">
+          <div className="tab-content tab-space">
+            <div className={openTab === 1 ? "block" : "hidden"} id="link1">
+              {/** tableinfo here */}
+            </div>
+            <div className={openTab === 2 ? "block" : "hidden"} id="link2">
+              {/** tableinfo here */}
+            </div>
+          </div>
+        </div>
+      </div>
 
       </div>
       }
