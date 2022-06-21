@@ -2,7 +2,7 @@ import React, { useState, useEffect, useReducer } from "react";
 import { inbox } from "./data-source";
 import ActionButtons from "./action-buttons";
 import TableInfo from "./table-info";
-import GoogleBtn from './google-btn';
+import GmailIntegration from '../authentication/email-integration-authentication';
 import { gapi } from 'gapi-script';
 import googleLogin from "../../assets/images/google-login.png";
 
@@ -129,7 +129,7 @@ const Inbox = () => {
               <div className="text-gray-400 text-lg font-medium">
                 Lets make your trip fun and simple
               </div><br/>
-              <GoogleBtn />
+              <GmailIntegration />
             </div>
             <div className="col-span-7">
               <div className="h-screen float-right">
@@ -179,7 +179,7 @@ const Inbox = () => {
                   </button>
                 </div>
                   <div class="ml-5">
-                    <GoogleBtn />
+                    <GmailIntegration />
                   </div>
                   </div>
                   </div>
