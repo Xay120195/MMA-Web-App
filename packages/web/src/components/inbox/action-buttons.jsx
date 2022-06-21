@@ -184,27 +184,7 @@ const ActionButtons = ({
                   />
                 </svg>
               </button>
-              <button
-                type="button"
-                onClick={() => handleMarkUnread(getIdRead, getIdUnread)}
-                className="bg-slate-100 hover:bg-slate-200 text-black text-sm py-2 px-2 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring "
-              >
-                Mark as unread
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-              </button>
+              
               <button
                 type="button"
                 onClick={() => handleDelete(getIdRead, getIdUnread)}
