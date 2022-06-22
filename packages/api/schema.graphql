@@ -635,5 +635,6 @@ type Mutation {
     userId: ID
     companyId: ID
   ): GmailToken
+  gmailConnectFromCode(code: String): String
   # gmailPushSubscription(email: String!, historyId: String!): Boolean // unused
 }
