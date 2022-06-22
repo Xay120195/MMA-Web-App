@@ -547,6 +547,7 @@ const Background = () => {
 
   const handleManageFiles = () => {
       setPastedRows([]);
+      setSelectedRowsBGFiles([]);
       setActivateButton(!activateButton);
   };
 
