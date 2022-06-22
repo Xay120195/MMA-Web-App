@@ -44,7 +44,7 @@ exports.getMessages = async (ctx) => {
 
     const { Items } = await docClient
       .scan({
-        TableName: "gmailMessages",
+        TableName: "GmailMessageTable",
         Key: { connectedEmail: email },
         ...params,
       })
