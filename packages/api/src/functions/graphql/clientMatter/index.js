@@ -284,15 +284,17 @@ async function listClientMatterBriefs(ctx) {
 async function listClientMatterRFIs(ctx) {
   const { id } = ctx.source;
 
-  const { limit, nextToken } = ctx.arguments;
+  const { limit, nextToken, isDeleted = false } = ctx.arguments;
 
   try {
     const cmRFIsParam = {
       TableName: "ClientMatterRFITable",
       IndexName: "byClientMatter",
       KeyConditionExpression: "clientMatterId = :clientMatterId",
+      FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,
+        ":isDeleted": isDeleted,
       }),
       ScanIndexForward: false,
       ExclusiveStartKey: nextToken

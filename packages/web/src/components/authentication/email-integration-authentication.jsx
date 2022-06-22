@@ -48,7 +48,6 @@ class GmailIntegration extends Component {
       { this.state.isLogined ?
         <GoogleLogout
             clientId={ process.env.REACT_APP_GOOGLE_CLIENT_ID }
-            //buttonText={"Logout - "+this.state.isLogined.profileObj.givenName+" ("+this.state.isLogined.profileObj.email+")"}
             buttonText={"Signout"}
             onLogoutSuccess={ this.logout }
             onFailure={ this.handleLogoutFailure }
