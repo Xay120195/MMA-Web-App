@@ -233,8 +233,8 @@ type GmailMessage { #gm
 }
 
 type GmailToken { #gm
-  email: String
-  refresh_token: String
+  id: String # gmail address
+  refreshToken: String
   userId: ID
   companyId: ID
   updatedAt: AWSDateTime

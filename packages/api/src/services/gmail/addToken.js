@@ -6,6 +6,7 @@ const {
 } = require("./lib");
 const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
+const { toUTC, toLocalTime } = require("../../shared/toUTC");
 
 const getOldMessages = async (email, pageToken) => {
   const {
@@ -49,20 +50,17 @@ exports.addToken = async (ctx) => {
   let responseBody = "";
 
   try {
-    const payload = ctx.arguments;
+    const payload = ctx;
 
-    console.log("addToken arguments:",ctx);
+    const { email, refreshToken } = ctx;
 
-    const { email, refreshToken } = ctx.arguments;
-
-    const { data: {access_token} } = await refreshTokens({
+    const {
+      data: { access_token },
+    } = await refreshTokens({
       refresh_token: refreshToken,
       client_id,
       client_secret,
     });
-
-
-    console.log("access_token", access_token);
 
     if (!access_token) throw new Error("can't refresh tokens.");
 
@@ -73,20 +71,25 @@ exports.addToken = async (ctx) => {
       { topicName: `projects/${project_id}/topics/gmail-api` }
     );
 
+    delete payload.email;
+
+    const items = {
+      id: email,
+      ...payload,
+      ...watchData,
+      updatedAt: toUTC(new Date()),
+    };
+
     await docClient
       .put({
         TableName: "GmailTokenTable",
-        Item: {
-          ...payload,
-          ...watchData,
-          updatedAt: toUTC(new Date()),
-        },
+        Item: items,
       })
       .promise();
 
     await getOldMessages(email);
 
-    return rawParams;
+    return items;
   } catch ({ message }) {
     console.log("errMessage: ", message);
   }

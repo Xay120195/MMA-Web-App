@@ -28,7 +28,7 @@ class GmailIntegration extends Component {
         code: $code
       ) {
         email
-        refresh_token
+        refreshToken
         userId
         companyId
         updatedAt

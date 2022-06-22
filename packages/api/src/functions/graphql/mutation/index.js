@@ -2589,12 +2589,13 @@ const resolvers = {
       return await bulkSoftDeleteGmailMessage(ctx.arguments);
     },
     gmailConnectFromCode: async (ctx) => {
-      const token = await googleAuth.getToken(ctx.arguments.code);
-      console.log("gmailConnectFromCode", token);
-      // return token.tokens.refresh_token;
+      const { code, email, userId, companyId } = ctx.arguments;
+      const token = await googleAuth.getToken(code);
 
       const data = {
-        email: ctx.arguments.email,
+        email,
+        userId,
+        companyId,
         refreshToken: token.tokens.refresh_token,
       };
 
