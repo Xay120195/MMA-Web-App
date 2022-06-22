@@ -16,7 +16,9 @@ class GmailIntegration extends Component {
     this.handleLogoutFailure = this.handleLogoutFailure.bind(this);
   }
 
-  login (response) {
+  async login (response) {
+
+    console.log(response);
 
     const saveRefreshToken = `
       mutation refreshTokenSave($companyId: ID, $email: String, $refreshToken: String, $userId: ID) {
@@ -34,22 +36,23 @@ class GmailIntegration extends Component {
         }
       }`;
 
-      const request = API.graphql({
+      const request = await API.graphql({
         query: saveRefreshToken,
         variables: {
           companyId: localStorage.getItem("companyId"),
           userId: localStorage.getItem("userId"),
-          email: "",
-          refreshToken: response.code,
+          email: "mmatest.integ@gmail.com",
+          refreshToken: "1//062boP79zUwNuCgYIARAAGAYSNwF-L9IrpFlBdqgLGiKr2KV4clRTiuRt2TF7PAu0jjEH1PlV5UD_Z3eEs0Gir7P_qWYMrn93kE8",
         },
       });
 
+      console.log(request);
     if(request){
       this.setState(state => ({
         isLogined: response,
       }));
       localStorage.setItem('signInData', JSON.stringify(response));
-      window.location.reload();
+      //window.location.reload();
     }
   }
 
@@ -89,6 +92,7 @@ class GmailIntegration extends Component {
             responseType="code"
             approvalPrompt="force"
             prompt="consent"
+            access_type="offline"
         />
       }
     </div>
