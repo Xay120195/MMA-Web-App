@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { GoogleLogin, GoogleLogout } from 'react-google-login';
+import { API } from "aws-amplify";
 class GmailIntegration extends Component {
    constructor(props) {
     super(props);
@@ -16,7 +17,34 @@ class GmailIntegration extends Component {
   }
 
   login (response) {
-    if(response){
+
+    const saveRefreshToken = `
+      mutation refreshTokenSave($companyId: ID, $email: String, $refreshToken: String, $userId: ID) {
+        gmailAddToken(
+          email: $email
+          refreshToken: $refreshToken
+          userId: $userId
+          companyId: $companyId
+        ) {
+          email
+          refresh_token
+          userId
+          companyId
+          updatedAt
+        }
+      }`;
+
+      const request = API.graphql({
+        query: saveRefreshToken,
+        variables: {
+          companyId: localStorage.getItem("companyId"),
+          userId: localStorage.getItem("userId"),
+          email: "",
+          refreshToken: response.code,
+        },
+      });
+
+    if(request){
       this.setState(state => ({
         isLogined: response,
       }));
