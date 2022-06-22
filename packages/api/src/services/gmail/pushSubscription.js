@@ -160,7 +160,7 @@ exports.pushSubscriptionHandler = async (ctx) => {
     const { email, historyId } = ctx.arguments;
 
     const { Item: gmailToken } = await docClient
-      .get({ TableName: "gmailTokens", Key: { email } })
+      .get({ TableName: "GmailTokenTable", Key: { email } })
       .promise();
     const { refresh_token, historyId: oldHistoryId } = gmailToken;
 
@@ -177,7 +177,7 @@ exports.pushSubscriptionHandler = async (ctx) => {
     await checkGmailMessages(email, oldHistoryId);
 
     await docClient
-      .put({ TableName: "gmailTokens", Item: { ...gmailToken, historyId } })
+      .put({ TableName: "GmailTokenTable", Item: { ...gmailToken, historyId } })
       .promise();
 
     responseBody = JSON.stringify({

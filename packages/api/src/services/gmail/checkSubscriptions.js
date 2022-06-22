@@ -12,7 +12,7 @@ const checkSubscriptions = async () => {
 
   try {
     const { Items } = await docClient
-      .scan({ TableName: "gmailTokens" })
+      .scan({ TableName: "GmailTokenTable" })
       .promise();
 
     await Promise.all(
@@ -42,7 +42,7 @@ const checkSubscriptions = async () => {
 
               await docClient
                 .put({
-                  TableName: "gmailTokens",
+                  TableName: "GmailTokenTable",
                   Item: { ...item, ...watchData },
                 })
                 .promise();

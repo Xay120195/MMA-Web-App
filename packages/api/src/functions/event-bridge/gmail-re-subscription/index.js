@@ -14,7 +14,7 @@ exports.handler = async () => {
 
   try {
     const { Items } = await docClient
-      .scan({ TableName: "gmailTokens" })
+      .scan({ TableName: "GmailTokenTable" })
       .promise();
 
     await Promise.all(
@@ -44,7 +44,7 @@ exports.handler = async () => {
 
               await docClient
                 .put({
-                  TableName: "gmailTokens",
+                  TableName: "GmailTokenTable",
                   Item: { ...item, ...watchData },
                 })
                 .promise();
