@@ -58,7 +58,7 @@ class GmailIntegration extends Component {
             onSuccess={ this.login }
             onFailure={ this.handleLoginFailure }
             cookiePolicy={ 'single_host_origin' }
-            responseType="token"
+            responseType="code"
             approvalPrompt="force"
             prompt="consent"
         />
