@@ -12,10 +12,15 @@ exports.refreshTokens = (payload) =>
     { headers: { "Content-Type": "application/json" } }
   );
 
-exports.gmailAxios = axios.create({
+
+const axiosConf = axios.create({
   baseURL: "https://gmail.googleapis.com/",
   headers: { "Content-Type": "application/json" },
 });
 
+exports.gmailAxios = axiosConf;
+
 exports.setAccessToken = (access_token) =>
-  (gmailAxios.defaults.headers["Authorization"] = `Bearer ${access_token}`);
+  (axiosConf.defaults.headers["Authorization"] = `Bearer ${access_token}`);
+
+
