@@ -20,6 +20,14 @@ const {
   bulkSoftDeleteMatterFile,
 } = require("../../../services/MatterService");
 import { addToken } from "../../../services/gmail/addToken";
+import { google } from "googleapis";
+const { client_id, client_secret } = require("../../../services/gmail/config");
+
+const googleAuth = new google.auth.OAuth2(
+  client_id,
+  client_secret,
+  "http://localhost:3000"
+);
 
 async function createCompany(data) {
   let resp = {};
@@ -1962,7 +1970,7 @@ async function softDeleteRFI(id, data) {
     });
 
     const request = await ddbClient.send(cmd);
-    
+
     resp = request ? { id: id } : {};
   } catch (e) {
     resp = {
@@ -2580,8 +2588,17 @@ const resolvers = {
     gmailMessageBulkSoftDelete: async (ctx) => {
       return await bulkSoftDeleteGmailMessage(ctx.arguments);
     },
-    gmailAddToken: async (ctx) => {
-      return addToken(ctx);
+    gmailConnectFromCode: async (ctx) => {
+      const token = await googleAuth.getToken(ctx.arguments.code);
+      console.log("gmailConnectFromCode", token);
+      // return token.tokens.refresh_token;
+
+      const data = {
+        email: ctx.arguments.email,
+        refreshToken: token.tokens.refresh_token,
+      };
+
+      return addToken(data);
     },
   },
 };

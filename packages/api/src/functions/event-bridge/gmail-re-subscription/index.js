@@ -6,15 +6,15 @@ const {
   gmailAxios,
   setAccessToken,
   s3,
-} = require("../../../lib");
-const { client_id, client_secret, project_id } = require("../../../config");
+} = require("../../../services/gmail/lib");
+const { client_id, client_secret, project_id } = require("../../../services/gmail/config");
 
 exports.handler = async () => {
   let responseBody = "";
 
   try {
     const { Items } = await docClient
-      .scan({ TableName: "gmailTokens" })
+      .scan({ TableName: "GmailTokenTable" })
       .promise();
 
     await Promise.all(
@@ -44,7 +44,7 @@ exports.handler = async () => {
 
               await docClient
                 .put({
-                  TableName: "gmailTokens",
+                  TableName: "GmailTokenTable",
                   Item: { ...item, ...watchData },
                 })
                 .promise();

@@ -35,7 +35,7 @@ const getOldMessages = async (email, pageToken) => {
   await docClient
     .batchWrite({
       RequestItems: {
-        gmailMessages: messagesToAdd.map((Item) => ({
+        GmailMessageTable: messagesToAdd.map((Item) => ({
           PutRequest: { Item: { connectedEmail: email, ...Item } },
         })),
       },
@@ -51,15 +51,16 @@ exports.addToken = async (ctx) => {
   try {
     const payload = ctx.arguments;
 
-    const { email, refresh_token } = ctx.arguments;
+    console.log("addToken arguments:",ctx);
 
-    const {
-      data: { access_token },
-    } = await refreshTokens({
-      refresh_token: refresh_token,
+    const { email, refreshToken } = ctx.arguments;
+
+    const { data: {access_token} } = await refreshTokens({
+      refresh_token: refreshToken,
       client_id,
       client_secret,
     });
+
 
     console.log("access_token", access_token);
 

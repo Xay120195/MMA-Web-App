@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import { GoogleLogin, GoogleLogout } from 'react-google-login';
+import React, { Component } from "react";
+import { GoogleLogin, GoogleLogout } from "react-google-login";
 import { API } from "aws-amplify";
 class GmailIntegration extends Component {
-   constructor(props) {
+  constructor(props) {
     super(props);
     this.state = {
-      isLogined: localStorage.getItem('signInData')
-      ? JSON.parse(localStorage.getItem('signInData'))
-      : null,
+      isLogined: localStorage.getItem("signInData")
+        ? JSON.parse(localStorage.getItem("signInData"))
+        : null,
     };
 
     this.login = this.login.bind(this);
@@ -16,83 +16,87 @@ class GmailIntegration extends Component {
     this.handleLogoutFailure = this.handleLogoutFailure.bind(this);
   }
 
-  login (response) {
+  async login(response) {
+    console.log("code: ",response.code);
 
     const saveRefreshToken = `
-      mutation refreshTokenSave($companyId: ID, $email: String, $refreshToken: String, $userId: ID) {
-        gmailAddToken(
-          email: $email
-          refreshToken: $refreshToken
-          userId: $userId
-          companyId: $companyId
-        ) {
-          email
-          refresh_token
-          userId
-          companyId
-          updatedAt
-        }
-      }`;
+    mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
+      gmailConnectFromCode(
+        email: $email
+        userId: $userId
+        companyId: $companyId
+        code: $code
+      ) {
+        email
+        refresh_token
+        userId
+        companyId
+        updatedAt
+      }
+    }
+    `;
 
-      const request = API.graphql({
-        query: saveRefreshToken,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-          userId: localStorage.getItem("userId"),
-          email: "",
-          refreshToken: response.code,
-        },
-      });
+    const request = await API.graphql({
+      query: saveRefreshToken,
+      variables: {
+        companyId: localStorage.getItem("companyId"),
+        userId: localStorage.getItem("userId"),
+        email: "mmatest.integ@gmail.com",
+        code: response.code,
+      },
+    });
 
-    if(request){
-      this.setState(state => ({
+    console.log(request);
+    if (request) {
+      this.setState((state) => ({
         isLogined: response,
       }));
-      localStorage.setItem('signInData', JSON.stringify(response));
-      window.location.reload();
+      localStorage.setItem("signInData", JSON.stringify(response));
+      //window.location.reload();
     }
   }
 
-  logout (response) {
-    this.setState(state => ({
+  logout(response) {
+    this.setState((state) => ({
       isLogined: null,
     }));
-    localStorage.removeItem('signInData');
+    localStorage.removeItem("signInData");
     window.location.reload();
   }
 
-  handleLoginFailure (response) {
-    alert('Failed to log in');
+  handleLoginFailure(response) {
+    alert("Failed to log in");
   }
 
-  handleLogoutFailure (response) {
-    alert('Failed to log out');
+  handleLogoutFailure(response) {
+    alert("Failed to log out");
   }
 
   render() {
-    
     return (
-    <div>
-      { this.state.isLogined ?
-        <GoogleLogout
-            clientId={ process.env.REACT_APP_GOOGLE_CLIENT_ID }
+      <div>
+        {this.state.isLogined ? (
+          <GoogleLogout
+            clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
             buttonText={"Signout"}
-            onLogoutSuccess={ this.logout }
-            onFailure={ this.handleLogoutFailure }
-        >
-        </GoogleLogout>: <GoogleLogin
+            onLogoutSuccess={this.logout}
+            onFailure={this.handleLogoutFailure}
+          ></GoogleLogout>
+        ) : (
+          <GoogleLogin
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
             buttonText="Login with Google"
-            onSuccess={ this.login }
-            onFailure={ this.handleLoginFailure }
-            cookiePolicy={ 'single_host_origin' }
+            onSuccess={this.login}
+            onFailure={this.handleLoginFailure}
+            cookiePolicy={"single_host_origin"}
             responseType="code"
             approvalPrompt="force"
             prompt="consent"
-        />
-      }
-    </div>
-    )
+            access_type="offline"
+          />
+        )}
+      </div>
+    );
   }
 }
 
