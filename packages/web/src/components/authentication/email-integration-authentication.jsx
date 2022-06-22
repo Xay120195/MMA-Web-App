@@ -1,13 +1,12 @@
-import React, { Component } from "react";
-import { API } from "aws-amplify";
-import { GoogleLogin, GoogleLogout } from "react-google-login";
+import React, { Component } from 'react';
+import { GoogleLogin, GoogleLogout } from 'react-google-login';
 class GmailIntegration extends Component {
-  constructor(props) {
+   constructor(props) {
     super(props);
     this.state = {
-      isLogined: localStorage.getItem("signInData")
-        ? JSON.parse(localStorage.getItem("signInData"))
-        : null,
+      isLogined: localStorage.getItem('signInData')
+      ? JSON.parse(localStorage.getItem('signInData'))
+      : null,
     };
 
     this.login = this.login.bind(this);
@@ -16,85 +15,56 @@ class GmailIntegration extends Component {
     this.handleLogoutFailure = this.handleLogoutFailure.bind(this);
   }
 
-  login(response) {
-    if (response) {
-      const saveRefreshToken = `
-      mutation refreshTokenSave($companyId: ID, $email: String, $refreshToken: String, $userId: ID) {
-        gmailAddToken(
-          email: $email
-          refreshToken: $refreshToken
-          userId: $userId
-          companyId: $companyId
-        ) {
-          email
-          refresh_token
-          userId
-          companyId
-          updatedAt
-        }
-      }`;
-
-      const request = API.graphql({
-        query: saveRefreshToken,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-          userId: localStorage.getItem("userId"),
-          email: "",
-          refreshToken: response.code,
-        },
-      });
-
-      if (request) {
-        this.setState((state) => ({
-          isLogined: response,
-        }));
-        localStorage.setItem("signInData", JSON.stringify(response));
-        window.location.reload();
-      }
+  login (response) {
+    if(response){
+      this.setState(state => ({
+        isLogined: response,
+      }));
+      localStorage.setItem('signInData', JSON.stringify(response));
+      window.location.reload();
     }
   }
 
-  logout(response) {
-    this.setState((state) => ({
+  logout (response) {
+    this.setState(state => ({
       isLogined: null,
     }));
-    localStorage.removeItem("signInData");
+    localStorage.removeItem('signInData');
     window.location.reload();
   }
 
-  handleLoginFailure(response) {
-    alert("Failed to log in");
+  handleLoginFailure (response) {
+    alert('Failed to log in');
   }
 
-  handleLogoutFailure(response) {
-    alert("Failed to log out");
+  handleLogoutFailure (response) {
+    alert('Failed to log out');
   }
 
   render() {
+    
     return (
-      <div>
-        {this.state.isLogined ? (
-          <GoogleLogout
-            clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-            //buttonText={"Logout - "+this.state.isLogined.profileObj.givenName+" ("+this.state.isLogined.profileObj.email+")"}
-            buttonText={"Logout"}
-            onLogoutSuccess={this.logout}
-            onFailure={this.handleLogoutFailure}
-          ></GoogleLogout>
-        ) : (
-          <GoogleLogin
+    <div>
+      { this.state.isLogined ?
+        <GoogleLogout
+            clientId={ process.env.REACT_APP_GOOGLE_CLIENT_ID }
+            buttonText={"Signout"}
+            onLogoutSuccess={ this.logout }
+            onFailure={ this.handleLogoutFailure }
+        >
+        </GoogleLogout>: <GoogleLogin
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
             buttonText="Login with Google"
-            onSuccess={this.login}
-            onFailure={this.handleLoginFailure}
-            cookiePolicy={"single_host_origin"}
+            onSuccess={ this.login }
+            onFailure={ this.handleLoginFailure }
+            cookiePolicy={ 'single_host_origin' }
             responseType="code"
             approvalPrompt="force"
             prompt="consent"
-          />
-        )}
-      </div>
-    );
+        />
+      }
+    </div>
+    )
   }
 }
 
