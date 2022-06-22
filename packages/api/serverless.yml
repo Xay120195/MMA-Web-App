@@ -611,7 +611,7 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
-        field: gmailAddToken
+        field: gmailConnectFromCode
         request: false
         response: false
 

@@ -6,6 +6,7 @@ module.exports = {
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_secret": "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",
   "redirect_uris": [
-    "https://www.getpostman.com/oauth2/callback"
-  ]
+    "https://www.getpostman.com/oauth2/callback",
+    "http://localhost:3000",
+  ],
 };
