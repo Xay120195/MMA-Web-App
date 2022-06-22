@@ -87,9 +87,18 @@ exports.addToken = async (ctx) => {
       })
       .promise();
 
-    await getOldMessages(email);
+    // await getOldMessages(email);
+    const response = items.map((item) => {
+      return {
+        email: item.id,
+        refreshToken: item.refreshToken,
+        userId: item.userId,
+        companyId: item.companyId,
+        updatedAt: item.updatedAt,
+      };
+    });
 
-    return items;
+    return response;
   } catch ({ message }) {
     console.log("errMessage: ", message);
   }
