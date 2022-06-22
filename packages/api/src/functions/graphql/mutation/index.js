@@ -1147,6 +1147,7 @@ async function createRFI(data) {
       rfiId: rawParams.id,
       clientMatterId: data.clientMatterId,
       createdAt: toUTC(new Date()),
+      isDeleted: false,
     };
 
     const clientMatterRFICommand = new PutItemCommand({
@@ -1920,6 +1921,59 @@ async function deleteRFI(id) {
   return resp;
 }
 
+async function softDeleteRFI(id, data) {
+  let resp = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const clientMatterRFIParams = {
+      TableName: "ClientMatterRFITable",
+      IndexName: "byRFI",
+      KeyConditionExpression: "rfiId = :rfiId",
+      ExpressionAttributeValues: marshall({
+        ":rfiId": id,
+      }),
+      ProjectionExpression: "id", // fetch id of ClientMatterRFITable only
+    };
+
+    const clientMatterRFICmd = new QueryCommand(clientMatterRFIParams);
+    const clientMatterRFIResult = await ddbClient.send(clientMatterRFICmd);
+
+    const clientMatterRFIId = clientMatterRFIResult.Items.map((i) =>
+      unmarshall(i)
+    )[0].id;
+
+    const cmd = new UpdateItemCommand({
+      TableName: "ClientMatterRFITable",
+      Key: marshall({ id: clientMatterRFIId }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+    
+    resp = request ? { id: id } : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function deleteClientMatter(id) {
   let resp = {};
 
@@ -2434,6 +2488,14 @@ const resolvers = {
     rfiDelete: async (ctx) => {
       const { id } = ctx.arguments;
       return await deleteRFI(id);
+    },
+    rfiSoftDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+        isDeleted: true,
+      };
+      return await softDeleteRFI(id, data);
     },
     requestCreate: async (ctx) => {
       return await createRequest(ctx.arguments);

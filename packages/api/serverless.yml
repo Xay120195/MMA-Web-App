@@ -281,7 +281,12 @@ custom:
         field: rfiDelete
         request: false
         response: false
-      # RFI
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: rfiSoftDelete
+        request: false
+        response: false
+      # Requests
       - dataSource: LambdaQueryDS
         type: Query
         field: request
