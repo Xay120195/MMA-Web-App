@@ -87,7 +87,8 @@ exports.addToken = async (ctx) => {
       })
       .promise();
 
-    // await getOldMessages(email);
+    await getOldMessages(email);
+    
     const response = {
       email: items.id,
       refreshToken: items.refreshToken,
