@@ -88,15 +88,13 @@ exports.addToken = async (ctx) => {
       .promise();
 
     // await getOldMessages(email);
-    const response = items.map((item) => {
-      return {
-        email: item.id,
-        refreshToken: item.refreshToken,
-        userId: item.userId,
-        companyId: item.companyId,
-        updatedAt: item.updatedAt,
-      };
-    });
+    const response = {
+      email: items.id,
+      refreshToken: items.refreshToken,
+      userId: items.userId,
+      companyId: items.companyId,
+      updatedAt: items.updatedAt,
+    };
 
     return response;
   } catch ({ message }) {
