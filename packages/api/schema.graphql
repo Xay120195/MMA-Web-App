@@ -233,7 +233,7 @@ type GmailMessage { #gm
 }
 
 type GmailToken { #gm
-  id: String # gmail address
+  email: String
   refreshToken: String
   userId: ID
   companyId: ID
