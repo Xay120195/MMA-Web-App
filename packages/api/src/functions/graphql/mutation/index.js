@@ -21,10 +21,11 @@ const {
 } = require("../../../services/MatterService");
 import { addToken } from "../../../services/gmail/addToken";
 import { google } from "googleapis";
+const { client_id, client_secret } = require("../../../services/gmail/config");
 
-const auth = new google.auth.OAuth2(
-  "799883109821-5s6kdis6b63ehko6s3u3nhufalu36nqc.apps.googleusercontent.com",
-  "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",
+const googleAuth = new google.auth.OAuth2(
+  client_id,
+  client_secret,
   "http://localhost:3000"
 );
 
@@ -2587,14 +2588,17 @@ const resolvers = {
     gmailMessageBulkSoftDelete: async (ctx) => {
       return await bulkSoftDeleteGmailMessage(ctx.arguments);
     },
-    gmailAddToken: async (ctx) => {
-      return addToken(ctx);
-    },
     gmailConnectFromCode: async (ctx) => {
-      const token = await auth.getToken(ctx.arguments.code);
+      const token = await googleAuth.getToken(ctx.arguments.code);
+      console.log("gmailConnectFromCode", token);
+      // return token.tokens.refresh_token;
 
-      return token.tokens.refresh_token;
-      // return addToken(ctx);
+      const data = {
+        email: ctx.arguments.email,
+        refreshToken: token.tokens.refresh_token,
+      };
+
+      return addToken(data);
     },
   },
 };

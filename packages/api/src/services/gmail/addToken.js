@@ -51,9 +51,11 @@ exports.addToken = async (ctx) => {
   try {
     const payload = ctx.arguments;
 
+    console.log("addToken arguments:",ctx);
+
     const { email, refreshToken } = ctx.arguments;
 
-    const { access_token } = await refreshTokens({
+    const { data: {access_token} } = await refreshTokens({
       refresh_token: refreshToken,
       client_id,
       client_secret,

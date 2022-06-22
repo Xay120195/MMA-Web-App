@@ -629,12 +629,11 @@ type Mutation {
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage #gm
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage #gm
   gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage] #gm
-  gmailAddToken(
+  gmailConnectFromCode(
     email: String
-    refreshToken: String
+    code: String
     userId: ID
     companyId: ID
   ): GmailToken
-  gmailConnectFromCode(code: String): String
   # gmailPushSubscription(email: String!, historyId: String!): Boolean // unused
 }

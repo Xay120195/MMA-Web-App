@@ -6,8 +6,8 @@ const {
   gmailAxios,
   setAccessToken,
   s3,
-} = require("../../../lib");
-const { client_id, client_secret, project_id } = require("../../../config");
+} = require("../../../services/gmail/lib");
+const { client_id, client_secret, project_id } = require("../../../services/gmail/config");
 
 exports.handler = async () => {
   let responseBody = "";
