@@ -35,7 +35,7 @@ const getOldMessages = async (email, pageToken) => {
   await docClient
     .batchWrite({
       RequestItems: {
-        gmailMessages: messagesToAdd.map((Item) => ({
+        GmailMessageTable: messagesToAdd.map((Item) => ({
           PutRequest: { Item: { connectedEmail: email, ...Item } },
         })),
       },

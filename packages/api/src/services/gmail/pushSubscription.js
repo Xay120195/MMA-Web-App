@@ -127,7 +127,7 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
         await docClient
           .batchWrite({
             RequestItems: {
-              gmailMessages: messagesToAdd.map((Item) => ({
+              GmailMessageTable: messagesToAdd.map((Item) => ({
                 PutRequest: { Item: { connectedEmail: email, ...Item } },
               })),
             },
@@ -139,7 +139,7 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
         await docClient
           .batchWrite({
             RequestItems: {
-              gmailMessages: messagesDeleted.map(({ message: { id } }) => ({
+              GmailMessageTable: messagesDeleted.map(({ message: { id } }) => ({
                 DeleteRequest: { Key: { id } },
               })),
             },
