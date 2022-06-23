@@ -1,125 +1,118 @@
-import React, { useState } from "react";
-import moment from "moment";
-import EmptyRow from "./empty-row";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { AppRoutes } from "../../constants/AppRoutes";
+import ToastNotification from "../toast-notification";
+import { AiOutlineDownload } from "react-icons/ai";
+import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
+import Loading from "../loading/loading";
+import {
+  BsFillTrashFill,
+  BsFillBucketFill,
+  BsSortUpAlt,
+  BsSortDown,
+} from "react-icons/bs";
+import Unsaved from "./data-source";
+import { useRootClose } from 'react-overlays';
 
-const greenDot = {
-  height: "20px",
-  width: "20px",
-  backgroundColor: "rgb(0,255,127)",
-  borderRadius: "50%",
-  display: "inline-block",
-  marginTop: "2.2em",
-  marginLeft: "0.6rem",
-};
-
-const countArray = (array) => {
-  var result = [];
-  for (var prop in array) {
-    if (array.hasOwnProperty(prop)) {
-      result++;
-    }
-  }
-  return result;
-};
-
-const alertmessage = {
-  border: "2px solid #1FC2E4",
-  marginLeft: "0.6rem",
-  width: "81.5rem",
-  marginBottom: "1rem",
-  color: "#1FC2E4",
-};
-
-const redDot = {
-  height: "20px",
-  width: "20px",
-  backgroundColor: "rgb(234, 83, 83)",
-  borderRadius: "50%",
-  display: "inline-block",
-  marginTop: "2.2em",
-  marginLeft: "0.6rem",
-};
-const getDay = (date) => {
-  const d = new Date(date);
-  let day = d.getDate();
-  return day;
-};
+var moment = require("moment");
 
 const TableInfo = ({
-  setTotalReadChecked,
-  setTotalUnReadChecked,
-  unReadData,
-  readData,
-  checkedStateRead,
-  setCheckedStateRead,
-  checkedStateUnRead,
-  setCheckedStateUnreRead,
-  setIdUnread,
-  data,
-  setIdRead,
-  searchRow,
-  totalChecked,
-  selectedMessage,
-  setSelectMessage,
+  selectedItems,
+  setSelectedItems
 }) => {
-  const [active, setActive] = useState("");
-  const [click, setClick] = useState(false);
+  const ref = useRef([]);
+  const [show, setShow] = useState(false);
+  const [snippetId, setSnippetId] = useState();
+  const handleRootClose = () => setShow(false);
 
-  const showHiddenMessage = (id) => {
-    const datas = data.find((bs) => bs.id === id);
-    if (datas && click) {
-      setClick(false);
-      setActive(datas.id);
-    } else {
-      setClick(true);
-      setActive(datas.id);
-    }
-  };
+  const handleSnippet = (e) => {
+    setSnippetId(e.target.id);
+    setShow(true);
+  }
 
-  const handleOnChangeRead = (position, event) => {
-    const updatedCheckedState = checkedStateRead.map((item, index) =>
-      index === position ? !item : item
-    );
+  useRootClose(ref, handleRootClose, {
+    disabled: !show,
+  });
 
-    setCheckedStateRead(updatedCheckedState);
-
-    let tc = updatedCheckedState.filter((v) => v === true).length;
-    setTotalReadChecked(tc);
-
-    if (event.target.checked) {
-      if (!readData.includes({ id: event.target.value })) {
-        setIdRead((item) => [...item, event.target.value]);
-      }
-      setSelectMessage(true);
-    } else {
-      setIdRead((item) => [...item.filter((x) => x !== event.target.value)]);
-      setSelectMessage(false);
-    }
-  };
-
-  const handleOnChangeUnRead = (position, event) => {
-    const updatedCheckedState = checkedStateUnRead.map((item, index) =>
-      index === position ? !item : item
-    );
-
-    setCheckedStateUnreRead(updatedCheckedState);
-
-    let tc = updatedCheckedState.filter((v) => v === true).length;
-    setTotalUnReadChecked(tc);
-
-    if (event.target.checked) {
-      setSelectMessage(true);
-      if (!unReadData.includes({ id: event.target.value })) {
-        setIdUnread((item) => [...item, event.target.value]);
-      }
-    } else {
-      setIdUnread((item) => [...item.filter((x) => x !== event.target.value)]);
-      setSelectMessage(false);
-    }
-  };
+  const handleSelectItem = (e, index) => {
+    const { value } = e.target;
+    setSelectedItems(value);
+  }
 
   return (
     <>
+      <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
+        <thead
+          className="z-10"
+          /*style={{ position: "sticky", top: "190px" }}*/
+        >
+          <tr>
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-10">
+              
+            </th>
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
+              Email Details
+            </th>
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
+              Attachments and Description
+            </th>
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
+              Labels
+            </th>
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
+              Client Matter
+            </th>
+          </tr>
+        </thead>
+          <tbody className="bg-white divide-y divide-gray-200" >
+          {Unsaved.map((item, index) => (
+            <tr>
+              <td className="p-2" >
+                <input
+                  className="cursor-pointer mr-1"
+                  onChange={handleSelectItem}
+                  type="checkbox"
+                  value={item.id}
+                />
+              </td>
+              <td className="p-2" >
+                <p className="text-sm font-medium" >{item.subject}</p>
+                <p className="text-xs" >{item.from} at {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
+                <p><div className="relative"><button className="
+                text-opacity-90
+                text-[12px] font-normal inline-flex items-center gap-x-2 rounded primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 text-xs" type="button" aria-expanded="false"
+                id={item.id}
+                onClick={handleSnippet}
+                >read more</button></div>
+                {show && (
+                  <div
+                    ref={el => (ref.current[index] = el)}
+                    className="absolute rounded shadow bg-white p-6 z-50 w-1/2 max-h-60 overflow-auto"
+                    id={item.id}
+                  >
+                    <p>From : {item.from}</p>
+                    <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
+                    <p>Subject : {item.subject}</p>
+                    <p>To : {item.to}</p>
+                    <p>BCC: </p>
+                    <p>CC:</p>
+                    <span>{item.snippet}</span>
+                  </div>
+                )}
+                </p>
+              </td>
+              <td className="p-2" >
+
+              </td>
+              <td className="p-2" >
+
+              </td>
+              <td className="p-2" >
+
+              </td>
+            </tr>
+          ))}
+          </tbody>
+      </table>
     </>
   );
 };
