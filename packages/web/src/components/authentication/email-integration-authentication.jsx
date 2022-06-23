@@ -53,6 +53,7 @@ class GmailIntegration extends Component {
       }));
       localStorage.setItem("signInData", JSON.stringify(response));
       //window.location.reload();
+      console.log("User Details", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
     }
   }
 
