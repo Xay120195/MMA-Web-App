@@ -8,8 +8,8 @@ const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC, toLocalTime } = require("../../shared/toUTC");
 const { v4 } = require("uuid");
-const getOldMessages = async (email, pageToken) => {
-  console.log("getOldMessages", email);
+const getOldMessages = async (email, companyId, pageToken) => {
+  console.log("getOldMessages", email, companyId);
   const {
     data: { messages: messageIds, nextPageToken },
   } = await gmailAxios.get(`/gmail/v1/users/${email}/messages`, {
@@ -38,7 +38,7 @@ const getOldMessages = async (email, pageToken) => {
   const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
   console.log("messagesToAdd: ", messagesToAdd);
 
-  await docClient
+  const saveEmails = await docClient
     .batchWrite({
       RequestItems: {
         GmailMessageTable: messagesToAdd.map((Item) => ({
@@ -71,7 +71,26 @@ const getOldMessages = async (email, pageToken) => {
     })
     .promise();
 
-  if (nextPageToken) await getOldMessages(email, nextPageToken);
+    const saveCompanyEmails = await docClient
+    .batchWrite({
+      RequestItems: {
+        CompanyGmailMessageTable: messagesToAdd.map((Item) => ({
+          PutRequest: {
+            Item: {
+              id: v4(),
+              gmailMessageId: Item.id,
+              companyId: companyId,
+              isDeleted: false,
+              isSaved: false,
+              createdAt: toUTC(new Date()),
+            },
+          },
+        })),
+      },
+    })
+    .promise();
+
+  if (nextPageToken) await getOldMessages(email, companyId, nextPageToken);
 };
 
 exports.addToken = async (ctx) => {
@@ -118,8 +137,7 @@ exports.addToken = async (ctx) => {
       })
       .promise();
 
-    console.log("request:", request);
-    await getOldMessages(email);
+    await getOldMessages(email, payload.companyId);
 
     const response = {
       email: items.id,
