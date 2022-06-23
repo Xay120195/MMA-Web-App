@@ -1,10 +1,62 @@
 import React, { useState, useEffect } from "react";
+import { API } from "aws-amplify";
 import ActionButtons from "./action-buttons";
 import TableInfo from "./table-info";
 import GmailIntegration from '../authentication/email-integration-authentication';
 import { gapi } from 'gapi-script';
 import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
+
+const qGmailMessagesbyCompany = `
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean, $isSaved: Boolean, $limit: Int = 100, $nextToken: String) {
+  company(id: $id) {
+    gmailMessages(isDeleted: $isDeleted, isSaved: $isSaved, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        from
+        to
+        subject
+        clientMatters {
+          items {
+            id
+            client {
+              id
+              name
+            }
+            matter {
+              id
+              name
+            }
+          }
+        }
+        date
+        gmailMessageId
+        payload
+        receivedAt
+        recipient
+        snippet
+      }
+      nextToken
+    }
+  }
+}`;
+
+const mSaveUnsavedEmails = `
+mutation saveGmailMessage($companyId: ID, $id: ID, $isSaved: Boolean) {
+  gmailMessageSave(companyId: $companyId, id: $id, isSaved: $isSaved) {
+    id
+  }
+}`;
+
+const mTagEmailClientMatter = `
+mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+  gmailMessageClientMatterTag(
+    clientMatterId: $clientMatterId
+    gmailMessageId: $gmailMessageId
+  ) {
+    id
+  }
+}`;
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -26,6 +78,7 @@ const Inbox = () => {
       scope: ""
     })
   }
+  const companyId = localStorage.getItem("companyId");
 
   const [loginData, setLoginData] = useState(
     localStorage.getItem('signInData')
@@ -35,6 +88,50 @@ const Inbox = () => {
 
   const [openTab, setOpenTab] = React.useState(1);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [emails, setEmails] = useState([]);
+
+  useEffect(() => {
+    /** remove after query is working - 
+    getEmails();
+    */
+  }, []);
+
+  const getEmails = async () => {
+    const params = {
+      query: qGmailMessagesbyCompany,
+      variables: {
+        id: companyId,
+        nextToken: null,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      const emailList = result;
+      console.log(result);
+      setEmails(emailList);
+    });
+  };
+
+  const saveUnsavedEmails = async (status, idArr) => {
+    const request = API.graphql({
+      query: mSaveUnsavedEmails,
+      variables: {
+        companyId: companyId,
+        id: idArr,
+        isSaved: status
+      },
+    });
+  };
+
+  const tagEmailtoClientMatter = async (clientMatterId, gmailMessageId) => {
+    const request = API.graphql({
+      query: mTagEmailClientMatter,
+      variables: {
+        clientMatterId: clientMatterId,
+        gmailMessageId: gmailMessageId
+      },
+    });
+  };
 
   return (
     <>
@@ -113,6 +210,7 @@ const Inbox = () => {
           <ActionButtons
             selectedItems={selectedItems}
             setSelectedItems={setSelectedItems}
+            openTab={openTab}
           />
         </div>
 
