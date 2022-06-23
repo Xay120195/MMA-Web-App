@@ -1,26 +1,38 @@
 import React, { useState } from "react";
 import ToastNotification from "../toast-notification";
+import { API } from "aws-amplify";
 
 const ActionButtons = ({
   selectedItems,
   setSelectedItems,
   openTab,
 }) => {
+
+  const companyId = localStorage.getItem("companyId");
   
-  const handleSaveRead = () => {
-    
-  }
+  const mSaveUnsavedEmails = `
+  mutation saveGmailMessage($companyId: ID, $id: ID, $isSaved: Boolean) {
+    gmailMessageSave(companyId: $companyId, id: $id, isSaved: $isSaved) {
+      id
+    }
+  }`;
 
-  const handleUnSaveRead = () => {
-    
-  }
+  const handleSaveUnsavedEmails = async (status) => {
+    const request = API.graphql({
+      query: mSaveUnsavedEmails,
+      variables: {
+        companyId: companyId,
+        id: selectedItems,
+        isSaved: status
+      },
+    });
+  };
 
-  const handleCheckAllChange = (ischecked) => {
-
-    if (ischecked) {
-      
+  const handleCheckAllChange = (e) => {
+    if (e.target.checked) {
+      //setSelectedItems(e.target.id);
     } else {
-      
+      //setSelectedItems([]);
     }
   };
 
@@ -40,7 +52,7 @@ const ActionButtons = ({
             <>
               <button
                 type="button"
-                onClick={() => handleSaveRead()}
+                onChange={() => handleSaveUnsavedEmails(true)}
                 className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"
               >
                 Save Emails
@@ -55,7 +67,7 @@ const ActionButtons = ({
             <>
               <button
                 type="button"
-                onClick={() => handleUnSaveRead()}
+                onChange={() => handleSaveUnsavedEmails(false)}
                 className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"
               >
                 Unsave Emails
