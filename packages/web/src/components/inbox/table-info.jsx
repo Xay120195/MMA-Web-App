@@ -4,6 +4,7 @@ import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
+import CreatableSelect from "react-select/creatable";
 import {
   BsFillTrashFill,
   BsFillBucketFill,
@@ -23,6 +24,30 @@ const TableInfo = ({
   const [show, setShow] = useState(false);
   const [snippetId, setSnippetId] = useState();
   const handleRootClose = () => setShow(false);
+  const [selectedClientMatter, setSelectedClientMatter] = useState();
+
+  const companyId = localStorage.getItem("companyId");
+
+  const listClientMatters = `
+  query listClientMatters($companyId: String) {
+    company(id: $companyId) {
+      clientMatters (sortOrder: CREATED_DESC) {
+        items {
+          id
+          createdAt
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+  `;
 
   const handleSnippet = (e) => {
     setSnippetId(e.target.id);
@@ -37,6 +62,10 @@ const TableInfo = ({
     const { value } = e.target;
     setSelectedItems(value);
   }
+
+  const handleClientMatterChanged = (newValue) => {
+    console.log(newValue);
+  };
 
   return (
     <>
@@ -107,7 +136,14 @@ const TableInfo = ({
 
               </td>
               <td className="p-2" >
-
+                <CreatableSelect
+                  //options={clientsOptions}
+                  isClearable
+                  isSearchable
+                  onChange={handleClientMatterChanged}
+                  placeholder="Client/Matter"
+                  className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                />
               </td>
             </tr>
           ))}
