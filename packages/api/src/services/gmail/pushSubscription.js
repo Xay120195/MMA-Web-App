@@ -8,6 +8,7 @@ const {
   s3,
 } = require("./lib");
 const { client_id, client_secret } = require("./config");
+const { v4 } = require("uuid");
 
 exports.getParsedGmailMessage = async (data) => {
   const message = Object.assign({}, data);
@@ -128,7 +129,9 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
           .batchWrite({
             RequestItems: {
               GmailMessageTable: messagesToAdd.map((Item) => ({
-                PutRequest: { Item: { connectedEmail: email, ...Item } },
+                PutRequest: {
+                  Item: { id: v4(), connectedEmail: email, ...Item },
+                },
               })),
             },
           })
@@ -153,16 +156,21 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
     await checkGmailMessages(email, startHistoryId, nextPageToken);
 };
 
-exports.pushSubscriptionHandler = async (ctx) => {
+exports.pushSubscriptionHandler = async (event) => {
   let responseBody = "";
 
   try {
-    const { email, historyId } = ctx.arguments;
+    const payload = JSON.parse(event.body);
+    console.log("payload: ", payload);
+
+    const { emailAddress: email, historyId } = JSON.parse(
+      Buffer.from(payload.message.data, "base64").toString("utf-8")
+    );
 
     const { Item: gmailToken } = await docClient
       .get({ TableName: "GmailTokenTable", Key: { email } })
       .promise();
-    const { refresh_token, historyId: oldHistoryId } = gmailToken;
+    const { refreshToken: refresh_token, historyId: oldHistoryId } = gmailToken;
 
     const {
       data: { access_token },
