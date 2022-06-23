@@ -231,6 +231,7 @@ type GmailMessage { #gm
   receivedAt: String
   from: String
   to: String
+  recipient: String
   cc: String
   bcc: String
   historyId: String

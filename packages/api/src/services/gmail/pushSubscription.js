@@ -67,10 +67,12 @@ exports.getParsedGmailMessage = async (data) => {
   formatParts(parts);
 
   const headerInfo = {};
+
   for (const { name, value } of payload.headers) {
-    const key = (name.charAt(0).toLowerCase() + name.slice(1))
-      .replaceAll("-", "")
-      .replaceAll(" ", "");
+    const key =
+      (name.charAt(0).toLowerCase() +
+      name.slice(1)).replace(/-/g, "").replace(/ /g, "");
+
     headerInfo[key] = value;
   }
 
