@@ -677,6 +677,48 @@ async function listBriefs() {
   return resp;
 }
 
+async function getGmailMessage(data) {
+  try {
+    const param = {
+      TableName: "GmailMessageTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listGmailMessages() {
+  try {
+    const param = {
+      TableName: "GmailMessageTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 const resolvers = {
   Query: {
     company: async (ctx) => {
@@ -775,6 +817,12 @@ const resolvers = {
     },
     briefs: async () => {
       return listBriefs();
+    },
+    gmailMessage: async (ctx) => {
+      return getGmailMessage(ctx.arguments);
+    },
+    gmailMessages: async () => {
+      return listGmailMessages();
     },
   },
 };

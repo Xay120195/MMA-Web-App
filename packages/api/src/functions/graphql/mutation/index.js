@@ -17,8 +17,17 @@ const {
   softDeleteMatterFile,
   bulkUpdateMatterFileOrders,
   bulkCreateMatterFile,
-  bulkSoftDeleteMatterFile
+  bulkSoftDeleteMatterFile,
 } = require("../../../services/MatterService");
+import { addToken } from "../../../services/gmail/addToken";
+import { google } from "googleapis";
+const { client_id, client_secret } = require("../../../services/gmail/config");
+
+const googleAuth = new google.auth.OAuth2(
+  client_id,
+  client_secret,
+  "http://localhost:3000"
+);
 
 async function createCompany(data) {
   let resp = {};
@@ -922,8 +931,6 @@ async function bulkCreateBackground(briefId, data) {
     );
 
     if (asyncCreateBBResult) {
-      
-
       const b_batches = [];
       let b_current_batch = [],
         b_item_count = 0;
@@ -956,7 +963,6 @@ async function bulkCreateBackground(briefId, data) {
           return await ddbClient.send(createBackgroundCmd);
         })
       );
-
 
       resp = asyncCreateBResult
         ? arrBackgroundItems.map((i) => {
@@ -1149,6 +1155,7 @@ async function createRFI(data) {
       rfiId: rawParams.id,
       clientMatterId: data.clientMatterId,
       createdAt: toUTC(new Date()),
+      isDeleted: false,
     };
 
     const clientMatterRFICommand = new PutItemCommand({
@@ -1530,8 +1537,6 @@ async function bulkUpdateBackgroundOrders(data) {
         await ddbClient.send(updateBackgroundCmd);
       })
     );
-
-    console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
@@ -1924,6 +1929,59 @@ async function deleteRFI(id) {
   return resp;
 }
 
+async function softDeleteRFI(id, data) {
+  let resp = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const clientMatterRFIParams = {
+      TableName: "ClientMatterRFITable",
+      IndexName: "byRFI",
+      KeyConditionExpression: "rfiId = :rfiId",
+      ExpressionAttributeValues: marshall({
+        ":rfiId": id,
+      }),
+      ProjectionExpression: "id", // fetch id of ClientMatterRFITable only
+    };
+
+    const clientMatterRFICmd = new QueryCommand(clientMatterRFIParams);
+    const clientMatterRFIResult = await ddbClient.send(clientMatterRFICmd);
+
+    const clientMatterRFIId = clientMatterRFIResult.Items.map((i) =>
+      unmarshall(i)
+    )[0].id;
+
+    const cmd = new UpdateItemCommand({
+      TableName: "ClientMatterRFITable",
+      Key: marshall({ id: clientMatterRFIId }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? { id: id } : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function deleteClientMatter(id) {
   let resp = {};
 
@@ -1963,6 +2021,266 @@ async function deleteClientMatter(id) {
 
       resp = request ? { id: id } : {};
     }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function createGmailMessage(data) {
+  let resp = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      messageId: data.messageId,
+      from: data.from,
+      to: data.to,
+      subject: data.subject,
+      snippet: data.snippet,
+      createdAt: toUTC(new Date()),
+    };
+
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
+      TableName: "GmailMessageTable",
+      Item: param,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    const companyGmailMessageParams = {
+      id: v4(),
+      gmailMessageId: rawParams.id,
+      companyId: data.companyId,
+      isDeleted: false,
+      isSaved: false,
+      createdAt: toUTC(new Date()),
+    };
+
+    const companyGmailMessageCommand = new PutItemCommand({
+      TableName: "CompanyGmailMessageTable",
+      Item: marshall(companyGmailMessageParams),
+    });
+
+    const companyGmailMessageRequest = await ddbClient.send(
+      companyGmailMessageCommand
+    );
+
+    resp = companyGmailMessageRequest ? rawParams : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function saveGmailMessage(id, companyId, data) {
+  let resp = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const gmParam = {
+      TableName: "CompanyGmailMessageTable",
+      IndexName: "byGmailMessage",
+      KeyConditionExpression: "gmailMessageId = :gmailMessageId",
+      ExpressionAttributeValues: marshall({
+        ":gmailMessageId": id,
+      }),
+    };
+
+    const gmCmd = new QueryCommand(gmParam);
+    const gmResult = await ddbClient.send(gmCmd);
+
+    const filterGMResult = gmResult.Items.map((i) => unmarshall(i)).filter(
+      (u) => u.companyId === companyId
+    );
+
+    const companyGmailMessageID = filterGMResult[0].id;
+
+    const cmd = new UpdateItemCommand({
+      TableName: "CompanyGmailMessageTable",
+      Key: marshall({ id: companyGmailMessageID }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function tagGmailMessageClientMatter(data) {
+  let resp = {};
+
+  try {
+    const arrItems = [];
+
+    const gmailMessageClientMatterIdParams = {
+      TableName: "GmailMessageClientMatterTable",
+      IndexName: "byGmailMessage",
+      KeyConditionExpression: "gmailMessageId = :gmailMessageId",
+      FilterExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":gmailMessageId": data.gmailMessageId,
+        ":clientMatterId": data.clientMatterId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    const gmailMessageClientMatterIdCmd = new QueryCommand(
+      gmailMessageClientMatterIdParams
+    );
+    const gmailMessageClientMatterIdRes = await ddbClient.send(
+      gmailMessageClientMatterIdCmd
+    );
+
+    for (var a = 0; a < gmailMessageClientMatterIdRes.Items.length; a++) {
+      var gmailMessageClientMatterId = {
+        id: gmailMessageClientMatterIdRes.Items[a].id,
+      };
+      arrItems.push({
+        DeleteRequest: {
+          Key: gmailMessageClientMatterId,
+        },
+      });
+    }
+
+    arrItems.push({
+      PutRequest: {
+        Item: marshall({
+          id: v4(),
+          gmailMessageId: data.gmailMessageId,
+          clientMatterId: data.clientMatterId,
+        }),
+      },
+    });
+
+    const gmailMessageClientMatterParams = {
+      RequestItems: {
+        GmailMessageClientMatterTable: arrItems,
+      },
+    };
+
+    const gmailMessageClientMatterCmd = new BatchWriteItemCommand(
+      gmailMessageClientMatterParams
+    );
+
+    const gmailMessageClientMatterRes = await ddbClient.send(
+      gmailMessageClientMatterCmd
+    );
+
+    if (gmailMessageClientMatterRes) {
+      resp = { id: data.gmailMessageId };
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function softDeleteGmailMessage(id, companyId, data) {
+  let resp = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const gmParam = {
+      TableName: "CompanyGmailMessageTable",
+      IndexName: "byGmailMessage",
+      KeyConditionExpression: "gmailMessageId = :gmailMessageId",
+      ExpressionAttributeValues: marshall({
+        ":gmailMessageId": id,
+      }),
+    };
+
+    const gmCmd = new QueryCommand(gmParam);
+    const gmResult = await ddbClient.send(gmCmd);
+
+    const filterGMResult = gmResult.Items.map((i) => unmarshall(i)).filter(
+      (u) => u.companyId === companyId
+    );
+
+    const companyGmailMessageID = filterGMResult[0].id;
+
+    const cmd = new UpdateItemCommand({
+      TableName: "CompanyGmailMessageTable",
+      Key: marshall({ id: companyGmailMessageID }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function bulkSoftDeleteGmailMessage(data) {
+  const companyId = data.companyId;
+
+  let resp = [];
+  try {
+    const asyncResult = await Promise.all(
+      data.id.map(async (id) => {
+        const data = {
+          updatedAt: toUTC(new Date()),
+          isDeleted: true,
+        };
+
+        resp.push({ id });
+
+        await softDeleteGmailMessage(id, companyId, data);
+      })
+    );
   } catch (e) {
     resp = {
       error: e.message,
@@ -2179,6 +2497,14 @@ const resolvers = {
       const { id } = ctx.arguments;
       return await deleteRFI(id);
     },
+    rfiSoftDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+        isDeleted: true,
+      };
+      return await softDeleteRFI(id, data);
+    },
     requestCreate: async (ctx) => {
       return await createRequest(ctx.arguments);
     },
@@ -2231,6 +2557,49 @@ const resolvers = {
       };
 
       return await softDeleteBrief(id, data);
+    },
+    gmailMessageCreate: async (ctx) => {
+      return await createGmailMessage(ctx.arguments);
+    },
+
+    gmailMessageSave: async (ctx) => {
+      const { id, companyId, isSaved } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+        isSaved: isSaved,
+      };
+
+      return await saveGmailMessage(id, companyId, data);
+    },
+
+    gmailMessageClientMatterTag: async (ctx) => {
+      return await tagGmailMessageClientMatter(ctx.arguments);
+    },
+
+    gmailMessageSoftDelete: async (ctx) => {
+      const { id, companyId } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+        isDeleted: true,
+      };
+
+      return await softDeleteGmailMessage(id, companyId, data);
+    },
+    gmailMessageBulkSoftDelete: async (ctx) => {
+      return await bulkSoftDeleteGmailMessage(ctx.arguments);
+    },
+    gmailConnectFromCode: async (ctx) => {
+      const { code, email, userId, companyId } = ctx.arguments;
+      const token = await googleAuth.getToken(code);
+
+      const data = {
+        email,
+        userId,
+        companyId,
+        refreshToken: token.tokens.refresh_token,
+      };
+
+      return addToken(data);
     },
   },
 };

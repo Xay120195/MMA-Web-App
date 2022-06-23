@@ -574,8 +574,8 @@ const TableInfo = ({
             tempFiles.find((temppFiles) => temppFiles.id === id)
           ) > -1
         ) {
-          temp.map((x)=> x === background_id ? temp.splice(temp.indexOf(x), 1) : x)
-          setPastedRows(temp);
+          // temp.map((x)=> x === background_id ? temp.splice(temp.indexOf(x), 1) : x)
+          // setPastedRows(temp);
         } else {
           tempFiles = [
             ...tempFiles,
@@ -583,7 +583,7 @@ const TableInfo = ({
           ];
           selectedRowsBGFilesPass = tempFiles;
 
-          temp = [...temp, background_id];
+          temp = [...temp, background_id+"/"+files_id];
           console.log("selected", temp);
           setPastedRows(temp);
           setSelectedRowsBGFiles(tempFiles);
@@ -603,24 +603,19 @@ const TableInfo = ({
         );
         console.log("bgid", background_id);
         console.log("temp", temp);
-        // temp.splice(
-        //   temp.indexOf(
-        //     temp.find(background_id)
-        //   ),
-        //   1
-        // );
-
-        // temp.map((x)=> x === background_id ? temp.splice(temp.indexOf(temp.find(x)), 1) : x)
-
+      
         var pass = []
 
         for(var i = 0; i<temp.length; i++){
-          if(temp[i] === background_id){
+          var splitId = temp[i].split("/");
+          console.log("firstsecond", splitId);
+          if(splitId[0] === background_id && splitId[1] === files_id){
             pass = pass;
           }else{
             pass = [...pass, temp[i]];
           }
         }
+
         console.log("passdata", pass);
         setPastedRows(pass);
         setSelectedRowsBGFiles(tempFiles);
@@ -1375,7 +1370,7 @@ const TableInfo = ({
   };
 
   function rowClicked(itemid) {
-    const found = pastedRows.find(element => element === itemid);
+    const found = pastedRows.find(element => element.split("/")[0] === itemid);
     return found;
   }
 

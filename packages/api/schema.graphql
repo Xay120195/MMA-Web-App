@@ -58,8 +58,12 @@ type ClientMatter {
     sortOrder: OrderBy
   ): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
-  rfis(limit: Int, nextToken: String): ClientMatterRFIConn
-  briefs(limit: Int, nextToken: String, isDeleted: Boolean): ClientMatterBriefConn
+  rfis(limit: Int, nextToken: String, isDeleted: Boolean): ClientMatterRFIConn
+  briefs(
+    limit: Int
+    nextToken: String
+    isDeleted: Boolean
+  ): ClientMatterBriefConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -85,6 +89,17 @@ type Company {
     nextToken: String
     sortOrder: OrderBy
   ): CompanyClientMatterConn
+  gmailMessages(
+    limit: Int
+    nextToken: String
+    isDeleted: Boolean
+    isSaved: Boolean
+    email: String
+    subject: String
+    recipient: String
+    startDate: String
+    endDate: String
+  ): CompanyGmailMessagesConn #gm
   phone: String
   email: AWSEmail
   representative: User
@@ -202,6 +217,26 @@ type UserColumnSettings {
   columnSettings: ColumnSettings
   isVisible: Boolean
   createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type GmailMessage { #gm
+  id: ID
+  messageId: String
+  from: String
+  to: String
+  subject: String
+  snippet: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
+}
+
+type GmailToken { #gm
+  email: String
+  refreshToken: String
+  userId: ID
+  companyId: ID
   updatedAt: AWSDateTime
 }
 
@@ -397,6 +432,15 @@ type UserClientMatterCon {
   nextToken: String
 }
 
+type CompanyGmailMessagesConn { #gm
+  items: [GmailMessage]
+  nextToken: String
+}
+type GmailMessageClientMattersConn { #gm
+  items: [ClientMatter]
+  nextToken: String
+}
+
 type Query {
   background(id: ID): Background
   backgrounds: [Background]
@@ -435,6 +479,14 @@ type Query {
   user(id: String): User
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
   users: [User]
+  gmailMessage(id: ID): GmailMessage #gm
+  gmailMessages(
+    email: String
+    subject: String
+    recipient: String
+    startDate: String
+    endDate: String
+  ): [GmailMessage] #gm
 }
 
 type Mutation {
@@ -446,7 +498,10 @@ type Mutation {
     briefId: ID
     order: Int
   ): Background
-  backgroundBulkCreate(briefId: String, backgrounds: [BackgroundInput]): [Background]
+  backgroundBulkCreate(
+    briefId: String
+    backgrounds: [BackgroundInput]
+  ): [Background]
   backgroundDelete(id: ID): Background
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
   backgroundUpdate(
@@ -522,6 +577,7 @@ type Mutation {
   rfiCreate(name: String, clientMatterId: String): RFI
   rfiUpdate(id: ID, name: String, description: String, order: Int): RFI
   rfiDelete(id: ID): RFI
+  rfiSoftDelete(id: ID): RFI
   requestCreate(
     question: String
     answer: String
@@ -557,4 +613,27 @@ type Mutation {
     userType: UserType
     company: CompanyInput
   ): User
+
+  gmailMessageCreate(
+    companyId: ID
+    messageId: String
+    from: String
+    to: String
+    subject: String
+    snippet: String
+  ): GmailMessage #gm
+  gmailMessageClientMatterTag(
+    gmailMessageId: ID
+    clientMatterId: ID
+  ): GmailMessage #gm
+  gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage #gm
+  gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage #gm
+  gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage] #gm
+  gmailConnectFromCode(
+    email: String
+    code: String
+    userId: ID
+    companyId: ID
+  ): GmailToken
+  # gmailPushSubscription(email: String!, historyId: String!): Boolean // unused
 }

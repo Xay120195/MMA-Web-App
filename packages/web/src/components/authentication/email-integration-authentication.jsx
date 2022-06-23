@@ -1,141 +1,103 @@
-import React, { useEffect, useState } from "react";
-import { AiOutlineGoogle } from "react-icons/ai";
-//import GoogleLogin from "react-google-login";
-//import { useDispatch } from "react-redux";
-// import { userLogin } from "../../redux/reducer/profileUpdateSlice";
-import { useHistory } from "react-router-dom";
-//import { ApiGetNoAuth, ApiPostNoAuth } from "../../helpers/API/API_data";
-import ToastNotification from "../toast-notification";
-
-const EmailIntegrationAuth = () => {
-  console.log("asfafsafafafaf");
-  //const dispatch = useDispatch();
-  let history = useHistory();
-
-  const GoogleAuth = async (accessToken, idToken) => {
-    console.log("in");
-    let body = {
-      idToken,
-      accessToken,
+import React, { Component } from "react";
+import { GoogleLogin, GoogleLogout } from "react-google-login";
+import { API } from "aws-amplify";
+class GmailIntegration extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLogined: localStorage.getItem("signInData")
+        ? JSON.parse(localStorage.getItem("signInData"))
+        : null,
     };
-    // await ApiPostNoAuth("user/google", body).then((res) => {
-    //   let data = { ...res.data?.data, accessToken };
-    //   console.log(res?.data?.message);
-    //   dispatch(userLogin(data));
-    //   localStorage.setItem("logindata", JSON.stringify(data));
-    // });
-  };
 
-  const googleClick = async (response) => {
-    // await ApiGetNoAuth("user/google/token")
-    //   .then((res) => {
-    //     console.log(
-    //       "res lohginn",
-    //       response
-    //     )((window.location.href = res.data.url));
-    //   })
-    //   .catch((err) => console.log("err", err));
-  };
+    this.login = this.login.bind(this);
+    this.handleLoginFailure = this.handleLoginFailure.bind(this);
+    this.logout = this.logout.bind(this);
+    this.handleLogoutFailure = this.handleLogoutFailure.bind(this);
+  }
 
-  useEffect(() => {
-    console.log("TESTTSTT");
-    handleTokenFromQueryParams();
-  }, []);
+  async login(response) {
+    console.log("code: ",response.code);
 
-  const handleTokenFromQueryParams = async () => {
-    const query = new URLSearchParams(window.location.search);
-    const accessToken = query.get("accessToken");
-    const refreshToken = query.get("refreshToken");
-    const idToken = query.get("idToken");
-    const expirationDate = newExpirationDate();
-    if (accessToken && refreshToken && idToken) {
-      await storeTokenData(accessToken, refreshToken, idToken, expirationDate);
-      console.log("out");
-      await GoogleAuth(accessToken, idToken);
-
-      history.push("/inbox");
+    const saveRefreshToken = `
+    mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
+      gmailConnectFromCode(
+        email: $email
+        userId: $userId
+        companyId: $companyId
+        code: $code
+      ) {
+        email
+        refreshToken
+        userId
+        companyId
+        updatedAt
+      }
     }
-  };
+    `;
 
-  const newExpirationDate = () => {
-    var expiration = new Date();
-    expiration.setHours(expiration.getHours() + 1);
-    return expiration;
-  };
+    const request = await API.graphql({
+      query: saveRefreshToken,
+      variables: {
+        companyId: localStorage.getItem("companyId"),
+        userId: localStorage.getItem("userId"),
+        email: "mmatest.integ@gmail.com",
+        code: response.code,
+      },
+    });
 
-  const storeTokenData = async (
-    token,
-    refreshToken,
-    idToken,
-    expirationDate
-  ) => {
-    sessionStorage.setItem("accessToken", token);
-    sessionStorage.setItem("refreshToken", refreshToken);
-    sessionStorage.setItem("idToken", idToken);
-    sessionStorage.setItem("expirationDate", expirationDate);
-  };
+    console.log(request);
+    if (request) {
+      this.setState((state) => ({
+        isLogined: response,
+      }));
+      localStorage.setItem("signInData", JSON.stringify(response));
+      //window.location.reload();
+    }
+  }
 
-  return (
-    <>
-      <div className="h-screen flex-1 p-7">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 relative">
-          <div className="col-span-3 px-3 pt-20 z-50">
-            <h5 className="text-black text-2xl font-bold">AFFIDAVITS & RFI</h5>
-            <div className="text-black text-xl font-normal my-5 leading-10">
-              Looks like you're not yet connected with your Google Account
-            </div>
-            <div className="text-gray-400 text-lg font-medium">
-              Lets make your trip fun and simple
-            </div>
+  logout(response) {
+    this.setState((state) => ({
+      isLogined: null,
+    }));
+    localStorage.removeItem("signInData");
+    window.location.reload();
+  }
 
-            {/* <GoogleLogin
-              clientId={process.env.REACT_APP_GOOGLE_ID}
-              render={(renderProps) => (
-                <button
-                  type="button"
-                  className="flex gap-x-4 pl-3 my-4 rounded-lg text-sm  border-2 border-blue-600 items-center"
-                  onClick={renderProps.onClick}
-                >
-                  <AiOutlineGoogle fontSize={30} className="text-blue-600" />
-                  <span className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 px-5 py-2.5 focus:ring-blue-300 font-medium dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                    {" "}
-                    Sign in with Google
-                  </span>
-                </button>
-              )}
-              // responseType="code"
-              buttonText=""
-              // accessType="offline"
-              // responseType="code"
-              // prompt="consent"
-              autoLoad={false}
-              // uxMode="redirect"
-              // redirectUri="http://localhost:3001"
-              onSuccess={handleGoogleLogin}
-              scope="[https://mail.google.com/, https://www.googleapis.com/auth/gmail.modify, https://www.googleapis.com/auth/gmail.readonly]"
-              onFailure={(err) => console.log("fail", err)},
-            /> */}
-            <button
-              type="button"
-              className="flex gap-x-4 pl-3 my-4 rounded-lg text-sm  border-2 border-blue-600 items-center"
-              onClick={googleClick}
-            >
-              <AiOutlineGoogle fontSize={30} className="text-blue-600" />
-              <span className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 px-5 py-2.5 focus:ring-blue-300 font-medium dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                {" "}
-                Sign in with Google
-              </span>
-            </button>
-          </div>
-          <div className="col-span-7">
-            <div className="h-screen absolute top-[-28px] right-[-28px]">
-              <img src="assets/Group 1.png" alt="" className="h-full" />
-            </div>
-          </div>
-        </div>
+  handleLoginFailure(response) {
+    alert("Failed to log in");
+  }
+
+  handleLogoutFailure(response) {
+    alert("Failed to log out");
+  }
+
+  render() {
+    return (
+      <div>
+        {this.state.isLogined ? (
+          <GoogleLogout
+            clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+            buttonText={"Signout"}
+            onLogoutSuccess={this.logout}
+            onFailure={this.handleLogoutFailure}
+          ></GoogleLogout>
+        ) : (
+          <GoogleLogin
+            clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+            buttonText="Login with Google"
+            onSuccess={this.login}
+            onFailure={this.handleLoginFailure}
+            cookiePolicy={"single_host_origin"}
+            responseType="code"
+            approvalPrompt="force"
+            prompt="consent"
+            access_type="offline"
+          />
+        )}
       </div>
-    </>
-  );
-};
+    );
+  }
+}
 
-export default EmailIntegrationAuth;
+export default GmailIntegration;

@@ -1,10 +1,9 @@
-const {
-    DynamoDBClient
-  } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 
-const config =  process.env.IS_OFFLINE ? {region: 'localhost',
-endpoint: 'http://localhost:8000'}: {}
+const config = process.env.IS_OFFLINE
+  ? { region: "localhost", endpoint: "http://localhost:8000" }
+  : {};
 
-const client = new DynamoDBClient(config);
+const client = new DynamoDBClient({});
 
-module.exports = client
+module.exports = client;
