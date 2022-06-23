@@ -36,13 +36,36 @@ const getOldMessages = async (email, pageToken) => {
   console.log("messages", messages.length);
 
   const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
-  // console.log("messagesToAdd: ", messagesToAdd);
+  console.log("messagesToAdd: ", messagesToAdd);
 
   await docClient
     .batchWrite({
       RequestItems: {
         GmailMessageTable: messagesToAdd.map((Item) => ({
-          PutRequest: { Item: { id: v4(), connectedEmail: email, ...Item } },
+          PutRequest: {
+            Item: {
+              id: Item.id,
+              threadId: Item.threadId,
+              connectedEmail: email,
+              messageId: Item.messageID,
+              contentType: Item.contentType,
+              date: Item.date,
+              internalDate: Item.internalDate,
+              receivedAt: Item.receivedAt,
+              from: Item.from,
+              to: Item.to,
+              cc: Item.cc,
+              bcc: Item.bcc,
+              historyId: Item.historyId,
+              subject: Item.subject,
+              lowerSubject: Item.lower_subject,
+              snippet: Item.snippet,
+              lowerSnippet: Item.lower_snippet,
+              labels: Item.labelIds,
+              payload: Item.payload,
+              updatedAt: toUTC(new Date()),
+            },
+          },
         })),
       },
     })

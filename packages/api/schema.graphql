@@ -221,13 +221,25 @@ type UserColumnSettings {
 }
 
 type GmailMessage { #gm
-  id: ID
-  messageId: String
+  id: String
+  threadId: String
+  connectedEmail: String
+  gmailMessageId: String
+  contentType: String
+  date: String
+  internalDate: String
+  receivedAt: String
   from: String
   to: String
+  cc: String
+  bcc: String
+  historyId: String
   subject: String
+  lowerSubject: String
   snippet: String
-  createdAt: AWSDateTime
+  lowerSnippet: String
+  labelIds: [String]
+  payload: AWSJSON
   updatedAt: AWSDateTime
   clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
 }
