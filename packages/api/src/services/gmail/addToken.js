@@ -54,6 +54,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
               receivedAt: Item.receivedAt,
               from: Item.from,
               to: Item.to,
+              recipient: Item.recipient,
               cc: Item.cc,
               bcc: Item.bcc,
               historyId: Item.historyId,

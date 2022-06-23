@@ -67,29 +67,26 @@ exports.getParsedGmailMessage = async (data) => {
   formatParts(parts);
 
   const headerInfo = {};
-console.log("payload", payload);
-  if (payload.headers) {
-    for (const { name, value } of payload.headers) {
-      if (name) {
-        const key = (name.charAt(0).toLowerCase() + name.slice(1))
-          .replaceAll("-", "")
-          .replaceAll(" ", "");
-        headerInfo[key] = value;
-      }
-    }
 
-    if (headerInfo["subject"])
-      headerInfo["lower_subject"] = headerInfo["subject"].toLowerCase();
+  for (const { name, value } of payload.headers) {
+    const key =
+      (name.charAt(0).toLowerCase() +
+      name.slice(1)).replace(/-/g, "").replace(/ /g, "");
 
-    if (headerInfo["deliveredTo"])
-      headerInfo["recipient"] = headerInfo["deliveredTo"].toLowerCase();
-
-    if (headerInfo["date"])
-      headerInfo["receivedAt"] = new Date(headerInfo["date"]).getTime();
-
-    if (message["snippet"])
-      message["lower_snippet"] = message["snippet"].toLowerCase();
+    headerInfo[key] = value;
   }
+
+  if (headerInfo["subject"])
+    headerInfo["lower_subject"] = headerInfo["subject"].toLowerCase();
+
+  if (headerInfo["deliveredTo"])
+    headerInfo["recipient"] = headerInfo["deliveredTo"].toLowerCase();
+
+  if (headerInfo["date"])
+    headerInfo["receivedAt"] = new Date(headerInfo["date"]).getTime();
+
+  if (message["snippet"])
+    message["lower_snippet"] = message["snippet"].toLowerCase();
 
   return {
     ...message,
