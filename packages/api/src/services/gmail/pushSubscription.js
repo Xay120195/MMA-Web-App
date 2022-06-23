@@ -8,6 +8,7 @@ const {
   s3,
 } = require("./lib");
 const { client_id, client_secret } = require("./config");
+const { v4 } = require("uuid");
 
 exports.getParsedGmailMessage = async (data) => {
   const message = Object.assign({}, data);
@@ -15,7 +16,7 @@ exports.getParsedGmailMessage = async (data) => {
 
   const getParsedMessageParts = async (messagePart) => {
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
-    if (subParts && subParts.length)
+    if (subParts.length)
       return await Promise.all(subParts.map(getParsedMessageParts));
 
     const _parsedMessagePart = {
@@ -29,26 +30,26 @@ exports.getParsedGmailMessage = async (data) => {
       );
     }
 
-    // if (filename) {
-    //   _parsedMessagePart["filename"] = filename;
-    //   const {
-    //     data: { data },
-    //   } = await gmailAxios.get(
-    //     `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
-    //   );
+    if (filename) {
+      _parsedMessagePart["filename"] = filename;
+      const {
+        data: { data },
+      } = await gmailAxios.get(
+        `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
+      );
 
-    //   const fileName = `${messageId}/${filename}`;
-    //   const s3Response = await s3
-    //     .putObject({
-    //       ContentType: mimeType,
-    //       Bucket: "gmail-attachments",
-    //       Key: fileName,
-    //       Body: Buffer.from(data, "base64"),
-    //     })
-    //     .promise();
+      const fileName = `${messageId}/${filename}`;
+      const s3Response = await s3
+        .putObject({
+          ContentType: mimeType,
+          Bucket: "gmail-attachments",
+          Key: fileName,
+          Body: Buffer.from(data, "base64"),
+        })
+        .promise();
 
-    //   _parsedMessagePart["path"] = fileName;
-    // }
+      _parsedMessagePart["path"] = fileName;
+    }
 
     return _parsedMessagePart;
   };
@@ -128,7 +129,9 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
           .batchWrite({
             RequestItems: {
               GmailMessageTable: messagesToAdd.map((Item) => ({
-                PutRequest: { Item: { connectedEmail: email, ...Item } },
+                PutRequest: {
+                  Item: { id: v4(), connectedEmail: email, ...Item },
+                },
               })),
             },
           })
@@ -153,16 +156,21 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
     await checkGmailMessages(email, startHistoryId, nextPageToken);
 };
 
-exports.pushSubscriptionHandler = async (ctx) => {
+exports.pushSubscriptionHandler = async (event) => {
   let responseBody = "";
 
   try {
-    const { email, historyId } = ctx.arguments;
+    const payload = JSON.parse(event.body);
+    console.log("payload: ", payload);
+
+    const { emailAddress: email, historyId } = JSON.parse(
+      Buffer.from(payload.message.data, "base64").toString("utf-8")
+    );
 
     const { Item: gmailToken } = await docClient
       .get({ TableName: "GmailTokenTable", Key: { email } })
       .promise();
-    const { refresh_token, historyId: oldHistoryId } = gmailToken;
+    const { refreshToken: refresh_token, historyId: oldHistoryId } = gmailToken;
 
     const {
       data: { access_token },

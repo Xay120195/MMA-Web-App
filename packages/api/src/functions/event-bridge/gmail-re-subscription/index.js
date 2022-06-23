@@ -7,7 +7,11 @@ const {
   setAccessToken,
   s3,
 } = require("../../../services/gmail/lib");
-const { client_id, client_secret, project_id } = require("../../../services/gmail/config");
+const {
+  client_id,
+  client_secret,
+  project_id,
+} = require("../../../services/gmail/config");
 
 exports.handler = async () => {
   let responseBody = "";
@@ -22,14 +26,14 @@ exports.handler = async () => {
         (item) =>
           new Promise(async (resolve, reject) => {
             try {
-              const { expiration, email, refresh_token } = item;
+              const { expiration, id, refreshToken } = item;
 
               if (new Date().getTime() < +expiration - 864000000) resolve();
 
               const {
                 data: { access_token },
               } = await refreshTokens({
-                refresh_token: refresh_token,
+                refresh_token: refreshToken,
                 client_id,
                 client_secret,
               });
@@ -38,10 +42,11 @@ exports.handler = async () => {
               setAccessToken(access_token);
 
               const { data: watchData } = await gmailAxios.post(
-                `/gmail/v1/users/${email}/watch`,
+                `/gmail/v1/users/${id}/watch`,
                 { topicName: `projects/${project_id}/topics/gmail-api` }
               );
 
+              console.log("watch data:", watchData);
               await docClient
                 .put({
                   TableName: "GmailTokenTable",
