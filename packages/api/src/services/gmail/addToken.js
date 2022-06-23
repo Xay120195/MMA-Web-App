@@ -7,16 +7,19 @@ const {
 const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC, toLocalTime } = require("../../shared/toUTC");
-
+const { v4 } = require("uuid");
 const getOldMessages = async (email, pageToken) => {
+  console.log("getOldMessages", email);
   const {
     data: { messages: messageIds, nextPageToken },
   } = await gmailAxios.get(`/gmail/v1/users/${email}/messages`, {
     params: {
-      maxResults: 500,
+      maxResults: 25,
       ...(pageToken ? { pageToken } : {}),
     },
   });
+
+  // console.log("messages", messageIds);
 
   const messages = await Promise.all(
     messageIds.map(
@@ -30,14 +33,16 @@ const getOldMessages = async (email, pageToken) => {
     )
   );
 
+  console.log("messages", messages.length);
+
   const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
-  console.log("messagesToAdd: ", messagesToAdd);
+  // console.log("messagesToAdd: ", messagesToAdd);
 
   await docClient
     .batchWrite({
       RequestItems: {
         GmailMessageTable: messagesToAdd.map((Item) => ({
-          PutRequest: { Item: { connectedEmail: email, ...Item } },
+          PutRequest: { Item: { id: v4(), connectedEmail: email, ...Item } },
         })),
       },
     })
@@ -64,6 +69,7 @@ exports.addToken = async (ctx) => {
 
     if (!access_token) throw new Error("can't refresh tokens.");
 
+    console.log("access_token:", access_token);
     setAccessToken(access_token);
 
     const { data: watchData } = await gmailAxios.post(
@@ -71,6 +77,7 @@ exports.addToken = async (ctx) => {
       { topicName: `projects/${project_id}/topics/gmail-api` }
     );
 
+    console.log("watchData:", watchData);
     delete payload.email;
 
     const items = {
@@ -80,15 +87,17 @@ exports.addToken = async (ctx) => {
       updatedAt: toUTC(new Date()),
     };
 
-    await docClient
+    console.log("items:", items);
+    const request = await docClient
       .put({
         TableName: "GmailTokenTable",
         Item: items,
       })
       .promise();
 
+    console.log("request:", request);
     await getOldMessages(email);
-    
+
     const response = {
       email: items.id,
       refreshToken: items.refreshToken,

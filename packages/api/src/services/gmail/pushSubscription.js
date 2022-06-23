@@ -15,7 +15,7 @@ exports.getParsedGmailMessage = async (data) => {
 
   const getParsedMessageParts = async (messagePart) => {
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
-    if (subParts.length)
+    if (subParts && subParts.length)
       return await Promise.all(subParts.map(getParsedMessageParts));
 
     const _parsedMessagePart = {
@@ -29,26 +29,26 @@ exports.getParsedGmailMessage = async (data) => {
       );
     }
 
-    if (filename) {
-      _parsedMessagePart["filename"] = filename;
-      const {
-        data: { data },
-      } = await gmailAxios.get(
-        `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
-      );
+    // if (filename) {
+    //   _parsedMessagePart["filename"] = filename;
+    //   const {
+    //     data: { data },
+    //   } = await gmailAxios.get(
+    //     `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
+    //   );
 
-      const fileName = `${messageId}/${filename}`;
-      const s3Response = await s3
-        .putObject({
-          ContentType: mimeType,
-          Bucket: "gmail-attachments",
-          Key: fileName,
-          Body: Buffer.from(data, "base64"),
-        })
-        .promise();
+    //   const fileName = `${messageId}/${filename}`;
+    //   const s3Response = await s3
+    //     .putObject({
+    //       ContentType: mimeType,
+    //       Bucket: "gmail-attachments",
+    //       Key: fileName,
+    //       Body: Buffer.from(data, "base64"),
+    //     })
+    //     .promise();
 
-      _parsedMessagePart["path"] = fileName;
-    }
+    //   _parsedMessagePart["path"] = fileName;
+    // }
 
     return _parsedMessagePart;
   };
