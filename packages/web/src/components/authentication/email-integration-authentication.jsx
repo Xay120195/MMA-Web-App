@@ -41,7 +41,7 @@ class GmailIntegration extends Component {
       variables: {
         companyId: localStorage.getItem("companyId"),
         userId: localStorage.getItem("userId"),
-        email: "mmatest.integ@gmail.com",
+        email: window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu,
         code: response.code,
       },
     });
