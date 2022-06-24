@@ -9,8 +9,9 @@ const {
 } = require("./lib");
 const { client_id, client_secret } = require("./config");
 const { v4 } = require("uuid");
+const { toUTC, toLocalTime } = require("../../shared/toUTC");
 
-exports.getParsedGmailMessage = async (data) => {
+const getParsedGmailMessage = async (data) => {
   const message = Object.assign({}, data);
   const { id: messageId, payload } = message;
 
@@ -30,26 +31,26 @@ exports.getParsedGmailMessage = async (data) => {
       );
     }
 
-    // if (filename) {
-    //   _parsedMessagePart["filename"] = filename;
-    //   const {
-    //     data: { data },
-    //   } = await gmailAxios.get(
-    //     `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
-    //   );
+    if (filename) {
+      _parsedMessagePart["filename"] = filename;
+      const {
+        data: { data },
+      } = await gmailAxios.get(
+        `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
+      );
 
-    //   const fileName = `${messageId}/${filename}`;
-    //   const s3Response = await s3
-    //     .putObject({
-    //       ContentType: mimeType,
-    //       Bucket: "gmail-attachments",
-    //       Key: fileName,
-    //       Body: Buffer.from(data, "base64"),
-    //     })
-    //     .promise();
+      const fileName = `${messageId}/${filename}`;
+      const s3Response = await s3
+        .putObject({
+          ContentType: mimeType,
+          Bucket: "gmail-attachments",
+          Key: fileName,
+          Body: Buffer.from(data, "base64"),
+        })
+        .promise();
 
-    //   _parsedMessagePart["path"] = fileName;
-    // }
+      _parsedMessagePart["path"] = fileName;
+    }
 
     return _parsedMessagePart;
   };
@@ -98,8 +99,19 @@ exports.getParsedGmailMessage = async (data) => {
   };
 };
 
-const checkGmailMessages = async (email, startHistoryId, pageToken) => {
-  console.log("checkGmailMessages:");
+const checkGmailMessages = async (
+  email,
+  startHistoryId,
+  companyId,
+  pageToken
+) => {
+  console.log(
+    "checkGmailMessages:",
+    email,
+    startHistoryId,
+    companyId,
+    pageToken
+  );
   const {
     data: { history, historyId, nextPageToken },
   } = await gmailAxios.get(`/gmail/v1/users/me/history`, {
@@ -129,7 +141,6 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
           messages.map(getParsedGmailMessage)
         );
 
-        // const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
         console.log("messagesToAdd: ", messagesToAdd);
 
         const saveEmails = await docClient
@@ -201,10 +212,10 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
   }
 
   if (nextPageToken)
-    await checkGmailMessages(email, startHistoryId, nextPageToken);
+    await checkGmailMessages(email, startHistoryId, companyId, nextPageToken);
 };
 
-exports.pushSubscriptionHandler = async (event) => {
+const pushSubscriptionHandler = async (event) => {
   let responseBody = "";
 
   try {
@@ -219,7 +230,11 @@ exports.pushSubscriptionHandler = async (event) => {
     const { Item: gmailToken } = await docClient
       .get({ TableName: "GmailTokenTable", Key: { id: email } })
       .promise();
-    const { refreshToken: refreshToken, historyId: oldHistoryId } = gmailToken;
+    const {
+      refreshToken: refreshToken,
+      historyId: oldHistoryId,
+      companyId: companyId,
+    } = gmailToken;
 
     console.log(gmailToken);
 
@@ -235,7 +250,7 @@ exports.pushSubscriptionHandler = async (event) => {
 
     console.log("access_token:", access_token);
 
-    await checkGmailMessages(email, oldHistoryId);
+    await checkGmailMessages(email, oldHistoryId, companyId);
 
     await docClient
       .put({ TableName: "GmailTokenTable", Item: { ...gmailToken, historyId } })
@@ -251,4 +266,4 @@ exports.pushSubscriptionHandler = async (event) => {
   }
 };
 
-// module.exports = { handler: pushSubscriptionHandler, getParsedGmailMessage };
+module.exports = { pushSubscriptionHandler, getParsedGmailMessage };
