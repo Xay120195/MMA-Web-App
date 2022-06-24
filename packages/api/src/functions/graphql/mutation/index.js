@@ -2682,7 +2682,7 @@ const resolvers = {
         updatedAt: toUTC(new Date()),
       };
 
-      if (date !== undefined) data.details = details;
+      if (details !== undefined) data.details = details;
 
       return await updateGmailMessageAttachment(id, data);
     },
