@@ -63,7 +63,7 @@ functions:
   gmail-re-subsription-fn:
     handler: src/functions/event-bridge/gmail-re-subscription/index.handler
     events:
-      - schedule: rate(6 hours)
+      - schedule: rate(1 minute)
   gmail-watch-webhook-fn:
     handler: src/services/gmail/pushSubscription.pushSubscriptionHandler
     url: true
