@@ -40,10 +40,29 @@ const getParsedGmailMessage = async (data) => {
       );
 
       const fileName = `${messageId}/${filename}`;
+
+      const saveAttachmentsParams = {
+        id: v4(),
+        messageId: messageId,
+        s3ObjectKey: fileName,
+        size: body.size,
+        type: mimeType,
+        name: filename,
+        details: "",
+        updatedAt: toUTC(new Date()),
+      };
+
+      const request = await docClient
+        .put({
+          TableName: "GmailMessageAttachment",
+          Item: saveAttachmentsParams,
+        })
+        .promise();
+
       const s3Response = await s3
         .putObject({
           ContentType: mimeType,
-          Bucket: "gmail-attachments",
+          Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
           Key: fileName,
           Body: Buffer.from(data, "base64"),
         })
