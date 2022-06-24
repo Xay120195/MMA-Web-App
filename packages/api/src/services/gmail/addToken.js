@@ -9,7 +9,7 @@ const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC, toLocalTime } = require("../../shared/toUTC");
 const { v4 } = require("uuid");
 const getOldMessages = async (email, companyId, pageToken) => {
-  console.log("getOldMessages", email, companyId);
+  console.log("getOldMessages");
   const {
     data: { messages: messageIds, nextPageToken },
   } = await gmailAxios.get(`/gmail/v1/users/${email}/messages`, {
@@ -18,8 +18,6 @@ const getOldMessages = async (email, companyId, pageToken) => {
       ...(pageToken ? { pageToken } : {}),
     },
   });
-
-  // console.log("messages", messageIds);
 
   const messages = await Promise.all(
     messageIds.map(
@@ -33,10 +31,10 @@ const getOldMessages = async (email, companyId, pageToken) => {
     )
   );
 
-  console.log("messages", messages.length);
+  console.log("message count: ", messages.length);
 
   const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
-  console.log("messagesToAdd: ", messagesToAdd);
+  //console.log("messagesToAdd: ", messagesToAdd);
 
   const saveEmails = await docClient
     .batchWrite({
@@ -72,24 +70,50 @@ const getOldMessages = async (email, companyId, pageToken) => {
     })
     .promise();
 
+  console.log("saveEmails:", saveEmails);
+
+  const filterMessagesIDs = messagesToAdd.map((Item) => Item.id);
+
+  var params = {
+    TableName: "CompanyGmailMessageTable",
+    IndexName: "byCompany",
+    KeyConditionExpression: "#companyId = :companyId", // this equals "type = hat"
+    ExpressionAttributeNames: { "#companyId": "companyId" },
+    ExpressionAttributeValues: { ":companyId": companyId },
+  };
+
+  const getExistingGmailMessages = await docClient.query(params).promise();
+
+  const existingGmailMessages = getExistingGmailMessages.Items.map(
+    (Item) => Item.gmailMessageId
+  );
+
+  const nonExistingGmailMessages = filterMessagesIDs.filter(
+    (f) => !existingGmailMessages.includes(f)
+  );
+
+  if (nonExistingGmailMessages.length != 0) {
     const saveCompanyEmails = await docClient
-    .batchWrite({
-      RequestItems: {
-        CompanyGmailMessageTable: messagesToAdd.map((Item) => ({
-          PutRequest: {
-            Item: {
-              id: v4(),
-              gmailMessageId: Item.id,
-              companyId: companyId,
-              isDeleted: false,
-              isSaved: false,
-              createdAt: toUTC(new Date()),
+      .batchWrite({
+        RequestItems: {
+          CompanyGmailMessageTable: nonExistingGmailMessages.map((i) => ({
+            PutRequest: {
+              Item: {
+                id: v4(),
+                gmailMessageId: i,
+                companyId: companyId,
+                isDeleted: false,
+                isSaved: false,
+                createdAt: toUTC(new Date()),
+              },
             },
-          },
-        })),
-      },
-    })
-    .promise();
+          })),
+        },
+      })
+      .promise();
+
+    console.log("saveCompanyEmails:", saveCompanyEmails);
+  }
 
   if (nextPageToken) await getOldMessages(email, companyId, nextPageToken);
 };
