@@ -9,7 +9,7 @@ async function listGmailMessageClientMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
   try {
-    const compClientMattersParam = {
+    const gmailClientMattersParam = {
       TableName: "GmailMessageClientMatterTable",
       IndexName: "byGmailMessage",
       KeyConditionExpression: "gmailMessageId = :gmailMessageId",
@@ -23,15 +23,15 @@ async function listGmailMessageClientMatters(ctx) {
     };
 
     if (limit !== undefined) {
-      compClientMattersParam.Limit = limit;
+      gmailClientMattersParam.Limit = limit;
     }
 
-    const compClientMattersCmd = new QueryCommand(compClientMattersParam);
-    const compClientMattersResult = await client.send(compClientMattersCmd);
+    const gmailClientMattersCmd = new QueryCommand(gmailClientMattersParam);
+    const gmailClientMattersResult = await client.send(gmailClientMattersCmd);
 
-    const clientMatterIds = compClientMattersResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.clientMatterId })
-    );
+    const clientMatterIds = gmailClientMattersResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.clientMatterId }));
 
     if (clientMatterIds.length !== 0) {
       const clientMattersParam = {
@@ -45,21 +45,26 @@ async function listGmailMessageClientMatters(ctx) {
       const clientMattersCmd = new BatchGetItemCommand(clientMattersParam);
       const clientMattersResult = await client.send(clientMattersCmd);
 
-      const objClientMatters = clientMattersResult.Responses.ClientMatterTable.map((i) =>
+      const objClientMatters =
+        clientMattersResult.Responses.ClientMatterTable.map((i) =>
+          unmarshall(i)
+        );
+      const objCompClientMatters = gmailClientMattersResult.Items.map((i) =>
         unmarshall(i)
       );
-      const objCompClientMatters = compClientMattersResult.Items.map((i) => unmarshall(i));
 
       const response = objCompClientMatters.map((item) => {
-        const filterMatter = objClientMatters.find((u) => u.id === item.clientMatterId);
+        const filterMatter = objClientMatters.find(
+          (u) => u.id === item.clientMatterId
+        );
         return { ...item, ...filterMatter };
       });
 
       return {
         items: response,
-        nextToken: compClientMattersResult.LastEvaluatedKey
+        nextToken: gmailClientMattersResult.LastEvaluatedKey
           ? Buffer.from(
-              JSON.stringify(compClientMattersResult.LastEvaluatedKey)
+              JSON.stringify(gmailClientMattersResult.LastEvaluatedKey)
             ).toString("base64")
           : null,
       };
@@ -79,12 +84,44 @@ async function listGmailMessageClientMatters(ctx) {
   return response;
 }
 
+async function listGmailMessageAttachments(ctx) {
+  const { id } = ctx.source;
 
+  try {
+    const gmailAttachmentsParam = {
+      TableName: "GmailMessageAttachment",
+      IndexName: "byMessage",
+      KeyConditionExpression: "messageId = :messageId",
+      ExpressionAttributeValues: marshall({
+        ":messageId": id,
+      }),
+    };
+
+    const gmailAttachmentsCmd = new QueryCommand(gmailAttachmentsParam);
+    const gmailAttachmentsResult = await client.send(gmailAttachmentsCmd);
+
+    const response = gmailAttachmentsResult.Items.map((i) => unmarshall(i));
+
+    return {
+      items: response,
+    };
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
 
 const resolvers = {
   GmailMessage: {
     clientMatters: async (ctx) => {
       return listGmailMessageClientMatters(ctx);
+    },
+    attachments: async (ctx) => {
+      return listGmailMessageAttachments(ctx);
     },
   },
 };

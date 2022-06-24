@@ -221,15 +221,29 @@ type UserColumnSettings {
 }
 
 type GmailMessage { #gm
-  id: ID
-  messageId: String
+  id: String
+  threadId: String
+  connectedEmail: String
+  gmailMessageId: String
+  contentType: String
+  date: String
+  internalDate: String
+  receivedAt: String
   from: String
   to: String
+  recipient: String
+  cc: String
+  bcc: String
+  historyId: String
   subject: String
+  lowerSubject: String
   snippet: String
-  createdAt: AWSDateTime
+  lowerSnippet: String
+  labelIds: [String]
+  payload: AWSJSON
   updatedAt: AWSDateTime
   clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
+  attachments: GmailMessageAttachmentConn
 }
 
 type GmailToken { #gm
@@ -237,6 +251,18 @@ type GmailToken { #gm
   refreshToken: String
   userId: ID
   companyId: ID
+  updatedAt: AWSDateTime
+}
+
+type GmailMessageAttachment { #gm
+  id: String
+  s3ObjectKey: String
+  messageId: ID
+  size: Int
+  type: String
+  name: String
+  details: String
+  order: Int
   updatedAt: AWSDateTime
 }
 
@@ -441,6 +467,10 @@ type GmailMessageClientMattersConn { #gm
   nextToken: String
 }
 
+type GmailMessageAttachmentConn { #gm
+  items: [GmailMessageAttachment]
+}
+
 type Query {
   background(id: ID): Background
   backgrounds: [Background]
@@ -558,6 +588,7 @@ type Mutation {
     order: Int
     date: AWSDateTime
   ): File
+
   matterFileSoftDelete(id: ID): File
   matterFileBulkSoftDelete(id: [ID]): [File]
   matterFileUpdate(
@@ -635,5 +666,17 @@ type Mutation {
     userId: ID
     companyId: ID
   ): GmailToken
+
+  gmailMessageAttachmentCreate(
+    messageId: ID
+    s3ObjectKey: String
+    size: Int
+    type: String
+    name: String
+    details: String
+    order: Int
+  ): GmailMessageAttachment
+
+  gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
   # gmailPushSubscription(email: String!, historyId: String!): Boolean // unused
 }

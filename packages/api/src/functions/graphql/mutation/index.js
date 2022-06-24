@@ -2083,6 +2083,41 @@ async function createGmailMessage(data) {
   return resp;
 }
 
+async function createGmailMessageAttachment(data) {
+  let resp = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      messageId: data.messageId,
+      s3ObjectKey: data.s3ObjectKey,
+      size: data.size,
+      type: data.type,
+      name: data.name,
+      details: data.details,
+      order: data.order ? data.order : 0,
+      updatedAt: toUTC(new Date()),
+    };
+
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
+      TableName: "GmailMessageAttachment",
+      Item: param,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? rawParams : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function saveGmailMessage(id, companyId, data) {
   let resp = {};
 
@@ -2281,6 +2316,42 @@ async function bulkSoftDeleteGmailMessage(data) {
         await softDeleteGmailMessage(id, companyId, data);
       })
     );
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function updateGmailMessageAttachment(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "GmailMessageAttachment",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? param : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -2600,6 +2671,20 @@ const resolvers = {
       };
 
       return addToken(data);
+    },
+
+    gmailMessageAttachmentCreate: async (ctx) => {
+      return await createGmailMessageAttachment(ctx.arguments);
+    },
+    gmailMessageAttachmentUpdate: async (ctx) => {
+      const { id, details } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (details !== undefined) data.details = details;
+
+      return await updateGmailMessageAttachment(id, data);
     },
   },
 };

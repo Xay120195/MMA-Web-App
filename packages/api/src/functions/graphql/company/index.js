@@ -381,9 +381,17 @@ async function listCompanyGmailMessages(ctx) {
     const compCMCmd = new QueryCommand(compCMParam);
     const compCMResult = await client.send(compCMCmd);
 
-    const gmailMessageIds = compCMResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.gmailMessageId })
-    );
+    // const gmailMessageIds = compCMResult.Items.map((i) => unmarshall(i)).map(
+    //   (f) => marshall({ id: f.gmailMessageId })
+    // );
+
+    let unique = compCMResult.Items.map((a) => unmarshall(a))
+      .map((x) => x.gmailMessageId)
+      .filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
+    const gmailMessageIds = unique.map((f) => marshall({ id: f }));
 
     if (gmailMessageIds.length !== 0) {
       let batches = [],

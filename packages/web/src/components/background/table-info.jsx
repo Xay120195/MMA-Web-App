@@ -96,7 +96,9 @@ const TableInfo = ({
   highlightRow,
   setHighlightRow,
   pastedRows,
-  setPastedRows
+  setPastedRows,
+  checkedRows,
+  setCheckedRows
 }) => {
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
@@ -126,6 +128,7 @@ const TableInfo = ({
   const [holdDeleteFile, setHoldDeleteFile] = useState(false);
   const bool = useRef(true);
   const [selectedFileId, setSelectedFileId] = useState(null);
+  
 
   const location = useLocation();
   const history = useHistory();
@@ -565,6 +568,7 @@ const TableInfo = ({
 
   const handleFilesCheckboxChange = (event, id, files_id, background_id) => {
     var temp = pastedRows;
+    var temp2 = checkedRows;
     
 
     if (event.target.checked) {
@@ -583,9 +587,13 @@ const TableInfo = ({
           ];
           selectedRowsBGFilesPass = tempFiles;
 
-          temp = [...temp, background_id+"/"+files_id];
-          console.log("selected", temp);
-          setPastedRows(temp);
+          // temp = [...temp, background_id+"/"+files_id];
+          // console.log("selected", temp);
+
+          temp2 = [...temp2, background_id+"/"+files_id];
+          console.log("selected row+file id", temp2);
+          setCheckedRows(temp2);
+          // setPastedRows(temp);
           setSelectedRowsBGFiles(tempFiles);
         }
       }
@@ -605,19 +613,29 @@ const TableInfo = ({
         console.log("temp", temp);
       
         var pass = []
+        var pass2 = []
 
-        for(var i = 0; i<temp.length; i++){
-          var splitId = temp[i].split("/");
-          console.log("firstsecond", splitId);
+        // for(var i = 0; i<temp.length; i++){
+        //   var splitId = temp[i].split("/");
+        //   console.log("firstsecond", splitId);
+        //   if(splitId[0] === background_id && splitId[1] === files_id){
+        //     pass = pass;
+        //   }else{
+        //     pass = [...pass, temp[i]];
+        //   }
+        // }
+
+        for(var i = 0; i<temp2.length; i++){
+          var splitId = temp2[i].split("/");
           if(splitId[0] === background_id && splitId[1] === files_id){
-            pass = pass;
+            pass2 = pass2;
           }else{
-            pass = [...pass, temp[i]];
+            pass2 = [...pass2, temp2[i]];
           }
         }
-
-        console.log("passdata", pass);
-        setPastedRows(pass);
+        console.log("selected row+file id", temp2);
+        setCheckedRows(pass2);
+        // setPastedRows(pass);
         setSelectedRowsBGFiles(tempFiles);
         selectedRowsBGFilesPass = tempFiles;
       }
@@ -1374,6 +1392,11 @@ const TableInfo = ({
     return found;
   }
 
+  function rowOriginal(rowid) {
+    const currRow = checkedRows.find(element => element.split("/")[0] === rowid);
+    
+    return currRow;
+  }
   return (
     <>
       <div className="px-7">
@@ -1666,14 +1689,14 @@ const TableInfo = ({
                                               <span>
                                               <button
                                                 className={
-                                                  
-                                                  rowClicked(item.id)
-                                                    ? "w-60 bg-gray-300 border border-gray-500 text-gray-500 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium "
-                                                    : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                  checkedRows.length === 0 || rowOriginal(item.id) || rowClicked(item.id)
+                                                  ? "w-60 bg-gray-300 border border-gray-500 text-gray-500 rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium "
+                                                  : "w-60 bg-green-400 border border-transparent rounded-md py-2 px-4 mr-3 flex items-center justify-center text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                                 }
                                                 onClick={
-                                                  rowClicked(item.id) ? null :
-                                                  () => {
+                                                  rowClicked(item.id) || rowClicked(item.id) || checkedRows.length === 0 
+                                                  ? null 
+                                                  : () => {
                                                   pasteFilestoBackground(
                                                     item.id
                                                   );
@@ -1684,17 +1707,22 @@ const TableInfo = ({
                                                 data-tip data-for={item.id}
                                               >
                                                 {" "}
-                                                {rowClicked(item.id)
-                                                  ? "Paste"
-                                                  : "Paste"}
+                                                {
+                                                checkedRows.length === 0 
+                                                ? "Select a file"
+                                                : rowOriginal(item.id) 
+                                                ? "Copied"
+                                                : rowClicked(item.id)
+                                                ? "Pasted"
+                                                : "Paste"}
                                                 &nbsp;
                                                 <FaPaste />
                                               </button>
                                               {
-                                              rowClicked(item.id)
+                                              (rowClicked(item.id) || rowOriginal(item.id))
                                               &&
                                               <ReactTooltip id={item.id} place="bottom" effect="solid">
-                                                Cannot Paste Files Here
+                                                Cannot paste files in this row
                                               </ReactTooltip>
                                               }
                                               </span>

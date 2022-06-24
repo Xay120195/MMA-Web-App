@@ -78,6 +78,7 @@ importers:
       react-hook-form: ^7.19.5
       react-icons: ^4.3.1
       react-idle-timer: ^5.2.0
+      react-overlays: ^5.2.0
       react-router-dom: ^5.3.0
       react-scripts: 4.0.3
       react-scroll-to-top: ^1.0.8
@@ -114,6 +115,7 @@ importers:
       react-hook-form: 7.25.3_react@17.0.2
       react-icons: 4.3.1_react@17.0.2
       react-idle-timer: 5.2.0_react-dom@17.0.2+react@17.0.2
+      react-overlays: 5.2.0_react-dom@17.0.2+react@17.0.2
       react-router-dom: 5.3.0_react@17.0.2
       react-scripts: 4.0.3_react@17.0.2
       react-scroll-to-top: 1.0.8_react@17.0.2
@@ -6280,6 +6282,15 @@ packages:
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
     dev: true
 
+  /@restart/hooks/0.4.7_react@17.0.2:
+    resolution: {integrity: sha512-ZbjlEHcG+FQtpDPHd7i4FzNNvJf2enAwZfJbpM8CW7BhmOAbsHpZe3tsHwfQUrBuyrxWqPYp2x5UMnilWcY22A==}
+    peerDependencies:
+      react: '>=16.8.0'
+    dependencies:
+      dequal: 2.0.2
+      react: 17.0.2
+    dev: false
+
   /@rollup/plugin-node-resolve/7.1.3_rollup@1.32.1:
     resolution: {integrity: sha512-RxtSL3XmdTAE2byxekYLnx+98kEUOrPHF/KRVjLH+DEIHy6kjIw7YINQzn+NXiH/NTrQLAwYs0GWB+csWygA9Q==}
     engines: {node: '>= 8.0.0'}
@@ -7083,6 +7094,10 @@ packages:
     resolution: {integrity: sha512-O3MmRAk6ZuAKa9CHgg0Pr0+lUOqoMLpc9AS4R8ano2auvsg7IE8syF3Xh/NPr26TWklxYcqoEEFdzLLs1fV9PQ==}
     dependencies:
       source-map: 0.6.1
+    dev: false
+
+  /@types/warning/3.0.0:
+    resolution: {integrity: sha512-t/Tvs5qR47OLOr+4E9ckN8AmP2Tf16gWq+/qA4iUGS/OOyHVO8wv2vjJuX8SNOUTJyWb+2t7wJm6cXILFnOROA==}
     dev: false
 
   /@types/webpack-sources/3.2.0:
@@ -10308,6 +10323,11 @@ packages:
     resolution: {integrity: sha1-AJZjF7ehL+kvPMgx91g68ym4bDc=}
     dev: false
 
+  /dequal/2.0.2:
+    resolution: {integrity: sha512-q9K8BlJVxK7hQYqa6XISGmBZbtQQWVXSrRrWreHC94rMt1QL/Impruc+7p2CYSYuVIUr+YCt6hjrs1kkdJRTug==}
+    engines: {node: '>=6'}
+    dev: false
+
   /des.js/1.0.1:
     resolution: {integrity: sha512-Q0I4pfFrv2VPd34/vfLrFOoRmlYj3OV50i7fskps1jZWK1kApMWWT9G6RRUeYedLcBDIhnSDaUvJMb3AhUlaEA==}
     dependencies:
@@ -13061,6 +13081,12 @@ packages:
       get-intrinsic: 1.1.1
       has: 1.0.3
       side-channel: 1.0.4
+    dev: false
+
+  /invariant/2.2.4:
+    resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
+    dependencies:
+      loose-envify: 1.4.0
     dev: false
 
   /ip-regex/2.1.0:
@@ -17781,6 +17807,10 @@ packages:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
     dev: false
 
+  /react-lifecycles-compat/3.0.4:
+    resolution: {integrity: sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==}
+    dev: false
+
   /react-native-get-random-values/1.7.2:
     resolution: {integrity: sha512-28KRYGpIG/upV8+k/qFA+TwGW+yGjmtOHaCduJHpOQK1QUTyhiA6E2IgL4UvvU2dybeCTYFmUi9wcEQ0GiWe5g==}
     peerDependencies:
@@ -17797,6 +17827,24 @@ packages:
     dependencies:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
+    dev: false
+
+  /react-overlays/5.2.0_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-dKZR/w6qeAsW0z0aIlwq/5H/M6o5T4RSlPnqIKqYVJ++rjoPSFcVggPhDWno8awZQsuMMtkjuksTbE8vOY0s9g==}
+    peerDependencies:
+      react: '>=16.3.0'
+      react-dom: '>=16.3.0'
+    dependencies:
+      '@babel/runtime': 7.16.7
+      '@popperjs/core': 2.11.2
+      '@restart/hooks': 0.4.7_react@17.0.2
+      '@types/warning': 3.0.0
+      dom-helpers: 5.2.1
+      prop-types: 15.8.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      uncontrollable: 7.2.1_react@17.0.2
+      warning: 4.0.3
     dev: false
 
   /react-popper/2.2.5_4d48938cec404f33c7375aa6b453941c:
@@ -20424,6 +20472,18 @@ packages:
       buffer: 5.7.1
       through: 2.3.8
     dev: true
+
+  /uncontrollable/7.2.1_react@17.0.2:
+    resolution: {integrity: sha512-svtcfoTADIB0nT9nltgjujTi7BzVmwjZClOmskKu/E8FW9BXzg9os8OLr4f8Dlnk0rYWJIWr4wv9eKUXiQvQwQ==}
+    peerDependencies:
+      react: '>=15.0.0'
+    dependencies:
+      '@babel/runtime': 7.16.7
+      '@types/react': 17.0.38
+      invariant: 2.2.4
+      react: 17.0.2
+      react-lifecycles-compat: 3.0.4
+    dev: false
 
   /unfetch/4.2.0:
     resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
