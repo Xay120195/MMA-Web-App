@@ -17,8 +17,7 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    console.log("code: ",response.code);
-
+    console.log("code: ",response);
     const saveRefreshToken = `
     mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
       gmailConnectFromCode(
@@ -66,11 +65,11 @@ class GmailIntegration extends Component {
   }
 
   handleLoginFailure(response) {
-    alert("Failed to log in");
+    console.log(response);
   }
 
   handleLogoutFailure(response) {
-    alert("Failed to log out");
+    console.log(response);
   }
 
   render() {

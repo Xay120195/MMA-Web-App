@@ -3,19 +3,20 @@ import React from "react";
 const TabsRender = ({ color, setOpenTab, openTab }) => {
   return (
     <>
-      <div className="flex flex-wrap">
-        <div className="w-full">
+      <div className="pl-3 pr-3 pt-3 bg-gray-100 mt-4">
+        <div className="flex justify-between">
           <ul
-            className="w-1/4 flex mb-0 list-none flex-wrap pt-3 pb-4 flex-row"
+            className="flex gap-x-3"
             role="tablist"
           >
-            <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
+            <li className={"flex gap-x-2  items-center py-3 px-6 cursor-pointer " +
+                  (openTab === 1
+                    ? "bg-white rounded-tl-xl clip_path"
+                    : "")
+            } >
               <a
                 className={
-                  "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
-                  (openTab === 1
-                    ? "text-white bg-" + color + "-600"
-                    : "text-" + color + "-600 bg-white")
+                  "text-xs font-bold uppercase "
                 }
                 onClick={e => {
                   e.preventDefault();
@@ -28,13 +29,14 @@ const TabsRender = ({ color, setOpenTab, openTab }) => {
                 Unsaved Emails
               </a>
             </li>
-            <li className="-mb-px mr-2 last:mr-0 flex-auto text-center">
+            <li className={"flex gap-x-2  items-center py-3 px-6 cursor-pointer " +
+                  (openTab === 2
+                    ? "bg-white rounded-tl-xl clip_path"
+                    : "")
+            } >
               <a
                 className={
-                  "text-xs font-bold uppercase px-5 py-3 shadow-lg rounded block leading-normal " +
-                  (openTab === 2
-                    ? "text-white bg-" + color + "-600"
-                    : "text-" + color + "-600 bg-white")
+                  "text-xs font-bold uppercase"
                 }
                 onClick={e => {
                   e.preventDefault();
