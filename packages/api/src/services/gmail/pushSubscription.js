@@ -52,8 +52,6 @@ const getParsedGmailMessage = async (data) => {
         updatedAt: toUTC(new Date()),
       };
 
-      console.log("beforeS3Put");
-
       const request = await docClient
         .put({
           TableName: "GmailMessageAttachment",
@@ -64,14 +62,11 @@ const getParsedGmailMessage = async (data) => {
       const s3Response = await s3
         .putObject({
           ContentType: mimeType,
-          //Todo: Make this an env variable
-          Bucket: "mma-gmail-attachments-dev-bucket",
+          Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
           Key: fileName,
           Body: Buffer.from(data, "base64"),
         })
         .promise();
-
-      console.log({ s3Response });
 
       _parsedMessagePart["path"] = fileName;
     }
