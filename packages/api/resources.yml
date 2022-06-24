@@ -932,3 +932,26 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+  GmailMessageAttachment:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GmailMessageAttachment
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: messageId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byMessage
+          KeySchema:
+            - AttributeName: messageId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+
+  
