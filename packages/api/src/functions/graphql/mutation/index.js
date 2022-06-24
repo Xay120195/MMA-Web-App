@@ -2327,6 +2327,42 @@ async function bulkSoftDeleteGmailMessage(data) {
   return resp;
 }
 
+async function updateGmailMessageAttachment(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "GmailMessageAttachment",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -2639,6 +2675,16 @@ const resolvers = {
 
     gmailMessageAttachmentCreate: async (ctx) => {
       return await createGmailMessageAttachment(ctx.arguments);
+    },
+    gmailMessageAttachmentUpdate: async (ctx) => {
+      const { id, details } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (date !== undefined) data.details = details;
+
+      return await updateGmailMessageAttachment(id, data);
     },
   },
 };

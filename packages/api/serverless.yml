@@ -628,6 +628,11 @@ custom:
         field: gmailMessageAttachmentCreate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageAttachmentUpdate
+        request: false
+        response: false
 
     # Data Sources
     dataSources:

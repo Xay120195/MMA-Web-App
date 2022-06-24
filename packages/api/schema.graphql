@@ -677,5 +677,6 @@ type Mutation {
     order: Int
   ): GmailMessageAttachment
 
+  gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
   # gmailPushSubscription(email: String!, historyId: String!): Boolean // unused
 }
