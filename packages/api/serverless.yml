@@ -42,6 +42,7 @@ functions:
     handler: src/functions/graphql/query/index.handler
   mutation-fn:
     handler: src/functions/graphql/mutation/index.handler
+    timeout: 300
   file-fn:
     handler: src/functions/graphql/file/index.handler
   company-fn:
@@ -62,10 +63,12 @@ functions:
     handler: src/functions/graphql/gmailMessage/index.handler
   gmail-re-subsription-fn:
     handler: src/functions/event-bridge/gmail-re-subscription/index.handler
+    timeout: 60
     events:
       - schedule: rate(6 hours)
   gmail-watch-webhook-fn:
     handler: src/services/gmail/pushSubscription.pushSubscriptionHandler
+    timeout: 60
     url: true
 
 custom:
