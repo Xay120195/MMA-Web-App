@@ -9,7 +9,7 @@ import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
 
 const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String = null) {
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int = 50, $nextToken: String = null) {
   company(id: $id) {
     gmailMessages(
       isDeleted: $isDeleted
@@ -36,6 +36,13 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
               id
               name
             }
+          }
+        }
+        attachments {
+          items {
+            id
+            details
+            name
           }
         }
       }
@@ -82,7 +89,6 @@ const Inbox = () => {
     })
   }
   const companyId = localStorage.getItem("companyId");
-
   const [loginData, setLoginData] = useState(
     localStorage.getItem('signInData')
       ? JSON.parse(localStorage.getItem('signInData'))
@@ -117,6 +123,7 @@ const Inbox = () => {
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
+      console.log("UnSavedEmails", emailList);
       setUnsavedEmails(emailList);
     });
   };
@@ -132,6 +139,7 @@ const Inbox = () => {
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
+      console.log("SavedEmails", emailList);
       setSavedEmails(emailList);
     });
   };
@@ -159,7 +167,7 @@ const Inbox = () => {
 
   return (
     <>
-      { !loginData ?
+      { loginData ?
       <div
         className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
         style={contentDiv}

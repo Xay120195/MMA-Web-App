@@ -180,7 +180,7 @@ const TableUnsavedInfo = ({
                   id={`item-${item.id}`}
                 />
               </td>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
                 <p className="text-sm font-medium" >{item.subject}</p>
                 <p className="text-xs" >{item.from} at {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                 <p><div className="relative"><button className="
@@ -207,13 +207,21 @@ const TableUnsavedInfo = ({
                 )}
                 </p>
               </td>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
+              {item.attachments.items.map((item_attach, index) => (
+                <>
+                  <p>{item_attach.name}</p>
+                </>
+              ))}
 
               </td>
-              <td className="p-2" >
-
+              <td className="p-2 align-top" >
+                <div class="relative"><button class="
+                  text-opacity-90 1
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id="headlessui-popover-button-87" type="button" aria-expanded="false">{item.labelIds}</button>
+                </div>
               </td>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
                 <CreatableSelect
                   //options={clientsOptions}
                   isClearable

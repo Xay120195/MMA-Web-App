@@ -21,9 +21,10 @@ const ActionButtons = ({
   }`;
 
   const handleEmails = async (status) => {
-
+    console.log(status);
     // Soon will change this to bulk mutation 
     selectedUnsavedItems.map((obj) => {
+      console.log(obj.id);
       const request = API.graphql({
         query: mSaveUnsavedEmails,
         variables: {
@@ -33,11 +34,11 @@ const ActionButtons = ({
         },
       });
     });
-    
+
     setTimeout(() => {
       getSavedEmails();
       getUnSavedEmails();
-    }, 1000);
+    }, 2000);
     
   };
 
