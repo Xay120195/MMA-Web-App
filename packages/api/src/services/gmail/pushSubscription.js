@@ -69,9 +69,9 @@ exports.getParsedGmailMessage = async (data) => {
   const headerInfo = {};
 
   for (const { name, value } of payload.headers) {
-    const key =
-      (name.charAt(0).toLowerCase() +
-      name.slice(1)).replace(/-/g, "").replace(/ /g, "");
+    const key = (name.charAt(0).toLowerCase() + name.slice(1))
+      .replace(/-/g, "")
+      .replace(/ /g, "");
 
     headerInfo[key] = value;
   }
@@ -99,6 +99,7 @@ exports.getParsedGmailMessage = async (data) => {
 };
 
 const checkGmailMessages = async (email, startHistoryId, pageToken) => {
+  console.log("checkGmailMessages:");
   const {
     data: { history, historyId, nextPageToken },
   } = await gmailAxios.get(`/gmail/v1/users/me/history`, {
@@ -123,16 +124,61 @@ const checkGmailMessages = async (email, startHistoryId, pageToken) => {
           )
         );
 
+        console.log("messages", messages.length);
         const messagesToAdd = await Promise.all(
           messages.map(getParsedGmailMessage)
         );
 
-        await docClient
+        // const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
+        console.log("messagesToAdd: ", messagesToAdd);
+
+        const saveEmails = await docClient
           .batchWrite({
             RequestItems: {
               GmailMessageTable: messagesToAdd.map((Item) => ({
                 PutRequest: {
-                  Item: { id: v4(), connectedEmail: email, ...Item },
+                  Item: {
+                    id: Item.id,
+                    threadId: Item.threadId,
+                    connectedEmail: email,
+                    messageId: Item.messageID,
+                    contentType: Item.contentType,
+                    date: Item.date,
+                    internalDate: Item.internalDate,
+                    receivedAt: Item.receivedAt,
+                    from: Item.from,
+                    to: Item.to,
+                    recipient: Item.recipient,
+                    cc: Item.cc,
+                    bcc: Item.bcc,
+                    historyId: Item.historyId,
+                    subject: Item.subject,
+                    lowerSubject: Item.lower_subject,
+                    snippet: Item.snippet,
+                    lowerSnippet: Item.lower_snippet,
+                    labels: Item.labelIds,
+                    payload: Item.payload,
+                    updatedAt: toUTC(new Date()),
+                  },
+                },
+              })),
+            },
+          })
+          .promise();
+
+        const saveCompanyEmails = await docClient
+          .batchWrite({
+            RequestItems: {
+              CompanyGmailMessageTable: messagesToAdd.map((Item) => ({
+                PutRequest: {
+                  Item: {
+                    id: v4(),
+                    gmailMessageId: Item.id,
+                    companyId: companyId,
+                    isDeleted: false,
+                    isSaved: false,
+                    createdAt: toUTC(new Date()),
+                  },
                 },
               })),
             },
@@ -169,20 +215,25 @@ exports.pushSubscriptionHandler = async (event) => {
       Buffer.from(payload.message.data, "base64").toString("utf-8")
     );
 
+    console.log(email);
     const { Item: gmailToken } = await docClient
-      .get({ TableName: "GmailTokenTable", Key: { email } })
+      .get({ TableName: "GmailTokenTable", Key: { id: email } })
       .promise();
-    const { refreshToken: refresh_token, historyId: oldHistoryId } = gmailToken;
+    const { refreshToken: refreshToken, historyId: oldHistoryId } = gmailToken;
+
+    console.log(gmailToken);
 
     const {
       data: { access_token },
     } = await refreshTokens({
-      refresh_token: refresh_token,
+      refresh_token: refreshToken,
       client_id,
       client_secret,
     });
 
     setAccessToken(access_token);
+
+    console.log("access_token:", access_token);
 
     await checkGmailMessages(email, oldHistoryId);
 
