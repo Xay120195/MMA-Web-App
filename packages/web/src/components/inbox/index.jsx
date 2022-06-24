@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { API } from "aws-amplify";
 import ActionButtons from "./action-buttons";
-import TableInfo from "./table-info";
+import TableSavedInfo from "./table-info-saved";
+import TableUnsavedInfo from "./table-info-unsaved";
 import GmailIntegration from '../authentication/email-integration-authentication';
 import { gapi } from 'gapi-script';
 import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
 
 const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean, $isSaved: Boolean, $limit: Int = 100, $nextToken: String) {
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String = null) {
   company(id: $id) {
-    gmailMessages(isDeleted: $isDeleted, isSaved: $isSaved, limit: $limit, nextToken: $nextToken) {
+    gmailMessages(
+      isDeleted: $isDeleted
+      isSaved: $isSaved
+      limit: $limit
+      nextToken: $nextToken
+    ) {
       items {
         id
         from
         to
         subject
+        date
+        snippet
+        payload
         clientMatters {
           items {
             id
@@ -29,12 +38,6 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean, $isSaved: Boolean
             }
           }
         }
-        date
-        gmailMessageId
-        payload
-        receivedAt
-        recipient
-        snippet
       }
       nextToken
     }
@@ -87,28 +90,49 @@ const Inbox = () => {
   );
 
   const [openTab, setOpenTab] = React.useState(1);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [emails, setEmails] = useState([]);
+  const [unSavedEmails, setUnsavedEmails] = useState([]);
+  const [savedEmails, setSavedEmails] = useState([]);
+
+  const [selectedUnsavedItems, setSelectedUnsavedItems] = useState(
+    new Array(unSavedEmails.length).fill(false)
+  );
+
+  const [selectedSavedItems, setSelectedSavedItems] = useState(
+    new Array(savedEmails.length).fill(false)
+  );
 
   useEffect(() => {
-    /** remove after query is working - 
-    getEmails();
-    */
+    getUnSavedEmails();
+    getSavedEmails();
   }, []);
 
-  const getEmails = async () => {
+  const getUnSavedEmails = async () => {
     const params = {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
-        nextToken: null,
+        isSaved: false
       },
     };
 
     await API.graphql(params).then((result) => {
-      const emailList = result;
-      console.log(result);
-      setEmails(emailList);
+      const emailList = result.data.company.gmailMessages.items;
+      setUnsavedEmails(emailList);
+    });
+  };
+
+  const getSavedEmails = async () => {
+    const params = {
+      query: qGmailMessagesbyCompany,
+      variables: {
+        id: companyId,
+        isSaved: true
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      const emailList = result.data.company.gmailMessages.items;
+      setSavedEmails(emailList);
     });
   };
 
@@ -208,9 +232,11 @@ const Inbox = () => {
 
         <div style={mainGrid}>
           <ActionButtons
-            selectedItems={selectedItems}
-            setSelectedItems={setSelectedItems}
+            selectedUnsavedItems={selectedUnsavedItems}
+            selectedSavedItems={selectedSavedItems}
             openTab={openTab}
+            getUnSavedEmails={getUnSavedEmails}
+            getSavedEmails={getSavedEmails}
           />
         </div>
 
@@ -218,19 +244,26 @@ const Inbox = () => {
         color = "gray"
         openTab={openTab}
         setOpenTab={setOpenTab}
+        unSavedEmails={unSavedEmails}
+        savedEmails={savedEmails}
       />
 
       <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6">
         <div className="flex-auto">
           <div className="tab-content tab-space">
             <div className={openTab === 1 ? "block" : "hidden"} id="link1">
-              <TableInfo
-                selectedItems={selectedItems}
-                setSelectedItems={setSelectedItems}
+              <TableUnsavedInfo
+                selectedUnsavedItems={selectedUnsavedItems}
+                setSelectedUnsavedItems={setSelectedUnsavedItems}
+                unSavedEmails={unSavedEmails}
               />
             </div>
             <div className={openTab === 2 ? "block" : "hidden"} id="link2">
-              {/** tableinfo here */}
+              <TableSavedInfo
+                selectedSavedItems={selectedSavedItems}
+                setSelectedSavedItems={setSelectedSavedItems}
+                savedEmails={savedEmails}
+              />
             </div>
           </div>
         </div>

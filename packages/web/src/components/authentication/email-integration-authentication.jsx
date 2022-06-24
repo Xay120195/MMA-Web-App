@@ -18,6 +18,7 @@ class GmailIntegration extends Component {
 
   async login(response) {
     console.log("code: ",response);
+    console.log("User Details", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
     const saveRefreshToken = `
     mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
       gmailConnectFromCode(
@@ -52,7 +53,6 @@ class GmailIntegration extends Component {
       }));
       localStorage.setItem("signInData", JSON.stringify(response));
       //window.location.reload();
-      console.log("User Details", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
     }
   }
 
