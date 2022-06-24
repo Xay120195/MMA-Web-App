@@ -52,7 +52,7 @@ class GmailIntegration extends Component {
         isLogined: response,
       }));
       localStorage.setItem("signInData", JSON.stringify(response));
-      //window.location.reload();
+      window.location.reload();
     }
   }
 

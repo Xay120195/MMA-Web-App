@@ -207,16 +207,18 @@ const TableUnsavedInfo = ({
                 )}
                 </p>
               </td>
-              <td className="p-2 align-top" >
+              <td className="p-2" >
               {item.attachments.items.map((item_attach, index) => (
                 <>
-                  <p>{item_attach.name}</p>
+                  <p className="
+                  cursor-pointer mt-1 text-opacity-90 1
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id="headlessui-popover-button-87" >{item_attach.name}</p>
                 </>
               ))}
 
               </td>
               <td className="p-2 align-top" >
-                <div class="relative"><button class="
+                <div className="relative"><button className="
                   text-opacity-90 1
                   textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id="headlessui-popover-button-87" type="button" aria-expanded="false">{item.labelIds}</button>
                 </div>
