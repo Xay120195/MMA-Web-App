@@ -16,15 +16,18 @@ import { useRootClose } from 'react-overlays';
 
 var moment = require("moment");
 
-const TableInfo = ({
-  selectedItems,
-  setSelectedItems
+const TableSavedInfo = ({
+  selectedSavedItems,
+  setSelectedSavedItems,
+  savedEmails,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
   const [snippetId, setSnippetId] = useState();
   const handleRootClose = () => setShow(false);
   const [selectedClientMatter, setSelectedClientMatter] = useState();
+  const [isShiftDown, setIsShiftDown] = useState(false);
+  const [lastSelectedItem, setLastSelectedItem] = useState(null);
 
   const companyId = localStorage.getItem("companyId");
 
@@ -58,15 +61,88 @@ const TableInfo = ({
     disabled: !show,
   });
 
-  const handleSelectItem = (e, index) => {
+  const handleKeyUp = (e) => {
+    if (e.key === "Shift" && isShiftDown) {
+      setIsShiftDown(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Shift" && !isShiftDown) {
+      setIsShiftDown(true);
+    }
+  };
+
+  const handleSelectItem = (e, position) => {
     const { value } = e.target;
-    setSelectedItems(value);
+    const checkedId = selectedSavedItems.some((x) => x.id === value);
+
+    if (!checkedId && e.target.checked) {
+      const x = selectedSavedItems;
+      x.push({ id: value });
+      setSelectedSavedItems(x);
+
+      const updatedCheckedState = selectedSavedItems.map((item, index) =>
+        index === position ? !item : item
+      );
+      setSelectedSavedItems(updatedCheckedState);
+    } else {
+        setSelectedSavedItems([]);
+    }
   }
+
+  /*const getNextValue = (value) => {
+    const hasBeenSelected = !selectedItems.includes(value);
+
+    if (isShiftDown) {
+      const newSelectedItems = getNewSelectedItems(value);
+
+      const selections = [...new Set([...selectedItems, ...newSelectedItems])];
+
+      if (!hasBeenSelected) {
+        return selections.filter((item) => !newSelectedItems.includes(item));
+      }
+
+      return selections;
+    }
+
+    // if it's already in there, remove it, otherwise append it
+    return selectedItems.includes(value)
+      ? selectedItems.filter((item) => item !== value)
+      : [...selectedItems, value];
+  };
+
+  const getNewSelectedItems = (value) => {
+    const currentSelectedIndex = unSavedEmails.findIndex(
+      (item) => item.id === value
+    );
+    const lastSelectedIndex = unSavedEmails.findIndex(
+      (item) => item.id === lastSelectedItem
+    );
+
+    return unSavedEmails
+      .slice(
+        Math.min(lastSelectedIndex, currentSelectedIndex),
+        Math.max(lastSelectedIndex, currentSelectedIndex) + 1
+      )
+      .map((item) => item.id);
+  };
+
+  useEffect(() => {
+    document.addEventListener("keyup", handleKeyUp, false);
+    document.addEventListener("keydown", handleKeyDown, false);
+
+    return () => {
+      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyUp, handleKeyDown]);
+  */
 
   const handleClientMatterChanged = (newValue) => {
     console.log(newValue);
   };
-
+  
   return (
     <>
       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
@@ -93,7 +169,7 @@ const TableInfo = ({
           </tr>
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
-          {Unsaved.map((item, index) => (
+          {savedEmails.map((item, index) => (
             <tr>
               <td className="p-2" >
                 <input
@@ -101,6 +177,7 @@ const TableInfo = ({
                   onChange={handleSelectItem}
                   type="checkbox"
                   value={item.id}
+                  id={`item-${item.id}`}
                 />
               </td>
               <td className="p-2" >
@@ -124,7 +201,8 @@ const TableInfo = ({
                     <p>To : {item.to}</p>
                     <p>BCC: </p>
                     <p>CC:</p>
-                    <span>{item.snippet}</span>
+                    <br/>
+                    <span>{JSON.stringify(item.payload.data)}</span>
                   </div>
                 )}
                 </p>
@@ -153,4 +231,4 @@ const TableInfo = ({
   );
 };
 
-export default TableInfo;
+export default TableSavedInfo;

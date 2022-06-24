@@ -1,15 +1,18 @@
-import React, { useState } from "react";
-import ToastNotification from "../toast-notification";
+import { useEffect, useState } from "react";
 import { API } from "aws-amplify";
+//import { ToastContainer, toast } from 'react-toastify';
+//import 'react-toastify/dist/ReactToastify.css';
 
 const ActionButtons = ({
-  selectedItems,
-  setSelectedItems,
+  selectedUnsavedItems,
+  selectedSavedItems,
   openTab,
+  getUnSavedEmails,
+  getSavedEmails
 }) => {
 
   const companyId = localStorage.getItem("companyId");
-  
+
   const mSaveUnsavedEmails = `
   mutation saveGmailMessage($companyId: ID, $id: ID, $isSaved: Boolean) {
     gmailMessageSave(companyId: $companyId, id: $id, isSaved: $isSaved) {
@@ -17,15 +20,25 @@ const ActionButtons = ({
     }
   }`;
 
-  const handleSaveUnsavedEmails = async (status) => {
-    const request = API.graphql({
-      query: mSaveUnsavedEmails,
-      variables: {
-        companyId: companyId,
-        id: selectedItems,
-        isSaved: status
-      },
+  const handleEmails = async (status) => {
+
+    // Soon will change this to bulk mutation 
+    selectedUnsavedItems.map((obj) => {
+      const request = API.graphql({
+        query: mSaveUnsavedEmails,
+        variables: {
+          companyId: companyId,
+          id: obj.id,
+          isSaved: status
+        },
+      });
     });
+    
+    setTimeout(() => {
+      getSavedEmails();
+      getUnSavedEmails();
+    }, 1000);
+    
   };
 
   const handleCheckAllChange = (e) => {
@@ -48,11 +61,11 @@ const ActionButtons = ({
             type="checkbox"
             className="w-4 h-4 text-cyan-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
-          {selectedItems.length !== 0 && openTab === 1 ? (
+          {selectedUnsavedItems.length !== 0 && openTab === 1 ? (
             <>
               <button
                 type="button"
-                onChange={() => handleSaveUnsavedEmails(true)}
+                onClick={() => handleEmails(true)}
                 className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"
               >
                 Save Emails
@@ -63,11 +76,11 @@ const ActionButtons = ({
             </>
           )}
 
-          {selectedItems.length !== 0 && openTab === 2 ? (
+          {selectedSavedItems.length !== 0 && openTab === 2 ? (
             <>
               <button
                 type="button"
-                onChange={() => handleSaveUnsavedEmails(false)}
+                onClick={() => handleEmails(false)}
                 className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"
               >
                 Unsave Emails
@@ -79,6 +92,20 @@ const ActionButtons = ({
         <div className=" col-span-1 pt-2">
         </div>
       </div>
+
+      {/** <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <ToastContainer />
+      */}
     </>
   );
 };

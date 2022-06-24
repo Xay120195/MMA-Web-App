@@ -1,6 +1,6 @@
 import React from "react";
 
-const TabsRender = ({ color, setOpenTab, openTab }) => {
+const TabsRender = ({ setOpenTab, openTab, savedEmails, unSavedEmails }) => {
   return (
     <>
       <div className="pl-3 pr-3 pt-3 bg-gray-100 mt-4">
@@ -23,10 +23,10 @@ const TabsRender = ({ color, setOpenTab, openTab }) => {
                   setOpenTab(1);
                 }}
                 data-toggle="tab"
-                href="#link1"
+                href="#unsaved"
                 role="tablist"
               >
-                Unsaved Emails
+                Unsaved Emails <span class="rounded-2xl border-2 px-3 py-0 bg-gray-50 mr-3">{unSavedEmails.length}</span>
               </a>
             </li>
             <li className={"flex gap-x-2  items-center py-3 px-6 cursor-pointer " +
@@ -43,10 +43,10 @@ const TabsRender = ({ color, setOpenTab, openTab }) => {
                   setOpenTab(2);
                 }}
                 data-toggle="tab"
-                href="#link2"
+                href="#saved"
                 role="tablist"
               >
-                 Saved Emails
+                 Saved Emails <span class="rounded-2xl border-2 px-3 py-0 bg-gray-50 mr-3">{savedEmails.length}</span>
               </a>
             </li>
           </ul>
