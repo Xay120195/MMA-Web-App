@@ -99,7 +99,7 @@ type Company {
     recipient: String
     startDate: String
     endDate: String
-  ): CompanyGmailMessagesConn #gm
+  ): CompanyGmailMessagesConn
   phone: String
   email: AWSEmail
   representative: User
@@ -141,6 +141,7 @@ type File {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   isDeleted: Boolean
+  isGmailAttachment: Boolean
   nextToken: String
 }
 
@@ -220,7 +221,7 @@ type UserColumnSettings {
   updatedAt: AWSDateTime
 }
 
-type GmailMessage { #gm
+type GmailMessage {
   id: String
   threadId: String
   connectedEmail: String
@@ -246,7 +247,7 @@ type GmailMessage { #gm
   attachments: GmailMessageAttachmentConn
 }
 
-type GmailToken { #gm
+type GmailToken {
   email: String
   refreshToken: String
   userId: ID
@@ -254,7 +255,7 @@ type GmailToken { #gm
   updatedAt: AWSDateTime
 }
 
-type GmailMessageAttachment { #gm
+type GmailMessageAttachment {
   id: String
   s3ObjectKey: String
   messageId: ID
@@ -458,16 +459,16 @@ type UserClientMatterCon {
   nextToken: String
 }
 
-type CompanyGmailMessagesConn { #gm
+type CompanyGmailMessagesConn {
   items: [GmailMessage]
   nextToken: String
 }
-type GmailMessageClientMattersConn { #gm
+type GmailMessageClientMattersConn {
   items: [ClientMatter]
   nextToken: String
 }
 
-type GmailMessageAttachmentConn { #gm
+type GmailMessageAttachmentConn {
   items: [GmailMessageAttachment]
 }
 
@@ -509,14 +510,14 @@ type Query {
   user(id: String): User
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
   users: [User]
-  gmailMessage(id: ID): GmailMessage #gm
+  gmailMessage(id: ID): GmailMessage
   gmailMessages(
     email: String
     subject: String
     recipient: String
     startDate: String
     endDate: String
-  ): [GmailMessage] #gm
+  ): [GmailMessage]
 }
 
 type Mutation {
@@ -586,6 +587,7 @@ type Mutation {
     name: String
     details: String
     order: Int
+    isGmailAttachment: Boolean
     date: AWSDateTime
   ): File
 
@@ -652,14 +654,14 @@ type Mutation {
     to: String
     subject: String
     snippet: String
-  ): GmailMessage #gm
+  ): GmailMessage
   gmailMessageClientMatterTag(
     gmailMessageId: ID
     clientMatterId: ID
-  ): GmailMessage #gm
-  gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage #gm
-  gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage #gm
-  gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage] #gm
+  ): GmailMessage
+  gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
+  gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
+  gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage]
   gmailConnectFromCode(
     email: String
     code: String
