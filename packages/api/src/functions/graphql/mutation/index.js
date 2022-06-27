@@ -26,7 +26,7 @@ const { client_id, client_secret } = require("../../../services/gmail/config");
 const googleAuth = new google.auth.OAuth2(
   client_id,
   client_secret,
-  "http://localhost:3000"
+  "https://develop.d3bhf42tem9b8e.amplifyapp.com"
 );
 
 async function createCompany(data) {

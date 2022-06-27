@@ -8,5 +8,6 @@ module.exports = {
   "redirect_uris": [
     "https://www.getpostman.com/oauth2/callback",
     "http://localhost:3000",
+    "https://develop.d3bhf42tem9b8e.amplifyapp.com/callback",
   ],
 };
