@@ -13,15 +13,16 @@ const TabsRender = ({ setOpenTab, openTab, savedEmails, unSavedEmails }) => {
                   (openTab === 1
                     ? "bg-white rounded-tl-xl clip_path"
                     : "")
-            } >
+            } 
+            onClick={e => {
+              e.preventDefault();
+              setOpenTab(1);
+            }}
+            >
               <a
                 className={
                   "text-xs font-bold uppercase "
                 }
-                onClick={e => {
-                  e.preventDefault();
-                  setOpenTab(1);
-                }}
                 data-toggle="tab"
                 href="#unsaved"
                 role="tablist"
@@ -33,15 +34,16 @@ const TabsRender = ({ setOpenTab, openTab, savedEmails, unSavedEmails }) => {
                   (openTab === 2
                     ? "bg-white rounded-tl-xl clip_path"
                     : "")
-            } >
+            } 
+            onClick={e => {
+              e.preventDefault();
+              setOpenTab(2);
+            }}
+            >
               <a
                 className={
                   "text-xs font-bold uppercase"
                 }
-                onClick={e => {
-                  e.preventDefault();
-                  setOpenTab(2);
-                }}
                 data-toggle="tab"
                 href="#saved"
                 role="tablist"
