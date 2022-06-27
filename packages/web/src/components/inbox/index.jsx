@@ -101,6 +101,7 @@ const Inbox = () => {
       scope: ""
     })
   }
+
   const companyId = localStorage.getItem("companyId");
   const [loginData, setLoginData] = useState(
     localStorage.getItem('signInData')
@@ -261,7 +262,7 @@ const Inbox = () => {
 
   return (
     <>
-      { !loginData ?
+      { loginData ?
       <div
         className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
         style={contentDiv}
