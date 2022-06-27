@@ -60,7 +60,11 @@ const getParsedGmailMessage = async (data) => {
         })
         .promise();
 
-      console.log("saveAttachments:", process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET, saveAttachments);
+      console.log(
+        "saveAttachments:",
+        process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
+        saveAttachments
+      );
       const s3Response = await s3
         .putObject({
           ContentType: mimeType,
@@ -159,12 +163,9 @@ const checkGmailMessages = async (
           )
         );
 
-        
         const messagesToAdd = await Promise.all(
           messages.map(getParsedGmailMessage)
         );
-
-        
 
         const saveEmails = await docClient
           .batchWrite({
@@ -200,6 +201,8 @@ const checkGmailMessages = async (
           })
           .promise();
 
+        console.log("saveEmails:", saveEmails);
+
         const saveCompanyEmails = await docClient
           .batchWrite({
             RequestItems: {
@@ -218,6 +221,8 @@ const checkGmailMessages = async (
             },
           })
           .promise();
+
+        console.log("saveCompanyEmails:", saveCompanyEmails);
       }
 
       if (messagesDeleted) {
