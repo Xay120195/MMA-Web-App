@@ -66,7 +66,7 @@ const TableUnsavedInfo = ({
     }
   };
 
-  const handleSelectItem = (e, position) => {
+  /*const handleSelectItem = (e, position) => {
     const { value } = e.target;
     const checkedId = selectedUnsavedItems.some((x) => x.id === value);
 
@@ -79,10 +79,19 @@ const TableUnsavedInfo = ({
         index === position ? !item : item
       );
       setSelectedUnsavedItems(updatedCheckedState);
+      console.log("UPDATE: ", updatedCheckedState);
     } else {
       setSelectedUnsavedItems([]);
     }
-  }
+  }*/
+
+  const handleSelectItem = e => {
+    const { id, checked } = e.target;
+    setSelectedUnsavedItems([...selectedUnsavedItems, id]);
+    if (!checked) {
+      setSelectedUnsavedItems(selectedUnsavedItems.filter(item => item !== id));
+    }
+  };
 
   const hideToast = () => {
     setShowToast(false);
@@ -156,11 +165,13 @@ const TableUnsavedInfo = ({
             <tr>
               <td className="p-2" >
                 <input
+                  key={item.id}
                   className="cursor-pointer mr-1"
                   onChange={handleSelectItem}
                   type="checkbox"
                   value={item.id}
-                  id={`item-${item.id}`}
+                  id={item.id}
+                  checked={selectedUnsavedItems.includes(item.id)}
                 />
               </td>
               <td className="p-2 align-top" >

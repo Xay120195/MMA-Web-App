@@ -115,12 +115,8 @@ const Inbox = () => {
   const [unsavedNextToken, setUnsavedVnextToken] = useState(null);
   const [savedNextToken, setSavedVnextToken] = useState(null);
   const [matterList, setMatterList] = useState([]);
-  const [selectedUnsavedItems, setSelectedUnsavedItems] = useState(
-    new Array(unSavedEmails.length).fill(false)
-  );
-  const [selectedSavedItems, setSelectedSavedItems] = useState(
-    new Array(savedEmails.length).fill(false)
-  );
+  const [selectedUnsavedItems, setSelectedUnsavedItems] = useState([]);
+  const [selectedSavedItems, setSelectedSavedItems] = useState([]);
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [maxLoadingSavedEmail, setMaxLoadingSavedEmail] = useState(false);
@@ -336,10 +332,16 @@ const Inbox = () => {
         <div style={mainGrid}>
           <ActionButtons
             selectedUnsavedItems={selectedUnsavedItems}
+            setSelectedUnsavedItems={setSelectedUnsavedItems}
             selectedSavedItems={selectedSavedItems}
+            setSelectedSavedItems={setSelectedSavedItems}
             openTab={openTab}
             getUnSavedEmails={getUnSavedEmails}
             getSavedEmails={getSavedEmails}
+            unSavedEmails={unSavedEmails}
+            savedEmails={savedEmails}
+            setResultMessage={setResultMessage}
+            setShowToast={setShowToast}
           />
         </div>
 
