@@ -7,9 +7,10 @@ import GmailIntegration from '../authentication/email-integration-authentication
 import { gapi } from 'gapi-script';
 import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
+import { useIdleTimer } from "react-idle-timer";
 
 const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int = 50, $nextToken: String = null) {
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
   company(id: $id) {
     gmailMessages(
       isDeleted: $isDeleted
@@ -109,7 +110,8 @@ const Inbox = () => {
   const [openTab, setOpenTab] = React.useState(1);
   const [unSavedEmails, setUnsavedEmails] = useState([]);
   const [savedEmails, setSavedEmails] = useState([]);
-
+  const [unsavedNextToken, setUnsavedVnextToken] = useState(null);
+  const [savedNextToken, setSavedVnextToken] = useState(null);
   const [matterList, setMatterList] = useState([]);
 
   const [selectedUnsavedItems, setSelectedUnsavedItems] = useState(
@@ -131,14 +133,38 @@ const Inbox = () => {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
-        isSaved: false
+        isSaved: false,
+        limit: 50,
+        nextToken: null,
       },
     };
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
+      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
       setUnsavedEmails(emailList);
     });
+  };
+
+  const handleLoadMoreUnSavedEmails = async () => {
+    if (unsavedNextToken !== null) {
+      const params = {
+        query: qGmailMessagesbyCompany,
+        variables: {
+          id: companyId,
+          isSaved: false,
+          limit: 50,
+          nextToken: unsavedNextToken,
+        },
+      };
+
+      await API.graphql(params).then((result) => {
+        const emailList = result.data.company.gmailMessages.items;
+        setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+        let arrConcat = unSavedEmails.concat(emailList);
+        setUnsavedEmails([...new Set(arrConcat)]);
+      });
+    }
   };
 
   const getSavedEmails = async () => {
@@ -146,14 +172,38 @@ const Inbox = () => {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
-        isSaved: true
+        isSaved: true,
+        limit: 50,
+        nextToken: null,
       },
     };
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
+      setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);
     });
+  };
+
+  const handleLoadMoreSavedEmails = async () => {
+    if (savedNextToken !== null) {
+      const params = {
+        query: qGmailMessagesbyCompany,
+        variables: {
+          id: companyId,
+          isSaved: true,
+          limit: 50,
+          nextToken: savedNextToken,
+        },
+      };
+
+      await API.graphql(params).then((result) => {
+        const emailList = result.data.company.gmailMessages.items;
+        setSavedVnextToken(result.data.company.gmailMessages.nextToken);
+        let arrConcat = savedEmails.concat(emailList);
+        setSavedEmails([...new Set(arrConcat)]);
+      });
+    }
   };
 
   let result = [];
@@ -178,6 +228,23 @@ const Inbox = () => {
       setMatterList(filtered.sort((a, b) => a.label - b.label));
     }
   }
+
+  const handleOnAction = (event) => {
+    handleLoadMoreUnSavedEmails();
+    handleLoadMoreSavedEmails();
+  };
+
+  const handleOnIdle = (event) => {
+    handleLoadMoreUnSavedEmails();
+    handleLoadMoreSavedEmails();
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
 
   return (
     <>
