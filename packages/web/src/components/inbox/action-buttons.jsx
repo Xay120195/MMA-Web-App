@@ -37,12 +37,7 @@ const ActionButtons = ({
     setTimeout(() => {
       getSavedEmails();
       getUnSavedEmails();
-      /* if(status) {
-        selectedUnsavedItems(new Array(getUnSavedEmails.length).fill(false));
-      } else {
-        selectedSavedItems(new Array(getSavedEmails.length).fill(false));
-      }*/
-    }, 2000);
+    }, 1000);
     
   };
 

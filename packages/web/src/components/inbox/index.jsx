@@ -68,6 +68,27 @@ mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
   }
 }`;
 
+const listClientMatters = `
+  query listClientMatters($companyId: String) {
+    company(id: $companyId) {
+      clientMatters (sortOrder: CREATED_DESC) {
+        items {
+          id
+          createdAt
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+  `;
+
 const contentDiv = {
   margin: "0 0 0 65px",
 };
@@ -110,6 +131,7 @@ const Inbox = () => {
   useEffect(() => {
     getUnSavedEmails();
     getSavedEmails();
+    getMatterList();
   }, []);
 
   const getUnSavedEmails = async () => {
@@ -154,6 +176,20 @@ const Inbox = () => {
       },
     });
   };
+
+  let result = [];
+  const getMatterList = async () => {
+    const clientMattersOpt = await API.graphql({
+      query: listClientMatters,
+      variables: {
+        companyId: companyId,
+      },
+    });
+
+    if (clientMattersOpt.data.company.clientMatters.items !== null) {
+      result = clientMattersOpt.data.company.clientMatters.items;
+    }
+  }
 
   const tagEmailtoClientMatter = async (clientMatterId, gmailMessageId) => {
     const request = API.graphql({
