@@ -28,6 +28,7 @@ const TableSavedInfo = ({
   selectedSavedItems,
   setSelectedSavedItems,
   savedEmails,
+  matterList,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -293,7 +294,7 @@ const TableSavedInfo = ({
               </td>
               <td className="p-2 align-top" >
                 <CreatableSelect
-                  //options={clientsOptions}
+                  options={matterList}
                   isClearable
                   isSearchable
                   onChange={handleClientMatterChanged}

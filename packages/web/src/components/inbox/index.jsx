@@ -58,16 +58,6 @@ mutation saveGmailMessage($companyId: ID, $id: ID, $isSaved: Boolean) {
   }
 }`;
 
-const mTagEmailClientMatter = `
-mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
-  gmailMessageClientMatterTag(
-    clientMatterId: $clientMatterId
-    gmailMessageId: $gmailMessageId
-  ) {
-    id
-  }
-}`;
-
 const listClientMatters = `
   query listClientMatters($companyId: String) {
     company(id: $companyId) {
@@ -120,6 +110,8 @@ const Inbox = () => {
   const [unSavedEmails, setUnsavedEmails] = useState([]);
   const [savedEmails, setSavedEmails] = useState([]);
 
+  const [matterList, setMatterList] = useState([]);
+
   const [selectedUnsavedItems, setSelectedUnsavedItems] = useState(
     new Array(unSavedEmails.length).fill(false)
   );
@@ -145,7 +137,6 @@ const Inbox = () => {
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
-      console.log("UnSavedEmails", emailList);
       setUnsavedEmails(emailList);
     });
   };
@@ -161,19 +152,7 @@ const Inbox = () => {
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
-      console.log("SavedEmails", emailList);
       setSavedEmails(emailList);
-    });
-  };
-
-  const saveUnsavedEmails = async (status, idArr) => {
-    const request = API.graphql({
-      query: mSaveUnsavedEmails,
-      variables: {
-        companyId: companyId,
-        id: idArr,
-        isSaved: status
-      },
     });
   };
 
@@ -187,19 +166,18 @@ const Inbox = () => {
     });
 
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
-      result = clientMattersOpt.data.company.clientMatters.items;
+      result = clientMattersOpt.data.company.clientMatters.items.map(({ id, client, matter }) => ({
+        value: id,
+        label: client.name+"/"+matter.name,
+      }));
+
+      var filtered = result.filter(function (el) {
+        return el.label != null && el.value != null;
+      });
+  
+      setMatterList(filtered.sort((a, b) => a.label - b.label));
     }
   }
-
-  const tagEmailtoClientMatter = async (clientMatterId, gmailMessageId) => {
-    const request = API.graphql({
-      query: mTagEmailClientMatter,
-      variables: {
-        clientMatterId: clientMatterId,
-        gmailMessageId: gmailMessageId
-      },
-    });
-  };
 
   return (
     <>
@@ -300,6 +278,7 @@ const Inbox = () => {
                 selectedUnsavedItems={selectedUnsavedItems}
                 setSelectedUnsavedItems={setSelectedUnsavedItems}
                 unSavedEmails={unSavedEmails}
+                matterList={matterList}
               />
             </div>
             <div className={openTab === 2 ? "block" : "hidden"} id="link2">
@@ -307,6 +286,7 @@ const Inbox = () => {
                 selectedSavedItems={selectedSavedItems}
                 setSelectedSavedItems={setSelectedSavedItems}
                 savedEmails={savedEmails}
+                matterList={matterList}
               />
             </div>
           </div>

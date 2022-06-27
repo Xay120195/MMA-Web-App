@@ -1,18 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { API } from "aws-amplify";
-import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
-import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
-import {
-  BsFillTrashFill,
-  BsFillBucketFill,
-  BsSortUpAlt,
-  BsSortDown,
-} from "react-icons/bs";
-import Unsaved from "./data-source";
 import { useRootClose } from 'react-overlays';
 
 var moment = require("moment");
@@ -22,12 +12,23 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
     id
     details
   }
-}`
+}`;
+
+const mTagEmailClientMatter = `
+mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+  gmailMessageClientMatterTag(
+    clientMatterId: $clientMatterId
+    gmailMessageId: $gmailMessageId
+  ) {
+    id
+  }
+}`;
 
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
   unSavedEmails,
+  matterList,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -80,10 +81,6 @@ const TableUnsavedInfo = ({
     }
   }
 
-  const handleClientMatterChanged = (newValue) => {
-    console.log(newValue);
-  };
-
   const hideToast = () => {
     setShowToast(false);
   };
@@ -116,6 +113,18 @@ const TableUnsavedInfo = ({
       }
     });
   }
+
+  const handleClientMatter = async (e, gmailMessageId) => {
+    const request = API.graphql({
+      query: mTagEmailClientMatter,
+      variables: {
+        clientMatterId: e.value,
+        gmailMessageId: gmailMessageId
+      },
+    });
+
+    console.log(request);
+  };
   
   return (
     <>
@@ -222,14 +231,27 @@ const TableUnsavedInfo = ({
                 </div>
               </td>
               <td className="p-2 align-top" >
-                <CreatableSelect
-                  //options={clientsOptions}
-                  isClearable
-                  isSearchable
-                  onChange={handleClientMatterChanged}
-                  placeholder="Client/Matter"
-                  className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                />
+
+                <>
+                  <CreatableSelect
+                      defaultValue={
+                        item.clientMatters.items.map((item_clientMatter, index) => (
+                        { value: item_clientMatter.id , label: item_clientMatter.client.name+"/"+item_clientMatter.matter.name}
+                      ))}
+                      options={matterList}
+                      isClearable
+                      isSearchable
+                      onChange={(options, e) =>
+                        handleClientMatter(
+                          options,
+                          item.id
+                        )
+                      }
+                      placeholder="Client/Matter"
+                      className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                  />
+                </>
+
               </td>
             </tr>
           ))}
