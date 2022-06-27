@@ -12,6 +12,7 @@ const { v4 } = require("uuid");
 const { toUTC, toLocalTime } = require("../../shared/toUTC");
 
 const getParsedGmailMessage = async (data) => {
+  console.log("getParsedGmailMessage");
   const message = Object.assign({}, data);
   const { id: messageId, payload } = message;
 
@@ -42,7 +43,7 @@ const getParsedGmailMessage = async (data) => {
       const fileName = `${messageId}/${filename}`;
 
       const saveAttachmentsParams = {
-        id: v4(),
+        id: body.attachmentId,
         messageId: messageId,
         s3ObjectKey: fileName,
         size: body.size,
@@ -52,13 +53,14 @@ const getParsedGmailMessage = async (data) => {
         updatedAt: toUTC(new Date()),
       };
 
-      const request = await docClient
+      const saveAttachments = await docClient
         .put({
           TableName: "GmailMessageAttachment",
           Item: saveAttachmentsParams,
         })
         .promise();
 
+      console.log("saveAttachments:", process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET, saveAttachments);
       const s3Response = await s3
         .putObject({
           ContentType: mimeType,
@@ -67,6 +69,8 @@ const getParsedGmailMessage = async (data) => {
           Body: Buffer.from(data, "base64"),
         })
         .promise();
+
+      console.log("s3Response:", s3Response);
 
       _parsedMessagePart["path"] = fileName;
     }
@@ -155,12 +159,12 @@ const checkGmailMessages = async (
           )
         );
 
-        console.log("messages", messages.length);
+        
         const messagesToAdd = await Promise.all(
           messages.map(getParsedGmailMessage)
         );
 
-        console.log("messagesToAdd: ", messagesToAdd);
+        
 
         const saveEmails = await docClient
           .batchWrite({
