@@ -22,7 +22,17 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
       id
       details
     }
-  }`
+  }`;
+
+const mTagEmailClientMatter = `
+  mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+    gmailMessageClientMatterTag(
+      clientMatterId: $clientMatterId
+      gmailMessageId: $gmailMessageId
+    ) {
+      id
+    }
+  }`;
 
 const TableSavedInfo = ({
   selectedSavedItems,
@@ -187,6 +197,16 @@ const TableSavedInfo = ({
       }
     });
   }
+
+    const handleClientMatter = async (e, gmailMessageId) => {
+    const request = API.graphql({
+        query: mTagEmailClientMatter,
+        variables: {
+        clientMatterId: e.value,
+        gmailMessageId: gmailMessageId
+        },
+    });
+    };
   
   return (
     <>
@@ -293,14 +313,25 @@ const TableSavedInfo = ({
                 </div>
               </td>
               <td className="p-2 align-top" >
-                <CreatableSelect
-                  options={matterList}
-                  isClearable
-                  isSearchable
-                  onChange={handleClientMatterChanged}
-                  placeholder="Client/Matter"
-                  className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                />
+                <>
+                  <CreatableSelect
+                      defaultValue={
+                        item.clientMatters.items.map((item_clientMatter, index) => (
+                        { value: item_clientMatter.id , label: item_clientMatter.client.name+"/"+item_clientMatter.matter.name}
+                      ))}
+                      options={matterList}
+                      isClearable
+                      isSearchable
+                      onChange={(options, e) =>
+                        handleClientMatter(
+                          options,
+                          item.id
+                        )
+                      }
+                      placeholder="Client/Matter"
+                      className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                  />
+                </>
               </td>
             </tr>
           ))}
