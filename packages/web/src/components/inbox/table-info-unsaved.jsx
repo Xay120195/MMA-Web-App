@@ -4,6 +4,7 @@ import ToastNotification from "../toast-notification";
 import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
 import { useRootClose } from 'react-overlays';
+import imgLoading from "../../assets/images/loading-circle.gif";
 
 var moment = require("moment");
 
@@ -29,6 +30,7 @@ const TableUnsavedInfo = ({
   setSelectedUnsavedItems,
   unSavedEmails,
   matterList,
+  maxLoadingUnSavedEmail,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -257,6 +259,16 @@ const TableUnsavedInfo = ({
           ))}
           </tbody>
       </table>
+      {maxLoadingUnSavedEmail ? (
+        <><div className="flex justify-center items-center mt-5">All Data has been loaded</div></>
+      ) : (
+        <>
+          <div className="flex justify-center items-center mt-5">
+            <img src={imgLoading} alt="" width={50} height={100} />
+          </div>
+        </>
+      )}
+
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
