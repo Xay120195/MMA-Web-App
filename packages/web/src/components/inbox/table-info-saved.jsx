@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { API } from "aws-amplify";
-import { AppRoutes } from "../../constants/AppRoutes";
 import ToastNotification from "../toast-notification";
-import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
-import {
-  BsFillTrashFill,
-  BsFillBucketFill,
-  BsSortUpAlt,
-  BsSortDown,
-} from "react-icons/bs";
-import Unsaved from "./data-source";
 import { useRootClose } from 'react-overlays';
+import imgLoading from "../../assets/images/loading-circle.gif";
 
 var moment = require("moment");
 
@@ -39,6 +30,7 @@ const TableSavedInfo = ({
   setSelectedSavedItems,
   savedEmails,
   matterList,
+  maxLoadingSavedEmail,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -337,6 +329,16 @@ const TableSavedInfo = ({
           ))}
           </tbody>
       </table>
+      {maxLoadingSavedEmail ? (
+        <><div className="flex justify-center items-center mt-5">All Data has been loaded</div></>
+      ) : (
+        <>
+          <div className="flex justify-center items-center mt-5">
+            <img src={imgLoading} alt="" width={50} height={100} />
+          </div>
+        </>
+      )}
+
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}

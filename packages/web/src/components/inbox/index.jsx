@@ -8,6 +8,7 @@ import { gapi } from 'gapi-script';
 import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
 import { useIdleTimer } from "react-idle-timer";
+import ToastNotification from "../toast-notification";
 
 const qGmailMessagesbyCompany = `
 query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
@@ -113,14 +114,20 @@ const Inbox = () => {
   const [unsavedNextToken, setUnsavedVnextToken] = useState(null);
   const [savedNextToken, setSavedVnextToken] = useState(null);
   const [matterList, setMatterList] = useState([]);
-
   const [selectedUnsavedItems, setSelectedUnsavedItems] = useState(
     new Array(unSavedEmails.length).fill(false)
   );
-
   const [selectedSavedItems, setSelectedSavedItems] = useState(
     new Array(savedEmails.length).fill(false)
   );
+  const [showToast, setShowToast] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+  const [maxLoadingSavedEmail, setMaxLoadingSavedEmail] = useState(false);
+  const [maxLoadingUnSavedEmail, setMaxLoadingUnSavedEmail] = useState(false);
+
+  const hideToast = () => {
+    setShowToast(false);
+  };
 
   useEffect(() => {
     getUnSavedEmails();
@@ -162,8 +169,11 @@ const Inbox = () => {
         const emailList = result.data.company.gmailMessages.items;
         setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
         let arrConcat = unSavedEmails.concat(emailList);
+        setMaxLoadingUnSavedEmail(false);
         setUnsavedEmails([...new Set(arrConcat)]);
       });
+    } else {
+      setMaxLoadingUnSavedEmail(true);
     }
   };
 
@@ -201,8 +211,11 @@ const Inbox = () => {
         const emailList = result.data.company.gmailMessages.items;
         setSavedVnextToken(result.data.company.gmailMessages.nextToken);
         let arrConcat = savedEmails.concat(emailList);
+        setMaxLoadingSavedEmail(false);
         setSavedEmails([...new Set(arrConcat)]);
       });
+    } else {
+      setMaxLoadingSavedEmail(true);
     }
   };
 
@@ -346,6 +359,7 @@ const Inbox = () => {
                 setSelectedUnsavedItems={setSelectedUnsavedItems}
                 unSavedEmails={unSavedEmails}
                 matterList={matterList}
+                maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
               />
             </div>
             <div className={openTab === 2 ? "block" : "hidden"} id="link2">
@@ -354,6 +368,7 @@ const Inbox = () => {
                 setSelectedSavedItems={setSelectedSavedItems}
                 savedEmails={savedEmails}
                 matterList={matterList}
+                maxLoadingSavedEmail={maxLoadingSavedEmail}
               />
             </div>
           </div>
@@ -362,6 +377,9 @@ const Inbox = () => {
 
       </div>
       }
+      {showToast && resultMessage && (
+        <ToastNotification title={resultMessage} hideToast={hideToast} />
+      )}
     </>
   );
 };
