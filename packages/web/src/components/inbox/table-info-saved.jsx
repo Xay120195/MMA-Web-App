@@ -254,31 +254,32 @@ const TableSavedInfo = ({
               <td className="p-2" >
               {item.attachments.items.map((item_attach, index) => (
                 <>
-                  <div className="flex items-start" >
-                    <p className="
-                    cursor-pointer mt-1 text-opacity-90 1
-                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id={item_attach.id} >{item_attach.name}</p>
-                    <div
-                        className="p-2 w-full h-full font-poppins"
-                        style={{
-                        cursor: "auto",
-                        outlineColor:
-                            "rgb(204, 204, 204, 0.5)",
-                        outlineWidth: "thin",
-                        }}
-                        suppressContentEditableWarning
-                        dangerouslySetInnerHTML={{
-                        __html: item_attach.details,
-                        }}
-                        
-                        onBlur={(e) =>
-                        handleSaveDesc(
-                            e,
-                            item_attach.id
-                        )
-                        }
-                        contentEditable={true}
-                    ></div>
+                  <div className="flex items-start mt-1" >
+                  <p className="
+                  cursor-pointer mr-1 text-opacity-90 1
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id={item_attach.id} >{item_attach.name}</p>
+                  <div
+                    className="p-2 w-1/2 h-full font-poppins"
+                    style={{
+                      border: "solid 1px #c4c4c4",
+                      cursor: "auto",
+                      outlineColor:
+                        "rgb(204, 204, 204, 0.5)",
+                      outlineWidth: "thin",
+                    }}
+                    suppressContentEditableWarning
+                    dangerouslySetInnerHTML={{
+                      __html: item_attach.details,
+                    }}
+                    
+                    onBlur={(e) =>
+                      handleSaveDesc(
+                        e,
+                        item_attach.id
+                      )
+                    }
+                    contentEditable={true}
+                  ></div>
                 </div>
                 </>
               ))}
