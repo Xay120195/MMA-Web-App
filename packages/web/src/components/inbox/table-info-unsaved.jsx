@@ -5,6 +5,7 @@ import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
 import { useRootClose } from 'react-overlays';
 import imgLoading from "../../assets/images/loading-circle.gif";
+import { FaEye } from "react-icons/fa";
 
 var moment = require("moment");
 
@@ -124,10 +125,7 @@ const TableUnsavedInfo = ({
         gmailMessageId: gmailMessageId
       },
     });
-
-    console.log(request);
   };
-  
   return (
     <>
       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
@@ -168,13 +166,13 @@ const TableUnsavedInfo = ({
               <td className="p-2 align-top" >
                 <p className="text-sm font-medium" >{item.subject}</p>
                 <p className="text-xs" >{item.from} at {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
-                <p><div className="relative"><button className="
+                <p><div className="relative"><button className="p-1 text-blue-600
                 text-opacity-90
-                text-[12px] font-normal inline-flex items-center gap-x-2 rounded primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 text-xs" type="button" aria-expanded="false"
+                text-[12px] font-normal inline-flex items-center gap-x-2 rounded primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 text-xs " type="button" aria-expanded="false"
                 id={item.id}
                 onClick={handleSnippet}
-                >read more</button></div>
-                {show && (
+                >read more<FaEye/></button></div>
+                {show && snippetId === item.id && (
                   <div
                     ref={el => (ref.current[index] = el)}
                     className="absolute rounded shadow bg-white p-6 z-50 w-1/2 max-h-60 overflow-auto"
@@ -187,7 +185,12 @@ const TableUnsavedInfo = ({
                     <p>BCC: </p>
                     <p>CC:</p>
                     <br/>
-                    <span>{item.snippet}</span>
+                    {/* {item.payload.map((body, index) => (
+                      <span>
+                        body
+                      </span>
+                    ))} */}
+                    {item.snippet}
                   </div>
                 )}
                 </p>
