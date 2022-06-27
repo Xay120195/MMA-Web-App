@@ -15,6 +15,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
   } = await gmailAxios.get(`/gmail/v1/users/${email}/messages`, {
     params: {
       maxResults: 25,
+      q: "label:inbox after:2022/06/01", // all inbox from June 2022
       ...(pageToken ? { pageToken } : {}),
     },
   });
@@ -34,7 +35,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
   console.log("message count: ", messages.length);
 
   const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
-  //console.log("messagesToAdd: ", messagesToAdd);
+  // console.log("messagesToAdd: ", messagesToAdd);
 
   const saveEmails = await docClient
     .batchWrite({

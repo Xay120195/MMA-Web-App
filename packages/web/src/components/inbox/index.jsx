@@ -9,7 +9,7 @@ import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
 
 const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String = null) {
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int = 50, $nextToken: String = null) {
   company(id: $id) {
     gmailMessages(
       isDeleted: $isDeleted
@@ -38,6 +38,13 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
             }
           }
         }
+        attachments {
+          items {
+            id
+            details
+            name
+          }
+        }
       }
       nextToken
     }
@@ -51,15 +58,26 @@ mutation saveGmailMessage($companyId: ID, $id: ID, $isSaved: Boolean) {
   }
 }`;
 
-const mTagEmailClientMatter = `
-mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
-  gmailMessageClientMatterTag(
-    clientMatterId: $clientMatterId
-    gmailMessageId: $gmailMessageId
-  ) {
-    id
+const listClientMatters = `
+  query listClientMatters($companyId: String) {
+    company(id: $companyId) {
+      clientMatters (sortOrder: CREATED_DESC) {
+        items {
+          id
+          createdAt
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
   }
-}`;
+  `;
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -82,7 +100,6 @@ const Inbox = () => {
     })
   }
   const companyId = localStorage.getItem("companyId");
-
   const [loginData, setLoginData] = useState(
     localStorage.getItem('signInData')
       ? JSON.parse(localStorage.getItem('signInData'))
@@ -92,6 +109,8 @@ const Inbox = () => {
   const [openTab, setOpenTab] = React.useState(1);
   const [unSavedEmails, setUnsavedEmails] = useState([]);
   const [savedEmails, setSavedEmails] = useState([]);
+
+  const [matterList, setMatterList] = useState([]);
 
   const [selectedUnsavedItems, setSelectedUnsavedItems] = useState(
     new Array(unSavedEmails.length).fill(false)
@@ -104,6 +123,7 @@ const Inbox = () => {
   useEffect(() => {
     getUnSavedEmails();
     getSavedEmails();
+    getMatterList();
   }, []);
 
   const getUnSavedEmails = async () => {
@@ -136,26 +156,28 @@ const Inbox = () => {
     });
   };
 
-  const saveUnsavedEmails = async (status, idArr) => {
-    const request = API.graphql({
-      query: mSaveUnsavedEmails,
+  let result = [];
+  const getMatterList = async () => {
+    const clientMattersOpt = await API.graphql({
+      query: listClientMatters,
       variables: {
         companyId: companyId,
-        id: idArr,
-        isSaved: status
       },
     });
-  };
 
-  const tagEmailtoClientMatter = async (clientMatterId, gmailMessageId) => {
-    const request = API.graphql({
-      query: mTagEmailClientMatter,
-      variables: {
-        clientMatterId: clientMatterId,
-        gmailMessageId: gmailMessageId
-      },
-    });
-  };
+    if (clientMattersOpt.data.company.clientMatters.items !== null) {
+      result = clientMattersOpt.data.company.clientMatters.items.map(({ id, client, matter }) => ({
+        value: id,
+        label: client.name+"/"+matter.name,
+      }));
+
+      var filtered = result.filter(function (el) {
+        return el.label != null && el.value != null;
+      });
+  
+      setMatterList(filtered.sort((a, b) => a.label - b.label));
+    }
+  }
 
   return (
     <>
@@ -256,6 +278,7 @@ const Inbox = () => {
                 selectedUnsavedItems={selectedUnsavedItems}
                 setSelectedUnsavedItems={setSelectedUnsavedItems}
                 unSavedEmails={unSavedEmails}
+                matterList={matterList}
               />
             </div>
             <div className={openTab === 2 ? "block" : "hidden"} id="link2">
@@ -263,6 +286,7 @@ const Inbox = () => {
                 selectedSavedItems={selectedSavedItems}
                 setSelectedSavedItems={setSelectedSavedItems}
                 savedEmails={savedEmails}
+                matterList={matterList}
               />
             </div>
           </div>

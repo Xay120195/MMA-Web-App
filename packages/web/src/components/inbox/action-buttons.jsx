@@ -8,7 +8,7 @@ const ActionButtons = ({
   selectedSavedItems,
   openTab,
   getUnSavedEmails,
-  getSavedEmails
+  getSavedEmails,
 }) => {
 
   const companyId = localStorage.getItem("companyId");
@@ -21,7 +21,7 @@ const ActionButtons = ({
   }`;
 
   const handleEmails = async (status) => {
-
+    console.log(status);
     // Soon will change this to bulk mutation 
     selectedUnsavedItems.map((obj) => {
       const request = API.graphql({
@@ -33,7 +33,7 @@ const ActionButtons = ({
         },
       });
     });
-    
+
     setTimeout(() => {
       getSavedEmails();
       getUnSavedEmails();
@@ -53,14 +53,14 @@ const ActionButtons = ({
     <>
       <div className="grid grid-rows grid-flow-col pt-5">
         <div className="col-span-6 ">
-          <input
+          {/* <input
             name="check_all"
             id="check_all"
             aria-describedby="checkbox-1"
             onChange={(e) => handleCheckAllChange(e.target.checked)}
             type="checkbox"
             className="w-4 h-4 text-cyan-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          />
+          />*/ }
           {selectedUnsavedItems.length !== 0 && openTab === 1 ? (
             <>
               <button
