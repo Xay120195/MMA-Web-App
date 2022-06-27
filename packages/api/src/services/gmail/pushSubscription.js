@@ -40,10 +40,16 @@ const getParsedGmailMessage = async (data) => {
         `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
       );
 
-      const fileName = `${messageId}/${filename}`;
+      const fileId = messageId + filename,
+        fileName = `${messageId}/${filename}`,
+        fid = fileId
+          .replace(/\s/g, "")
+          .replace(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")
+          .replace(/\.[^/.]+$/, "")
+          .toLowerCase();
 
       const saveAttachmentsParams = {
-        id: body.attachmentId,
+        id: fid,
         messageId: messageId,
         s3ObjectKey: fileName,
         size: body.size,
@@ -53,6 +59,8 @@ const getParsedGmailMessage = async (data) => {
         updatedAt: toUTC(new Date()),
       };
 
+      console.log(saveAttachmentsParams);
+
       const saveAttachments = await docClient
         .put({
           TableName: "GmailMessageAttachment",
@@ -60,7 +68,11 @@ const getParsedGmailMessage = async (data) => {
         })
         .promise();
 
-      console.log("saveAttachments:", process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET, saveAttachments);
+      console.log(
+        "saveAttachments:",
+        process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
+        saveAttachments
+      );
       const s3Response = await s3
         .putObject({
           ContentType: mimeType,
@@ -159,12 +171,9 @@ const checkGmailMessages = async (
           )
         );
 
-        
         const messagesToAdd = await Promise.all(
           messages.map(getParsedGmailMessage)
         );
-
-        
 
         const saveEmails = await docClient
           .batchWrite({
@@ -200,6 +209,8 @@ const checkGmailMessages = async (
           })
           .promise();
 
+        console.log("saveEmails:", saveEmails);
+
         const saveCompanyEmails = await docClient
           .batchWrite({
             RequestItems: {
@@ -218,6 +229,8 @@ const checkGmailMessages = async (
             },
           })
           .promise();
+
+        console.log("saveCompanyEmails:", saveCompanyEmails);
       }
 
       if (messagesDeleted) {

@@ -101,6 +101,7 @@ const Inbox = () => {
       scope: ""
     })
   }
+  
   const companyId = localStorage.getItem("companyId");
   const [loginData, setLoginData] = useState(
     localStorage.getItem('signInData')

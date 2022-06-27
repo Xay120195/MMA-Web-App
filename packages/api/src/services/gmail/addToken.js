@@ -140,10 +140,15 @@ exports.addToken = async (ctx) => {
     console.log("access_token:", access_token);
     setAccessToken(access_token);
 
-    const { data: watchData } = await gmailAxios.post(
-      `/gmail/v1/users/${email}/watch`,
-      { topicName: `projects/${project_id}/topics/gmail-api` }
-    );
+    const endpoint = `/gmail/v1/users/${email}/watch`,
+      topic = `projects/${project_id}/topics/gmail-api`;
+
+    console.log("endpoint:", endpoint);
+    console.log("topic:", topic);
+
+    const { data: watchData } = await gmailAxios.post(endpoint, {
+      topicName: topic,
+    });
 
     console.log("watchData:", watchData);
     delete payload.email;
