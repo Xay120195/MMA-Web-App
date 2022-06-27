@@ -43,8 +43,10 @@ const getParsedGmailMessage = async (data) => {
       const fileId = messageId + filename,
         fileName = `${messageId}/${filename}`,
         fid = fileId
-          .replaceAll(/\s/g, "")
-          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "");
+          .replace(/\s/g, "")
+          .replace(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")
+          .replace(/\.[^/.]+$/, "")
+          .toLowerCase();
 
       const saveAttachmentsParams = {
         id: fid,
