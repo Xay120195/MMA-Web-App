@@ -7,9 +7,10 @@ import GmailIntegration from '../authentication/email-integration-authentication
 import { gapi } from 'gapi-script';
 import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
+import { useIdleTimer } from "react-idle-timer";
 
 const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String = null) {
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
   company(id: $id) {
     gmailMessages(
       isDeleted: $isDeleted
@@ -38,6 +39,13 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
             }
           }
         }
+        attachments {
+          items {
+            id
+            details
+            name
+          }
+        }
       }
       nextToken
     }
@@ -51,15 +59,26 @@ mutation saveGmailMessage($companyId: ID, $id: ID, $isSaved: Boolean) {
   }
 }`;
 
-const mTagEmailClientMatter = `
-mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
-  gmailMessageClientMatterTag(
-    clientMatterId: $clientMatterId
-    gmailMessageId: $gmailMessageId
-  ) {
-    id
+const listClientMatters = `
+  query listClientMatters($companyId: String) {
+    company(id: $companyId) {
+      clientMatters (sortOrder: CREATED_DESC) {
+        items {
+          id
+          createdAt
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
   }
-}`;
+  `;
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -82,7 +101,6 @@ const Inbox = () => {
     })
   }
   const companyId = localStorage.getItem("companyId");
-
   const [loginData, setLoginData] = useState(
     localStorage.getItem('signInData')
       ? JSON.parse(localStorage.getItem('signInData'))
@@ -92,6 +110,9 @@ const Inbox = () => {
   const [openTab, setOpenTab] = React.useState(1);
   const [unSavedEmails, setUnsavedEmails] = useState([]);
   const [savedEmails, setSavedEmails] = useState([]);
+  const [unsavedNextToken, setUnsavedVnextToken] = useState(null);
+  const [savedNextToken, setSavedVnextToken] = useState(null);
+  const [matterList, setMatterList] = useState([]);
 
   const [selectedUnsavedItems, setSelectedUnsavedItems] = useState(
     new Array(unSavedEmails.length).fill(false)
@@ -104,6 +125,7 @@ const Inbox = () => {
   useEffect(() => {
     getUnSavedEmails();
     getSavedEmails();
+    getMatterList();
   }, []);
 
   const getUnSavedEmails = async () => {
@@ -111,14 +133,38 @@ const Inbox = () => {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
-        isSaved: false
+        isSaved: false,
+        limit: 50,
+        nextToken: null,
       },
     };
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
+      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
       setUnsavedEmails(emailList);
     });
+  };
+
+  const handleLoadMoreUnSavedEmails = async () => {
+    if (unsavedNextToken !== null) {
+      const params = {
+        query: qGmailMessagesbyCompany,
+        variables: {
+          id: companyId,
+          isSaved: false,
+          limit: 50,
+          nextToken: unsavedNextToken,
+        },
+      };
+
+      await API.graphql(params).then((result) => {
+        const emailList = result.data.company.gmailMessages.items;
+        setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+        let arrConcat = unSavedEmails.concat(emailList);
+        setUnsavedEmails([...new Set(arrConcat)]);
+      });
+    }
   };
 
   const getSavedEmails = async () => {
@@ -126,36 +172,79 @@ const Inbox = () => {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
-        isSaved: true
+        isSaved: true,
+        limit: 50,
+        nextToken: null,
       },
     };
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
+      setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);
     });
   };
 
-  const saveUnsavedEmails = async (status, idArr) => {
-    const request = API.graphql({
-      query: mSaveUnsavedEmails,
-      variables: {
-        companyId: companyId,
-        id: idArr,
-        isSaved: status
-      },
-    });
+  const handleLoadMoreSavedEmails = async () => {
+    if (savedNextToken !== null) {
+      const params = {
+        query: qGmailMessagesbyCompany,
+        variables: {
+          id: companyId,
+          isSaved: true,
+          limit: 50,
+          nextToken: savedNextToken,
+        },
+      };
+
+      await API.graphql(params).then((result) => {
+        const emailList = result.data.company.gmailMessages.items;
+        setSavedVnextToken(result.data.company.gmailMessages.nextToken);
+        let arrConcat = savedEmails.concat(emailList);
+        setSavedEmails([...new Set(arrConcat)]);
+      });
+    }
   };
 
-  const tagEmailtoClientMatter = async (clientMatterId, gmailMessageId) => {
-    const request = API.graphql({
-      query: mTagEmailClientMatter,
+  let result = [];
+  const getMatterList = async () => {
+    const clientMattersOpt = await API.graphql({
+      query: listClientMatters,
       variables: {
-        clientMatterId: clientMatterId,
-        gmailMessageId: gmailMessageId
+        companyId: companyId,
       },
     });
+
+    if (clientMattersOpt.data.company.clientMatters.items !== null) {
+      result = clientMattersOpt.data.company.clientMatters.items.map(({ id, client, matter }) => ({
+        value: id,
+        label: client.name+"/"+matter.name,
+      }));
+
+      var filtered = result.filter(function (el) {
+        return el.label != null && el.value != null;
+      });
+  
+      setMatterList(filtered.sort((a, b) => a.label - b.label));
+    }
+  }
+
+  const handleOnAction = (event) => {
+    handleLoadMoreUnSavedEmails();
+    handleLoadMoreSavedEmails();
   };
+
+  const handleOnIdle = (event) => {
+    handleLoadMoreUnSavedEmails();
+    handleLoadMoreSavedEmails();
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
 
   return (
     <>
@@ -256,6 +345,7 @@ const Inbox = () => {
                 selectedUnsavedItems={selectedUnsavedItems}
                 setSelectedUnsavedItems={setSelectedUnsavedItems}
                 unSavedEmails={unSavedEmails}
+                matterList={matterList}
               />
             </div>
             <div className={openTab === 2 ? "block" : "hidden"} id="link2">
@@ -263,6 +353,7 @@ const Inbox = () => {
                 selectedSavedItems={selectedSavedItems}
                 setSelectedSavedItems={setSelectedSavedItems}
                 savedEmails={savedEmails}
+                matterList={matterList}
               />
             </div>
           </div>

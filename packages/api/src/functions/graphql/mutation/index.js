@@ -26,7 +26,9 @@ const { client_id, client_secret } = require("../../../services/gmail/config");
 const googleAuth = new google.auth.OAuth2(
   client_id,
   client_secret,
-  "http://localhost:3000"
+  process.env.IS_OFFLINE
+    ? "http://localhost:3000"
+    : process.env.REACT_APP_GMAIL_REDIRECT_URI
 );
 
 async function createCompany(data) {

@@ -1,25 +1,34 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { AppRoutes } from "../../constants/AppRoutes";
+import { API } from "aws-amplify";
 import ToastNotification from "../toast-notification";
-import { AiOutlineDownload } from "react-icons/ai";
-import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
-import {
-  BsFillTrashFill,
-  BsFillBucketFill,
-  BsSortUpAlt,
-  BsSortDown,
-} from "react-icons/bs";
-import Unsaved from "./data-source";
 import { useRootClose } from 'react-overlays';
 
 var moment = require("moment");
+
+const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id: ID) {
+  gmailMessageAttachmentUpdate(id: $id, details: $details) {
+    id
+    details
+  }
+}`;
+
+const mTagEmailClientMatter = `
+mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+  gmailMessageClientMatterTag(
+    clientMatterId: $clientMatterId
+    gmailMessageId: $gmailMessageId
+  ) {
+    id
+  }
+}`;
 
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
   unSavedEmails,
+  matterList,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -28,29 +37,10 @@ const TableUnsavedInfo = ({
   const [selectedClientMatter, setSelectedClientMatter] = useState();
   const [isShiftDown, setIsShiftDown] = useState(false);
   const [lastSelectedItem, setLastSelectedItem] = useState(null);
-
   const companyId = localStorage.getItem("companyId");
 
-  const listClientMatters = `
-  query listClientMatters($companyId: String) {
-    company(id: $companyId) {
-      clientMatters (sortOrder: CREATED_DESC) {
-        items {
-          id
-          createdAt
-          client {
-            id
-            name
-          }
-          matter {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-  `;
+  const [showToast, setShowToast] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
 
   const handleSnippet = (e) => {
     setSnippetId(e.target.id);
@@ -91,56 +81,49 @@ const TableUnsavedInfo = ({
     }
   }
 
-  /*const getNextValue = (value) => {
-    const hasBeenSelected = !selectedItems.includes(value);
-
-    if (isShiftDown) {
-      const newSelectedItems = getNewSelectedItems(value);
-
-      const selections = [...new Set([...selectedItems, ...newSelectedItems])];
-
-      if (!hasBeenSelected) {
-        return selections.filter((item) => !newSelectedItems.includes(item));
-      }
-
-      return selections;
-    }
-
-    // if it's already in there, remove it, otherwise append it
-    return selectedItems.includes(value)
-      ? selectedItems.filter((item) => item !== value)
-      : [...selectedItems, value];
+  const hideToast = () => {
+    setShowToast(false);
   };
 
-  const getNewSelectedItems = (value) => {
-    const currentSelectedIndex = unSavedEmails.findIndex(
-      (item) => item.id === value
-    );
-    const lastSelectedIndex = unSavedEmails.findIndex(
-      (item) => item.id === lastSelectedItem
-    );
-
-    return unSavedEmails
-      .slice(
-        Math.min(lastSelectedIndex, currentSelectedIndex),
-        Math.max(lastSelectedIndex, currentSelectedIndex) + 1
-      )
-      .map((item) => item.id);
-  };
-
-  useEffect(() => {
-    document.addEventListener("keyup", handleKeyUp, false);
-    document.addEventListener("keydown", handleKeyDown, false);
-
-    return () => {
-      document.removeEventListener("keyup", handleKeyUp);
-      document.removeEventListener("keydown", handleKeyDown);
+  const handleSaveDesc = async (e, id) => {
+    const data = {
+      id: id,
+      description: e.target.innerHTML,
     };
-  }, [handleKeyUp, handleKeyDown]);
-  */
+    const success = await updateAttachmentDesc(data);
+      if (success) {
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
+      }
+  };
 
-  const handleClientMatterChanged = (newValue) => {
-    console.log(newValue);
+  async function updateAttachmentDesc(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateAttachmentDescription,
+          variables: {
+            id: data.id,
+            details: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  const handleClientMatter = async (e, gmailMessageId) => {
+    const request = API.graphql({
+      query: mTagEmailClientMatter,
+      variables: {
+        clientMatterId: e.value,
+        gmailMessageId: gmailMessageId
+      },
+    });
+
+    console.log(request);
   };
   
   return (
@@ -157,13 +140,13 @@ const TableUnsavedInfo = ({
             <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
               Email Details
             </th>
-            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-2/8">
               Attachments and Description
             </th>
-            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/6">
               Labels
             </th>
-            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/4">
+            <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/6">
               Client Matter
             </th>
           </tr>
@@ -180,7 +163,7 @@ const TableUnsavedInfo = ({
                   id={`item-${item.id}`}
                 />
               </td>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
                 <p className="text-sm font-medium" >{item.subject}</p>
                 <p className="text-xs" >{item.from} at {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                 <p><div className="relative"><button className="
@@ -208,25 +191,75 @@ const TableUnsavedInfo = ({
                 </p>
               </td>
               <td className="p-2" >
+              {item.attachments.items.map((item_attach, index) => (
+                <>
+                <div className="flex items-start mt-1" >
+                  <p className="
+                  cursor-pointer mr-1 text-opacity-90 1
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id={item_attach.id} >{item_attach.name}</p>
+                  <div
+                    className="p-2 w-1/2 h-full font-poppins rounded-sm"
+                    style={{
+                      border: "solid 1px #c4c4c4",
+                      cursor: "auto",
+                      outlineColor:
+                        "rgb(204, 204, 204, 0.5)",
+                      outlineWidth: "thin",
+                    }}
+                    suppressContentEditableWarning
+                    dangerouslySetInnerHTML={{
+                      __html: item_attach.details,
+                    }}
+                    
+                    onBlur={(e) =>
+                      handleSaveDesc(
+                        e,
+                        item_attach.id
+                      )
+                    }
+                    contentEditable={true}
+                  ></div>
+                </div>
+                </>
+              ))}
 
               </td>
-              <td className="p-2" >
-
+              <td className="p-2 align-top" >
+                <div className="relative"><button className="
+                  text-opacity-90 1
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id="headlessui-popover-button-87" type="button" aria-expanded="false">{item.labelIds}</button>
+                </div>
               </td>
-              <td className="p-2" >
-                <CreatableSelect
-                  //options={clientsOptions}
-                  isClearable
-                  isSearchable
-                  onChange={handleClientMatterChanged}
-                  placeholder="Client/Matter"
-                  className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                />
+              <td className="p-2 align-top" >
+
+                <>
+                  <CreatableSelect
+                      defaultValue={
+                        item.clientMatters.items.map((item_clientMatter, index) => (
+                        { value: item_clientMatter.id , label: item_clientMatter.client.name+"/"+item_clientMatter.matter.name}
+                      ))}
+                      options={matterList}
+                      isClearable
+                      isSearchable
+                      onChange={(options, e) =>
+                        handleClientMatter(
+                          options,
+                          item.id
+                        )
+                      }
+                      placeholder="Client/Matter"
+                      className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                  />
+                </>
+
               </td>
             </tr>
           ))}
           </tbody>
       </table>
+      {showToast && resultMessage && (
+        <ToastNotification title={resultMessage} hideToast={hideToast} />
+      )}
     </>
   );
 };
