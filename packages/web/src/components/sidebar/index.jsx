@@ -55,7 +55,8 @@ const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
             {userInfo &&
               SidebarData.map((item, index) => {
                 return (item.name === "DASHBOARD" && showDashboard) || (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
-                  item.name === "ACCOUNTSETTINGS" ? (
+                  item.name === "ACCOUNTSETTINGS" ||
+                  item.name === "INBOX" ? (
                   <li
                     className={
                       location.pathname === item.path ? "active-page" : ""

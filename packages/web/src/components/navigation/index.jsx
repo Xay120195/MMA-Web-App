@@ -104,7 +104,8 @@ function Navbar() {
               SidebarData.map((item, index) => {
                 return (item.name === "DASHBOARD" && showDashboard) ||
                   (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
-                  item.name === "ACCOUNTSETTINGS" ? (
+                  item.name === "ACCOUNTSETTINGS" ||
+                  item.name === "INBOX" ? (
                   <li
                     className={
                       location.pathname === item.path ? "active-page" : ""
@@ -112,7 +113,7 @@ function Navbar() {
                     key={index}
                   >
                     <Link
-                   data-tip={item.name === "DASHBOARD" ? "Dashboard" : item.name === "USERTYPEACCESS" ? "User Type Access" :"Account Settings" }
+                   data-tip={item.name === "DASHBOARD" ? "Dashboard" : item.name === "USERTYPEACCESS" ? "User Type Access" : item.name === "ACCOUNTSETTINGS" ? "Account Settings" : "Inbox" }
                    onMouseDown={()=> ReactTooltip.show()}
                     
                       className="nav-item-collapsed nav-item"
