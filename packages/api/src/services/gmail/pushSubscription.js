@@ -40,10 +40,14 @@ const getParsedGmailMessage = async (data) => {
         `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`
       );
 
-      const fileName = `${messageId}/${filename}`;
+      const fileId = messageId + filename,
+        fileName = `${messageId}/${filename}`,
+        fid = fileId
+          .replaceAll(/\s/g, "")
+          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "");
 
       const saveAttachmentsParams = {
-        id: body.attachmentId,
+        id: fid,
         messageId: messageId,
         s3ObjectKey: fileName,
         size: body.size,
@@ -52,6 +56,8 @@ const getParsedGmailMessage = async (data) => {
         details: "",
         updatedAt: toUTC(new Date()),
       };
+
+      console.log(saveAttachmentsParams);
 
       const saveAttachments = await docClient
         .put({
