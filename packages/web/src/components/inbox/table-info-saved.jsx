@@ -88,7 +88,7 @@ const TableSavedInfo = ({
     }
   };
 
-  const handleSelectItem = (e, position) => {
+  /*const handleSelectItem = (e, position) => {
     const { value } = e.target;
     const checkedId = selectedSavedItems.some((x) => x.id === value);
 
@@ -104,55 +104,15 @@ const TableSavedInfo = ({
     } else {
         setSelectedSavedItems([]);
     }
-  }
+  }*/
 
-  /*const getNextValue = (value) => {
-    const hasBeenSelected = !selectedItems.includes(value);
-
-    if (isShiftDown) {
-      const newSelectedItems = getNewSelectedItems(value);
-
-      const selections = [...new Set([...selectedItems, ...newSelectedItems])];
-
-      if (!hasBeenSelected) {
-        return selections.filter((item) => !newSelectedItems.includes(item));
-      }
-
-      return selections;
+  const handleSelectItem = e => {
+    const { id, checked } = e.target;
+    setSelectedSavedItems([...selectedSavedItems, id]);
+    if (!checked) {
+        setSelectedSavedItems(selectedSavedItems.filter(item => item !== id));
     }
-
-    // if it's already in there, remove it, otherwise append it
-    return selectedItems.includes(value)
-      ? selectedItems.filter((item) => item !== value)
-      : [...selectedItems, value];
   };
-
-  const getNewSelectedItems = (value) => {
-    const currentSelectedIndex = unSavedEmails.findIndex(
-      (item) => item.id === value
-    );
-    const lastSelectedIndex = unSavedEmails.findIndex(
-      (item) => item.id === lastSelectedItem
-    );
-
-    return unSavedEmails
-      .slice(
-        Math.min(lastSelectedIndex, currentSelectedIndex),
-        Math.max(lastSelectedIndex, currentSelectedIndex) + 1
-      )
-      .map((item) => item.id);
-  };
-
-  useEffect(() => {
-    document.addEventListener("keyup", handleKeyUp, false);
-    document.addEventListener("keydown", handleKeyDown, false);
-
-    return () => {
-      document.removeEventListener("keyup", handleKeyUp);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleKeyUp, handleKeyDown]);
-  */
 
   const handleClientMatterChanged = (newValue) => {
     console.log(newValue);
@@ -231,11 +191,13 @@ const TableSavedInfo = ({
             <tr>
               <td className="p-2" >
                 <input
+                  key={item.id}
                   className="cursor-pointer mr-1"
                   onChange={handleSelectItem}
                   type="checkbox"
                   value={item.id}
-                  id={`item-${item.id}`}
+                  id={item.id}
+                  checked={selectedSavedItems.includes(item.id)}
                 />
               </td>
               <td className="p-2 align-top" >
