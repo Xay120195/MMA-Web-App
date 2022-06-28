@@ -92,6 +92,7 @@ type Company {
   gmailMessages(
     limit: Int
     nextToken: String
+    sortOrder: OrderBy
     isDeleted: Boolean
     isSaved: Boolean
     email: String
@@ -233,6 +234,7 @@ type GmailMessage {
   from: String
   to: String
   recipient: String
+  description: String
   cc: String
   bcc: String
   historyId: String
