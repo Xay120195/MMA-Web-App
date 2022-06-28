@@ -52,47 +52,46 @@ const getParsedGmailMessage = async (data) => {
           .replace(/\.[^/.]+$/, "")
           .toLowerCase();
 
-
-          // check if fid already exists
-
-      //   const getExistingGmailMessages = await docClient
-      // .get({ TableName: "GmailMessageAttachment", Key: { id: fid } })
-      // .promise();
-
-      const saveAttachmentsParams = {
-        id: fid,
-        messageId: messageId,
-        s3ObjectKey: fileName,
-        size: body.size,
-        type: mimeType,
-        name: filename,
-        details: "",
-        updatedAt: toUTC(new Date()),
-      };
-
-      console.log("saveAttachmentsToDatabase");
-      console.log("Params:", saveAttachmentsParams);
-
-      const saveAttachments = await docClient
-        .put({
-          TableName: "GmailMessageAttachment",
-          Item: saveAttachmentsParams,
-        })
+      const { Item: getExistingAttachments } = await docClient
+        .get({ TableName: "GmailMessageAttachment", Key: { id: fid } })
         .promise();
-      console.log("Response:", saveAttachments);
 
-      console.log("saveAttachmentsToS3");
-      const saveAttachmentsToS3 = {
-        ContentType: mimeType,
-        Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
-        Key: fileName,
-        Body: Buffer.from(data, "base64"),
-      };
+      console.log("getExistingAttachments:", getExistingAttachments);
+      if (getExistingAttachments === undefined) {
+        const saveAttachmentsParams = {
+          id: fid,
+          messageId: messageId,
+          s3ObjectKey: fileName,
+          size: body.size,
+          type: mimeType,
+          name: filename,
+          details: "",
+          updatedAt: toUTC(new Date()),
+        };
 
-      console.log("Params:", saveAttachmentsToS3);
-      const s3Response = await s3.putObject(saveAttachmentsToS3).promise();
+        console.log("saveAttachmentsToDatabase");
+        console.log("Params:", saveAttachmentsParams);
 
-      console.log("Response:", s3Response);
+        const saveAttachments = await docClient
+          .put({
+            TableName: "GmailMessageAttachment",
+            Item: saveAttachmentsParams,
+          })
+          .promise();
+        console.log("Response:", saveAttachments);
+
+        console.log("saveAttachmentsToS3");
+        const saveAttachmentsToS3 = {
+          ContentType: mimeType,
+          Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
+          Key: fileName,
+          Body: Buffer.from(data, "base64"),
+        };
+
+        console.log("Params:", saveAttachmentsToS3);
+        const s3Response = await s3.putObject(saveAttachmentsToS3).promise();
+        console.log("Response:", s3Response);
+      }
 
       _parsedMessagePart["path"] = fileName;
     }
@@ -222,29 +221,60 @@ const checkGmailMessages = async (
             })
             .promise();
 
-          console.log("saveEmails:", saveEmails);
+          console.log("Save to GmailMessageTable:", saveEmails);
 
-          const saveCompanyEmails = await docClient
-            .batchWrite({
-              RequestItems: {
-                CompanyGmailMessageTable: messagesToAdd.map((Item) => ({
-                  PutRequest: {
-                    Item: {
-                      id: v4(),
-                      gmailMessageId: Item.id,
-                      companyId: companyId,
-                      isDeleted: false,
-                      isSaved: false,
-                      createdAt: toUTC(new Date()),
-                      dateReceived: Item.receivedAt.toString()
-                    },
-                  },
-                })),
-              },
-            })
+          const filterMessagesIDs = messagesToAdd.map((Item) => {
+            return { id: Item.id, dateReceived: Item.receivedAt };
+          });
+
+          var params = {
+            TableName: "CompanyGmailMessageTable",
+            IndexName: "byCompany",
+            KeyConditionExpression: "#companyId = :companyId",
+            ExpressionAttributeNames: { "#companyId": "companyId" },
+            ExpressionAttributeValues: { ":companyId": companyId },
+          };
+
+          console.log("Get Existing Gmail Messages by Company:", params);
+
+          const getExistingGmailMessages = await docClient
+            .query(params)
             .promise();
 
-          console.log("saveCompanyEmails:", saveCompanyEmails);
+          const existingGmailMessages = getExistingGmailMessages.Items.map(
+            (Item) => Item.gmailMessageId
+          );
+          console.log("Existing Gmail Messages", existingGmailMessages);
+
+          const nonExistingGmailMessages = filterMessagesIDs.filter(
+            (f) => !existingGmailMessages.includes(f.id)
+          );
+
+          console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
+
+          if (nonExistingGmailMessages.length != 0) {
+            const saveCompanyEmails = await docClient
+              .batchWrite({
+                RequestItems: {
+                  CompanyGmailMessageTable: nonExistingGmailMessages.map((i) => ({
+                    PutRequest: {
+                      Item: {
+                        id: `${companyId}-${i.id}`,
+                        gmailMessageId: i.id,
+                        companyId: companyId,
+                        isDeleted: false,
+                        isSaved: false,
+                        createdAt: toUTC(new Date()),
+                        dateReceived: i.dateReceived.toString()
+                      },
+                    },
+                  })),
+                },
+              })
+              .promise();
+      
+            console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
+          }
         }
       }
 
