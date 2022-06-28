@@ -2056,7 +2056,7 @@ async function createGmailMessage(data) {
     const request = await ddbClient.send(cmd);
 
     const companyGmailMessageParams = {
-      id: v4(),
+      id: `${data.companyId}-${rawParams.id}`,
       gmailMessageId: rawParams.id,
       companyId: data.companyId,
       isDeleted: false,

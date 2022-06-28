@@ -863,6 +863,8 @@ Resources:
           AttributeType: S
         - AttributeName: gmailMessageId
           AttributeType: S
+        - AttributeName: dateReceived
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -877,6 +879,14 @@ Resources:
           KeySchema:
             - AttributeName: gmailMessageId
               KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byDateReceived
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+            - AttributeName: dateReceived
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST

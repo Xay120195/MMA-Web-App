@@ -6,106 +6,75 @@ const {
 } = require("./lib");
 const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
-const { toUTC, toLocalTime } = require("../../shared/toUTC");
+const { toUTC } = require("../../shared/toUTC");
 const { v4 } = require("uuid");
 const getOldMessages = async (email, companyId, pageToken) => {
   console.log("getOldMessages");
-  const {
-    data: { messages: messageIds, nextPageToken },
-  } = await gmailAxios.get(`/gmail/v1/users/${email}/messages`, {
-    params: {
-      maxResults: 25,
-      q: "label:inbox after:2022/06/01", // all inbox from June 2022
-      ...(pageToken ? { pageToken } : {}),
-    },
-  });
+  const getMessagesByEmail = `/gmail/v1/users/${email}/messages`;
 
-  const messages = await Promise.all(
-    messageIds.map(
-      ({ id }) =>
-        new Promise((resolve, reject) => {
-          gmailAxios
-            .get(`/gmail/v1/users/me/messages/${id}`)
-            .then((response) => resolve(response.data))
-            .catch(reject);
-        })
-    )
-  );
-
-  console.log("message count: ", messages.length);
-
-  const messagesToAdd = await Promise.all(messages.map(getParsedGmailMessage));
-  // console.log("messagesToAdd: ", messagesToAdd);
-
-  const saveEmails = await docClient
-    .batchWrite({
-      RequestItems: {
-        GmailMessageTable: messagesToAdd.map((Item) => ({
-          PutRequest: {
-            Item: {
-              id: Item.id,
-              threadId: Item.threadId,
-              connectedEmail: email,
-              messageId: Item.messageID,
-              contentType: Item.contentType,
-              date: Item.date,
-              internalDate: Item.internalDate,
-              receivedAt: Item.receivedAt,
-              from: Item.from,
-              to: Item.to,
-              recipient: Item.recipient,
-              cc: Item.cc,
-              bcc: Item.bcc,
-              historyId: Item.historyId,
-              subject: Item.subject,
-              lowerSubject: Item.lower_subject,
-              snippet: Item.snippet,
-              lowerSnippet: Item.lower_snippet,
-              labels: Item.labelIds,
-              payload: Item.payload,
-              updatedAt: toUTC(new Date()),
-            },
-          },
-        })),
-      },
-    })
-    .promise();
-
-  console.log("saveEmails:", saveEmails);
-
-  const filterMessagesIDs = messagesToAdd.map((Item) => Item.id);
-
-  var params = {
-    TableName: "CompanyGmailMessageTable",
-    IndexName: "byCompany",
-    KeyConditionExpression: "#companyId = :companyId", // this equals "type = hat"
-    ExpressionAttributeNames: { "#companyId": "companyId" },
-    ExpressionAttributeValues: { ":companyId": companyId },
+  const getMessagesByEmailParams = {
+    maxResults: 25,
+    q: "label:inbox after:2022/06/20", // all inbox from June 2022
+    ...(pageToken ? { pageToken } : {}),
   };
 
-  const getExistingGmailMessages = await docClient.query(params).promise();
+  const {
+    data: { messages: messageIds, nextPageToken },
+  } = await gmailAxios
+    .get(getMessagesByEmail, {
+      params: getMessagesByEmailParams,
+    })
+    .catch((err) => console.log(err));
 
-  const existingGmailMessages = getExistingGmailMessages.Items.map(
-    (Item) => Item.gmailMessageId
-  );
+  console.log("Request:", getMessagesByEmail);
+  console.log("Params:", getMessagesByEmailParams);
+  console.log("Result:", messageIds);
 
-  const nonExistingGmailMessages = filterMessagesIDs.filter(
-    (f) => !existingGmailMessages.includes(f)
-  );
+  if (messageIds != undefined && messageIds.length != 0) {
+    const messages = await Promise.all(
+      messageIds.map(
+        ({ id }) =>
+          new Promise((resolve, reject) => {
+            gmailAxios
+              .get(`/gmail/v1/users/me/messages/${id}`)
+              .then((response) => resolve(response.data))
+              .catch(reject);
+          })
+      )
+    );
 
-  if (nonExistingGmailMessages.length != 0) {
-    const saveCompanyEmails = await docClient
+    const messagesToAdd = await Promise.all(
+      messages.map(getParsedGmailMessage)
+    );
+    // console.log("messagesToAdd: ", messagesToAdd);
+
+    const saveEmails = await docClient
       .batchWrite({
         RequestItems: {
-          CompanyGmailMessageTable: nonExistingGmailMessages.map((i) => ({
+          GmailMessageTable: messagesToAdd.map((Item) => ({
             PutRequest: {
               Item: {
-                id: v4(),
-                gmailMessageId: i,
-                companyId: companyId,
-                isDeleted: false,
-                isSaved: false,
-                createdAt: toUTC(new Date()),
+                id: Item.id,
+                threadId: Item.threadId,
+                connectedEmail: email,
+                messageId: Item.messageID,
+                contentType: Item.contentType,
+                date: Item.date,
+                internalDate: Item.internalDate,
+                receivedAt: Item.receivedAt,
+                from: Item.from,
+                to: Item.to,
+                recipient: Item.recipient,
+                cc: Item.cc,
+                bcc: Item.bcc,
+                historyId: Item.historyId,
+                subject: Item.subject,
+                lowerSubject: Item.lower_subject,
+                snippet: Item.snippet,
+                lowerSnippet: Item.lower_snippet,
+                labels: Item.labelIds,
+                payload: Item.payload,
+                updatedAt: toUTC(new Date()),
               },
             },
           })),
@@ -113,9 +82,59 @@ const getOldMessages = async (email, companyId, pageToken) => {
       })
       .promise();
 
-    console.log("saveCompanyEmails:", saveCompanyEmails);
-  }
+    console.log("Save to GmailMessageTable:", saveEmails);
 
+    const filterMessagesIDs = messagesToAdd.map((Item) => {
+      return { id: Item.id, dateReceived: Item.receivedAt };
+    });
+
+    var params = {
+      TableName: "CompanyGmailMessageTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "#companyId = :companyId",
+      ExpressionAttributeNames: { "#companyId": "companyId" },
+      ExpressionAttributeValues: { ":companyId": companyId },
+    };
+
+    console.log("Get Existing Gmail Messages by Company:", params);
+
+    const getExistingGmailMessages = await docClient.query(params).promise();
+
+    const existingGmailMessages = getExistingGmailMessages.Items.map(
+      (Item) => Item.gmailMessageId
+    );
+    console.log("Existing Gmail Messages", existingGmailMessages);
+
+    const nonExistingGmailMessages = filterMessagesIDs.filter(
+      (f) => !existingGmailMessages.includes(f.id)
+    );
+
+    console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
+
+    if (nonExistingGmailMessages.length != 0) {
+      const saveCompanyEmails = await docClient
+        .batchWrite({
+          RequestItems: {
+            CompanyGmailMessageTable: nonExistingGmailMessages.map((i) => ({
+              PutRequest: {
+                Item: {
+                  id: `${companyId}-${i.id}`,
+                  gmailMessageId: i.id,
+                  companyId: companyId,
+                  isDeleted: false,
+                  isSaved: false,
+                  createdAt: toUTC(new Date()),
+                  dateReceived: i.dateReceived.toString()
+                },
+              },
+            })),
+          },
+        })
+        .promise();
+
+      console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
+    }
+  }
   if (nextPageToken) await getOldMessages(email, companyId, nextPageToken);
 };
 
@@ -146,9 +165,11 @@ exports.addToken = async (ctx) => {
     console.log("endpoint:", endpoint);
     console.log("topic:", topic);
 
-    const { data: watchData } = await gmailAxios.post(endpoint, {
-      topicName: topic,
-    });
+    const { data: watchData } = await gmailAxios
+      .post(endpoint, {
+        topicName: topic,
+      })
+      .catch((err) => console.log(err));
 
     console.log("watchData:", watchData);
     delete payload.email;
@@ -160,7 +181,7 @@ exports.addToken = async (ctx) => {
       updatedAt: toUTC(new Date()),
     };
 
-    console.log("items:", items);
+    console.log("Save to GmailTokenTable:", items);
     const request = await docClient
       .put({
         TableName: "GmailTokenTable",

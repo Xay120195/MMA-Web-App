@@ -352,8 +352,16 @@ async function listCompanyGmailMessages(ctx) {
     isSaved = false,
   } = ctx.arguments;
 
-  let indexName = "byCompany",
+  let indexName,
+    isAscending = true;
+
+  if (sortOrder.includes("_DESC")) {
     isAscending = false;
+  }
+
+  if (sortOrder.includes("CREATED_")) {
+    indexName = "byDateReceived";
+  }
 
   try {
     const compCMParam = {
