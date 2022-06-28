@@ -135,6 +135,7 @@ const TableUnsavedInfo = ({
       },
     });
   };
+
   return (
     <>
       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
@@ -163,7 +164,7 @@ const TableUnsavedInfo = ({
           <tbody className="bg-white divide-y divide-gray-200" >
           {unSavedEmails.map((item, index) => (
             <tr>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
                 <input
                   key={item.id}
                   className="cursor-pointer mr-1"
@@ -212,9 +213,9 @@ const TableUnsavedInfo = ({
                 <div className="flex items-start mt-1">
                   <p className="
                   cursor-pointer mr-1 text-opacity-90 1
-                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id={item_attach.id} >{item_attach.name}</p>
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 " id={item_attach.id} title={item_attach.name} >{item_attach.name.substring(0, 20)}{item_attach.name.length >= 20 ? "..." : ""}</p>
                   <div
-                    className="p-2 w-1/2 h-full font-poppins rounded-sm"
+                    className="p-2 w-full h-full font-poppins rounded-sm float-right"
                     style={{
                       border: "solid 1px #c4c4c4",
                       cursor: "auto",

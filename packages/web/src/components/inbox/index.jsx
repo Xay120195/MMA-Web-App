@@ -45,6 +45,9 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
             id
             details
             name
+            s3ObjectKey
+            size
+            type
           }
         }
       }
@@ -186,6 +189,7 @@ const Inbox = () => {
     };
 
     await API.graphql(params).then((result) => {
+      console.log(result);
       const emailList = result.data.company.gmailMessages.items;
       setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);
@@ -258,7 +262,7 @@ const Inbox = () => {
 
   return (
     <>
-      { loginData ?
+      {!loginData ?
       <div
         className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
         style={contentDiv}

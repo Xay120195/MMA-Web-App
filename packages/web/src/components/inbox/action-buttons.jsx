@@ -24,10 +24,116 @@ const ActionButtons = ({
     }
   }`;
 
+  const mSaveAttachmentEmailsToMatter = `
+  mutation createMatterFile($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailAttachment: Boolean, $date: AWSDateTime, $details: String) {
+    matterFileCreate(
+      matterId: $matterId
+      s3ObjectKey: $s3ObjectKey
+      size: $size
+      type: $type
+      name: $name
+      order: $order
+      isGmailAttachment: $isGmailAttachment
+      details: $details
+      date: $date
+    ) {
+      id
+      name
+      order
+    }
+  }`;
+
+  const qGmailMessagesbyCompany = `
+  query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
+    company(id: $id) {
+      gmailMessages(
+        isDeleted: $isDeleted
+        isSaved: $isSaved
+        limit: $limit
+        nextToken: $nextToken
+      ) {
+        items {
+          id
+          from
+          to
+          subject
+          date
+          snippet
+          payload
+          clientMatters {
+            items {
+              id
+              client {
+                id
+                name
+              }
+              matter {
+                id
+                name
+              }
+            }
+          }
+          attachments {
+            items {
+              id
+              details
+              name
+              s3ObjectKey
+              size
+              type
+            }
+          }
+        }
+        nextToken
+      }
+    }
+  }`;
+
   const handleEmails = async (status) => {
     // Soon will change this to bulk mutation 
     if(status) {
+      var clientMatterId = "";
+      var emailList = "";
+
+      const params = {
+        query: qGmailMessagesbyCompany,
+        variables: {
+          id: companyId,
+          isSaved: false,
+          limit: 50,
+          nextToken: null,
+        },
+      };
+  
+      await API.graphql(params).then((result) => {
+        emailList = result.data.company.gmailMessages.items;
+      });
+
       selectedUnsavedItems.map((obj) => {
+        const filteredUnsavedArr = emailList.filter(item => item.id === obj);
+        filteredUnsavedArr.map((item) => {
+          item.clientMatters.items.map(clientMatters => {
+            clientMatterId = clientMatters.id;
+          });
+
+          item.attachments.items.map(attachment => {
+            const request = API.graphql({
+              query: mSaveAttachmentEmailsToMatter,
+              variables: {
+                matterId: clientMatterId,
+                s3ObjectKey: attachment.s3ObjectKey,
+                size: attachment.size,
+                name: attachment.name,
+                type: attachment.type,
+                order: 0,
+                isGmailAttachment: true,
+                details: attachment.details,
+              },
+            });
+            
+          });
+        });
+
         const request = API.graphql({
           query: mSaveUnsavedEmails,
           variables: {
@@ -37,6 +143,7 @@ const ActionButtons = ({
           },
         });
       });
+
       setResultMessage("Successfully saved an email.");
       setShowToast(true);
       setTimeout(() => {
@@ -55,13 +162,12 @@ const ActionButtons = ({
           },
         });
       });
-      setResultMessage("Successfully unsaved an email.");
+      setResultMessage("Successfully saved an email.");
       setShowToast(true);
       setTimeout(() => {
-        getUnSavedEmails();
         getSavedEmails();
-        setSelectedSavedItems([]);
-        setShowToast(false);
+        getUnSavedEmails();
+        setSelectedUnsavedItems([]);
       }, 1000);
     }
   };
