@@ -219,8 +219,8 @@ const TableSavedInfo = ({
                     <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
-                    <p>BCC: </p>
-                    <p>CC:</p>
+                    <p>CC: {item.cc}</p>
+                    <p>BCC: {item.bcc}</p>
                     <br/>
                     <span>{item.snippet}</span>
                   </div>
