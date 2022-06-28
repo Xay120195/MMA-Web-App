@@ -144,13 +144,14 @@ const ActionButtons = ({
         });
       });
 
-      setResultMessage("Successfully saved an email.");
-      setShowToast(true);
-      setTimeout(() => {
-        getUnSavedEmails();
-        getSavedEmails();
-        setSelectedUnsavedItems([]);
-      }, 1000);
+        setResultMessage("Successfully saved an email.");
+        setShowToast(true);
+        setTimeout(() => {
+          getUnSavedEmails();
+          getSavedEmails();
+          setSelectedUnsavedItems([]);
+        }, 2000);
+      
     } else {
       selectedSavedItems.map((obj) => {
         const request = API.graphql({
@@ -168,7 +169,7 @@ const ActionButtons = ({
         getSavedEmails();
         getUnSavedEmails();
         setSelectedUnsavedItems([]);
-      }, 1000);
+      }, 2000);
     }
   };
 
@@ -197,7 +198,8 @@ const ActionButtons = ({
               <button
                 type="button"
                 onClick={() => handleEmails(true)}
-                className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"
+                className={"bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
+                disabled={false} 
               >
                 Save Emails
               </button>
