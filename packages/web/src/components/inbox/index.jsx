@@ -264,7 +264,7 @@ const Inbox = () => {
 
   return (
     <>
-      {!loginData ?
+      {loginData ?
       <div
         className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
         style={contentDiv}
@@ -369,6 +369,7 @@ const Inbox = () => {
                 unSavedEmails={unSavedEmails}
                 matterList={matterList}
                 maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
+                getUnSavedEmails={getUnSavedEmails}
               />
             </div>
             <div className={openTab === 2 ? "block" : "hidden"} id="link2">
