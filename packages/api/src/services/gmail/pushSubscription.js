@@ -52,6 +52,13 @@ const getParsedGmailMessage = async (data) => {
           .replace(/\.[^/.]+$/, "")
           .toLowerCase();
 
+
+          // check if fid already exists
+
+      //   const getExistingGmailMessages = await docClient
+      // .get({ TableName: "GmailMessageAttachment", Key: { id: fid } })
+      // .promise();
+
       const saveAttachmentsParams = {
         id: fid,
         messageId: messageId,
@@ -229,6 +236,7 @@ const checkGmailMessages = async (
                       isDeleted: false,
                       isSaved: false,
                       createdAt: toUTC(new Date()),
+                      dateReceived: Item.receivedAt.toString()
                     },
                   },
                 })),
@@ -282,7 +290,7 @@ const pushSubscriptionHandler = async (event) => {
       companyId: companyId,
     } = gmailToken;
 
-    console.log("gmailToken:",gmailToken);
+    console.log("gmailToken:", gmailToken);
 
     const {
       data: { access_token },
