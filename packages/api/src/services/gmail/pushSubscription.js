@@ -261,6 +261,8 @@ const checkGmailMessages = async (
 const pushSubscriptionHandler = async (event) => {
   let responseBody = "";
 
+  console.log("pushSubscriptionHandler");
+
   try {
     const payload = JSON.parse(event.body);
     console.log("payload: ", payload);
@@ -269,17 +271,18 @@ const pushSubscriptionHandler = async (event) => {
       Buffer.from(payload.message.data, "base64").toString("utf-8")
     );
 
-    console.log(email);
+    console.log("emailAddress:", email);
     const { Item: gmailToken } = await docClient
       .get({ TableName: "GmailTokenTable", Key: { id: email } })
       .promise();
+
     const {
       refreshToken: refreshToken,
       historyId: oldHistoryId,
       companyId: companyId,
     } = gmailToken;
 
-    console.log(gmailToken);
+    console.log("gmailToken:",gmailToken);
 
     const {
       data: { access_token },

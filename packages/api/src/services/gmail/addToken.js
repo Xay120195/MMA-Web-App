@@ -14,7 +14,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
 
   const getMessagesByEmailParams = {
     maxResults: 25,
-    q: "label:inbox after:2022/06/01", // all inbox from June 2022
+    q: "label:inbox after:2022/06/20", // all inbox from June 2022
     ...(pageToken ? { pageToken } : {}),
   };
 
@@ -84,7 +84,9 @@ const getOldMessages = async (email, companyId, pageToken) => {
 
     console.log("Save to GmailMessageTable:", saveEmails);
 
-    const filterMessagesIDs = messagesToAdd.map((Item) => Item.id);
+    const filterMessagesIDs = messagesToAdd.map((Item) => {
+      return { id: Item.id, dateReceived: Item.receivedAt };
+    });
 
     var params = {
       TableName: "CompanyGmailMessageTable",
@@ -104,7 +106,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
     console.log("Existing Gmail Messages", existingGmailMessages);
 
     const nonExistingGmailMessages = filterMessagesIDs.filter(
-      (f) => !existingGmailMessages.includes(f)
+      (f) => !existingGmailMessages.includes(f.id)
     );
 
     console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
@@ -117,11 +119,12 @@ const getOldMessages = async (email, companyId, pageToken) => {
               PutRequest: {
                 Item: {
                   id: v4(),
-                  gmailMessageId: i,
+                  gmailMessageId: i.id,
                   companyId: companyId,
                   isDeleted: false,
                   isSaved: false,
                   createdAt: toUTC(new Date()),
+                  dateReceived: i.dateReceived.toString()
                 },
               },
             })),
