@@ -32,6 +32,7 @@ const TableUnsavedInfo = ({
   unSavedEmails,
   matterList,
   maxLoadingUnSavedEmail,
+  getUnSavedEmails,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -85,11 +86,15 @@ const TableUnsavedInfo = ({
     }
   }*/
 
-  const handleSelectItem = e => {
-    const { id, checked } = e.target;
-    setSelectedUnsavedItems([...selectedUnsavedItems, id]);
-    if (!checked) {
-      setSelectedUnsavedItems(selectedUnsavedItems.filter(item => item !== id));
+  const handleSelectItem = (e, counter) => {
+    if(counter === 1) {
+      const { id, checked } = e.target;
+      setSelectedUnsavedItems([...selectedUnsavedItems, id]);
+      if (!checked) {
+        setSelectedUnsavedItems(selectedUnsavedItems.filter(item => item !== id));
+      }
+    } else {
+      alert("Please assign client/matter before selecting.");
     }
   };
 
@@ -134,6 +139,9 @@ const TableUnsavedInfo = ({
         gmailMessageId: gmailMessageId
       },
     });
+    if(request) {
+      getUnSavedEmails();
+    }
   };
 
   return (
@@ -168,7 +176,13 @@ const TableUnsavedInfo = ({
                 <input
                   key={item.id}
                   className="cursor-pointer mr-1"
-                  onChange={handleSelectItem}
+                  //onChange={handleSelectItem}
+                  onChange={(e) =>
+                    handleSelectItem(
+                      e,
+                      item.clientMatters.items.length
+                    )
+                  }
                   type="checkbox"
                   value={item.id}
                   id={item.id}
@@ -248,8 +262,7 @@ const TableUnsavedInfo = ({
                 </div>
               </td>
               <td className="p-2 align-top" >
-
-                <>
+                <React.Fragment key={item.id}>
                   <CreatableSelect
                       defaultValue={
                         item.clientMatters.items.map((item_clientMatter, index) => (
@@ -267,8 +280,7 @@ const TableUnsavedInfo = ({
                       placeholder="Client/Matter"
                       className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                   />
-                </>
-
+                </React.Fragment>
               </td>
             </tr>
           ))}
