@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { API } from "aws-amplify";
-//import { ToastContainer, toast } from 'react-toastify';
-//import 'react-toastify/dist/ReactToastify.css';
 
 const ActionButtons = ({
   selectedUnsavedItems,
   selectedSavedItems,
+  setSelectedUnsavedItems,
+  setSelectedSavedItems,
   openTab,
   getUnSavedEmails,
   getSavedEmails,
+  unSavedEmails,
+  savedEmails,
+  setShowToast,
+  setResultMessage,
 }) => {
 
   const companyId = localStorage.getItem("companyId");
@@ -21,24 +25,45 @@ const ActionButtons = ({
   }`;
 
   const handleEmails = async (status) => {
-    console.log(status);
     // Soon will change this to bulk mutation 
-    selectedUnsavedItems.map((obj) => {
-      const request = API.graphql({
-        query: mSaveUnsavedEmails,
-        variables: {
-          companyId: companyId,
-          id: obj.id,
-          isSaved: status
-        },
+    if(status) {
+      selectedUnsavedItems.map((obj) => {
+        const request = API.graphql({
+          query: mSaveUnsavedEmails,
+          variables: {
+            companyId: companyId,
+            id: obj,
+            isSaved: status
+          },
+        });
       });
-    });
-
-    setTimeout(() => {
-      getSavedEmails();
-      getUnSavedEmails();
-    }, 1000);
-    
+      setResultMessage("Successfully saved an email.");
+      setShowToast(true);
+      setTimeout(() => {
+        getUnSavedEmails();
+        getSavedEmails();
+        setSelectedUnsavedItems([]);
+      }, 1000);
+    } else {
+      selectedSavedItems.map((obj) => {
+        const request = API.graphql({
+          query: mSaveUnsavedEmails,
+          variables: {
+            companyId: companyId,
+            id: obj,
+            isSaved: status
+          },
+        });
+      });
+      setResultMessage("Successfully unsaved an email.");
+      setShowToast(true);
+      setTimeout(() => {
+        getUnSavedEmails();
+        getSavedEmails();
+        setSelectedSavedItems([]);
+        setShowToast(false);
+      }, 1000);
+    }
   };
 
   const handleCheckAllChange = (e) => {
@@ -90,22 +115,9 @@ const ActionButtons = ({
         </div>
 
         <div className=" col-span-1 pt-2">
+          
         </div>
       </div>
-
-      {/** <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      <ToastContainer />
-      */}
     </>
   );
 };
