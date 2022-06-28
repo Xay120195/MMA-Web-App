@@ -189,7 +189,7 @@ const TableSavedInfo = ({
           <tbody className="bg-white divide-y divide-gray-200" >
           {savedEmails.map((item, index) => (
             <tr>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
                 <input
                   key={item.id}
                   className="cursor-pointer mr-1"
@@ -230,12 +230,12 @@ const TableSavedInfo = ({
               <td className="p-2" >
               {item.attachments.items.map((item_attach, index) => (
                 <>
-                  <div className="flex items-start mt-1" >
+                <div className="flex items-start mt-1" >
                   <p className="
                   cursor-pointer mr-1 text-opacity-90 1
-                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" id={item_attach.id} >{item_attach.name}</p>
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 " id={item_attach.id} title={item_attach.name} >{item_attach.name.substring(0, 20)}{item_attach.name.length >= 20 ? "..." : ""}</p>
                   <div
-                    className="p-2 w-1/2 h-full font-poppins rounded-sm"
+                    className="p-2 w-full h-full font-poppins rounded-sm float-right"
                     style={{
                       border: "solid 1px #c4c4c4",
                       cursor: "auto",
@@ -269,7 +269,7 @@ const TableSavedInfo = ({
               </td>
               <td className="p-2 align-top" >
                 <>
-                  <CreatableSelect
+                  {/** <CreatableSelect
                       defaultValue={
                         item.clientMatters.items.map((item_clientMatter, index) => (
                         { value: item_clientMatter.id , label: item_clientMatter.client.name+"/"+item_clientMatter.matter.name}
@@ -285,7 +285,14 @@ const TableSavedInfo = ({
                       }
                       placeholder="Client/Matter"
                       className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                  />
+                    />*/}
+                    {
+                    item.clientMatters.items.map((item_clientMatter, index) => (
+                        <>
+                            <span className="text-sm cursor-pointer mr-1 text-opacity-90 1
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75" >{item_clientMatter.client.name+"/"+item_clientMatter.matter.name}</span>
+                        </>
+                    ))}
                 </>
               </td>
             </tr>
