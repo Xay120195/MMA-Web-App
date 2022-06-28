@@ -23,6 +23,8 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
         id
         from
         to
+        cc
+        bcc
         subject
         date
         snippet
@@ -262,7 +264,7 @@ const Inbox = () => {
 
   return (
     <>
-      {!loginData ?
+      {loginData ?
       <div
         className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
         style={contentDiv}
