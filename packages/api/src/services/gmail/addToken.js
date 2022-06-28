@@ -118,7 +118,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
             CompanyGmailMessageTable: nonExistingGmailMessages.map((i) => ({
               PutRequest: {
                 Item: {
-                  id: v4(),
+                  id: `${companyId}-${i.id}`,
                   gmailMessageId: i.id,
                   companyId: companyId,
                   isDeleted: false,
