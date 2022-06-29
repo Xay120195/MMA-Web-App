@@ -11,7 +11,7 @@ import { useIdleTimer } from "react-idle-timer";
 import ToastNotification from "../toast-notification";
 
 const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
   company(id: $id) {
     gmailMessages(
       isDeleted: $isDeleted
@@ -137,12 +137,15 @@ const Inbox = () => {
     getMatterList();
   }, []);
 
+  var emailIntegration = localStorage.getItem("emailAddressIntegration");
+  console.log(emailIntegration);
   const getUnSavedEmails = async () => {
     const params = {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
         isSaved: false,
+        recipient: emailIntegration,
         limit: 50,
         nextToken: null,
       },
@@ -162,6 +165,7 @@ const Inbox = () => {
         variables: {
           id: companyId,
           isSaved: false,
+          recipient: emailIntegration,
           limit: 50,
           nextToken: unsavedNextToken,
         },
@@ -185,6 +189,7 @@ const Inbox = () => {
       variables: {
         id: companyId,
         isSaved: true,
+        recipient: emailIntegration,
         limit: 50,
         nextToken: null,
       },
@@ -204,6 +209,7 @@ const Inbox = () => {
         variables: {
           id: companyId,
           isSaved: true,
+          recipient: emailIntegration,
           limit: 50,
           nextToken: savedNextToken,
         },
@@ -347,6 +353,7 @@ const Inbox = () => {
             savedEmails={savedEmails}
             setResultMessage={setResultMessage}
             setShowToast={setShowToast}
+            emailIntegration={emailIntegration}
           />
         </div>
 
