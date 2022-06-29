@@ -18,12 +18,15 @@ export async function generatePresignedUrl(Key, src) {
   console.log("generatePresignedUrl");
   console.log(src);
 
+  const key = src.isGmailAttachment ? Key : "public/" + Key;
+
   const bucket = src.isGmailAttachment
     ? process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET
     : process.env.REACT_APP_S3_UPLOAD_BUCKET;
+
   const request = {
     Bucket: bucket,
-    Key,
+    Key: key,
   };
 
   console.log("bucket:", bucket);
