@@ -191,7 +191,6 @@ const Inbox = () => {
     };
 
     await API.graphql(params).then((result) => {
-      console.log(result);
       const emailList = result.data.company.gmailMessages.items;
       setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);

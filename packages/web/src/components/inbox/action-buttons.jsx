@@ -100,7 +100,6 @@ const ActionButtons = ({
         variables: {
           id: companyId,
           isSaved: false,
-          limit: 50,
           nextToken: null,
         },
       };
