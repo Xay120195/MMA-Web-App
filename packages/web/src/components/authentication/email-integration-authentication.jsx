@@ -18,7 +18,9 @@ class GmailIntegration extends Component {
 
   async login(response) {
     console.log("code: ",response);
-    console.log("User Details", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
+    console.log("email: ", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
+    localStorage.setItem("emailAddressIntegration", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
+
     const saveRefreshToken = `
     mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
       gmailConnectFromCode(
@@ -46,12 +48,12 @@ class GmailIntegration extends Component {
       },
     });
 
-    console.log(request);
     if (request) {
       this.setState((state) => ({
         isLogined: response,
       }));
       localStorage.setItem("signInData", JSON.stringify(response));
+      
       window.location.reload();
     }
   }
@@ -78,7 +80,7 @@ class GmailIntegration extends Component {
         {this.state.isLogined ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-            buttonText={"Signout"}
+            buttonText={"Signout - "+localStorage.getItem("emailAddressIntegration")}
             onLogoutSuccess={this.logout}
             onFailure={this.handleLogoutFailure}
           ></GoogleLogout>
