@@ -372,11 +372,6 @@ async function listCompanyGmailMessages(ctx) {
       },
       FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"];
 
-    if (recipient) {
-      ExpressionAttributeValues[":recipient"] = recipient.toLowerCase();
-      FilterExpression.push("contains(recipient, :recipient)");
-    }
-
     const compCMParam = {
       TableName: "CompanyGmailMessageTable",
       IndexName: indexName,
