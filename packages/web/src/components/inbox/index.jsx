@@ -104,7 +104,7 @@ const Inbox = () => {
   function start() {
     gapi.client.init({
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-      scope: ""
+      scope: "email"
     })
   }
   
