@@ -2183,10 +2183,10 @@ async function tagGmailMessageClientMatter(data) {
       TableName: "GmailMessageClientMatterTable",
       IndexName: "byGmailMessage",
       KeyConditionExpression: "gmailMessageId = :gmailMessageId",
-      FilterExpression: "clientMatterId = :clientMatterId",
+      // FilterExpression: "clientMatterId = :clientMatterId",
       ExpressionAttributeValues: marshall({
         ":gmailMessageId": data.gmailMessageId,
-        ":clientMatterId": data.clientMatterId,
+        // ":clientMatterId": data.clientMatterId,
       }),
       ProjectionExpression: "id",
     };
