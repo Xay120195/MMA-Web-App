@@ -18,6 +18,7 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
       isSaved: $isSaved
       limit: $limit
       nextToken: $nextToken
+      recipient: $recipient
     ) {
       items {
         id
