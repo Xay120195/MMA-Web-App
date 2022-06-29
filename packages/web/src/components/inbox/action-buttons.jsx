@@ -182,8 +182,8 @@ const ActionButtons = ({
 
   return (
     <>
-      <div className="grid grid-rows grid-flow-col pt-5">
-        <div className="col-span-6 ">
+      <div className="grid grid-rows grid-flow-col pt-5" style={{ position: "sticky", top: "20px" }} >
+        <div className="col-span-6 " >
           {/* <input
             name="check_all"
             id="check_all"

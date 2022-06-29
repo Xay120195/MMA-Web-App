@@ -263,7 +263,7 @@ const Inbox = () => {
 
   return (
     <>
-      {!loginData ?
+      {loginData ?
       <div
         className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
         style={contentDiv}
@@ -361,7 +361,7 @@ const Inbox = () => {
       <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6">
         <div className="flex-auto">
           <div className="tab-content tab-space">
-            <div className={openTab === 1 ? "block" : "hidden"} id="link1">
+            <div className={openTab === 1 ? "block" : "hidden"} id="link1" >
               <TableUnsavedInfo
                 selectedUnsavedItems={selectedUnsavedItems}
                 setSelectedUnsavedItems={setSelectedUnsavedItems}
