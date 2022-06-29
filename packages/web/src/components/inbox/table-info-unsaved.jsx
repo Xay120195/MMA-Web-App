@@ -89,7 +89,7 @@ const TableUnsavedInfo = ({
   const handleSelectItem = (e, counter) => {
     if(counter !== 0) {
       const { id, checked } = e.target;
-      setSelectedUnsavedItems([...selectedUnsavedItems, id]);
+      setSelectedUnsavedItems([...selectedUnsavedItems, id]);   
       if (!checked) {
         setSelectedUnsavedItems(selectedUnsavedItems.filter(item => item !== id));
       }
@@ -132,7 +132,6 @@ const TableUnsavedInfo = ({
   }
 
   const handleClientMatter = async (e, gmailMessageId) => {
-    console.log(e.value);
     if(e.value !== null) {
       const request = API.graphql({
         query: mTagEmailClientMatter,
@@ -141,9 +140,8 @@ const TableUnsavedInfo = ({
           gmailMessageId: gmailMessageId
         },
       });
-      if(request) {
-        getUnSavedEmails();
-      }
+      var objIndex = unSavedEmails.findIndex((obj => obj.id === gmailMessageId));
+      unSavedEmails[objIndex].clientMatters.items = [{id: e.value, client: {id:"", name: ""}, matter: {id:"", name: ""}}];
     }
   };
 
