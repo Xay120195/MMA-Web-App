@@ -13,6 +13,7 @@ const ActionButtons = ({
   savedEmails,
   setShowToast,
   setResultMessage,
+  emailIntegration,
 }) => {
 
   const companyId = localStorage.getItem("companyId");
@@ -44,7 +45,7 @@ const ActionButtons = ({
   }`;
 
   const qGmailMessagesbyCompany = `
-  query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
+  query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
     company(id: $id) {
       gmailMessages(
         isDeleted: $isDeleted
@@ -100,6 +101,7 @@ const ActionButtons = ({
         variables: {
           id: companyId,
           isSaved: false,
+          recipient: emailIntegration,
           nextToken: null,
         },
       };
