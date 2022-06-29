@@ -8,6 +8,8 @@ const {
 const { client_id, client_secret, project_id } = require("./config");
 
 const checkSubscriptions = async () => {
+
+  console.log("Check Subscription");
   let responseBody = "";
 
   try {
@@ -15,12 +17,14 @@ const checkSubscriptions = async () => {
       .scan({ TableName: "GmailTokenTable" })
       .promise();
 
+      console.log("Get GmailTokenTable", Items);
+
     await Promise.all(
       Items.map(
         (item) =>
           new Promise(async (resolve, reject) => {
             try {
-              const { expiration, email, refresh_token } = item;
+              const { expiration, id, refresh_token } = item;
 
               if (new Date().getTime() < +expiration - 864000000) resolve();
 
@@ -33,17 +37,34 @@ const checkSubscriptions = async () => {
               });
 
               if (!access_token) throw new Error("can't refresh tokens.");
+              console.log("access_token:", access_token);
               setAccessToken(access_token);
 
-              const { data: watchData } = await gmailAxios.post(
-                `/gmail/v1/users/${email}/watch`,
-                { topicName: `projects/${project_id}/topics/gmail-api` }
-              );
+              const endpoint = `/gmail/v1/users/${id}/watch`,
+                topic = `projects/${project_id}/topics/gmail-api`;
 
+              console.log("endpoint:", endpoint);
+              console.log("topic:", topic);
+
+              const { data: watchData } = await gmailAxios
+                .post(endpoint, {
+                  topicName: topic,
+                })
+                .catch((err) => console.log(err));
+
+              console.log("watch data:", watchData);
+
+              const items = {
+                ...item,
+                ...watchData,
+                updatedAt: toUTC(new Date()),
+              };
+
+              console.log("Save to GmailTokenTable:", items);
               await docClient
                 .put({
                   TableName: "GmailTokenTable",
-                  Item: { ...item, ...watchData },
+                  Item: items,
                 })
                 .promise();
 
