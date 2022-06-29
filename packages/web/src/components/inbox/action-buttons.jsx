@@ -52,6 +52,7 @@ const ActionButtons = ({
         isSaved: $isSaved
         limit: $limit
         nextToken: $nextToken
+        recipient: $recipient
       ) {
         items {
           id
