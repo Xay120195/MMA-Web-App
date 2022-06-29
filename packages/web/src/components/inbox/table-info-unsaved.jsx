@@ -87,7 +87,7 @@ const TableUnsavedInfo = ({
   }*/
 
   const handleSelectItem = (e, counter) => {
-    if(counter === 1) {
+    if(counter !== 0) {
       const { id, checked } = e.target;
       setSelectedUnsavedItems([...selectedUnsavedItems, id]);
       if (!checked) {
@@ -132,15 +132,18 @@ const TableUnsavedInfo = ({
   }
 
   const handleClientMatter = async (e, gmailMessageId) => {
-    const request = API.graphql({
-      query: mTagEmailClientMatter,
-      variables: {
-        clientMatterId: e.value,
-        gmailMessageId: gmailMessageId
-      },
-    });
-    if(request) {
-      getUnSavedEmails();
+    console.log(e.value);
+    if(e.value !== null) {
+      const request = API.graphql({
+        query: mTagEmailClientMatter,
+        variables: {
+          clientMatterId: e.value,
+          gmailMessageId: gmailMessageId
+        },
+      });
+      if(request) {
+        getUnSavedEmails();
+      }
     }
   };
 
@@ -269,7 +272,6 @@ const TableUnsavedInfo = ({
                         { value: item_clientMatter.id , label: item_clientMatter.client.name+"/"+item_clientMatter.matter.name}
                       ))}
                       options={matterList}
-                      isClearable
                       isSearchable
                       onChange={(options, e) =>
                         handleClientMatter(
