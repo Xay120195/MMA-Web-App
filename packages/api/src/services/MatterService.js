@@ -188,6 +188,7 @@ export async function createMatterFile(data) {
       isGmailAttachment: data.isGmailAttachment ? true : false,
       date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
+      details: data.details ? data.details : "",
       createdAt: toUTC(new Date()),
     };
 
@@ -265,6 +266,7 @@ export async function bulkCreateMatterFile(data) {
         size: data[i].size,
         type: data[i].type,
         name: data[i].name,
+        details: data[i].details ? data[i].details : "",
         isDeleted: false,
         isGmailAttachment: data[i].isGmailAttachment ? true : false,
         date: data[i].date ? data[i].date : null,
