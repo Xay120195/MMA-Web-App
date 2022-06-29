@@ -165,8 +165,8 @@ const TableSavedInfo = ({
     <>
       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
         <thead
-          className="z-10"
-          /*style={{ position: "sticky", top: "190px" }}*/
+          className="z-10 bg-white"
+          style={{ position: "sticky", top: "50px" }}
         >
           <tr>
             <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-10">

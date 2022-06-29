@@ -3,7 +3,7 @@ import React from "react";
 const TabsRender = ({ setOpenTab, openTab, savedEmails, unSavedEmails }) => {
   return (
     <>
-      <div className="pl-3 pr-3 pt-3 bg-gray-100 mt-4">
+      <div className="pl-3 pr-3 pt-3 bg-gray-100 mt-4 z-50" style={{ position: "sticky", top: "0px" }} >
         <div className="flex justify-between">
           <ul
             className="flex gap-x-3"

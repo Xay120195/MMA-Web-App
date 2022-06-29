@@ -350,6 +350,7 @@ async function listCompanyGmailMessages(ctx) {
     sortOrder = "CREATED_DESC",
     isDeleted = false,
     isSaved = false,
+    recipient,
   } = ctx.arguments;
 
   let indexName,
@@ -364,16 +365,24 @@ async function listCompanyGmailMessages(ctx) {
   }
 
   try {
+    const ExpressionAttributeValues = {
+        ":companyId": id,
+        ":isSaved": isSaved,
+        ":isDeleted": isDeleted,
+      },
+      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"];
+
+    if (recipient) {
+      ExpressionAttributeValues[":recipient"] = recipient.toLowerCase();
+      FilterExpression.push("contains(recipient, :recipient)");
+    }
+
     const compCMParam = {
       TableName: "CompanyGmailMessageTable",
       IndexName: indexName,
       KeyConditionExpression: "companyId = :companyId",
-      FilterExpression: "isSaved = :isSaved AND isDeleted = :isDeleted",
-      ExpressionAttributeValues: marshall({
-        ":companyId": id,
-        ":isSaved": isSaved,
-        ":isDeleted": isDeleted,
-      }),
+      FilterExpression: FilterExpression.join(" AND "),
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
 
       ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
@@ -386,6 +395,7 @@ async function listCompanyGmailMessages(ctx) {
       compCMParam.Limit = limit;
     }
 
+    console.log(compCMParam);
     const compCMCmd = new QueryCommand(compCMParam);
     const compCMResult = await client.send(compCMCmd);
 

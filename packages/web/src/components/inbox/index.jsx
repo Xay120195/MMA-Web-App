@@ -11,13 +11,14 @@ import { useIdleTimer } from "react-idle-timer";
 import ToastNotification from "../toast-notification";
 
 const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
   company(id: $id) {
     gmailMessages(
       isDeleted: $isDeleted
       isSaved: $isSaved
       limit: $limit
       nextToken: $nextToken
+      recipient: $recipient
     ) {
       items {
         id
@@ -103,7 +104,7 @@ const Inbox = () => {
   function start() {
     gapi.client.init({
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-      scope: ""
+      scope: "email"
     })
   }
   
@@ -137,12 +138,15 @@ const Inbox = () => {
     getMatterList();
   }, []);
 
+  var emailIntegration = localStorage.getItem("emailAddressIntegration");
+  console.log(emailIntegration);
   const getUnSavedEmails = async () => {
     const params = {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
         isSaved: false,
+        recipient: emailIntegration,
         limit: 50,
         nextToken: null,
       },
@@ -162,6 +166,7 @@ const Inbox = () => {
         variables: {
           id: companyId,
           isSaved: false,
+          recipient: emailIntegration,
           limit: 50,
           nextToken: unsavedNextToken,
         },
@@ -185,13 +190,13 @@ const Inbox = () => {
       variables: {
         id: companyId,
         isSaved: true,
+        recipient: emailIntegration,
         limit: 50,
         nextToken: null,
       },
     };
 
     await API.graphql(params).then((result) => {
-      console.log(result);
       const emailList = result.data.company.gmailMessages.items;
       setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);
@@ -205,6 +210,7 @@ const Inbox = () => {
         variables: {
           id: companyId,
           isSaved: true,
+          recipient: emailIntegration,
           limit: 50,
           nextToken: savedNextToken,
         },
@@ -348,6 +354,7 @@ const Inbox = () => {
             savedEmails={savedEmails}
             setResultMessage={setResultMessage}
             setShowToast={setShowToast}
+            emailIntegration={emailIntegration}
           />
         </div>
 
@@ -362,7 +369,7 @@ const Inbox = () => {
       <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6">
         <div className="flex-auto">
           <div className="tab-content tab-space">
-            <div className={openTab === 1 ? "block" : "hidden"} id="link1">
+            <div className={openTab === 1 ? "block" : "hidden"} id="link1" >
               <TableUnsavedInfo
                 selectedUnsavedItems={selectedUnsavedItems}
                 setSelectedUnsavedItems={setSelectedUnsavedItems}

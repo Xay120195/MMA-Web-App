@@ -168,7 +168,7 @@ const resolvers = {
   File: {
     downloadURL: async (ctx) => {
       return generatePresignedUrl(
-        "public/" + ctx.source.s3ObjectKey,
+        ctx.source.s3ObjectKey,
         ctx.source
       );
     },

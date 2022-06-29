@@ -13,6 +13,7 @@ const ActionButtons = ({
   savedEmails,
   setShowToast,
   setResultMessage,
+  emailIntegration,
 }) => {
 
   const companyId = localStorage.getItem("companyId");
@@ -44,13 +45,14 @@ const ActionButtons = ({
   }`;
 
   const qGmailMessagesbyCompany = `
-  query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String) {
+  query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
     company(id: $id) {
       gmailMessages(
         isDeleted: $isDeleted
         isSaved: $isSaved
         limit: $limit
         nextToken: $nextToken
+        recipient: $recipient
       ) {
         items {
           id
@@ -100,7 +102,7 @@ const ActionButtons = ({
         variables: {
           id: companyId,
           isSaved: false,
-          limit: 50,
+          recipient: emailIntegration,
           nextToken: null,
         },
       };
@@ -183,8 +185,8 @@ const ActionButtons = ({
 
   return (
     <>
-      <div className="grid grid-rows grid-flow-col pt-5">
-        <div className="col-span-6 ">
+      <div className="grid grid-rows grid-flow-col pt-5" style={{ position: "sticky", top: "20px" }} >
+        <div className="col-span-6 " >
           {/* <input
             name="check_all"
             id="check_all"

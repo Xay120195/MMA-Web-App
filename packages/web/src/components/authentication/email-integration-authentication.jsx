@@ -63,6 +63,7 @@ class GmailIntegration extends Component {
       isLogined: null,
     }));
     localStorage.removeItem("signInData");
+    localStorage.removeItem("emailAddressIntegration");
     window.location.reload();
   }
 
