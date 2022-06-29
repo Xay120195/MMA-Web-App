@@ -1,7 +1,91 @@
-import React, { useState, useEffect, useReducer } from "react";
-import { inbox } from "./data-source";
+import React, { useState, useEffect } from "react";
+import { API } from "aws-amplify";
 import ActionButtons from "./action-buttons";
-import TableInfo from "./table-info";
+import TableSavedInfo from "./table-info-saved";
+import TableUnsavedInfo from "./table-info-unsaved";
+import GmailIntegration from '../authentication/email-integration-authentication';
+import { gapi } from 'gapi-script';
+import googleLogin from "../../assets/images/google-login.png";
+import TabsRender from "./tabs";
+import { useIdleTimer } from "react-idle-timer";
+import ToastNotification from "../toast-notification";
+
+const qGmailMessagesbyCompany = `
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
+  company(id: $id) {
+    gmailMessages(
+      isDeleted: $isDeleted
+      isSaved: $isSaved
+      limit: $limit
+      nextToken: $nextToken
+      recipient: $recipient
+    ) {
+      items {
+        id
+        from
+        to
+        cc
+        bcc
+        subject
+        date
+        snippet
+        payload
+        clientMatters {
+          items {
+            id
+            client {
+              id
+              name
+            }
+            matter {
+              id
+              name
+            }
+          }
+        }
+        attachments {
+          items {
+            id
+            details
+            name
+            s3ObjectKey
+            size
+            type
+          }
+        }
+      }
+      nextToken
+    }
+  }
+}`;
+
+const mSaveUnsavedEmails = `
+mutation saveGmailMessage($companyId: ID, $id: ID, $isSaved: Boolean) {
+  gmailMessageSave(companyId: $companyId, id: $id, isSaved: $isSaved) {
+    id
+  }
+}`;
+
+const listClientMatters = `
+  query listClientMatters($companyId: String) {
+    company(id: $companyId) {
+      clientMatters (sortOrder: CREATED_DESC) {
+        items {
+          id
+          createdAt
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+  `;
 
 const contentDiv = {
   margin: "0 0 0 65px",
@@ -12,175 +96,307 @@ const mainGrid = {
   gridtemplatecolumn: "1fr auto",
 };
 
-const ACTIONS = {
-  DELETE_DATA: "delete_data",
-  SAVE_READ: "save_read",
-  MARK_UNREAD: "mark_unread",
-  SEARCH_MESSAGE: "search_message",
-};
-
-const reducer = (data, action) => {
-  switch (action.type) {
-    case ACTIONS.DELETE_DATA:
-      return data.filter((item) => !action.payload.id.includes(item.id));
-    case ACTIONS.SAVE_READ:
-      return [...data, action.payload.data];
-    case ACTIONS.MARK_UNREAD:
-      return [...data, action.payload.data];
-    case ACTIONS.SEARCH_MESSAGE:
-      return inbox.filter(
-        (x) =>
-          x.title.includes(action.payload.data) ||
-          x.firstname.includes(action.payload.data) ||
-          x.lastname.includes(action.payload.data) ||
-          x.email.includes(action.payload.data)
-      );
-    default:
-      return data;
-  }
-};
-
 const Inbox = () => {
-  const [data, dispatch] = useReducer(reducer, inbox);
-  const [totalChecked, setTotalChecked] = useState(0);
-  const [totalReadChecked, setTotalReadChecked] = useState(0);
-  const [totalUnReadChecked, setTotalUnReadChecked] = useState(0);
-  const [getId, setId] = useState([]);
-  const [getIdUnread, setIdUnread] = useState([]);
-  const [getIdRead, setIdRead] = useState([]);
-  const [checkAllState, setcheckAllState] = useState(false);
-  const [unReadData, setUnreadData] = useState([]);
-  const [readData, setReadData] = useState([]);
-  const [search, setSearch] = useState("");
-  const [searchRow, setSearchRow] = useState(false);
-  const [selectedMessage, setSelectMessage] = useState(false);
+  useEffect(() => {
+    gapi.load('client:auth2', start);
+  });
 
-  const unreaddata = data.filter((datas) => datas.status === true);
-  const readdata = data.filter((datas) => datas.status === false);
-
-  const [checkedStateRead, setCheckedStateRead] = useState(
-    new Array(readdata.length).fill(false)
+  function start() {
+    gapi.client.init({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      scope: "email"
+    })
+  }
+  
+  const companyId = localStorage.getItem("companyId");
+  const [loginData, setLoginData] = useState(
+    localStorage.getItem('signInData')
+      ? JSON.parse(localStorage.getItem('signInData'))
+      : null
   );
 
-  const [checkedStateUnRead, setCheckedStateUnreRead] = useState(
-    new Array(unreaddata.length).fill(false)
-  );
-  console.log(getId);
+  const [openTab, setOpenTab] = React.useState(1);
+  const [unSavedEmails, setUnsavedEmails] = useState([]);
+  const [savedEmails, setSavedEmails] = useState([]);
+  const [unsavedNextToken, setUnsavedVnextToken] = useState(null);
+  const [savedNextToken, setSavedVnextToken] = useState(null);
+  const [matterList, setMatterList] = useState([]);
+  const [selectedUnsavedItems, setSelectedUnsavedItems] = useState([]);
+  const [selectedSavedItems, setSelectedSavedItems] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+  const [maxLoadingSavedEmail, setMaxLoadingSavedEmail] = useState(false);
+  const [maxLoadingUnSavedEmail, setMaxLoadingUnSavedEmail] = useState(false);
+
+  const hideToast = () => {
+    setShowToast(false);
+  };
 
   useEffect(() => {
-    setTotalChecked(totalReadChecked + totalUnReadChecked);
-    setUnreadData(unreaddata);
-    setReadData(readdata);
-  }, [checkedStateRead, checkedStateUnRead, data]);
+    getUnSavedEmails();
+    getSavedEmails();
+    getMatterList();
+  }, []);
 
-  const handleSearch = (event) => {
-    setSearch(event.target.value);
-    var dm = event.target.value;
-    var str = dm.toString();
+  var emailIntegration = localStorage.getItem("emailAddressIntegration");
+  console.log(emailIntegration);
+  const getUnSavedEmails = async () => {
+    const params = {
+      query: qGmailMessagesbyCompany,
+      variables: {
+        id: companyId,
+        isSaved: false,
+        recipient: emailIntegration,
+        limit: 50,
+        nextToken: null,
+      },
+    };
 
-    dispatch({
-      type: ACTIONS.SEARCH_MESSAGE,
-      payload: { data: str },
+    await API.graphql(params).then((result) => {
+      const emailList = result.data.company.gmailMessages.items;
+      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+      setUnsavedEmails(emailList);
     });
+  };
 
-    if (!dm) {
-      setSearchRow(false);
+  const handleLoadMoreUnSavedEmails = async () => {
+    if (unsavedNextToken !== null) {
+      const params = {
+        query: qGmailMessagesbyCompany,
+        variables: {
+          id: companyId,
+          isSaved: false,
+          recipient: emailIntegration,
+          limit: 50,
+          nextToken: unsavedNextToken,
+        },
+      };
+
+      await API.graphql(params).then((result) => {
+        const emailList = result.data.company.gmailMessages.items;
+        setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+        let arrConcat = unSavedEmails.concat(emailList);
+        setMaxLoadingUnSavedEmail(false);
+        setUnsavedEmails([...new Set(arrConcat)]);
+      });
     } else {
-      setSearchRow(true);
+      setMaxLoadingUnSavedEmail(true);
     }
   };
 
+  const getSavedEmails = async () => {
+    const params = {
+      query: qGmailMessagesbyCompany,
+      variables: {
+        id: companyId,
+        isSaved: true,
+        recipient: emailIntegration,
+        limit: 50,
+        nextToken: null,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      const emailList = result.data.company.gmailMessages.items;
+      setSavedVnextToken(result.data.company.gmailMessages.nextToken);
+      setSavedEmails(emailList);
+    });
+  };
+
+  const handleLoadMoreSavedEmails = async () => {
+    if (savedNextToken !== null) {
+      const params = {
+        query: qGmailMessagesbyCompany,
+        variables: {
+          id: companyId,
+          isSaved: true,
+          recipient: emailIntegration,
+          limit: 50,
+          nextToken: savedNextToken,
+        },
+      };
+
+      await API.graphql(params).then((result) => {
+        const emailList = result.data.company.gmailMessages.items;
+        setSavedVnextToken(result.data.company.gmailMessages.nextToken);
+        let arrConcat = savedEmails.concat(emailList);
+        setMaxLoadingSavedEmail(false);
+        setSavedEmails([...new Set(arrConcat)]);
+      });
+    } else {
+      setMaxLoadingSavedEmail(true);
+    }
+  };
+
+  let result = [];
+  const getMatterList = async () => {
+    const clientMattersOpt = await API.graphql({
+      query: listClientMatters,
+      variables: {
+        companyId: companyId,
+      },
+    });
+
+    if (clientMattersOpt.data.company.clientMatters.items !== null) {
+      result = clientMattersOpt.data.company.clientMatters.items.map(({ id, client, matter }) => ({
+        value: id,
+        label: client.name+"/"+matter.name,
+      }));
+
+      var filtered = result.filter(function (el) {
+        return el.label != null && el.value != null;
+      });
+  
+      setMatterList(filtered.sort((a, b) => a.label - b.label));
+    }
+  }
+
+  const handleOnAction = (event) => {
+    handleLoadMoreUnSavedEmails();
+    handleLoadMoreSavedEmails();
+  };
+
+  const handleOnIdle = (event) => {
+    handleLoadMoreUnSavedEmails();
+    handleLoadMoreSavedEmails();
+  };
+
+  useIdleTimer({
+    timeout: 60 * 40,
+    onAction: handleOnAction,
+    onIdle: handleOnIdle,
+    debounce: 1000,
+  });
+
   return (
     <>
+      {!loginData ?
+      <div
+        className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
+        style={contentDiv}
+      >
+        <div className="h-screen flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 relative">
+            <div className="col-span-3 pl-8 pt-20">
+              <h5 className="text-black text-2xl font-bold">AFFIDAVITS & RFI</h5>
+              <div className="text-black text-xl font-normal my-5 leading-10">
+                Looks like you're not yet connected with your Google Account
+              </div>
+              <div className="text-gray-400 text-lg font-medium">
+                Lets make your trip fun and simple
+              </div><br/>
+              <GmailIntegration />
+            </div>
+            <div className="col-span-7">
+              <div className="h-screen float-right">
+                <img src={googleLogin} alt="" className="h-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        : 
+
       <div
         className="p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
         style={contentDiv}
       >
-        <div style={mainGrid}>
-          <div className="grid grid-rows grid-flow-col">
-            <div className="col-span-11 ">
-              <div className="mt-2">
-                <span className="text-lg font-medium">Inbox</span>
-              </div>
-              <div className="mt-2">
-                <span className="inline-flex text-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span className="mx-1">EMAILS</span>
+
+        <div className="bg-white shadow-sm  px-5 py-5 grid grid-cols-1  md:grid-cols-8 justify-between items-center">
+          <div className="col-span-3 xl:col-span-4">
+            <div className=" text-gray-700 text-2xl font-medium">Inbox</div>
+            <div className=" flex  gap-x-2 mt-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              <span className="font-semibold" >INBOX</span>
+            </div>
+          </div>
+          
+          <div className="col-span-5 xl:col-span-4 flex ">
+            <div className="flex flex-wrap  flex-grow relative h-13 bg-white border items-center rounded-md">
+              <div className="flex -mr-px justify-center w-10 pl-2">
+                <span className="flex items-center leading-normal bg-white px-3 border-0 rounded rounded-r-none text-2xl text-gray-600"><svg width="12" height="20" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.8828 11.8672L8.55469 8.5625C9.30469 7.69531 9.72656 6.59375 9.72656 5.375C9.72656 2.70312 7.52344 0.5 4.85156 0.5C2.15625 0.5 0 2.70312 0 5.375C0 8.07031 2.17969 10.25 4.85156 10.25C6.04688 10.25 7.14844 9.82812 8.01562 9.07812L11.3203 12.4062C11.4141 12.4766 11.5078 12.5 11.625 12.5C11.7188 12.5 11.8125 12.4766 11.8828 12.4062C12.0234 12.2656 12.0234 12.0078 11.8828 11.8672ZM4.875 9.5C2.57812 9.5 0.75 7.64844 0.75 5.375C0.75 3.10156 2.57812 1.25 4.875 1.25C7.14844 1.25 9 3.10156 9 5.375C9 7.67188 7.14844 9.5 4.875 9.5Z" fill="#8A8A8A"></path></svg>
                 </span>
               </div>
+                <input type="text" className="flex-shrink flex-grow leading-normal w-px flex-1 border-0 h-10 border-grey-light rounded rounded-l-none px-3 self-center relative text-sm outline-none" placeholder="Type to search all emails ..." />
+                  <button className="transition duration-500 ease-in-out bg-gray-600 p-2 px-3 h-full active:bg-gray-400  rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="16" viewBox="0 0 12 10.875" className="text-gray-500"><path id="Path_1" data-name="Path 1" d="M.375,2.125H3.211A1.71,1.71,0,0,0,4.875,3.438,1.679,1.679,0,0,0,6.516,2.125h5.109A.385.385,0,0,0,12,1.75a.4.4,0,0,0-.375-.375H6.516a1.7,1.7,0,0,0-3.3,0H.375A.385.385,0,0,0,0,1.75.37.37,0,0,0,.375,2.125ZM4.875.813a.94.94,0,0,1,.938.938.925.925,0,0,1-.937.938.912.912,0,0,1-.937-.937A.925.925,0,0,1,4.875.813Zm6.75,4.313H9.516a1.7,1.7,0,0,0-3.3,0H.375A.385.385,0,0,0,0,5.5a.37.37,0,0,0,.375.375H6.211A1.71,1.71,0,0,0,7.875,7.188,1.679,1.679,0,0,0,9.516,5.875h2.109A.385.385,0,0,0,12,5.5.4.4,0,0,0,11.625,5.125ZM7.875,6.438A.912.912,0,0,1,6.938,5.5a.925.925,0,0,1,.938-.937.94.94,0,0,1,.938.938A.925.925,0,0,1,7.875,6.438Zm3.75,2.438H5.766a1.7,1.7,0,0,0-3.3,0H.375A.385.385,0,0,0,0,9.25a.37.37,0,0,0,.375.375H2.461a1.71,1.71,0,0,0,1.664,1.313A1.679,1.679,0,0,0,5.766,9.625h5.859A.385.385,0,0,0,12,9.25.4.4,0,0,0,11.625,8.875Zm-7.5,1.313a.912.912,0,0,1-.937-.937.925.925,0,0,1,.938-.937.94.94,0,0,1,.938.938A.925.925,0,0,1,4.125,10.188Z" transform="translate(0 -0.063)" fill="#fff"></path></svg>
+                  </button>
+                </div>
+                  <div className="ml-5">
+                    <GmailIntegration />
+                  </div>
+                  </div>
+                  </div>
+
+        <div style={mainGrid}>
+          <ActionButtons
+            selectedUnsavedItems={selectedUnsavedItems}
+            setSelectedUnsavedItems={setSelectedUnsavedItems}
+            selectedSavedItems={selectedSavedItems}
+            setSelectedSavedItems={setSelectedSavedItems}
+            openTab={openTab}
+            getUnSavedEmails={getUnSavedEmails}
+            getSavedEmails={getSavedEmails}
+            unSavedEmails={unSavedEmails}
+            savedEmails={savedEmails}
+            setResultMessage={setResultMessage}
+            setShowToast={setShowToast}
+            emailIntegration={emailIntegration}
+          />
+        </div>
+
+      <TabsRender 
+        color = "gray"
+        openTab={openTab}
+        setOpenTab={setOpenTab}
+        unSavedEmails={unSavedEmails}
+        savedEmails={savedEmails}
+      />
+
+      <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6">
+        <div className="flex-auto">
+          <div className="tab-content tab-space">
+            <div className={openTab === 1 ? "block" : "hidden"} id="link1" >
+              <TableUnsavedInfo
+                selectedUnsavedItems={selectedUnsavedItems}
+                setSelectedUnsavedItems={setSelectedUnsavedItems}
+                unSavedEmails={unSavedEmails}
+                matterList={matterList}
+                maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
+                getUnSavedEmails={getUnSavedEmails}
+              />
             </div>
-            <div className="col-span-1">
-              <input
-                type="text"
-                value={search}
-                onChange={(event) => handleSearch(event)}
-                placeholder="Search message......"
-                className="mt-3 appearance-none rounded-none relative block w-96 px-3 py-2 border border-green-300 placeholder-green-500 text-green-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+            <div className={openTab === 2 ? "block" : "hidden"} id="link2">
+              <TableSavedInfo
+                selectedSavedItems={selectedSavedItems}
+                setSelectedSavedItems={setSelectedSavedItems}
+                savedEmails={savedEmails}
+                matterList={matterList}
+                maxLoadingSavedEmail={maxLoadingSavedEmail}
               />
             </div>
           </div>
-          <ActionButtons
-            data={data}
-            ACTIONS={ACTIONS}
-            dispatch={dispatch}
-            totalChecked={totalChecked}
-            setCheckedStateRead={setCheckedStateRead}
-            setCheckedStateUnreRead={setCheckedStateUnreRead}
-            readdata={readdata}
-            unreaddata={unreaddata}
-            setTotalReadChecked={setTotalReadChecked}
-            setTotalUnReadChecked={setTotalUnReadChecked}
-            getIdUnread={getIdUnread}
-            getIdRead={getIdRead}
-            checkAllState={checkAllState}
-            setcheckAllState={setcheckAllState}
-            setId={setId}
-            getId={getId}
-            setTotalChecked={setTotalChecked}
-            setSelectMessage={setSelectMessage}
-          />
         </div>
       </div>
-      <TableInfo
-        data={data}
-        totalChecked={totalChecked}
-        setTotalChecked={setTotalChecked}
-        totalReadChecked={totalReadChecked}
-        setTotalReadChecked={setTotalReadChecked}
-        totalUnReadChecked={totalUnReadChecked}
-        setTotalUnReadChecked={setTotalUnReadChecked}
-        checkedStateRead={checkedStateRead}
-        setCheckedStateRead={setCheckedStateRead}
-        checkedStateUnRead={checkedStateUnRead}
-        setCheckedStateUnreRead={setCheckedStateUnreRead}
-        unReadData={unReadData}
-        readData={readData}
-        readdata={readdata}
-        unreaddata={unreaddata}
-        setUnreadData={setUnreadData}
-        setReadData={setReadData}
-        getIdUnread={getIdUnread}
-        setIdUnread={setIdUnread}
-        setIdRead={setIdRead}
-        getIdRead={getIdRead}
-        searchRow={searchRow}
-        setSearchRow={setSearchRow}
-        selectedMessage={selectedMessage}
-        setSelectMessage={setSelectMessage}
-      />
+
+      </div>
+      }
+      {showToast && resultMessage && (
+        <ToastNotification title={resultMessage} hideToast={hideToast} />
+      )}
     </>
   );
 };

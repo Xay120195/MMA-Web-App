@@ -15,10 +15,21 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { toUTC, toLocalTime } = require("../shared/toUTC");
 
 export async function generatePresignedUrl(Key, src) {
+  console.log("generatePresignedUrl");
+  console.log(src);
+
+  const key = src.isGmailAttachment ? Key : "public/" + Key;
+
+  const bucket = src.isGmailAttachment
+    ? process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET
+    : process.env.REACT_APP_S3_UPLOAD_BUCKET;
+
   const request = {
-    Bucket: process.env.REACT_APP_S3_UPLOAD_BUCKET,
-    Key,
+    Bucket: bucket,
+    Key: key,
   };
+
+  console.log("bucket:", bucket);
 
   if (
     src.type.split("/").slice(0, -1).join("/") !== "image" &&
@@ -177,8 +188,10 @@ export async function createMatterFile(data) {
       type: data.type,
       name: data.name,
       isDeleted: false,
+      isGmailAttachment: data.isGmailAttachment ? true : false,
       date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
+      details: data.details ? data.details : "",
       createdAt: toUTC(new Date()),
     };
 
@@ -256,7 +269,9 @@ export async function bulkCreateMatterFile(data) {
         size: data[i].size,
         type: data[i].type,
         name: data[i].name,
+        details: data[i].details ? data[i].details : "",
         isDeleted: false,
+        isGmailAttachment: data[i].isGmailAttachment ? true : false,
         date: data[i].date ? data[i].date : null,
         order: data[i].order ? data[i].order : 0,
         createdAt: toUTC(new Date()),
