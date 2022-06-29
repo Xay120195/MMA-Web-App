@@ -272,7 +272,6 @@ const TableUnsavedInfo = ({
                         { value: item_clientMatter.id , label: item_clientMatter.client.name+"/"+item_clientMatter.matter.name}
                       ))}
                       options={matterList}
-                      isClearable
                       isSearchable
                       onChange={(options, e) =>
                         handleClientMatter(
