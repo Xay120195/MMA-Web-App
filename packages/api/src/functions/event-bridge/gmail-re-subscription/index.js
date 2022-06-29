@@ -14,12 +14,15 @@ const {
 } = require("../../../services/gmail/config");
 
 exports.handler = async () => {
+  console.log("Event Bridge: Gmail Re-Subscription");
   let responseBody = "";
 
   try {
     const { Items } = await docClient
       .scan({ TableName: "GmailTokenTable" })
       .promise();
+
+    console.log("Get GmailTokenTable", Items);
 
     await Promise.all(
       Items.map(
@@ -39,18 +42,34 @@ exports.handler = async () => {
               });
 
               if (!access_token) throw new Error("can't refresh tokens.");
+              console.log("access_token:", access_token);
               setAccessToken(access_token);
 
-              const { data: watchData } = await gmailAxios.post(
-                `/gmail/v1/users/${id}/watch`,
-                { topicName: `projects/${project_id}/topics/gmail-api` }
-              );
+              const endpoint = `/gmail/v1/users/${id}/watch`,
+                topic = `projects/${project_id}/topics/gmail-api`;
+
+              console.log("endpoint:", endpoint);
+              console.log("topic:", topic);
+
+              const { data: watchData } = await gmailAxios
+                .post(endpoint, {
+                  topicName: topic,
+                })
+                .catch((err) => console.log(err));
 
               console.log("watch data:", watchData);
+
+              const items = {
+                ...item,
+                ...watchData,
+                updatedAt: toUTC(new Date()),
+              };
+
+              console.log("Save to GmailTokenTable:", items);
               await docClient
                 .put({
                   TableName: "GmailTokenTable",
-                  Item: { ...item, ...watchData },
+                  Item: items,
                 })
                 .promise();
 
