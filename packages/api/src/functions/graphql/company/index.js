@@ -342,6 +342,147 @@ async function listCompanyClientMatters(ctx) {
   return response;
 }
 
+async function listCompanyGmailMessages(ctx) {
+  const { id } = ctx.source;
+  const {
+    limit,
+    nextToken,
+    sortOrder = "CREATED_DESC",
+    isDeleted = false,
+    isSaved = false,
+    recipient,
+  } = ctx.arguments;
+
+  let indexName,
+    isAscending = true;
+
+  if (sortOrder.includes("_DESC")) {
+    isAscending = false;
+  }
+
+  if (sortOrder.includes("CREATED_")) {
+    indexName = "byDateReceived";
+  }
+
+  try {
+    const ExpressionAttributeValues = {
+        ":companyId": id,
+        ":isSaved": isSaved,
+        ":isDeleted": isDeleted,
+      },
+      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"];
+
+    const compCMParam = {
+      TableName: "CompanyGmailMessageTable",
+      IndexName: indexName,
+      KeyConditionExpression: "companyId = :companyId",
+      FilterExpression: FilterExpression.join(" AND "),
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
+
+      ScanIndexForward: isAscending,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+      ProjectionExpression: "gmailMessageId",
+    };
+
+    if (limit !== undefined) {
+      compCMParam.Limit = limit;
+    }
+
+    console.log(compCMParam);
+    const compCMCmd = new QueryCommand(compCMParam);
+    const compCMResult = await client.send(compCMCmd);
+
+    // const gmailMessageIds = compCMResult.Items.map((i) => unmarshall(i)).map(
+    //   (f) => marshall({ id: f.gmailMessageId })
+    // );
+
+    let unique = compCMResult.Items.map((a) => unmarshall(a))
+      .map((x) => x.gmailMessageId)
+      .filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
+    const gmailMessageIds = unique.map((f) => marshall({ id: f }));
+
+    if (gmailMessageIds.length !== 0) {
+      let batches = [],
+        current_batch = [],
+        item_count = 0;
+
+      gmailMessageIds.forEach((data) => {
+        item_count++;
+        current_batch.push(data);
+
+        // Chunk items to 25
+        if (item_count % 25 == 0) {
+          batches.push(current_batch);
+          current_batch = [];
+        }
+      });
+
+      // Add the last batch if it has records and is not equal to 25
+      if (current_batch.length > 0 && current_batch.length != 25) {
+        batches.push(current_batch);
+      }
+
+      const asyncResult = await Promise.all(
+        batches.map(async (data, index) => {
+          const clientmattersParam = {
+            RequestItems: {
+              GmailMessageTable: {
+                Keys: data,
+              },
+            },
+          };
+
+          const cmCmd = new BatchGetItemCommand(clientmattersParam);
+          const cmResult = await client.send(cmCmd);
+          return cmResult.Responses.GmailMessageTable;
+        })
+      );
+
+      const objCM = asyncResult.flat().map((i) => unmarshall(i));
+
+      const objCompCM = compCMResult.Items.map((i) => unmarshall(i));
+
+      const response = objCompCM
+        .map((item) => {
+          const filterGmailMessage = objCM.find(
+            (u) => u.id === item.gmailMessageId
+          );
+
+          if (filterGmailMessage !== undefined) {
+            return { ...item, ...filterGmailMessage };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: compCMResult.LastEvaluatedKey
+          ? Buffer.from(JSON.stringify(compCMResult.LastEvaluatedKey)).toString(
+              "base64"
+            )
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 const resolvers = {
   Company: {
     users: async (ctx) => {
@@ -355,6 +496,9 @@ const resolvers = {
     },
     clientMatters: async (ctx) => {
       return listCompanyClientMatters(ctx);
+    },
+    gmailMessages: async (ctx) => {
+      return listCompanyGmailMessages(ctx);
     },
   },
 };

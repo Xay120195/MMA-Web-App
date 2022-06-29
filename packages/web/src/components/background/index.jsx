@@ -80,6 +80,7 @@ const Background = () => {
   const [highlightRow, setHighlightRow] = useState(null);
 
   const [pastedRows, setPastedRows] = useState([]);
+  const [checkedRows, setCheckedRows] = useState([]);
 
   let history = useHistory();
   const check = useRef(false);
@@ -547,6 +548,8 @@ const Background = () => {
 
   const handleManageFiles = () => {
       setPastedRows([]);
+      setCheckedRows([]);
+      setSelectedRowsBGFiles([]);
       setActivateButton(!activateButton);
   };
 
@@ -940,6 +943,8 @@ const Background = () => {
           setHighlightRow={setHighlightRow}
           pastedRows={pastedRows}
           setPastedRows={setPastedRows}
+          checkedRows={checkedRows}
+          setCheckedRows={setCheckedRows}
         />
 
         {showToast && (
