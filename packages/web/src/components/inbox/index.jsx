@@ -97,7 +97,7 @@ const mainGrid = {
 };
 
 const Inbox = () => {
-  useEffect(() => {
+  /*useEffect(() => {
     gapi.load('client:auth2', start);
   });
 
@@ -106,7 +106,7 @@ const Inbox = () => {
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
       scope: "email"
     })
-  }
+  }*/
   
   const companyId = localStorage.getItem("companyId");
   const [loginData, setLoginData] = useState(
