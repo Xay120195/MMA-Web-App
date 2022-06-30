@@ -499,8 +499,13 @@ async function getCompanyGmailToken(ctx) {
     };
 
     const compGTCmd = new QueryCommand(compGTParam);
+
+    // console.log(compGTCmd);
     const { Items } = await client.send(compGTCmd);
-    response = Items ? unmarshall(Items) : {};
+
+    console.log("Items:", Items);
+
+    response = Items;
   } catch (e) {
     response = {
       error: e.message,
