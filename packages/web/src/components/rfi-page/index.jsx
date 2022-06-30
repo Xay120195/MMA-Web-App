@@ -317,6 +317,8 @@ export default function RFIPage() {
             {(provider) => (
             <tbody className=" w-full" ref={provider.innerRef} {...provider.droppableProps}>
             { questions === null || questions === undefined ? 
+              <tr></tr>
+            : questions.length === 0 ?
               <tr>
                 <td className="border-slate-500 border ">
                   <BlankState
