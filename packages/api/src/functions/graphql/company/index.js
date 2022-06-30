@@ -370,12 +370,18 @@ async function listCompanyGmailMessages(ctx) {
         ":isSaved": isSaved,
         ":isDeleted": isDeleted,
       },
-      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"];
+      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"],
+      KeyConditionExpression = ["companyId = :companyId"];
+
+    if (recipient) {
+      ExpressionAttributeValues[":recipient"] = recipient.toLowerCase();
+      KeyConditionExpression.push("contains(dateReceived, :recipient)");
+    }
 
     const compCMParam = {
       TableName: "CompanyGmailMessageTable",
       IndexName: indexName,
-      KeyConditionExpression: "companyId = :companyId",
+      KeyConditionExpression: KeyConditionExpression.join(" AND "),
       FilterExpression: FilterExpression.join(" AND "),
       ExpressionAttributeValues: marshall(ExpressionAttributeValues),
 
@@ -393,10 +399,6 @@ async function listCompanyGmailMessages(ctx) {
     console.log(compCMParam);
     const compCMCmd = new QueryCommand(compCMParam);
     const compCMResult = await client.send(compCMCmd);
-
-    // const gmailMessageIds = compCMResult.Items.map((i) => unmarshall(i)).map(
-    //   (f) => marshall({ id: f.gmailMessageId })
-    // );
 
     let unique = compCMResult.Items.map((a) => unmarshall(a))
       .map((x) => x.gmailMessageId)
