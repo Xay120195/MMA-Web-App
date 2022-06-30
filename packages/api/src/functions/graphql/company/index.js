@@ -500,12 +500,14 @@ async function getCompanyGmailToken(ctx) {
 
     const compGTCmd = new QueryCommand(compGTParam);
 
-    // console.log(compGTCmd);
+    console.log(compGTCmd);
     const { Items } = await client.send(compGTCmd);
 
-    console.log("Items:", Items);
+    console.log(Items);
 
-    response = Items;
+    console.log(unmarshall(Items));
+
+    response = unmarshall(Items);
   } catch (e) {
     response = {
       error: e.message,
