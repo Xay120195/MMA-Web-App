@@ -370,12 +370,18 @@ async function listCompanyGmailMessages(ctx) {
         ":isSaved": isSaved,
         ":isDeleted": isDeleted,
       },
-      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"];
+      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"],
+      KeyConditionExpression = ["companyId = :companyId"];
+
+    if (recipient) {
+      ExpressionAttributeValues[":recipient"] = recipient.toLowerCase();
+      KeyConditionExpression.push("contains(dateReceived, :recipient)");
+    }
 
     const compCMParam = {
       TableName: "CompanyGmailMessageTable",
       IndexName: indexName,
-      KeyConditionExpression: "companyId = :companyId",
+      KeyConditionExpression: KeyConditionExpression.join(" AND "),
       FilterExpression: FilterExpression.join(" AND "),
       ExpressionAttributeValues: marshall(ExpressionAttributeValues),
 
@@ -393,10 +399,6 @@ async function listCompanyGmailMessages(ctx) {
     console.log(compCMParam);
     const compCMCmd = new QueryCommand(compCMParam);
     const compCMResult = await client.send(compCMCmd);
-
-    // const gmailMessageIds = compCMResult.Items.map((i) => unmarshall(i)).map(
-    //   (f) => marshall({ id: f.gmailMessageId })
-    // );
 
     let unique = compCMResult.Items.map((a) => unmarshall(a))
       .map((x) => x.gmailMessageId)
@@ -483,6 +485,35 @@ async function listCompanyGmailMessages(ctx) {
   return response;
 }
 
+async function getCompanyGmailToken(ctx) {
+  const { id } = ctx.source;
+
+  try {
+    const ExpressionAttributeValues = {
+      ":companyId": id,
+    };
+
+    const compGTParam = {
+      TableName: "GmailTokenTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
+    };
+
+    const compGTCmd = new QueryCommand(compGTParam);
+    const { Items } = await client.send(compGTCmd);
+
+    response = Items.length !== 0 ? unmarshall(Items[0]) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 const resolvers = {
   Company: {
     users: async (ctx) => {
@@ -499,6 +530,9 @@ const resolvers = {
     },
     gmailMessages: async (ctx) => {
       return listCompanyGmailMessages(ctx);
+    },
+    gmailToken: async (ctx) => {
+      return getCompanyGmailToken(ctx);
     },
   },
 };

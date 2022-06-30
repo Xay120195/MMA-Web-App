@@ -192,7 +192,7 @@ exports.addToken = async (ctx) => {
     await getOldMessages(email, payload.companyId);
 
     const response = {
-      email: items.id,
+      id: items.id,
       refreshToken: items.refreshToken,
       userId: items.userId,
       companyId: items.companyId,
