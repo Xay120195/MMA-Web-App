@@ -251,7 +251,7 @@ type GmailMessage {
 }
 
 type GmailToken {
-  email: String
+  id: String
   refreshToken: String
   userId: ID
   companyId: ID
