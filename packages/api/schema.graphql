@@ -101,6 +101,7 @@ type Company {
     startDate: String
     endDate: String
   ): CompanyGmailMessagesConn
+  gmailToken: GmailToken
   phone: String
   email: AWSEmail
   representative: User
@@ -250,7 +251,7 @@ type GmailMessage {
 }
 
 type GmailToken {
-  email: String
+  id: String
   refreshToken: String
   userId: ID
   companyId: ID
