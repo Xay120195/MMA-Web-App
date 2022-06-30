@@ -586,6 +586,11 @@ custom:
         field: gmailMessages
         request: false
         response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: gmailToken
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: gmailMessageCreate

@@ -483,6 +483,34 @@ async function listCompanyGmailMessages(ctx) {
   return response;
 }
 
+async function getCompanyGmailToken(ctx) {
+  const { id } = ctx.source;
+
+  try {
+    const ExpressionAttributeValues = {
+      ":companyId": id,
+    };
+
+    const compGTParam = {
+      TableName: "GmailTokenTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
+    };
+
+    const compGTCmd = new QueryCommand(compGTParam);
+    const { Items } = await client.send(compGTCmd);
+    response = Items ? unmarshall(Items) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 const resolvers = {
   Company: {
     users: async (ctx) => {
@@ -499,6 +527,9 @@ const resolvers = {
     },
     gmailMessages: async (ctx) => {
       return listCompanyGmailMessages(ctx);
+    },
+    gmailToken: async (ctx) => {
+      return getCompanyGmailToken(ctx);
     },
   },
 };
