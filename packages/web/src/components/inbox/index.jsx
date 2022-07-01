@@ -13,6 +13,13 @@ import ToastNotification from "../toast-notification";
 const qGmailMessagesbyCompany = `
 query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
   company(id: $id) {
+    gmailToken {
+      refreshToken
+      id
+      userId
+      companyId
+      updatedAt
+    }
     gmailMessages(
       isDeleted: $isDeleted
       isSaved: $isSaved
@@ -97,16 +104,6 @@ const mainGrid = {
 };
 
 const Inbox = () => {
-  useEffect(() => {
-    gapi.load('client:auth2', start);
-  });
-
-  function start() {
-    gapi.client.init({
-      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-      scope: "email"
-    })
-  }
   
   const companyId = localStorage.getItem("companyId");
   const [loginData, setLoginData] = useState(
@@ -127,6 +124,8 @@ const Inbox = () => {
   const [resultMessage, setResultMessage] = useState("");
   const [maxLoadingSavedEmail, setMaxLoadingSavedEmail] = useState(false);
   const [maxLoadingUnSavedEmail, setMaxLoadingUnSavedEmail] = useState(false);
+  const [tokenEmail, setTokenEmail] = useState("");
+  const [refreshToken, setRefreshToken] = useState("");
 
   const hideToast = () => {
     setShowToast(false);
@@ -139,7 +138,7 @@ const Inbox = () => {
   }, []);
 
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
-  console.log(emailIntegration);
+
   const getUnSavedEmails = async () => {
     const params = {
       query: qGmailMessagesbyCompany,
@@ -154,8 +153,19 @@ const Inbox = () => {
 
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
+      const gmailToken = result.data.company.gmailToken;
+      const gmailTokenEmail = result.data.company.gmailToken.id;
+      const gmailRefreshToken = result.data.company.gmailToken.refreshToken;
       setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+      setRefreshToken(gmailRefreshToken);
+      setTokenEmail(gmailTokenEmail);
       setUnsavedEmails(emailList);
+
+      if(gmailRefreshToken !== null && localStorage.getItem("emailAddressIntegration") === null) {
+        localStorage.setItem("signInData", JSON.stringify(gmailToken));
+        localStorage.setItem("emailAddressIntegration", gmailTokenEmail);
+      }
+      
     });
   };
 

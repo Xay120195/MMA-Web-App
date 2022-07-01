@@ -224,7 +224,13 @@ const checkGmailMessages = async (
           console.log("Save to GmailMessageTable:", saveEmails);
 
           const filterMessagesIDs = messagesToAdd.map((Item) => {
-            return { id: Item.id, dateReceived: Item.receivedAt };
+            return {
+              id: Item.id,
+              dateReceived: Item.receivedAt,
+              recipient: Item.recipient,
+              subject: Item.lower_subject,
+              snippet: Item.lower_snippet,
+            };
           });
 
           var params = {
@@ -256,23 +262,26 @@ const checkGmailMessages = async (
             const saveCompanyEmails = await docClient
               .batchWrite({
                 RequestItems: {
-                  CompanyGmailMessageTable: nonExistingGmailMessages.map((i) => ({
-                    PutRequest: {
-                      Item: {
-                        id: `${companyId}-${i.id}`,
-                        gmailMessageId: i.id,
-                        companyId: companyId,
-                        isDeleted: false,
-                        isSaved: false,
-                        createdAt: toUTC(new Date()),
-                        dateReceived: i.dateReceived.toString()
+                  CompanyGmailMessageTable: nonExistingGmailMessages.map(
+                    (i) => ({
+                      PutRequest: {
+                        Item: {
+                          id: `${companyId}-${i.id}`,
+                          gmailMessageId: i.id,
+                          companyId: companyId,
+                          isDeleted: false,
+                          isSaved: false,
+                          createdAt: toUTC(new Date()),
+                          dateReceived: i.dateReceived.toString(),
+                          filters: `${i.recipient}#${i.subject}#${i.snippet}`,
+                        },
                       },
-                    },
-                  })),
+                    })
+                  ),
                 },
               })
               .promise();
-      
+
             console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
           }
         }
