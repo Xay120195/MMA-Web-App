@@ -6,6 +6,7 @@ import CreatableSelect from "react-select/creatable";
 import { useRootClose } from 'react-overlays';
 import imgLoading from "../../assets/images/loading-circle.gif";
 import { FaEye } from "react-icons/fa";
+import { Base64 } from "js-base64";
 
 var moment = require("moment");
 
@@ -66,25 +67,6 @@ const TableUnsavedInfo = ({
       setIsShiftDown(true);
     }
   };
-
-  /*const handleSelectItem = (e, position) => {
-    const { value } = e.target;
-    const checkedId = selectedUnsavedItems.some((x) => x.id === value);
-
-    if (!checkedId && e.target.checked) {
-      const x = selectedUnsavedItems;
-      x.push({ id: value });
-      setSelectedUnsavedItems(x);
-
-      const updatedCheckedState = selectedUnsavedItems.map((item, index) =>
-        index === position ? !item : item
-      );
-      setSelectedUnsavedItems(updatedCheckedState);
-      console.log("UPDATE: ", updatedCheckedState);
-    } else {
-      setSelectedUnsavedItems([]);
-    }
-  }*/
 
   const handleSelectItem = (e, counter) => {
     if(counter !== 0) {
@@ -210,14 +192,8 @@ const TableUnsavedInfo = ({
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
                     <p>CC: {item.cc}</p>
-                    <p>BCC: {item.bcc}</p>
-                    <br/>
-                    {/* {item.payload.map((body, index) => (
-                      <span>
-                        body
-                      </span>
-                    ))} */}
-                    {item.snippet}
+                    <p className="mt-8" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+                    </p>
                   </div>
                 )}
                 </p>
