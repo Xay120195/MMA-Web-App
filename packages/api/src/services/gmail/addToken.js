@@ -14,7 +14,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
 
   const getMessagesByEmailParams = {
     maxResults: 25,
-    q: "label:inbox after:2022/06/29", // all inbox from June 29 2022
+    q: "label:inbox after:2022/07/01", // all inbox from July 2022
     ...(pageToken ? { pageToken } : {}),
   };
 

@@ -184,7 +184,7 @@ const TableUnsavedInfo = ({
                 {show && snippetId === item.id && (
                   <div
                     ref={el => (ref.current[index] = el)}
-                    className="absolute rounded shadow bg-white p-6 z-50 w-1/2 max-h-60 overflow-auto"
+                    className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                     id={item.id}
                   >
                     <p>From : {item.from}</p>
@@ -192,7 +192,7 @@ const TableUnsavedInfo = ({
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
                     <p>CC: {item.cc}</p>
-                    <p className="mt-8" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
                     </p>
                   </div>
                 )}
