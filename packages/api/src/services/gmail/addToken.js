@@ -85,7 +85,13 @@ const getOldMessages = async (email, companyId, pageToken) => {
     console.log("Save to GmailMessageTable:", saveEmails);
 
     const filterMessagesIDs = messagesToAdd.map((Item) => {
-      return { id: Item.id, dateReceived: Item.receivedAt };
+      return {
+        id: Item.id,
+        dateReceived: Item.receivedAt,
+        recipient: Item.recipient,
+        subject: Item.lower_subject,
+        snippet: Item.lower_snippet,
+      };
     });
 
     var params = {
@@ -124,7 +130,8 @@ const getOldMessages = async (email, companyId, pageToken) => {
                   isDeleted: false,
                   isSaved: false,
                   createdAt: toUTC(new Date()),
-                  dateReceived: i.dateReceived.toString()
+                  dateReceived: i.dateReceived.toString(),
+                  filters: `${i.recipient}#${i.subject}#${i.snippet}`,
                 },
               },
             })),
