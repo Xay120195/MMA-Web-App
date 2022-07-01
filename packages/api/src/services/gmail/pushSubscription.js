@@ -16,7 +16,7 @@ const getParsedGmailMessage = async (data) => {
   const { id: messageId, payload } = message;
 
   const getParsedMessageParts = async (messagePart) => {
-    console.log("getParsedMessageParts()");
+    console.log("getParsedMessageParts()", messagePart);
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
     if (subParts && subParts.length)
       return await Promise.all(subParts.map(getParsedMessageParts));
