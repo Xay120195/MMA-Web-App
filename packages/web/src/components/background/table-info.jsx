@@ -385,7 +385,7 @@ const TableInfo = ({
 
     const res = tempBackground.map(({ id }, index) => ({
       id: id,
-      order: index,
+      order: index+1,
     }));
     console.log(res);
     const mBulkUpdateBackgroundOrder = `

@@ -21,6 +21,7 @@ function Navbar() {
   const location = useLocation();
   const [showDashboard, setShowDashboard] = useState(false);
   const [showUserTypeAccess, setShowUserTypeAccess] = useState(false);
+  const [showInbox, setShowInbox] = useState(false);
 
   let history = useHistory();
   const clickLogout = async (e) => {
@@ -67,6 +68,7 @@ function Navbar() {
   const featureAccessFilters = async () => {
     const dashboardAccess = await AccessControl("DASHBOARD");
     const userTypeAccess = await AccessControl("USERTYPEACCESS");
+    const inboxAccess = await AccessControl("INBOX");
 
     if (dashboardAccess.status !== "restrict") {
       setShowDashboard(true);
@@ -78,6 +80,12 @@ function Navbar() {
       setShowUserTypeAccess(true);
     } else {
       console.log(userTypeAccess.message);
+    }
+
+    if (inboxAccess.status !== "restrict") {
+      setShowInbox(true);
+    } else {
+      console.log(inboxAccess.message);
     }
   };
 
@@ -105,7 +113,7 @@ function Navbar() {
                 return (item.name === "DASHBOARD" && showDashboard) ||
                   (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
                   item.name === "ACCOUNTSETTINGS" ||
-                  item.name === "INBOX" ? (
+                  (item.name === "INBOX" && showInbox) ? (
                   <li
                     className={
                       location.pathname === item.path ? "active-page" : ""

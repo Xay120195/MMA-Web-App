@@ -14,6 +14,7 @@ import AccessControl from "../../shared/accessControl";
 const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
   const location = useLocation();
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showInbox, setShowInbox] = useState(false);
   const [showUserTypeAccess, setShowUserTypeAccess] = useState(false);
   useEffect(() => {
     featureAccessFilters();
@@ -22,6 +23,15 @@ const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
   const featureAccessFilters = async () => {
     const dashboardAccess = await AccessControl("DASHBOARD");
     const userTypeAccess = await AccessControl("USERTYPEACCESS");
+    const inboxAccess = await AccessControl("INBOX");
+
+
+
+    if (inboxAccess.status !== "restrict") {
+      setShowInbox(true);
+    } else {
+      console.log(inboxAccess.message);
+    }
 
     if (dashboardAccess.status !== "restrict") {
       setShowDashboard(true);
@@ -34,6 +44,8 @@ const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
     } else {
       console.log(userTypeAccess.message);
     }
+
+    
   }
   return (
     <>
@@ -54,9 +66,10 @@ const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
           <ul className="nav-menus">
             {userInfo &&
               SidebarData.map((item, index) => {
-                return (item.name === "DASHBOARD" && showDashboard) || (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
-                  item.name === "ACCOUNTSETTINGS" ||
-                  item.name === "INBOX" ? (
+                return (item.name === "DASHBOARD" && showDashboard) || 
+                (item.name === "USERTYPEACCESS" && showUserTypeAccess) ||
+                (item.name === "INBOX" && showInbox) ||
+                  item.name === "ACCOUNTSETTINGS" ? (
                   <li
                     className={
                       location.pathname === item.path ? "active-page" : ""

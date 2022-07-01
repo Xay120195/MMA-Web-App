@@ -37,10 +37,14 @@ const AccessControl = async (pagename) => {
     },
   });
 
+  // console.log(page_access);
+
   const page = page_access.data.pages.filter((f) => f.name === pagename);
 
   if (page.length !== 0) {
     var userAccess = page_access.data.companyAccessType[0].access;
+
+    // console.log("userAccess",userAccess);
 
     userAccess = userAccess.find((p) => p.id === page[0].id);
 
@@ -53,6 +57,7 @@ const AccessControl = async (pagename) => {
 
       retainedPageNames = retainedPageNames.map((f) => f.name);
 
+      console.log("pagename", pagename);
       result = {
         status: "allow",
         data: {

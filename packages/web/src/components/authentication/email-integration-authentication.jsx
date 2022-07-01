@@ -29,7 +29,7 @@ class GmailIntegration extends Component {
         companyId: $companyId
         code: $code
       ) {
-        email
+        id
         refreshToken
         userId
         companyId
