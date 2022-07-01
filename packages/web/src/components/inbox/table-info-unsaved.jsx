@@ -192,7 +192,7 @@ const TableUnsavedInfo = ({
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
                     <p>CC: {item.cc}</p>
-                    <p className="mt-8" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
                     </p>
                   </div>
                 )}
