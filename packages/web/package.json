@@ -17,6 +17,7 @@
     "bitly-react": "^6.0.12",
     "dateformat": "^5.0.2",
     "gapi-script": "^1.2.0",
+    "js-base64": "^3.7.2",
     "moment": "^2.29.1",
     "multiselect-react-dropdown": "^2.0.21",
     "react": "^17.0.2",
