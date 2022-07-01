@@ -47,7 +47,8 @@ class GmailIntegration extends Component {
       },
     };
 
-    await API.graphql(params).then(() => {
+    await API.graphql(params).then((param) => {
+      console.log(param);
       this.setState((state) => ({
         isLogined: response,
       }));
