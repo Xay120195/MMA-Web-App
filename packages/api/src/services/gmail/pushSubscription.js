@@ -8,16 +8,15 @@ const {
   s3,
 } = require("./lib");
 const { client_id, client_secret } = require("./config");
-const { v4 } = require("uuid");
-const { toUTC, toLocalTime } = require("../../shared/toUTC");
+const { toUTC } = require("../../shared/toUTC");
 
 const getParsedGmailMessage = async (data) => {
-  console.log("getParsedGmailMessage");
+  console.log("getParsedGmailMessage()");
   const message = Object.assign({}, data);
   const { id: messageId, payload } = message;
 
   const getParsedMessageParts = async (messagePart) => {
-    console.log("getParsedMessageParts");
+    console.log("getParsedMessageParts()", messagePart);
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
     if (subParts && subParts.length)
       return await Promise.all(subParts.map(getParsedMessageParts));
@@ -42,15 +41,20 @@ const getParsedGmailMessage = async (data) => {
         data: { data },
       } = await gmailAxios
         .get(getAttachmentByMessage)
-        .catch((err) => console.log(err));
+        .catch(({ message }) =>
+          console.log("getAttachmentByMessage Error:", message)
+        );
 
-      const fileId = messageId + filename,
-        fileName = `${messageId}/${filename}`,
-        fid = fileId
-          .replace(/\s/g, "")
-          .replace(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")
-          .replace(/\.[^/.]+$/, "")
-          .toLowerCase();
+      let trimName = filename;
+      trimName = trimName
+        .replace(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")
+        .replace(/\s/g, "")
+        .replace(/\.[^/.]+$/, "")
+        .toLowerCase();
+      if (trimName.length > 40) trimName = trimName.substring(0, 40);
+
+      const fid = messageId + trimName,
+        fileName = `${messageId}/${filename}`;
 
       const { Item: getExistingAttachments } = await docClient
         .get({ TableName: "GmailMessageAttachment", Key: { id: fid } })
@@ -58,39 +62,46 @@ const getParsedGmailMessage = async (data) => {
 
       console.log("getExistingAttachments:", getExistingAttachments);
       if (getExistingAttachments === undefined) {
-        const saveAttachmentsParams = {
-          id: fid,
-          messageId: messageId,
-          s3ObjectKey: fileName,
-          size: body.size,
-          type: mimeType,
-          name: filename,
-          details: "",
-          updatedAt: toUTC(new Date()),
-        };
+        console.log("Save Attachments To Database:", filename);
+        try {
+          const saveAttachmentsParams = {
+            id: fid,
+            messageId: messageId,
+            s3ObjectKey: fileName,
+            size: body.size,
+            type: mimeType,
+            name: filename,
+            details: "",
+            updatedAt: toUTC(new Date()),
+          };
+          console.log("Params:", saveAttachmentsParams);
 
-        console.log("saveAttachmentsToDatabase");
-        console.log("Params:", saveAttachmentsParams);
+          const saveAttachments = await docClient
+            .put({
+              TableName: "GmailMessageAttachment",
+              Item: saveAttachmentsParams,
+            })
+            .promise();
+          console.log("Response:", filename, saveAttachments);
+        } catch ({ message }) {
+          console.log("docClient.put Failed:", filename, message);
+        }
 
-        const saveAttachments = await docClient
-          .put({
-            TableName: "GmailMessageAttachment",
-            Item: saveAttachmentsParams,
-          })
-          .promise();
-        console.log("Response:", saveAttachments);
+        console.log("Upload Attachments To S3:", fileName);
+        try {
+          const saveAttachmentsToS3 = {
+            ContentType: mimeType,
+            Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
+            Key: fileName,
+            Body: Buffer.from(data, "base64"),
+          };
 
-        console.log("saveAttachmentsToS3");
-        const saveAttachmentsToS3 = {
-          ContentType: mimeType,
-          Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
-          Key: fileName,
-          Body: Buffer.from(data, "base64"),
-        };
-
-        console.log("Params:", saveAttachmentsToS3);
-        const s3Response = await s3.putObject(saveAttachmentsToS3).promise();
-        console.log("Response:", s3Response);
+          console.log("Params:", saveAttachmentsToS3);
+          const s3Response = await s3.putObject(saveAttachmentsToS3).promise();
+          console.log("Response:", fileName, s3Response);
+        } catch ({ message }) {
+          console.log("s3.putObject Failed:", filename, message);
+        }
       }
 
       _parsedMessagePart["path"] = fileName;
@@ -149,20 +160,17 @@ const checkGmailMessages = async (
   companyId,
   pageToken
 ) => {
-  console.log(
-    "checkGmailMessages:",
-    email,
-    startHistoryId,
-    companyId,
-    pageToken
-  );
+  console.log("checkGmailMessages()");
+  console.log("Params:", email, startHistoryId, companyId, pageToken);
   const {
     data: { history, historyId, nextPageToken },
   } = await gmailAxios
     .get(`/gmail/v1/users/me/history`, {
       params: { startHistoryId, pageToken },
     })
-    .catch((err) => console.log(err));
+    .catch(({ message }) =>
+      console.log("Error: /gmail/v1/users/me/history", message)
+    );
 
   if (history) {
     for (const {
@@ -259,30 +267,36 @@ const checkGmailMessages = async (
           console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
 
           if (nonExistingGmailMessages.length != 0) {
-            const saveCompanyEmails = await docClient
-              .batchWrite({
-                RequestItems: {
-                  CompanyGmailMessageTable: nonExistingGmailMessages.map(
-                    (i) => ({
-                      PutRequest: {
-                        Item: {
-                          id: `${companyId}-${i.id}`,
-                          gmailMessageId: i.id,
-                          companyId: companyId,
-                          isDeleted: false,
-                          isSaved: false,
-                          createdAt: toUTC(new Date()),
-                          dateReceived: i.dateReceived.toString(),
-                          filters: `${i.recipient}#${i.subject}#${i.snippet}`,
+            try {
+              const saveCompanyEmails = await docClient
+                .batchWrite({
+                  RequestItems: {
+                    CompanyGmailMessageTable: nonExistingGmailMessages.map(
+                      (i) => ({
+                        PutRequest: {
+                          Item: {
+                            id: `${companyId}-${i.id}`,
+                            gmailMessageId: i.id,
+                            companyId: companyId,
+                            isDeleted: false,
+                            isSaved: false,
+                            createdAt: toUTC(new Date()),
+                            dateReceived: i.dateReceived.toString(),
+                            filters: `${i.recipient}#${i.subject}#${i.snippet}`,
+                          },
                         },
-                      },
-                    })
-                  ),
-                },
-              })
-              .promise();
-
-            console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
+                      })
+                    ),
+                  },
+                })
+                .promise();
+              console.log(
+                "Save to CompanyGmailMessageTable:",
+                saveCompanyEmails
+              );
+            } catch ({ message }) {
+              console.log("Error in Saving CompanyGmailMessageTable", message);
+            }
           }
         }
       }
@@ -308,7 +322,7 @@ const checkGmailMessages = async (
 const pushSubscriptionHandler = async (event) => {
   let responseBody = "";
 
-  console.log("pushSubscriptionHandler");
+  console.log("pushSubscriptionHandler()");
 
   try {
     const payload = JSON.parse(event.body);
@@ -355,7 +369,7 @@ const pushSubscriptionHandler = async (event) => {
     });
     return true;
   } catch ({ message }) {
-    console.log("errMessage: ", message);
+    console.log("pushSubscriptionHandler errMessage: ", message);
   }
 };
 
