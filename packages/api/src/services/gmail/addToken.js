@@ -9,7 +9,7 @@ const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC } = require("../../shared/toUTC");
 const { v4 } = require("uuid");
 const getOldMessages = async (email, companyId, pageToken) => {
-  console.log("getOldMessages");
+  console.log("getOldMessages()");
   const getMessagesByEmail = `/gmail/v1/users/${email}/messages`;
 
   const getMessagesByEmailParams = {
@@ -24,11 +24,11 @@ const getOldMessages = async (email, companyId, pageToken) => {
     .get(getMessagesByEmail, {
       params: getMessagesByEmailParams,
     })
-    .catch((err) => console.log(err));
+    .catch(({ err }) => console.log("Error in getMessagesByEmail", err));
 
   console.log("Request:", getMessagesByEmail);
   console.log("Params:", getMessagesByEmailParams);
-  console.log("Result:", messageIds);
+  console.log("Result messageIds:", messageIds);
 
   if (messageIds != undefined && messageIds.length != 0) {
     const messages = await Promise.all(
@@ -46,7 +46,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
     const messagesToAdd = await Promise.all(
       messages.map(getParsedGmailMessage)
     );
-    // console.log("messagesToAdd: ", messagesToAdd);
+    // console.log("Retrieved Messages: ", messagesToAdd);
 
     const saveEmails = await docClient
       .batchWrite({
@@ -176,7 +176,9 @@ exports.addToken = async (ctx) => {
       .post(endpoint, {
         topicName: topic,
       })
-      .catch((err) => console.log(err));
+      .catch(({ message }) =>
+        console.log("Error in fetching history ID:", message)
+      );
 
     console.log("watchData:", watchData);
     delete payload.email;
@@ -188,13 +190,18 @@ exports.addToken = async (ctx) => {
       updatedAt: toUTC(new Date()),
     };
 
-    console.log("Save to GmailTokenTable:", items);
-    const request = await docClient
-      .put({
-        TableName: "GmailTokenTable",
-        Item: items,
-      })
-      .promise();
+    try {
+      console.log("Save to GmailTokenTable:", items);
+      const request = await docClient
+        .put({
+          TableName: "GmailTokenTable",
+          Item: items,
+        })
+        .promise();
+      console.log("Response:", request);
+    } catch ({ message }) {
+      console.log("docClient.put Failed:", message);
+    }
 
     await getOldMessages(email, payload.companyId);
 
