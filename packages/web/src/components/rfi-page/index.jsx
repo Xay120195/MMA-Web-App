@@ -82,7 +82,8 @@ export default function RFIPage() {
       console.log("list", qa)
       const QandA = qa.data.rfi.requests.items;
       console.log("mfl", QandA);
-      setQuestions(QandA);
+      const dataSort = [...QandA].sort((a, b) => a.order - b.order);
+      setQuestions(dataSort);
     });
   }
 
@@ -94,10 +95,26 @@ export default function RFIPage() {
         rfiId: matter_id,
         question: questionDetails,
         answer: '',
-        order: 0,
+        order: questions === null ? 0 : questions.length+1,
         itemNo: "0"
       },
     });
+
+    var newEntry =  
+    {
+      answer:  result.data.requestCreate.answer,
+      createdAt: result.data.requestCreate.createdAt,
+      id: result.data.requestCreate.id,
+      itemNo: result.data.requestCreate.itemNo,
+      order: result.data.requestCreate.order,
+      question: result.data.requestCreate.question
+    };
+
+    let newData = [...questions];
+    newData = [...newData, newEntry];
+    const dataSort = [...newData].sort((a, b) => a.order - b.order);
+
+    setQuestions(dataSort);
 
     console.log("result", result);
 
@@ -110,7 +127,7 @@ export default function RFIPage() {
 
     setTimeout(() => {
       setShowToast(false);
-      getQuestionsAnswers();
+      //getQuestionsAnswers();
     }, 3000);
   }
 
@@ -208,20 +225,6 @@ export default function RFIPage() {
     debounce: 1000,
   });
 
-  var dummyData = [
-    {question: "Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1 Test Question #1", answer: "", order: 0},
-    {question: "Test Question #2", answer: "", order: 1},
-    {question: "Test Question #3", answer: "", order: 2},
-    {question: "Test Question #4", answer: "", order: 3},
-    {question: "Test Question #5", answer: "", order: 4},
-    {question: "Test Question #5", answer: "", order: 4},
-    {question: "Test Question #4", answer: "", order: 3},
-    {question: "Test Question #5", answer: "", order: 4},
-    {question: "Test Question #5", answer: "", order: 4},
-    {question: "Test Question #4", answer: "", order: 3},
-    {question: "Test Question #5", answer: "", order: 4},
-    {question: "Test Question #5", answer: "", order: 4}
-  ];
 
   const handleSelectItem = (itemid) => {
     let temp = selectedItems;
@@ -362,7 +365,8 @@ export default function RFIPage() {
                   }}
                 >
                   <td className="h-full align-top border-slate-500 border" {...provider.dragHandleProps}> 
-                    <div className="px-3 py-5 inline-flex w-full">
+                    <span className="px-3 py-5 inline-flex">
+                      <div className="inline-flex w-12">
                       <MdDragIndicator
                         className="text-2xl"
                         // onClick={() =>
@@ -376,8 +380,11 @@ export default function RFIPage() {
                         value={items.id}
                         disabled={true}
                       />
-                      <p> {index+1}. {items.question} </p>
-                    </div>
+                      </div>
+                      <div className="w-full">
+                        <p> {index+1}. {items.question} </p>
+                      </div>
+                    </span>
                     
                   </td>
                   <td className="h-full align-top border-slate-500 border">
