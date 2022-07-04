@@ -18,44 +18,49 @@ class GmailIntegration extends Component {
 
   async login(response) {
     console.log("code: ",response);
-    console.log("email: ", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
 
-    const saveRefreshToken = `
-    mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
-      gmailConnectFromCode(
-        email: $email
-        userId: $userId
-        companyId: $companyId
-        code: $code
-      ) {
-        id
-        refreshToken
-        userId
-        companyId
-        updatedAt
+    setTimeout(() => {
+      console.log("email: ", window.gapi.auth2.getAuthInstance().currentUser.get().wt.cu);
+
+
+      const saveRefreshToken = `
+      mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
+        gmailConnectFromCode(
+          email: $email
+          userId: $userId
+          companyId: $companyId
+          code: $code
+        ) {
+          id
+          refreshToken
+          userId
+          companyId
+          updatedAt
+        }
       }
-    }
-    `;
+      `;
 
-    const params = {
-      query: saveRefreshToken,
-      variables: {
-        companyId: localStorage.getItem("companyId"),
-        userId: localStorage.getItem("userId"),
-        email: window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu,
-        code: response.code,
-      },
-    };
+      const params = {
+        query: saveRefreshToken,
+        variables: {
+          companyId: localStorage.getItem("companyId"),
+          userId: localStorage.getItem("userId"),
+          email: window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu,
+          code: response.code,
+        },
+      };
 
-    await API.graphql(params).then((param) => {
-      console.log(param);
-      this.setState((state) => ({
-        isLogined: response,
-      }));
-      localStorage.setItem("signInData", JSON.stringify(response));
-      localStorage.setItem("emailAddressIntegration", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
-      window.location.reload();
-    });
+      API.graphql(params).then((param) => {
+        console.log(param);
+        this.setState((state) => ({
+          isLogined: response,
+        }));
+        localStorage.setItem("signInData", JSON.stringify(response));
+        localStorage.setItem("emailAddressIntegration", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
+        window.location.reload();
+      });
+
+    }, 1000);  
   }
 
   logout(response) {
