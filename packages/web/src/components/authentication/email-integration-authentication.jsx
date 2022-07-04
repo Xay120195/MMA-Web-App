@@ -19,7 +19,6 @@ class GmailIntegration extends Component {
   async login(response) {
     console.log("code: ",response);
     console.log("email: ", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
-    localStorage.setItem("emailAddressIntegration", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
 
     const saveRefreshToken = `
     mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
@@ -38,7 +37,7 @@ class GmailIntegration extends Component {
     }
     `;
 
-    const request = await API.graphql({
+    const params = {
       query: saveRefreshToken,
       variables: {
         companyId: localStorage.getItem("companyId"),
@@ -46,16 +45,17 @@ class GmailIntegration extends Component {
         email: window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu,
         code: response.code,
       },
-    });
+    };
 
-    if (request) {
+    await API.graphql(params).then((param) => {
+      console.log(param);
       this.setState((state) => ({
         isLogined: response,
       }));
       localStorage.setItem("signInData", JSON.stringify(response));
-      
+      localStorage.setItem("emailAddressIntegration", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
       window.location.reload();
-    }
+    });
   }
 
   logout(response) {
