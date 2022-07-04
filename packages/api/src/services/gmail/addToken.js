@@ -14,7 +14,6 @@ const getOldMessages = async (email, companyId, pageToken) => {
 
   const getMessagesByEmailParams = {
     maxResults: 25,
-    q: "label:inbox after:2022/07/01", // all inbox from July 2022
     q: "label:inbox after:1656864000", // Mon Jul 04 2022 00:00:00 GMT+0800 (Philippine Standard Time)
     ...(pageToken ? { pageToken } : {}),
   };
