@@ -10,6 +10,18 @@ const {
 const { client_id, client_secret } = require("./config");
 const { toUTC } = require("../../shared/toUTC");
 
+const isArray = function (a) {
+  return Array.isArray(a);
+};
+
+const isObject = function (o) {
+  return o === Object(o) && !isArray(o) && typeof o !== "function";
+};
+
+function isIterable(variable) {
+  return isArray(variable) || isObject(variable);
+}
+
 const getParsedGmailMessage = async (data) => {
   console.log("getParsedGmailMessage()");
   const message = Object.assign({}, data);
@@ -18,7 +30,8 @@ const getParsedGmailMessage = async (data) => {
   const getParsedMessageParts = async (messagePart) => {
     console.log("getParsedMessageParts()", messagePart);
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
-    if (subParts && subParts.length)
+    console.log("subParts", subParts);
+    if (subParts !== undefined && isIterable(subParts))
       return await Promise.all(subParts.map(getParsedMessageParts));
 
     const _parsedMessagePart = {
@@ -114,13 +127,22 @@ const getParsedGmailMessage = async (data) => {
   const parts = await getParsedMessageParts(payload);
 
   const formatParts = (parts) => {
-    for (const part of parts) {
-      if (Array.isArray(part)) formatParts(part);
-      else parsedMessageParts.push(part);
+    // console.log("formatParts", parts);
+
+    if (parts !== undefined && isIterable(parts) && parts.length > 0) {
+      for (const part of parts) {
+        if (Array.isArray(part)) {
+          formatParts(part);
+        } else {
+          parsedMessageParts.push(part);
+        }
+      }
     }
   };
 
-  formatParts(parts);
+  if (isIterable(parts)) {
+    formatParts(parts);
+  }
 
   const headerInfo = {};
 
