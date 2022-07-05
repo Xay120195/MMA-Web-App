@@ -115,6 +115,38 @@ async function listGmailMessageAttachments(ctx) {
   return response;
 }
 
+async function getGmailMessagePDF(ctx) {
+  console.log(ctx);
+  const { id } = ctx.source;
+
+  try {
+    const gmailPDFParam = {
+      TableName: "GmailMessagePDF",
+      IndexName: "byMessage",
+      KeyConditionExpression: "messageId = :messageId",
+      ExpressionAttributeValues: marshall({
+        ":messageId": id,
+      }),
+    };
+
+    const gmailPDFCmd = new QueryCommand(gmailPDFParam);
+    const gmailPDFResult = await client.send(gmailPDFCmd);
+
+    const response = gmailPDFResult.Items.map((i) => unmarshall(i));
+
+    return {
+      items: response,
+    };
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 const resolvers = {
   GmailMessage: {
     clientMatters: async (ctx) => {
@@ -122,6 +154,9 @@ const resolvers = {
     },
     attachments: async (ctx) => {
       return listGmailMessageAttachments(ctx);
+    },
+    pdfVersion: async (ctx) => {
+      return getGmailMessagePDF(ctx);
     },
   },
 };
