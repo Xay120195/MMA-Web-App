@@ -167,17 +167,13 @@ const TableUnsavedInfo = ({
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
-    var content = document.getElementById(html);
-    //var saveAsPdf = html2pdf().from(content).set(opt).save();
-    //console.log(saveAsPdf);
+    var content = document.getElementById("preview_"+html);
+
     html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
 
       const preBlob = dataURItoBlob(pdfAsString);
       const file = new File([preBlob], subject, {type: 'application/pdf'}); 
-
-      console.log(file);
     });
-
   };
 
   function dataURItoBlob(dataURI) {
@@ -273,13 +269,13 @@ const TableUnsavedInfo = ({
                 <button 
                   onClick={(e) =>
                     handleDownload(
-                      index,
+                      item.id,
                       item.subject
                     )
                   }
-                >Download PDF</button>
+                >Download Email PDF</button>
                 <div className="hidden" >
-                  <span id={index} >
+                  <span id={"preview_"+item.id} >
                   <img src={googleLogin} alt="" />
                   <hr></hr>
                   <h2><b>{item.subject}</b></h2>

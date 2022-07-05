@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { API } from "aws-amplify";
+import { API, Storage } from "aws-amplify";
+import config from "../../aws-exports";
+import html2pdf from "html2pdf.js";
 
 const ActionButtons = ({
   selectedUnsavedItems,
@@ -15,6 +17,12 @@ const ActionButtons = ({
   setResultMessage,
   emailIntegration,
 }) => {
+
+  Storage.configure({
+    region: config.aws_user_files_s3_bucket_region,
+    bucket: config.aws_user_files_s3_bucket,
+    identityPoolId: config.aws_user_pools_id,
+  });
 
   const companyId = localStorage.getItem("companyId");
 
@@ -91,6 +99,16 @@ const ActionButtons = ({
     }
   }`;
 
+  const mCreateMatterFile = `
+      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailPDF: Boolean, $isGmailAttachment: Boolean, $gmailMessageId: String) {
+        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order, isGmailPDF: $isGmailPDF, isGmailAttachment: $isGmailAttachment, gmailMessageId: $gmailMessageId) {
+          id
+          name
+          order
+        }
+      }
+  `;
+
   const handleEmails = async (status) => {
     // Soon will change this to bulk mutation 
     if(status) {
@@ -114,9 +132,12 @@ const ActionButtons = ({
       selectedUnsavedItems.map((obj) => {
         const filteredUnsavedArr = emailList.filter(item => item.id === obj);
         filteredUnsavedArr.map((item) => {
+
           item.clientMatters.items.map(clientMatters => {
             clientMatterId = clientMatters.id;
           });
+
+          handleUploadGmailEmail(item.id, item.subject, clientMatterId);
 
           item.attachments.items.map(attachment => {
             const request = API.graphql({
@@ -182,6 +203,93 @@ const ActionButtons = ({
       //setSelectedItems([]);
     }
   };
+
+  const handleUploadGmailEmail = (html, subject, matterId) => {
+    var opt = {
+      margin:       0.5,
+      filename:     subject,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true  },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    var content = document.getElementById("preview_"+html);
+    html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
+      const preBlob = dataURItoBlob(pdfAsString);
+      const file = new File([preBlob], subject, {type: 'application/pdf'}); 
+      console.log("selected file to upload", file);
+
+      var key = `${matterId}/${Number(new Date())}${file.name
+        .replaceAll(/\s/g, "")
+        .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")+".pdf"}`,
+        type="application/pdf",
+        size=file.size;
+
+      try {
+        Storage.put(key, file, {
+          contentType: 'application/pdf',
+          progressCallback(progress) {
+            console.log(progress)
+          },
+          errorCallback: (err) => {
+            console.error("204: Unexpected error while uploading", err);
+          },
+          
+        })
+          .then((fd) => {
+
+            const params = {
+              query: mCreateMatterFile,
+              variables: {
+                matterId: matterId,
+                s3ObjectKey: fd.key,
+                size: parseInt(size),
+                name: file.name,
+                type: type,
+                order: 0,
+                isGmailPDF: true,
+                isGmailAttachment: true,
+                gmailMessageId: html
+              },
+            };
+        
+            API.graphql(params).then((result) => {
+              console.log(result);
+            });
+
+          })
+          .catch((err) => {
+            console.error("220: Unexpected error while uploading", err);
+          });
+              
+      } catch (e) {
+        const response = {
+          error: e.message,
+          errorStack: e.stack,
+          statusCode: 500,
+        };
+        console.error("228: Unexpected error while uploading", response);
+      }
+    });
+  };
+
+  function dataURItoBlob(dataURI) {
+      // convert base64/URLEncoded data
+      var byteString;
+      if (dataURI.split(',')[0].indexOf('base64') >= 0)
+          byteString = atob(dataURI.split(',')[1]);
+      else
+          byteString = unescape(dataURI.split(',')[1]);
+
+      // separate out the mime component
+      var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+      // write the bytes of the string to a typed array
+      var ia = new Uint8Array(byteString.length);
+      for (var i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+      }
+      return new Blob([ia], {type:mimeString});
+  }
 
   return (
     <>
