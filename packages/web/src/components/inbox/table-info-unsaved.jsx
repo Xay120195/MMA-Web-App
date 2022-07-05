@@ -7,6 +7,8 @@ import { useRootClose } from 'react-overlays';
 import imgLoading from "../../assets/images/loading-circle.gif";
 import { FaEye } from "react-icons/fa";
 import { Base64 } from "js-base64";
+import html2pdf from "html2pdf.js";
+import googleLogin from "../../assets/images/gmail-print.png";
 
 var moment = require("moment");
 
@@ -156,9 +158,23 @@ const TableUnsavedInfo = ({
     });
   }
 
+  const handleDownload = (html, subject) => {
+    var opt = {
+      margin:       0.5,
+      filename:     subject,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    var content = document.getElementById(html);
+    var saveToPdf = html2pdf().from(content).set(opt).save();
+    console.log(saveToPdf);
+  };
+
   return (
     <>
-      <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
+      <table id="table-el" className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
         <thead
           className="z-10 bg-white"
           style={{ position: "sticky", top: "50px" }}
@@ -226,6 +242,29 @@ const TableUnsavedInfo = ({
                   </div>
                 )}
                 </p>
+                <button 
+                  onClick={(e) =>
+                    handleDownload(
+                      index,
+                      item.subject
+                    )
+                  }
+                >Download PDF</button>
+                <div className="hidden" >
+                  <span id={index} >
+                  <img src={googleLogin} alt="" />
+                  <hr></hr>
+                  <h2>Subject : {item.subject}</h2>
+                  <hr></hr>
+                  <br/>
+                  <p>From : {item.from}</p>
+                  <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
+                  <p>To : {item.to}</p>
+                  <p>CC: {item.cc}</p>
+                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+                  </p>
+                  </span>
+                </div>
               </td>
               <td className="p-2 align-top" >
               <p 
