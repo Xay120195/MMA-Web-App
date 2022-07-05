@@ -190,7 +190,7 @@ const Authentication = () => {
   // ) : (
   return (
     <>
-      <Disclosure as="nav">
+      <Disclosure as="nav" className="hidden sm:block">
         {({ open }) => (
           <>
             <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 mb-4">
@@ -247,7 +247,7 @@ const Authentication = () => {
           </>
         )}
       </Disclosure>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-100 sm:bg-white">
         <div className="welcome-message">
           <h1>
             A Software Built for Managing Affidavits and Exchanging RFIs with
@@ -255,7 +255,10 @@ const Authentication = () => {
           </h1>
         </div>
 
-        <div className="authcontainer">
+        <div className="authcontainer m-4">
+          <center>
+            <h1 className="sm:hidden font-bold my-4">AFFIDAVITS &amp; RFI </h1>
+          </center>
           <AmplifyAuthenticator usernameAlias="email">
             <AmplifySignIn
               usernameAlias="email"
@@ -270,14 +273,12 @@ const Authentication = () => {
               formFields={signUpFields}
               headerText="Start Your Free Trial Now"
             />
-
             <AmplifyForgotPassword
               usernameAlias="email"
               slot="forgot-password"
               formFields={AuthFields.forgotpassword}
               headerText="Forgot Password"
             />
-
             {/* <AmplifyRequireNewPassword
               id="amplify-require-new-password"
               usernameAlias="email"
