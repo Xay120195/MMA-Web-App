@@ -116,7 +116,6 @@ async function listGmailMessageAttachments(ctx) {
 }
 
 async function getGmailMessagePDF(ctx) {
-  console.log(ctx);
   const { id } = ctx.source;
 
   try {
@@ -130,13 +129,9 @@ async function getGmailMessagePDF(ctx) {
     };
 
     const gmailPDFCmd = new QueryCommand(gmailPDFParam);
-    const gmailPDFResult = await client.send(gmailPDFCmd);
+    const { Items } = await client.send(gmailPDFCmd);
 
-    const response = gmailPDFResult.Items.map((i) => unmarshall(i));
-
-    return {
-      items: response,
-    };
+    response = Items.length !== 0 ? unmarshall(Items[0]) : {};
   } catch (e) {
     response = {
       error: e.message,

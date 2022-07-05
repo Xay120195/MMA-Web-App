@@ -695,5 +695,11 @@ type Mutation {
   ): GmailMessageAttachment
 
   gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
-  
+  gmailMessagePDFCreate(
+    messageId: String
+    s3ObjectKey: String
+    size: Int
+    type: String
+    name: String
+  ): GmailMessagePDF
 }
