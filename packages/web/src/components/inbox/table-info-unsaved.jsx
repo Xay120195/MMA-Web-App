@@ -163,13 +163,13 @@ const TableUnsavedInfo = ({
       margin:       0.5,
       filename:     subject,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true  },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
     var content = document.getElementById(html);
-    var saveToPdf = html2pdf().from(content).set(opt).save();
-    console.log(saveToPdf);
+    var saveAsPdf = html2pdf().from(content).set(opt).save();
+    console.log(saveAsPdf);
   };
 
   return (
@@ -254,7 +254,7 @@ const TableUnsavedInfo = ({
                   <span id={index} >
                   <img src={googleLogin} alt="" />
                   <hr></hr>
-                  <h2>Subject : {item.subject}</h2>
+                  <h2><b>{item.subject}</b></h2>
                   <hr></hr>
                   <br/>
                   <p>From : {item.from}</p>
