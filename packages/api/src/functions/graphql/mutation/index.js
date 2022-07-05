@@ -2120,39 +2120,6 @@ async function createGmailMessageAttachment(data) {
   return resp;
 }
 
-async function createGmailMessagePDF(data) {
-  let resp = {};
-  try {
-    const rawParams = {
-      id: v4(),
-      messageId: data.messageId,
-      s3ObjectKey: data.s3ObjectKey,
-      size: data.size,
-      type: data.type,
-      name: data.name,
-      createdAt: toUTC(new Date()),
-    };
-
-    const param = marshall(rawParams);
-    const cmd = new PutItemCommand({
-      TableName: "GmailMessagePDF",
-      Item: param,
-    });
-
-    const request = await ddbClient.send(cmd);
-
-    resp = request ? rawParams : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
 async function saveGmailMessage(id, companyId, data) {
   let resp = {};
 
@@ -2748,10 +2715,6 @@ const resolvers = {
       if (details !== undefined) data.details = details;
 
       return await updateGmailMessageAttachment(id, data);
-    },
-
-    gmailMessagePDFCreate: async (ctx) => {
-      return await createGmailMessagePDF(ctx.arguments);
     },
   },
 };

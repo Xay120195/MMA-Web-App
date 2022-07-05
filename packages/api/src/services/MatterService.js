@@ -18,18 +18,23 @@ export async function generatePresignedUrl(Key, src) {
   console.log("generatePresignedUrl");
   console.log(src);
 
-  const key = src.isGmailAttachment ? Key : "public/" + Key;
+  let fileScr = "gmail-api";
 
-  const bucket = src.isGmailAttachment
-    ? process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET
-    : process.env.REACT_APP_S3_UPLOAD_BUCKET;
+  if (!src.isGmailAttachment && !src.isGmailPDF) {
+    fileScr = "file-bucket";
+  }
+
+  const key = fileScr === "gmail-api" ? Key : "public/" + Key;
+
+  const bucket =
+    fileScr === "gmail-api"
+      ? process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET
+      : process.env.REACT_APP_S3_UPLOAD_BUCKET;
 
   const request = {
     Bucket: bucket,
     Key: key,
   };
-
-  console.log("bucket:", bucket);
 
   if (
     src.type.split("/").slice(0, -1).join("/") !== "image" &&
@@ -189,6 +194,8 @@ export async function createMatterFile(data) {
       name: data.name,
       isDeleted: false,
       isGmailAttachment: data.isGmailAttachment ? true : false,
+      isGmailPDF: data.isGmailPDF ? true : false,
+      gmailMessageId: data.gmailMessageId ? data.gmailMessageId : "",
       date: data.date ? data.date : null,
       order: data.order ? data.order : 0,
       details: data.details ? data.details : "",
@@ -272,6 +279,8 @@ export async function bulkCreateMatterFile(data) {
         details: data[i].details ? data[i].details : "",
         isDeleted: false,
         isGmailAttachment: data[i].isGmailAttachment ? true : false,
+        isGmailPDF: data[i].isGmailPDF ? true : false,
+        gmailMessageId: data[i].gmailMessageId ? data[i].gmailMessageId : "",
         date: data[i].date ? data[i].date : null,
         order: data[i].order ? data[i].order : 0,
         createdAt: toUTC(new Date()),
