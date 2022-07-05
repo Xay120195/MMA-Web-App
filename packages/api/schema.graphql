@@ -248,7 +248,6 @@ type GmailMessage {
   updatedAt: AWSDateTime
   clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
   attachments: GmailMessageAttachmentConn
-  pdfVersion: GmailMessagePDF
 }
 
 type GmailToken {
@@ -268,17 +267,6 @@ type GmailMessageAttachment {
   name: String
   details: String
   order: Int
-  updatedAt: AWSDateTime
-}
-
-type GmailMessagePDF {
-  id: String
-  s3ObjectKey: String
-  messageId: String
-  size: Int
-  type: String
-  name: String
-  createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
 
@@ -695,11 +683,4 @@ type Mutation {
   ): GmailMessageAttachment
 
   gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
-  gmailMessagePDFCreate(
-    messageId: String
-    s3ObjectKey: String
-    size: Int
-    type: String
-    name: String
-  ): GmailMessagePDF
 }
