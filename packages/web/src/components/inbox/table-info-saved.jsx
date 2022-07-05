@@ -227,7 +227,26 @@ const TableSavedInfo = ({
                 )}
                 </p>
               </td>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
+                <p 
+                className="p-2 w-full h-full font-poppins rounded-sm"
+                style={{
+                  border: "solid 1px #c4c4c4",
+                  cursor: "auto",
+                  outlineColor:
+                    "rgb(204, 204, 204, 0.5)",
+                  outlineWidth: "thin",
+                }}
+                suppressContentEditableWarning
+                dangerouslySetInnerHTML={{__html: item.description}}
+                onBlur={(e) =>
+                  handleSaveDesc(
+                    e,
+                    item.id
+                  )
+                }
+                contentEditable={true}
+                ></p>
               {item.attachments.items.map((item_attach, index) => (
                 <React.Fragment key={item_attach.id}>
                   <div className="flex items-start mt-1">

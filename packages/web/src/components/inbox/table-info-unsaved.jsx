@@ -127,6 +127,35 @@ const TableUnsavedInfo = ({
     }
   };
 
+  const handleSaveMainDesc = async (e, id) => {
+    const data = {
+      id: id,
+      description: e.target.innerHTML,
+    };
+    const success = await updateRowDesc(data);
+      if (success) {
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
+      }
+  };
+
+  async function updateRowDesc(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateAttachmentDescription,
+          variables: {
+            id: data.id,
+            description: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
   return (
     <>
       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
@@ -198,7 +227,26 @@ const TableUnsavedInfo = ({
                 )}
                 </p>
               </td>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
+              <p 
+              className="p-2 w-full h-full font-poppins rounded-sm"
+              style={{
+                border: "solid 1px #c4c4c4",
+                cursor: "auto",
+                outlineColor:
+                  "rgb(204, 204, 204, 0.5)",
+                outlineWidth: "thin",
+              }}
+              suppressContentEditableWarning
+              dangerouslySetInnerHTML={{__html: item.description}}
+              onBlur={(e) =>
+                handleSaveMainDesc(
+                  e,
+                  item.id
+                )
+              }
+              contentEditable={true}
+              ></p>
               {item.attachments.items.map((item_attach, index) => (
                 <React.Fragment key={item_attach.id}>
                 <div className="flex items-start mt-1">
