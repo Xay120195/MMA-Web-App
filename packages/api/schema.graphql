@@ -671,7 +671,7 @@ type Mutation {
     userId: ID
     companyId: ID
   ): GmailToken
-
+  gmailDisconnect(email: String): GmailToken
   gmailMessageAttachmentCreate(
     messageId: ID
     s3ObjectKey: String
