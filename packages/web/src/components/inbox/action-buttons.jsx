@@ -215,12 +215,12 @@ const ActionButtons = ({
     var content = document.getElementById("preview_"+html);
     html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
-      const file = new File([preBlob], subject, {type: 'application/pdf'}); 
+      const file = new File([preBlob], subject+".pdf", {type: 'application/pdf'}); 
       console.log("selected file to upload", file);
 
       var key = `${matterId}/${Number(new Date())}${file.name
         .replaceAll(/\s/g, "")
-        .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")+".pdf"}`,
+        .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`,
         type="application/pdf",
         size=file.size;
 
