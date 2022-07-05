@@ -2365,6 +2365,30 @@ async function updateGmailMessageAttachment(id, data) {
   return resp;
 }
 
+async function disconnectGmail(id) {
+  let resp = {};
+  try {
+    console.log(marshall({ id }));
+    const cmd = new DeleteItemCommand({
+      TableName: "GmailTokenTable",
+      Key: marshall({ id }),
+    });
+
+    console.log(cmd);
+    const request = await ddbClient.send(cmd);
+    console.log(request);
+    resp = request ? { id } : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 const resolvers = {
   Mutation: {
     companyCreate: async (ctx) => {
@@ -2673,6 +2697,10 @@ const resolvers = {
       };
 
       return addToken(data);
+    },
+    gmailDisconnect: async (ctx) => {
+      const { email } = ctx.arguments;
+      return await disconnectGmail(email);
     },
 
     gmailMessageAttachmentCreate: async (ctx) => {

@@ -191,7 +191,7 @@ const checkGmailMessages = async (
     .get(`/gmail/v1/users/me/history`, {
       params: { startHistoryId, pageToken },
     })
-    .catch(({ message }) =>
+    .catch((message) =>
       console.log("Error: /gmail/v1/users/me/history", message)
     );
 
@@ -305,7 +305,7 @@ const checkGmailMessages = async (
                             isSaved: false,
                             createdAt: toUTC(new Date()),
                             dateReceived: i.dateReceived.toString(),
-                            filters: `${i.recipient}#${i.subject}#${i.snippet}`,
+                            filters: `${email}#${i.subject}#${i.snippet}`,
                           },
                         },
                       })
@@ -366,33 +366,40 @@ const pushSubscriptionHandler = async (event) => {
       companyId: companyId,
     } = gmailToken;
 
-    console.log("gmailToken:", gmailToken);
+    if (gmailToken !== undefined) {
+      console.log("gmailToken:", gmailToken);
 
-    const {
-      data: { access_token },
-    } = await refreshTokens({
-      refresh_token: refreshToken,
-      client_id,
-      client_secret,
-    });
+      const {
+        data: { access_token },
+      } = await refreshTokens({
+        refresh_token: refreshToken,
+        client_id,
+        client_secret,
+      });
 
-    setAccessToken(access_token);
+      setAccessToken(access_token);
 
-    console.log("access_token:", access_token);
+      console.log("access_token:", access_token);
 
-    await checkGmailMessages(email, oldHistoryId, companyId);
+      await checkGmailMessages(email, oldHistoryId, companyId);
 
-    await docClient
-      .put({ TableName: "GmailTokenTable", Item: { ...gmailToken, historyId } })
-      .promise();
+      await docClient
+        .put({
+          TableName: "GmailTokenTable",
+          Item: { ...gmailToken, historyId },
+        })
+        .promise();
 
-    responseBody = JSON.stringify({
-      success: true,
-      message: "message data is accepted.",
-    });
+      responseBody = JSON.stringify({
+        success: true,
+        message: "message data is accepted.",
+      });
+    }
+
     return true;
-  } catch ({ message }) {
+  } catch (message) {
     console.log("pushSubscriptionHandler errMessage: ", message);
+    console.log(message.response.data.error);
   }
 };
 

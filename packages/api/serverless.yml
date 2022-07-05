@@ -633,6 +633,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: gmailDisconnect
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: gmailMessageAttachmentCreate
         request: false
         response: false
