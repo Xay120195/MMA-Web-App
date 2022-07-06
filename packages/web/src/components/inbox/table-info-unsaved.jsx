@@ -271,7 +271,7 @@ const TableUnsavedInfo = ({
               </td>
               <td className="p-2 align-top" >
               <p 
-              className="p-2 w-full h-full font-poppins rounded-sm"
+              className="hidden p-2 w-full h-full font-poppins rounded-sm"
               style={{
                 border: "solid 1px #c4c4c4",
                 cursor: "auto",
