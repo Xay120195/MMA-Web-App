@@ -220,8 +220,7 @@ const ActionButtons = ({
     var content = document.getElementById("preview_"+gmailMessageId);
     html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
-      const file = new File([preBlob], fileName, {type: 'application/pdf'}); 
-      console.log("selected file to upload", file.name);
+      const file = new File([preBlob], fileName, {type: 'application/pdf'});
 
       var key = `${gmailMessageId}/${Number(new Date())}${file.name
         .replaceAll(/\s/g, "")
@@ -244,7 +243,6 @@ const ActionButtons = ({
           .then((fd) => {
 
             // insert to file bucket
-            console.log("SUPERDESCRIPTION", description);
             const params = {
               query: mCreateMatterFile,
               variables: {
