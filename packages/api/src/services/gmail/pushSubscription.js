@@ -9,7 +9,7 @@ const {
 } = require("./lib");
 const { client_id, client_secret } = require("./config");
 const { toUTC } = require("../../shared/toUTC");
-
+const { v4 } = require("uuid");
 const isArray = function (a) {
   return Array.isArray(a);
 };
@@ -97,7 +97,7 @@ const getParsedGmailMessage = async (data) => {
             })
             .promise();
           console.log("Response:", filename, saveAttachments);
-        } catch ({ message }) {
+        } catch (message) {
           console.log("docClient.put Failed:", filename, message);
         }
 
@@ -113,7 +113,7 @@ const getParsedGmailMessage = async (data) => {
           console.log("Params:", saveAttachmentsToS3);
           const s3Response = await s3.putObject(saveAttachmentsToS3).promise();
           console.log("Response:", fileName, s3Response);
-        } catch ({ message }) {
+        } catch (message) {
           console.log("s3.putObject Failed:", filename, message);
         }
       }
@@ -167,15 +167,46 @@ const getParsedGmailMessage = async (data) => {
   if (message["snippet"])
     message["lower_snippet"] = message["snippet"].toLowerCase();
 
+  const initPL = {
+    ...payload,
+    parsedParts: parsedMessageParts,
+  };
+  // chunk by 174K characters
+  const chunkedPL = chunkSubstr(JSON.stringify(initPL), 174000);
+
+  const savePayload = await docClient
+    .batchWrite({
+      RequestItems: {
+        GmailPayloadTable: chunkedPL.map((Item, index) => ({
+          PutRequest: {
+            Item: {
+              id: v4(),
+              messageId: message.id,
+              content: Item,
+              order: index + 1,
+            },
+          },
+        })),
+      },
+    })
+    .promise();
+
   return {
     ...message,
     ...headerInfo,
-    payload: {
-      ...payload,
-      parsedParts: parsedMessageParts,
-    },
   };
 };
+
+function chunkSubstr(str, size) {
+  const numChunks = Math.ceil(str.length / size);
+  const chunks = new Array(numChunks);
+
+  for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+    chunks[i] = str.substr(o, size);
+  }
+
+  return chunks;
+}
 
 const checkGmailMessages = async (
   email,
@@ -243,7 +274,7 @@ const checkGmailMessages = async (
                       snippet: Item.snippet,
                       lowerSnippet: Item.lower_snippet,
                       labels: Item.labelIds,
-                      payload: Item.payload,
+                      // payload: Item.payload,
                       updatedAt: toUTC(new Date()),
                     },
                   },

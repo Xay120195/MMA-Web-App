@@ -246,10 +246,17 @@ type GmailMessage {
   snippet: String
   lowerSnippet: String
   labelIds: [String]
-  payload: AWSJSON
+  payload: [GmailPayload]
   updatedAt: AWSDateTime
   clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
   attachments: GmailMessageAttachmentConn
+}
+
+type GmailPayload {
+  id: ID
+  messageId: String
+  content: String
+  order: Int
 }
 
 type GmailToken {

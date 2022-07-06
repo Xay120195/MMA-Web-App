@@ -11,7 +11,6 @@ const { v4 } = require("uuid");
 const getOldMessages = async (email, companyId, pageToken) => {
   console.log("getOldMessages()");
   const getMessagesByEmail = `/gmail/v1/users/${email}/messages`;
-
   const getMessagesByEmailParams = {
     maxResults: 25,
     q: "label:inbox after:1656864000", // Mon Jul 04 2022 00:00:00 GMT+0800 (Philippine Standard Time)
@@ -73,7 +72,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
                 snippet: Item.snippet,
                 lowerSnippet: Item.lower_snippet,
                 labels: Item.labelIds,
-                payload: Item.payload,
+                // payload: Item.payload,
                 updatedAt: toUTC(new Date()),
               },
             },

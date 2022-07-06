@@ -626,6 +626,11 @@ custom:
         field: attachments
         request: false
         response: false
+      - dataSource: LambdaGmailMessageDS
+        type: GmailMessage
+        field: payload
+        request: false
+        response: false
       - dataSource: LambdaMutationDS
         type: Mutation
         field: gmailConnectFromCode
