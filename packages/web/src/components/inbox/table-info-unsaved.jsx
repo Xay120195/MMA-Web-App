@@ -201,7 +201,7 @@ const TableUnsavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {unSavedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
