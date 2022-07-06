@@ -34,7 +34,7 @@ const ActionButtons = ({
   }`;
 
   const mSaveAttachmentEmailsToMatter = `
-  mutation createMatterFile($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailAttachment: Boolean, $date: AWSDateTime, $details: String) {
+  mutation createMatterFile($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailAttachment: Boolean, $isGmailPDF: Boolean, $gmailMessageId: String, $date: AWSDateTime, $details: String) {
     matterFileCreate(
       matterId: $matterId
       s3ObjectKey: $s3ObjectKey
@@ -43,6 +43,8 @@ const ActionButtons = ({
       name: $name
       order: $order
       isGmailAttachment: $isGmailAttachment
+      isGmailPDF: $isGmailPDF
+      gmailMessageId: $gmailMessageId
       details: $details
       date: $date
     ) {
@@ -150,6 +152,8 @@ const ActionButtons = ({
                 type: attachment.type,
                 order: 0,
                 isGmailAttachment: true,
+                isGmailPDF: true,
+                gmailMessageId: item.id,
                 details: attachment.details,
               },
             });
