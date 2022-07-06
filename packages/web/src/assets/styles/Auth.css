@@ -28,7 +28,8 @@ body {
 
 .authcontainer {
   padding: -10% 0 10% 0;
-  justify-content: unset !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .text-link-active {

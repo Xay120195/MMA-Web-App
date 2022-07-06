@@ -247,7 +247,7 @@ const Authentication = () => {
           </>
         )}
       </Disclosure>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2  bg-gray-100 sm:bg-white">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2  bg-gray-100 sm:bg-white">
         <div className="welcome-message">
           <h1>
             A Software Built for Managing Affidavits and Exchanging RFIs with
@@ -255,10 +255,11 @@ const Authentication = () => {
           </h1>
         </div>
 
-        <div className="authcontainer">
+        <div className="authcontainer px-4">
           <center>
             <h1 className="sm:hidden font-bold my-4">AFFIDAVITS &amp; RFI </h1>
           </center>
+          <center>
           <AmplifyAuthenticator usernameAlias="email">
             <AmplifySignIn
               usernameAlias="email"
@@ -267,7 +268,7 @@ const Authentication = () => {
               formFields={AuthFields.login}
               className="sm:w-full"
             >
-            <div slot="header-subtitle">A Software Built for Managing Affidavits and Exchanging RFIs with
+            <div className="sm:hidden font-medium text-black" slot="header-subtitle">A Software Built for Managing Affidavits and Exchanging RFIs with
             your Clients</div>
             </AmplifySignIn>
             <AmplifySignUp
@@ -293,6 +294,8 @@ const Authentication = () => {
               headerText="Password Change Required"
             /> */}
           </AmplifyAuthenticator>
+          </center>
+          
         </div>
       </div>
     </>
