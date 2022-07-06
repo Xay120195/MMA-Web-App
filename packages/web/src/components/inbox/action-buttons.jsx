@@ -72,6 +72,7 @@ const ActionButtons = ({
           date
           snippet
           payload
+          description
           clientMatters {
             items {
               id
@@ -102,8 +103,8 @@ const ActionButtons = ({
   }`;
 
   const mCreateMatterFile = `
-      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailPDF: Boolean, $isGmailAttachment: Boolean, $gmailMessageId: String) {
-        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order, isGmailPDF: $isGmailPDF, isGmailAttachment: $isGmailAttachment, gmailMessageId: $gmailMessageId) {
+      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailPDF: Boolean, $isGmailAttachment: Boolean, $gmailMessageId: String, $details: String) {
+        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order, isGmailPDF: $isGmailPDF, isGmailAttachment: $isGmailAttachment, gmailMessageId: $gmailMessageId, details: $details) {
           id
           name
           order
@@ -139,7 +140,7 @@ const ActionButtons = ({
             clientMatterId = clientMatters.id;
           });
 
-          handleUploadGmailEmail(item.id, item.subject, clientMatterId);
+          handleUploadGmailEmail(item.id, item.description, item.subject, clientMatterId);
 
           item.attachments.items.map(attachment => {
             const request = API.graphql({
@@ -208,7 +209,7 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = (gmailMessageId, fileName, matterId) => {
+  const handleUploadGmailEmail = (gmailMessageId, description, fileName, matterId) => {
     var opt = {
       margin:       0.5,
       filename:     fileName,
@@ -243,6 +244,7 @@ const ActionButtons = ({
           .then((fd) => {
 
             // insert to file bucket
+            console.log("SUPERDESCRIPTION", description);
             const params = {
               query: mCreateMatterFile,
               variables: {
@@ -254,7 +256,8 @@ const ActionButtons = ({
                 order: 0,
                 isGmailPDF: true,
                 isGmailAttachment: true,
-                gmailMessageId: gmailMessageId
+                gmailMessageId: gmailMessageId,
+                details: description,
               },
             };
         

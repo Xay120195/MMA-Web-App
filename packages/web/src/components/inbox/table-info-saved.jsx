@@ -29,6 +29,12 @@ const mTagEmailClientMatter = `
     }
   }`;
 
+const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $description: String) {
+  gmailMessageDescriptionUpdate(id: $id, description: $description) {
+    id
+  }
+}`;
+
 const TableSavedInfo = ({
   selectedSavedItems,
   setSelectedSavedItems,
@@ -145,6 +151,36 @@ const TableSavedInfo = ({
           variables: {
             id: data.id,
             details: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  const handleSaveMainDesc = async (e, id) => {
+    console.log(id);
+    const data = {
+      id: id,
+      description: e.target.innerHTML,
+    };
+    const success = await updateRowDesc(data);
+      if (success) {
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
+      }
+  };
+
+  async function updateRowDesc(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateRowDescription,
+          variables: {
+            id: data.id,
+            description: data.description,
           },
         });
         resolve(request);
@@ -282,7 +318,7 @@ const TableSavedInfo = ({
                 suppressContentEditableWarning
                 dangerouslySetInnerHTML={{__html: item.description}}
                 onBlur={(e) =>
-                  handleSaveDesc(
+                  handleSaveMainDesc(
                     e,
                     item.id
                   )
