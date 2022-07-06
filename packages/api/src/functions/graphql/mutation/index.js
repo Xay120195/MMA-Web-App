@@ -2365,6 +2365,45 @@ async function updateGmailMessageAttachment(id, data) {
   return resp;
 }
 
+
+async function updateGmailMessageDescription(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "GmailMessageTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+
+
 async function disconnectGmail(id) {
   let resp = {};
   try {
@@ -2715,6 +2754,16 @@ const resolvers = {
       if (details !== undefined) data.details = details;
 
       return await updateGmailMessageAttachment(id, data);
+    },
+    gmailMessageDescriptionUpdate: async (ctx) => {
+      const { id, description } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (description !== undefined) data.description = description;
+
+      return await updateGmailMessageDescription(id, data);
     },
   },
 };
