@@ -685,6 +685,6 @@ type Mutation {
     details: String
     order: Int
   ): GmailMessageAttachment
-  gmailMessageDescriptionUpdate(id: ID, description: String): GmailMessage
+  gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
   gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
 }
