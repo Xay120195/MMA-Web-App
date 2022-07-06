@@ -68,7 +68,7 @@ const getParsedGmailMessage = async (data) => {
       if (trimName.length > 40) trimName = trimName.substring(0, 40);
 
       const fid = messageId + trimName,
-        fileName = `public/${messageId}/${filename}`;
+        fileName = `${messageId}/${filename}`;
 
       const { Item: getExistingAttachments } = await docClient
         .get({ TableName: "GmailMessageAttachment", Key: { id: fid } })
@@ -106,7 +106,7 @@ const getParsedGmailMessage = async (data) => {
           const saveAttachmentsToS3 = {
             ContentType: mimeType,
             Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
-            Key: fileName,
+            Key: `public/${fileName}`,
             Body: Buffer.from(data, "base64"),
           };
 
