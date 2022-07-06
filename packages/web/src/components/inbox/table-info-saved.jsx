@@ -324,7 +324,7 @@ const TableSavedInfo = ({
                 }
                 contentEditable={true}
                 ></p>
-                <p className="p-2 w-full h-full font-poppins rounded-sm">{item.description}</p>
+                <p className="p-2 w-full h-full font-poppins rounded-sm" dangerouslySetInnerHTML={{__html: item.description}} ></p>
               {item.attachments.items.map((item_attach, index) => (
                 <React.Fragment key={item_attach.id}>
                   <div className="flex items-start mt-1">
