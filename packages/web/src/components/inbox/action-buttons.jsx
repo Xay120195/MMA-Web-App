@@ -34,7 +34,7 @@ const ActionButtons = ({
   }`;
 
   const mSaveAttachmentEmailsToMatter = `
-  mutation createMatterFile($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailAttachment: Boolean, $date: AWSDateTime, $details: String) {
+  mutation createMatterFile($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailAttachment: Boolean, $isGmailPDF: Boolean, $gmailMessageId: String, $date: AWSDateTime, $details: String) {
     matterFileCreate(
       matterId: $matterId
       s3ObjectKey: $s3ObjectKey
@@ -43,6 +43,8 @@ const ActionButtons = ({
       name: $name
       order: $order
       isGmailAttachment: $isGmailAttachment
+      isGmailPDF: $isGmailPDF
+      gmailMessageId: $gmailMessageId
       details: $details
       date: $date
     ) {
@@ -70,6 +72,7 @@ const ActionButtons = ({
           date
           snippet
           payload
+          description
           clientMatters {
             items {
               id
@@ -100,8 +103,8 @@ const ActionButtons = ({
   }`;
 
   const mCreateMatterFile = `
-      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailPDF: Boolean, $isGmailAttachment: Boolean, $gmailMessageId: String) {
-        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order, isGmailPDF: $isGmailPDF, isGmailAttachment: $isGmailAttachment, gmailMessageId: $gmailMessageId) {
+      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailPDF: Boolean, $isGmailAttachment: Boolean, $gmailMessageId: String, $details: String) {
+        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order, isGmailPDF: $isGmailPDF, isGmailAttachment: $isGmailAttachment, gmailMessageId: $gmailMessageId, details: $details) {
           id
           name
           order
@@ -137,7 +140,7 @@ const ActionButtons = ({
             clientMatterId = clientMatters.id;
           });
 
-          handleUploadGmailEmail(item.id, item.subject, clientMatterId);
+          handleUploadGmailEmail(item.id, item.description, item.subject, clientMatterId);
 
           item.attachments.items.map(attachment => {
             const request = API.graphql({
@@ -150,6 +153,8 @@ const ActionButtons = ({
                 type: attachment.type,
                 order: 0,
                 isGmailAttachment: true,
+                isGmailPDF: false,
+                gmailMessageId: item.id,
                 details: attachment.details,
               },
             });
@@ -204,7 +209,7 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = (gmailMessageId, fileName, matterId) => {
+  const handleUploadGmailEmail = (gmailMessageId, description, fileName, matterId) => {
     var opt = {
       margin:       0.5,
       filename:     fileName,
@@ -215,8 +220,7 @@ const ActionButtons = ({
     var content = document.getElementById("preview_"+gmailMessageId);
     html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
-      const file = new File([preBlob], fileName, {type: 'application/pdf'}); 
-      console.log("selected file to upload", file.name);
+      const file = new File([preBlob], fileName, {type: 'application/pdf'});
 
       var key = `${gmailMessageId}/${Number(new Date())}${file.name
         .replaceAll(/\s/g, "")
@@ -250,7 +254,8 @@ const ActionButtons = ({
                 order: 0,
                 isGmailPDF: true,
                 isGmailAttachment: true,
-                gmailMessageId: gmailMessageId
+                gmailMessageId: gmailMessageId,
+                details: description,
               },
             };
         

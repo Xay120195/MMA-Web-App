@@ -37,6 +37,7 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
         date
         snippet
         payload
+        description
         clientMatters {
           items {
             id

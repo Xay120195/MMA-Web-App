@@ -29,6 +29,12 @@ const mTagEmailClientMatter = `
     }
   }`;
 
+const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $description: String) {
+  gmailMessageDescriptionUpdate(id: $id, description: $description) {
+    id
+  }
+}`;
+
 const TableSavedInfo = ({
   selectedSavedItems,
   setSelectedSavedItems,
@@ -154,6 +160,35 @@ const TableSavedInfo = ({
     });
   }
 
+  const handleSaveMainDesc = async (e, id) => {
+    const data = {
+      id: id,
+      description: e.target.innerHTML,
+    };
+    const success = await updateRowDesc(data);
+      if (success) {
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
+      }
+  };
+
+  async function updateRowDesc(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateRowDescription,
+          variables: {
+            id: data.id,
+            description: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
     const handleClientMatter = async (e, gmailMessageId) => {
     const request = API.graphql({
         query: mTagEmailClientMatter,
@@ -207,7 +242,7 @@ const TableSavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {savedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
@@ -271,7 +306,7 @@ const TableSavedInfo = ({
               </td>
               <td className="p-2 align-top" >
                 <p 
-                className="p-2 w-full h-full font-poppins rounded-sm"
+                className="hidden p-2 w-full h-full font-poppins rounded-sm"
                 style={{
                   border: "solid 1px #c4c4c4",
                   cursor: "auto",
@@ -282,13 +317,14 @@ const TableSavedInfo = ({
                 suppressContentEditableWarning
                 dangerouslySetInnerHTML={{__html: item.description}}
                 onBlur={(e) =>
-                  handleSaveDesc(
+                  handleSaveMainDesc(
                     e,
                     item.id
                   )
                 }
                 contentEditable={true}
                 ></p>
+                <p className="p-2 w-full h-full font-poppins rounded-sm" dangerouslySetInnerHTML={{__html: item.description}} ></p>
               {item.attachments.items.map((item_attach, index) => (
                 <React.Fragment key={item_attach.id}>
                   <div className="flex items-start mt-1">
