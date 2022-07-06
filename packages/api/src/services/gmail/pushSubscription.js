@@ -106,7 +106,7 @@ const getParsedGmailMessage = async (data) => {
           const saveAttachmentsToS3 = {
             ContentType: mimeType,
             Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
-            Key: fileName,
+            Key: `public/${fileName}`,
             Body: Buffer.from(data, "base64"),
           };
 
