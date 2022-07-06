@@ -20,7 +20,7 @@ const ActionButtons = ({
 
   Storage.configure({
     region: config.aws_user_files_s3_bucket_region,
-    bucket: config.aws_user_files_s3_bucket,
+    bucket: config.aws_user_gmail_attachments_s3_bucket,
     identityPoolId: config.aws_user_pools_id,
   });
 
@@ -218,17 +218,18 @@ const ActionButtons = ({
       const file = new File([preBlob], fileName, {type: 'application/pdf'}); 
       console.log("selected file to upload", file.name);
 
-      var key = `${matterId}/${Number(new Date())}${file.name
+      var key = `${gmailMessageId}/${Number(new Date())}${file.name
         .replaceAll(/\s/g, "")
         .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`,
         type="application/pdf",
         size=file.size;
 
+      // put objects to s3
       try {
         Storage.put(key, file, {
           contentType: type,
           progressCallback(progress) {
-            console.log(progress)
+            console.log(progress);
           },
           errorCallback: (err) => {
             console.error("204: Unexpected error while uploading", err);
@@ -237,6 +238,7 @@ const ActionButtons = ({
         })
           .then((fd) => {
 
+            // insert to file bucket
             const params = {
               query: mCreateMatterFile,
               variables: {
@@ -259,6 +261,7 @@ const ActionButtons = ({
           })
           .catch((err) => {
             console.error("220: Unexpected error while uploading", err);
+
           });
               
       } catch (e) {

@@ -30,6 +30,7 @@ const awsmobile = {
   aws_appsync_region: "ap-southeast-1",
   aws_appsync_authenticationType: "AMAZON_COGNITO_USER_POOLS",
   aws_cognito_login_mechanisms: ["EMAIL"],
+  aws_user_gmail_attachments_s3_bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
 };
 
 export default awsmobile;
