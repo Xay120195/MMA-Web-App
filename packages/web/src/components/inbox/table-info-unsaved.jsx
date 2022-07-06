@@ -7,6 +7,8 @@ import { useRootClose } from 'react-overlays';
 import imgLoading from "../../assets/images/loading-circle.gif";
 import { FaEye } from "react-icons/fa";
 import { Base64 } from "js-base64";
+import html2pdf from "html2pdf.js";
+import googleLogin from "../../assets/images/gmail-print.png";
 
 var moment = require("moment");
 
@@ -14,6 +16,12 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
   gmailMessageAttachmentUpdate(id: $id, details: $details) {
     id
     details
+  }
+}`;
+
+const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $description: String) {
+  gmailMessageDescriptionUpdate(id: $id, description: $description) {
+    id
   }
 }`;
 
@@ -127,9 +135,54 @@ const TableUnsavedInfo = ({
     }
   };
 
+  const handleSaveMainDesc = async (e, id) => {
+    const data = {
+      id: id,
+      description: e.target.innerHTML,
+    };
+    const success = await updateRowDesc(data);
+      if (success) {
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
+      }
+  };
+
+  async function updateRowDesc(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateRowDescription,
+          variables: {
+            id: data.id,
+            description: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
+  const handleDownload = (html, subject) => {
+    var opt = {
+      margin:       0.5,
+      filename:     subject,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true  },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    var content = document.getElementById("preview_"+html);
+
+    html2pdf().set(opt).from(content).toPdf().get('pdf').then(function (pdf) {
+      window.open(pdf.output('bloburl'), '_blank');
+    });
+  };
+
   return (
     <>
-      <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
+      <table id="table-el" className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
         <thead
           className="z-10 bg-white"
           style={{ position: "sticky", top: "50px" }}
@@ -154,7 +207,7 @@ const TableUnsavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {unSavedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
@@ -197,8 +250,51 @@ const TableUnsavedInfo = ({
                   </div>
                 )}
                 </p>
+                <button 
+                  className="no-underline hover:underline text-xs text-blue-400"
+                  onClick={(e) =>
+                    handleDownload(
+                      item.id,
+                      item.subject
+                    )
+                  }
+                >Preview Email PDF</button>
+                <div className="hidden" >
+                  <span id={"preview_"+item.id} >
+                  <img src={googleLogin} alt="" />
+                  <hr></hr>
+                  <h2><b>{item.subject}</b></h2>
+                  <hr></hr>
+                  <br/>
+                  <p>From : {item.from}</p>
+                  <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
+                  <p>To : {item.to}</p>
+                  <p>CC: {item.cc}</p>
+                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+                  </p>
+                  </span>
+                </div>
               </td>
-              <td className="p-2" >
+              <td className="p-2 align-top" >
+              <p 
+              className="p-2 w-full h-full font-poppins rounded-sm"
+              style={{
+                border: "solid 1px #c4c4c4",
+                cursor: "auto",
+                outlineColor:
+                  "rgb(204, 204, 204, 0.5)",
+                outlineWidth: "thin",
+              }}
+              suppressContentEditableWarning
+              dangerouslySetInnerHTML={{__html: item.description}}
+              onBlur={(e) =>
+                handleSaveMainDesc(
+                  e,
+                  item.id
+                )
+              }
+              contentEditable={true}
+              ></p>
               {item.attachments.items.map((item_attach, index) => (
                 <React.Fragment key={item_attach.id}>
                 <div className="flex items-start mt-1">

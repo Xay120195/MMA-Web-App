@@ -14,7 +14,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
 
   const getMessagesByEmailParams = {
     maxResults: 25,
-    q: "label:inbox after:2022/07/01", // all inbox from July 2022
+    q: "label:inbox after:1656864000", // Mon Jul 04 2022 00:00:00 GMT+0800 (Philippine Standard Time)
     ...(pageToken ? { pageToken } : {}),
   };
 
@@ -28,7 +28,7 @@ const getOldMessages = async (email, companyId, pageToken) => {
 
   console.log("Request:", getMessagesByEmail);
   console.log("Params:", getMessagesByEmailParams);
-  console.log("Result messageIds:", messageIds);
+  // console.log("Result messageIds:", messageIds);
 
   if (messageIds != undefined && messageIds.length != 0) {
     const messages = await Promise.all(
@@ -176,9 +176,29 @@ exports.addToken = async (ctx) => {
       .post(endpoint, {
         topicName: topic,
       })
-      .catch(({ message }) =>
-        console.log("Error in fetching history ID:", message)
-      );
+      .catch((message) => {
+        let err = message.response.data.error,
+          gmailWatchError =
+            "Only one user push notification client allowed per developer (call /stop then try again)";
+
+        console.log("Error in fetching history ID:", err);
+
+        if (err.message == gmailWatchError) {
+          let stop = `/gmail/v1/users/${email}/stop`;
+          console.log("Call STOP watch endpoint");
+
+          const stopWatch = gmailAxios
+            .post(stop)
+            .then((response) => {
+              console.log(response);
+              console.log("Call Add Token again");
+              addToken(ctx);
+            })
+            .catch((message) => {
+              console.log(message);
+            });
+        }
+      });
 
     console.log("watchData:", watchData);
     delete payload.email;
