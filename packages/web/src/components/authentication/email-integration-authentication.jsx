@@ -21,8 +21,6 @@ class GmailIntegration extends Component {
 
     setTimeout(() => {
       console.log("email: ", window.gapi.auth2.getAuthInstance().currentUser.get().wt.cu);
-
-
       const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
         gmailConnectFromCode(
@@ -67,9 +65,27 @@ class GmailIntegration extends Component {
     this.setState((state) => ({
       isLogined: null,
     }));
-    localStorage.removeItem("signInData");
-    localStorage.removeItem("emailAddressIntegration");
-    window.location.reload();
+
+    const removeRefreshToken = `
+    mutation removeRefreshToken($email: String) {
+      gmailDisconnect(email: $email) {
+        id
+      }
+    }
+    `;
+    const params = {
+      query: removeRefreshToken,
+      variables: {
+        email: localStorage.getItem("emailAddressIntegration"),
+      },
+    };
+
+    API.graphql(params).then((param) => {
+      console.log(param);
+      localStorage.removeItem("signInData");
+      localStorage.removeItem("emailAddressIntegration");
+      //window.location.reload();
+    });
   }
 
   handleLoginFailure(response) {
