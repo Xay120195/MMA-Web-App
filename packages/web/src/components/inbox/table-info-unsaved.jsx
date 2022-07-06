@@ -19,6 +19,12 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
   }
 }`;
 
+const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $description: String) {
+  gmailMessageDescriptionUpdate(id: $id, description: $description) {
+    id
+  }
+}`;
+
 const mTagEmailClientMatter = `
 mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
   gmailMessageClientMatterTag(
@@ -130,6 +136,7 @@ const TableUnsavedInfo = ({
   };
 
   const handleSaveMainDesc = async (e, id) => {
+    console.log(id);
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -145,7 +152,7 @@ const TableUnsavedInfo = ({
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
-          query: mUpdateAttachmentDescription,
+          query: mUpdateRowDescription,
           variables: {
             id: data.id,
             description: data.description,
@@ -201,7 +208,7 @@ const TableUnsavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {unSavedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
@@ -271,7 +278,7 @@ const TableUnsavedInfo = ({
               </td>
               <td className="p-2 align-top" >
               <p 
-              className="hidden p-2 w-full h-full font-poppins rounded-sm"
+              className="p-2 w-full h-full font-poppins rounded-sm"
               style={{
                 border: "solid 1px #c4c4c4",
                 cursor: "auto",

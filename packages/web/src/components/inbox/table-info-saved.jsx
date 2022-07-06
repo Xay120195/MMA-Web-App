@@ -29,6 +29,12 @@ const mTagEmailClientMatter = `
     }
   }`;
 
+const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $description: String) {
+  gmailMessageDescriptionUpdate(id: $id, description: $description) {
+    id
+  }
+}`;
+
 const TableSavedInfo = ({
   selectedSavedItems,
   setSelectedSavedItems,
@@ -154,6 +160,36 @@ const TableSavedInfo = ({
     });
   }
 
+  const handleSaveMainDesc = async (e, id) => {
+    console.log(id);
+    const data = {
+      id: id,
+      description: e.target.innerHTML,
+    };
+    const success = await updateRowDesc(data);
+      if (success) {
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
+      }
+  };
+
+  async function updateRowDesc(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateRowDescription,
+          variables: {
+            id: data.id,
+            description: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
     const handleClientMatter = async (e, gmailMessageId) => {
     const request = API.graphql({
         query: mTagEmailClientMatter,
@@ -207,7 +243,7 @@ const TableSavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {savedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
@@ -282,7 +318,7 @@ const TableSavedInfo = ({
                 suppressContentEditableWarning
                 dangerouslySetInnerHTML={{__html: item.description}}
                 onBlur={(e) =>
-                  handleSaveDesc(
+                  handleSaveMainDesc(
                     e,
                     item.id
                   )
