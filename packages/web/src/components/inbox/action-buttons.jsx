@@ -204,19 +204,19 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = (html, subject, matterId) => {
+  const handleUploadGmailEmail = (gmailMessageId, fileName, matterId) => {
     var opt = {
       margin:       0.5,
-      filename:     subject,
+      filename:     fileName,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true  },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
-    var content = document.getElementById("preview_"+html);
+    var content = document.getElementById("preview_"+gmailMessageId);
     html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
-      const file = new File([preBlob], subject+".pdf", {type: 'application/pdf'}); 
-      console.log("selected file to upload", file);
+      const file = new File([preBlob], fileName, {type: 'application/pdf'}); 
+      console.log("selected file to upload", file.name);
 
       var key = `${matterId}/${Number(new Date())}${file.name
         .replaceAll(/\s/g, "")
@@ -226,7 +226,7 @@ const ActionButtons = ({
 
       try {
         Storage.put(key, file, {
-          contentType: 'application/pdf',
+          contentType: type,
           progressCallback(progress) {
             console.log(progress)
           },
@@ -248,7 +248,7 @@ const ActionButtons = ({
                 order: 0,
                 isGmailPDF: true,
                 isGmailAttachment: true,
-                gmailMessageId: html
+                gmailMessageId: gmailMessageId
               },
             };
         
