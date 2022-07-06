@@ -152,7 +152,7 @@ const ActionButtons = ({
                 type: attachment.type,
                 order: 0,
                 isGmailAttachment: true,
-                isGmailPDF: true,
+                isGmailPDF: false,
                 gmailMessageId: item.id,
                 details: attachment.details,
               },
