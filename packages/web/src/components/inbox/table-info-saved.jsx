@@ -207,7 +207,7 @@ const TableSavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {savedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
