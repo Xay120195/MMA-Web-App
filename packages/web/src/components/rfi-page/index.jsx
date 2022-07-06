@@ -301,16 +301,16 @@ export default function RFIPage() {
         </div>
 
         <div className="shadow overflow-scroll border-b border-gray-200 sm:rounded-lg my-5 h-full">
-        <DragDropContext
+        <DragDropContext 
           // onDragEnd={handleDragEnd}
         >
           <table className="table-fixed divide-y divide-x border-slate-500 border flex-1 w-full ">
             <thead className="bg-gray-100 z-20"  style={{ position: "sticky", top: "-1px" }}>
               <tr>
-                <th className="text-left py-4 px-4">
+                <th className="text-left py-4 px-4 border-slate-500 border">
                   Question
                 </th>
-                <th className="text-left py-4 px-4">
+                <th className="text-left py-4 px-4 border-slate-500 border">
                   <IoIosArrowDropright className="h-8 w-8 absolute -ml-8 -mt-1" />{" "}
                   &nbsp; Answer
                 </th>
@@ -350,7 +350,7 @@ export default function RFIPage() {
                 index={index}
               >
               {(provider, snapshot) => (
-                <tr className="h-full w-full bg-pink-200"
+                <tr className="h-full w-full"
                   index={index}
                   key={items.id}
                   {...provider.draggableProps}
@@ -364,8 +364,8 @@ export default function RFIPage() {
                         : "",
                   }}
                 >
-                  <td className="h-full align-top border-slate-500 border w-1/2" {...provider.dragHandleProps}> 
-                    <span className="px-3 py-5 inline-flex items-start w-full">
+                  <td className="h-full align-top border-slate-500 border" {...provider.dragHandleProps}> 
+                    <span className="px-3 py-5 inline-flex">
                       <div className="inline-flex w-12">
                       <MdDragIndicator
                         className="text-2xl"
@@ -373,23 +373,21 @@ export default function RFIPage() {
                         //  handleChageBackground(item.id)
                         //}
                       />
-                      <div class="text-center">
                       <input type="checkbox" 
-                        className="cursor-pointer mr-1 mt-1 text-center"
+                        className="cursor-pointer mr-1 mt-1"
                         checked={selectedItems.includes(items.id)}
                         onChange={()=>handleSelectItem(items.id)}
                         value={items.id}
                         disabled={true}
                       />
                       </div>
-                      </div>
-                      <div className="w-full inline-block">
+                      <div className="w-full">
                         <p> {index+1}. {items.question} </p>
                       </div>
                     </span>
                     
                   </td>
-                  <td className="h-full align-top border-slate-500 border w-1/2">
+                  <td className="h-full align-top border-slate-500 border">
                     <div className="px-3 py-5 ">
                       {items.answer === "" || items.answer === null 
                       ? <p>No Information</p>
