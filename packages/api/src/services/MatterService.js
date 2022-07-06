@@ -24,8 +24,6 @@ export async function generatePresignedUrl(Key, src) {
     fileScr = "file-bucket";
   }
 
-  const key = fileScr === "gmail-api" ? Key : "public/" + Key;
-
   const bucket =
     fileScr === "gmail-api"
       ? process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET
@@ -33,7 +31,7 @@ export async function generatePresignedUrl(Key, src) {
 
   const request = {
     Bucket: bucket,
-    Key: key,
+    Key: "public/" + Key,
   };
 
   if (

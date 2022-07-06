@@ -68,7 +68,7 @@ const getParsedGmailMessage = async (data) => {
       if (trimName.length > 40) trimName = trimName.substring(0, 40);
 
       const fid = messageId + trimName,
-        fileName = `${messageId}/${filename}`;
+        fileName = `public/${messageId}/${filename}`;
 
       const { Item: getExistingAttachments } = await docClient
         .get({ TableName: "GmailMessageAttachment", Key: { id: fid } })
