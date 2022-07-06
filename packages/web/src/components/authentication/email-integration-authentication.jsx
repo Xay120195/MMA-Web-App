@@ -84,7 +84,7 @@ class GmailIntegration extends Component {
       console.log(param);
       localStorage.removeItem("signInData");
       localStorage.removeItem("emailAddressIntegration");
-      //window.location.reload();
+      window.location.reload();
     });
   }
 
