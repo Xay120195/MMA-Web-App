@@ -633,6 +633,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: gmailDisconnect
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: gmailMessageAttachmentCreate
         request: false
         response: false
@@ -641,7 +646,11 @@ custom:
         field: gmailMessageAttachmentUpdate
         request: false
         response: false
-
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageDescriptionUpdate
+        request: false
+        response: false
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA

@@ -144,6 +144,8 @@ type File {
   updatedAt: AWSDateTime
   isDeleted: Boolean
   isGmailAttachment: Boolean
+  isGmailPDF: Boolean
+  gmailMessageId: String
   nextToken: String
 }
 
@@ -261,7 +263,7 @@ type GmailToken {
 type GmailMessageAttachment {
   id: String
   s3ObjectKey: String
-  messageId: ID
+  messageId: String
   size: Int
   type: String
   name: String
@@ -591,6 +593,8 @@ type Mutation {
     details: String
     order: Int
     isGmailAttachment: Boolean
+    isGmailPDF: Boolean
+    gmailMessageId: String
     date: AWSDateTime
   ): File
 
@@ -671,9 +675,9 @@ type Mutation {
     userId: ID
     companyId: ID
   ): GmailToken
-
+  gmailDisconnect(email: String): GmailToken
   gmailMessageAttachmentCreate(
-    messageId: ID
+    messageId: String
     s3ObjectKey: String
     size: Int
     type: String
@@ -681,7 +685,6 @@ type Mutation {
     details: String
     order: Int
   ): GmailMessageAttachment
-
+  gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
   gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
-  # gmailPushSubscription(email: String!, historyId: String!): Boolean // unused
 }

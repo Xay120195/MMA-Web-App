@@ -10,6 +10,18 @@ const {
 const { client_id, client_secret } = require("./config");
 const { toUTC } = require("../../shared/toUTC");
 
+const isArray = function (a) {
+  return Array.isArray(a);
+};
+
+const isObject = function (o) {
+  return o === Object(o) && !isArray(o) && typeof o !== "function";
+};
+
+function isIterable(variable) {
+  return isArray(variable) || isObject(variable);
+}
+
 const getParsedGmailMessage = async (data) => {
   console.log("getParsedGmailMessage()");
   const message = Object.assign({}, data);
@@ -18,7 +30,9 @@ const getParsedGmailMessage = async (data) => {
   const getParsedMessageParts = async (messagePart) => {
     console.log("getParsedMessageParts()", messagePart);
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
-    if (subParts && subParts.length)
+    console.log("subParts", subParts);
+
+    if (subParts !== undefined)
       return await Promise.all(subParts.map(getParsedMessageParts));
 
     const _parsedMessagePart = {
@@ -92,7 +106,7 @@ const getParsedGmailMessage = async (data) => {
           const saveAttachmentsToS3 = {
             ContentType: mimeType,
             Bucket: process.env.REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET,
-            Key: fileName,
+            Key: `public/${fileName}`,
             Body: Buffer.from(data, "base64"),
           };
 
@@ -114,13 +128,22 @@ const getParsedGmailMessage = async (data) => {
   const parts = await getParsedMessageParts(payload);
 
   const formatParts = (parts) => {
-    for (const part of parts) {
-      if (Array.isArray(part)) formatParts(part);
-      else parsedMessageParts.push(part);
+    // console.log("formatParts", parts);
+
+    if (parts !== undefined && isIterable(parts) && parts.length > 0) {
+      for (const part of parts) {
+        if (Array.isArray(part)) {
+          formatParts(part);
+        } else {
+          parsedMessageParts.push(part);
+        }
+      }
     }
   };
 
-  formatParts(parts);
+  if (isIterable(parts)) {
+    formatParts(parts);
+  }
 
   const headerInfo = {};
 
@@ -168,7 +191,7 @@ const checkGmailMessages = async (
     .get(`/gmail/v1/users/me/history`, {
       params: { startHistoryId, pageToken },
     })
-    .catch(({ message }) =>
+    .catch((message) =>
       console.log("Error: /gmail/v1/users/me/history", message)
     );
 
@@ -282,7 +305,7 @@ const checkGmailMessages = async (
                             isSaved: false,
                             createdAt: toUTC(new Date()),
                             dateReceived: i.dateReceived.toString(),
-                            filters: `${i.recipient}#${i.subject}#${i.snippet}`,
+                            filters: `${email}#${i.subject}#${i.snippet}`,
                           },
                         },
                       })
@@ -343,33 +366,40 @@ const pushSubscriptionHandler = async (event) => {
       companyId: companyId,
     } = gmailToken;
 
-    console.log("gmailToken:", gmailToken);
+    if (gmailToken !== undefined) {
+      console.log("gmailToken:", gmailToken);
 
-    const {
-      data: { access_token },
-    } = await refreshTokens({
-      refresh_token: refreshToken,
-      client_id,
-      client_secret,
-    });
+      const {
+        data: { access_token },
+      } = await refreshTokens({
+        refresh_token: refreshToken,
+        client_id,
+        client_secret,
+      });
 
-    setAccessToken(access_token);
+      setAccessToken(access_token);
 
-    console.log("access_token:", access_token);
+      console.log("access_token:", access_token);
 
-    await checkGmailMessages(email, oldHistoryId, companyId);
+      await checkGmailMessages(email, oldHistoryId, companyId);
 
-    await docClient
-      .put({ TableName: "GmailTokenTable", Item: { ...gmailToken, historyId } })
-      .promise();
+      await docClient
+        .put({
+          TableName: "GmailTokenTable",
+          Item: { ...gmailToken, historyId },
+        })
+        .promise();
 
-    responseBody = JSON.stringify({
-      success: true,
-      message: "message data is accepted.",
-    });
+      responseBody = JSON.stringify({
+        success: true,
+        message: "message data is accepted.",
+      });
+    }
+
     return true;
-  } catch ({ message }) {
+  } catch (message) {
     console.log("pushSubscriptionHandler errMessage: ", message);
+    console.log(message.response.data.error);
   }
 };
 

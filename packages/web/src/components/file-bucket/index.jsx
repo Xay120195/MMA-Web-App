@@ -197,6 +197,8 @@ export default function FileBucket() {
       (a, b) => b.oderSelected - a.oderSelected
     );
 
+    console.log("Uploaded Files", sortedFiles);
+
     createMatterFile(sortedFiles);
 
     setResultMessage(`File successfully uploaded!`);
