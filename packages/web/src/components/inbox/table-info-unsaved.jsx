@@ -136,7 +136,6 @@ const TableUnsavedInfo = ({
   };
 
   const handleSaveMainDesc = async (e, id) => {
-    console.log(id);
     const data = {
       id: id,
       description: e.target.innerHTML,
