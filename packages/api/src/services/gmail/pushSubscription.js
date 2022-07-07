@@ -180,7 +180,7 @@ const getParsedGmailMessage = async (data) => {
         GmailPayloadTable: chunkedPL.map((Item, index) => ({
           PutRequest: {
             Item: {
-              id: `${message.id}-part-${(index + 1)}`,
+              id: `${message.id}-part-${index + 1}`,
               messageId: message.id,
               content: Item,
               order: index + 1,
@@ -391,13 +391,13 @@ const pushSubscriptionHandler = async (event) => {
       .get({ TableName: "GmailTokenTable", Key: { id: email } })
       .promise();
 
-    const {
-      refreshToken: refreshToken,
-      historyId: oldHistoryId,
-      companyId: companyId,
-    } = gmailToken;
-
     if (gmailToken !== undefined) {
+      const {
+        refreshToken: refreshToken,
+        historyId: oldHistoryId,
+        companyId: companyId,
+      } = gmailToken;
+
       console.log("gmailToken:", gmailToken);
 
       const {
