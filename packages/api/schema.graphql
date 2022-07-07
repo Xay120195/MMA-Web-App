@@ -253,7 +253,7 @@ type GmailMessage {
 }
 
 type GmailPayload {
-  id: ID
+  id: String
   messageId: String
   content: String
   order: Int
