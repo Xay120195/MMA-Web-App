@@ -26,7 +26,7 @@ const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $descr
 }`;
 
 const mTagEmailClientMatter = `
-mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: String) {
   gmailMessageClientMatterTag(
     clientMatterId: $clientMatterId
     gmailMessageId: $gmailMessageId
