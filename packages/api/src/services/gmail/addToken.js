@@ -7,7 +7,7 @@ const {
 const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC } = require("../../shared/toUTC");
-const { v4 } = require("uuid");
+// const { v4 } = require("uuid");
 const getOldMessages = async (email, companyId, pageToken) => {
   console.log("getOldMessages()");
   const getMessagesByEmail = `/gmail/v1/users/${email}/messages`;

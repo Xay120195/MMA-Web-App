@@ -9,7 +9,7 @@ const {
 } = require("./lib");
 const { client_id, client_secret } = require("./config");
 const { toUTC } = require("../../shared/toUTC");
-const { v4 } = require("uuid");
+// const { v4 } = require("uuid");
 const isArray = function (a) {
   return Array.isArray(a);
 };
@@ -180,7 +180,7 @@ const getParsedGmailMessage = async (data) => {
         GmailPayloadTable: chunkedPL.map((Item, index) => ({
           PutRequest: {
             Item: {
-              id: v4(),
+              id: `${message.id}-part-${(index + 1)}`,
               messageId: message.id,
               content: Item,
               order: index + 1,
