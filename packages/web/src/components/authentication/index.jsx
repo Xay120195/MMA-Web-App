@@ -266,10 +266,17 @@ const Authentication = () => {
               slot="sign-in"
               headerText="Welcome Back!"
               formFields={AuthFields.login}
-              className="sm:w-full"
+              className="sm:w-full test" 
             >
-            <div className="sm:hidden font-medium text-black" slot="header-subtitle">A Software Built for Managing Affidavits and Exchanging RFIs with
-            your Clients</div>
+              <div slot="primary-footer-content">
+                <amplify-button data-test="sign-in-button" class="hydrated">
+                  <button class="button" type="submit">
+                    <span className="font-bold">LOGIN</span>
+                  </button>
+                </amplify-button>
+              </div>
+              <div className="sm:hidden font-medium text-black" slot="header-subtitle">A Software Built for Managing Affidavits and Exchanging RFIs with
+              your Clients</div>
             </AmplifySignIn>
             <AmplifySignUp
               id="amplify-sign-up"

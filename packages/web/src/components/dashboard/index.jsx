@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useReducer, useRef } from "react";
 import * as IoIcons from "react-icons/io";
 import * as FaIcons from "react-icons/fa";
+import { HiMenuAlt1 } from "react-icons/hi";
 import imgDocs from "../../assets/images/docs.svg";
 import { Welcome } from "./welcome";
 import { ClientMatters } from "./matters-list";
@@ -17,7 +18,7 @@ import { useIdleTimer } from "react-idle-timer";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 import { useHistory } from "react-router-dom";
-
+import { BiArrowToTop } from "react-icons/bi";
 
 import {
   getMatterList,
@@ -25,6 +26,8 @@ import {
   deleteMatterClient,
   searchMatterClient,
 } from "./actions";
+import ScrollToTop from "react-scroll-to-top";
+
 
 export const MatterContext = createContext();
 
@@ -167,10 +170,6 @@ export default function Dashboard() {
       };
 
     addClientMatter(client, matter, companyId, dispatch);
-  };
-
-  const contentDiv = {
-    margin: "0 0 0 65px",
   };
 
   const handleModalClose = () => {
@@ -376,11 +375,26 @@ mutation addMatter($companyId: String, $name: String) {
     debounce: 1000,
   });
 
-
   return userInfo ? (
     <>
-      <div className="p-5 font-sans" style={contentDiv}>
-        <div className="relative bg-gray-100 px-12 py-8 sm:px-12 sm:py-8 rounded-sm mb-8">
+    <ScrollToTop
+      smooth
+      component={<BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>}
+      className="sm:hidden scrollButton"
+      style={{borderRadius: "50%"}}
+    />
+    <div className="bg-gray-100 p-5 sm:flex-none sm:p-0 sm:bg-white sm:h-auto"> 
+      <div className="sm:hidden flex flex-row">
+        <div className="flex-auto py-5 px-3">
+          <HiMenuAlt1 className="sm:hidden text-2xl">
+          </HiMenuAlt1>
+        </div>
+        <div className="text-right sm:hidden">
+          <h1 className="text-base py-5 px-3 font-bold">AFFIDAVITS &amp; RFI </h1>
+        </div>
+      </div>
+      <div className="contentDiv bg-white p-5 font-sans rounded-lg">
+        <div className="relative bg-gray-100 px-12 py-8 hidden sm:block sm:px-12 sm:py-8 rounded-sm mb-8">
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">
               <Welcome user={userInfo} clientmatters={listmatters} />
@@ -450,7 +464,7 @@ mutation addMatter($companyId: String, $name: String) {
           </div>
         </div>
 
-        <div className="flex">
+        <div className="hidden sm:flex">
           <div className="w-full mb-3 py-5">
             <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
               <IoIcons.IoIosSearch />
@@ -467,7 +481,9 @@ mutation addMatter($companyId: String, $name: String) {
             {mattersView === "grid" ? (
               <button
                 className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                onClick={() => setmattersView("list")}
+                onClick={() => {
+                    setmattersView("list");
+                }}
               >
                 View as List &nbsp;
                 <FaIcons.FaList />
@@ -486,9 +502,10 @@ mutation addMatter($companyId: String, $name: String) {
 
         <div
           className={
+            //Made every view to tile view in dashboard
             mattersView === "grid"
-              ? "grid grid-cols-4 gap-4"
-              : "grid-flow-row auto-rows-max"
+              ? "grid grid-flow-row auto-rows-max gap-y-5 sm:grid-cols-4 sm:gap-4"
+              : "grid grid-flow-row auto-rows-max gap-y-6"
           }
         >
           <MatterContext.Provider
@@ -529,6 +546,8 @@ mutation addMatter($companyId: String, $name: String) {
 
         </div>
       </div>
+    </div>
+      
     </>
   ) : null;
 }
