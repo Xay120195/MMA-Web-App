@@ -71,7 +71,9 @@ const ActionButtons = ({
           subject
           date
           snippet
-          payload
+          payload {
+            content
+          }
           description
           clientMatters {
             items {
@@ -211,11 +213,12 @@ const ActionButtons = ({
 
   const handleUploadGmailEmail = (gmailMessageId, description, fileName, matterId) => {
     var opt = {
-      margin:       0.5,
+      margin:       [30, 30, 30, 30],
       filename:     fileName,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true  },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      image:        { type: 'jpeg',quality: 0.98 },
+      html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
+      jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
+      pagebreak: { before: '.page-break', avoid: 'img' }
     };
     var content = document.getElementById("preview_"+gmailMessageId);
     html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {

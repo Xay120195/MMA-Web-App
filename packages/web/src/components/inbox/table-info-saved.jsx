@@ -20,7 +20,7 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
   }`;
 
 const mTagEmailClientMatter = `
-  mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+  mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: String) {
     gmailMessageClientMatterTag(
       clientMatterId: $clientMatterId
       gmailMessageId: $gmailMessageId
@@ -201,17 +201,29 @@ const TableSavedInfo = ({
 
     const handleDownload = (html, subject) => {
       var opt = {
-        margin:       0.5,
+        margin:       [30, 30, 30, 30],
         filename:     subject,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true  },
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        image:        { type: 'jpeg',quality: 0.98 },
+        html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
+        jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
+        pagebreak: { before: '.page-break', avoid: 'img' }
       };
   
       var content = document.getElementById("preview_"+html);
+      console.log("CONTENT:", content);
   
       html2pdf().set(opt).from(content).toPdf().get('pdf').then(function (pdf) {
+        var totalPages = pdf.internal.getNumberOfPages();
+        var i = 0;
+
+        for (i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(10);
+          pdf.setTextColor(150);
+          pdf.text(pdf.internal.pageSize.width - 100, pdf.internal.pageSize.height - 30, 'Page '+i+' of '+totalPages);
+        } 
         window.open(pdf.output('bloburl'), '_blank');
+        
       });
     };
   
@@ -274,8 +286,7 @@ const TableSavedInfo = ({
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
                     <p>CC: {item.cc}</p>
-                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
-                    </p>
+                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} ></p>
                   </div>
                 )}
                 </p>
@@ -299,8 +310,7 @@ const TableSavedInfo = ({
                   <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                   <p>To : {item.to}</p>
                   <p>CC: {item.cc}</p>
-                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
-                  </p>
+                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} ></p>
                   </span>
                 </div>
               </td>

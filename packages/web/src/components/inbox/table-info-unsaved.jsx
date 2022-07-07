@@ -26,7 +26,7 @@ const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $descr
 }`;
 
 const mTagEmailClientMatter = `
-mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: String) {
   gmailMessageClientMatterTag(
     clientMatterId: $clientMatterId
     gmailMessageId: $gmailMessageId
@@ -166,11 +166,12 @@ const TableUnsavedInfo = ({
 
   const handleDownload = (html, subject) => {
     var opt = {
-      margin:       0.5,
+      margin:       [30, 30, 30, 30],
       filename:     subject,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true  },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      image:        { type: 'jpeg',quality: 0.98 },
+      html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
+      jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
+      pagebreak: { before: '.page-break', avoid: 'img' }
     };
 
     var content = document.getElementById("preview_"+html);
@@ -245,7 +246,8 @@ const TableUnsavedInfo = ({
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
                     <p>CC: {item.cc}</p>
-                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+
+                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} >
                     </p>
                   </div>
                 )}
@@ -270,7 +272,7 @@ const TableUnsavedInfo = ({
                   <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                   <p>To : {item.to}</p>
                   <p>CC: {item.cc}</p>
-                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} >
                   </p>
                   </span>
                 </div>
