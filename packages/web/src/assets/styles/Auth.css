@@ -17,11 +17,19 @@ body {
 .welcome-message h1 {
   font-size: calc(46px + 2vmin);
   font-weight: bolder;
+  display: none;
+}
+
+@media (min-width: 640px) { 
+  .welcome-message h1 {
+    display:block;
+  }
 }
 
 .authcontainer {
   padding: -10% 0 10% 0;
-  justify-content: unset !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .text-link-active {
@@ -32,11 +40,11 @@ body {
   background-color: #454545;
 }
 
-  :root {
-    --amplify-primary-color: #1CC1E9;
-    --amplify-primary-tint: #32C7EB;
-    --amplify-primary-shade: #19ADD1;
-  }
+:root {
+  --amplify-primary-color: #1CC1E9;
+  --amplify-primary-tint: #32C7EB;
+  --amplify-primary-shade: #19ADD1;
+}
 
   /* .toast {
     border-color: #f5c6cb !important;
@@ -45,4 +53,3 @@ body {
     right: 10px !important;
     width: auto !important;
   } */
-

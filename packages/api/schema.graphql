@@ -246,10 +246,17 @@ type GmailMessage {
   snippet: String
   lowerSnippet: String
   labelIds: [String]
-  payload: AWSJSON
+  payload: [GmailPayload]
   updatedAt: AWSDateTime
   clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
   attachments: GmailMessageAttachmentConn
+}
+
+type GmailPayload {
+  id: String
+  messageId: String
+  content: String
+  order: Int
 }
 
 type GmailToken {
@@ -663,8 +670,11 @@ type Mutation {
     snippet: String
   ): GmailMessage
   gmailMessageClientMatterTag(
-    gmailMessageId: ID
+    gmailMessageId: String
     clientMatterId: ID
+  ): GmailMessage
+  gmailMessageClientMatterUntag(
+    gmailMessageId: String
   ): GmailMessage
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
