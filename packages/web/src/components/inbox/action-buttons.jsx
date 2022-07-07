@@ -71,7 +71,9 @@ const ActionButtons = ({
           subject
           date
           snippet
-          payload
+          payload {
+            content
+          }
           description
           clientMatters {
             items {
