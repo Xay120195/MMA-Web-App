@@ -165,6 +165,7 @@ export default function UploadLinkModal(props) {
     selectedFiles.map((uf) => {
         tempArr = [...tempArr, uf];
     });
+    console.log("TemArr", tempArr);
     setSelectedFiles(tempArr);
     _setSelectedFiles(tempArr);
     var idxx = 0;

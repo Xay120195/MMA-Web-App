@@ -7,6 +7,8 @@ import { useRootClose } from 'react-overlays';
 import imgLoading from "../../assets/images/loading-circle.gif";
 import { FaEye } from "react-icons/fa";
 import { Base64 } from "js-base64";
+import html2pdf from "html2pdf.js";
+import googleLogin from "../../assets/images/gmail-print.png";
 
 var moment = require("moment");
 
@@ -17,8 +19,14 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
   }
 }`;
 
+const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $description: String) {
+  gmailMessageDescriptionUpdate(id: $id, description: $description) {
+    id
+  }
+}`;
+
 const mTagEmailClientMatter = `
-mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: String) {
   gmailMessageClientMatterTag(
     clientMatterId: $clientMatterId
     gmailMessageId: $gmailMessageId
@@ -143,7 +151,7 @@ const TableUnsavedInfo = ({
     return new Promise((resolve, reject) => {
       try {
         const request = API.graphql({
-          query: mUpdateAttachmentDescription,
+          query: mUpdateRowDescription,
           variables: {
             id: data.id,
             description: data.description,
@@ -156,9 +164,26 @@ const TableUnsavedInfo = ({
     });
   }
 
+  const handleDownload = (html, subject) => {
+    var opt = {
+      margin:       [30, 30, 30, 30],
+      filename:     subject,
+      image:        { type: 'jpeg',quality: 0.98 },
+      html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
+      jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
+      pagebreak: { before: '.page-break', avoid: 'img' }
+    };
+
+    var content = document.getElementById("preview_"+html);
+
+    html2pdf().set(opt).from(content).toPdf().get('pdf').then(function (pdf) {
+      window.open(pdf.output('bloburl'), '_blank');
+    });
+  };
+
   return (
     <>
-      <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
+      <table id="table-el" className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
         <thead
           className="z-10 bg-white"
           style={{ position: "sticky", top: "50px" }}
@@ -183,7 +208,7 @@ const TableUnsavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {unSavedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
@@ -221,11 +246,36 @@ const TableUnsavedInfo = ({
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
                     <p>CC: {item.cc}</p>
-                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
+
+                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} >
                     </p>
                   </div>
                 )}
                 </p>
+                <button 
+                  className="no-underline hover:underline text-xs text-blue-400"
+                  onClick={(e) =>
+                    handleDownload(
+                      item.id,
+                      item.subject
+                    )
+                  }
+                >Preview Email PDF</button>
+                <div className="hidden" >
+                  <span id={"preview_"+item.id} >
+                  <img src={googleLogin} alt="" />
+                  <hr></hr>
+                  <h2><b>{item.subject}</b></h2>
+                  <hr></hr>
+                  <br/>
+                  <p>From : {item.from}</p>
+                  <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
+                  <p>To : {item.to}</p>
+                  <p>CC: {item.cc}</p>
+                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} >
+                  </p>
+                  </span>
+                </div>
               </td>
               <td className="p-2 align-top" >
               <p 

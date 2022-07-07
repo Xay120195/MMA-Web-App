@@ -616,6 +616,11 @@ custom:
         field: gmailMessageClientMatterTag
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageClientMatterUntag
+        request: false
+        response: false
       - dataSource: LambdaGmailMessageDS
         type: GmailMessage
         field: clientMatters
@@ -624,6 +629,11 @@ custom:
       - dataSource: LambdaGmailMessageDS
         type: GmailMessage
         field: attachments
+        request: false
+        response: false
+      - dataSource: LambdaGmailMessageDS
+        type: GmailMessage
+        field: payload
         request: false
         response: false
       - dataSource: LambdaMutationDS
@@ -646,7 +656,11 @@ custom:
         field: gmailMessageAttachmentUpdate
         request: false
         response: false
-
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageDescriptionUpdate
+        request: false
+        response: false
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA

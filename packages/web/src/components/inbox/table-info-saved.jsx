@@ -7,6 +7,8 @@ import { useRootClose } from 'react-overlays';
 import imgLoading from "../../assets/images/loading-circle.gif";
 import { FaEye } from "react-icons/fa";
 import { Base64 } from "js-base64";
+import html2pdf from "html2pdf.js";
+import googleLogin from "../../assets/images/gmail-print.png";
 
 var moment = require("moment");
 
@@ -18,7 +20,7 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
   }`;
 
 const mTagEmailClientMatter = `
-  mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+  mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: String) {
     gmailMessageClientMatterTag(
       clientMatterId: $clientMatterId
       gmailMessageId: $gmailMessageId
@@ -26,6 +28,12 @@ const mTagEmailClientMatter = `
       id
     }
   }`;
+
+const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $description: String) {
+  gmailMessageDescriptionUpdate(id: $id, description: $description) {
+    id
+  }
+}`;
 
 const TableSavedInfo = ({
   selectedSavedItems,
@@ -152,6 +160,35 @@ const TableSavedInfo = ({
     });
   }
 
+  const handleSaveMainDesc = async (e, id) => {
+    const data = {
+      id: id,
+      description: e.target.innerHTML,
+    };
+    const success = await updateRowDesc(data);
+      if (success) {
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
+      }
+  };
+
+  async function updateRowDesc(data) {
+    return new Promise((resolve, reject) => {
+      try {
+        const request = API.graphql({
+          query: mUpdateRowDescription,
+          variables: {
+            id: data.id,
+            description: data.description,
+          },
+        });
+        resolve(request);
+      } catch (e) {
+        reject(e.errors[0].message);
+      }
+    });
+  }
+
     const handleClientMatter = async (e, gmailMessageId) => {
     const request = API.graphql({
         query: mTagEmailClientMatter,
@@ -160,6 +197,34 @@ const TableSavedInfo = ({
         gmailMessageId: gmailMessageId
         },
     });
+    };
+
+    const handleDownload = (html, subject) => {
+      var opt = {
+        margin:       [30, 30, 30, 30],
+        filename:     subject,
+        image:        { type: 'jpeg',quality: 0.98 },
+        html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
+        jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
+        pagebreak: { before: '.page-break', avoid: 'img' }
+      };
+  
+      var content = document.getElementById("preview_"+html);
+      console.log("CONTENT:", content);
+  
+      html2pdf().set(opt).from(content).toPdf().get('pdf').then(function (pdf) {
+        var totalPages = pdf.internal.getNumberOfPages();
+        var i = 0;
+
+        for (i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(10);
+          pdf.setTextColor(150);
+          pdf.text(pdf.internal.pageSize.width - 100, pdf.internal.pageSize.height - 30, 'Page '+i+' of '+totalPages);
+        } 
+        window.open(pdf.output('bloburl'), '_blank');
+        
+      });
     };
   
   return (
@@ -189,7 +254,7 @@ const TableSavedInfo = ({
         </thead>
           <tbody className="bg-white divide-y divide-gray-200" >
           {savedEmails.map((item, index) => (
-            <tr>
+            <tr key={item.id+"-"+index}>
               <td className="p-2 align-top" >
                 <input
                   key={item.id}
@@ -221,15 +286,37 @@ const TableSavedInfo = ({
                     <p>Subject : {item.subject}</p>
                     <p>To : {item.to}</p>
                     <p>CC: {item.cc}</p>
-                    <p className="mt-8" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.split('data":"').pop().split('"},"partId')[0])}} >
-                    </p>
+                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} ></p>
                   </div>
                 )}
                 </p>
+                <button 
+                  className="no-underline hover:underline text-xs text-blue-400"
+                  onClick={(e) =>
+                    handleDownload(
+                      item.id,
+                      item.subject
+                    )
+                  }
+                >Preview Email PDF</button>
+                <div className="hidden" >
+                  <span id={"preview_"+item.id} >
+                  <img src={googleLogin} alt="" />
+                  <hr></hr>
+                  <h2><b>{item.subject}</b></h2>
+                  <hr></hr>
+                  <br/>
+                  <p>From : {item.from}</p>
+                  <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
+                  <p>To : {item.to}</p>
+                  <p>CC: {item.cc}</p>
+                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} ></p>
+                  </span>
+                </div>
               </td>
               <td className="p-2 align-top" >
                 <p 
-                className="p-2 w-full h-full font-poppins rounded-sm"
+                className="hidden p-2 w-full h-full font-poppins rounded-sm"
                 style={{
                   border: "solid 1px #c4c4c4",
                   cursor: "auto",
@@ -240,13 +327,14 @@ const TableSavedInfo = ({
                 suppressContentEditableWarning
                 dangerouslySetInnerHTML={{__html: item.description}}
                 onBlur={(e) =>
-                  handleSaveDesc(
+                  handleSaveMainDesc(
                     e,
                     item.id
                   )
                 }
                 contentEditable={true}
                 ></p>
+                <p className="p-2 w-full h-full font-poppins rounded-sm" dangerouslySetInnerHTML={{__html: item.description}} ></p>
               {item.attachments.items.map((item_attach, index) => (
                 <React.Fragment key={item_attach.id}>
                   <div className="flex items-start mt-1">

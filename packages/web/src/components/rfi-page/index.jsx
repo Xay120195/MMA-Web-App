@@ -89,6 +89,9 @@ export default function RFIPage() {
 
   const handleSubmit = async () => {
     setshowQuestionBox(false);
+
+    setResultMessage(`Question submitted. Please wait for response`);
+    setShowToast(true);
     const result = await API.graphql({
       query: mSaveQuestionsAnswers,
       variables: {
@@ -122,8 +125,7 @@ export default function RFIPage() {
     // temp = [...temp, result.data.requestCreate];
 
     // setQuestions(temp);
-    setResultMessage(`Question submitted. Please wait for response`);
-    setShowToast(true);
+
 
     setTimeout(() => {
       setShowToast(false);

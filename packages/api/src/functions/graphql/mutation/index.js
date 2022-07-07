@@ -2247,6 +2247,68 @@ async function tagGmailMessageClientMatter(data) {
   return resp;
 }
 
+async function untagGmailMessageClientMatter(data) {
+  let resp = {};
+
+  try {
+    const arrItems = [];
+
+    const gmailMessageClientMatterIdParams = {
+      TableName: "GmailMessageClientMatterTable",
+      IndexName: "byGmailMessage",
+      KeyConditionExpression: "gmailMessageId = :gmailMessageId",
+      ExpressionAttributeValues: marshall({
+        ":gmailMessageId": data.gmailMessageId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    const gmailMessageClientMatterIdCmd = new QueryCommand(
+      gmailMessageClientMatterIdParams
+    );
+    const gmailMessageClientMatterIdRes = await ddbClient.send(
+      gmailMessageClientMatterIdCmd
+    );
+
+    for (var a = 0; a < gmailMessageClientMatterIdRes.Items.length; a++) {
+      var gmailMessageClientMatterId = {
+        id: gmailMessageClientMatterIdRes.Items[a].id,
+      };
+      arrItems.push({
+        DeleteRequest: {
+          Key: gmailMessageClientMatterId,
+        },
+      });
+    }
+
+    const gmailMessageClientMatterParams = {
+      RequestItems: {
+        GmailMessageClientMatterTable: arrItems,
+      },
+    };
+
+    const gmailMessageClientMatterCmd = new BatchWriteItemCommand(
+      gmailMessageClientMatterParams
+    );
+
+    const gmailMessageClientMatterRes = await ddbClient.send(
+      gmailMessageClientMatterCmd
+    );
+
+    if (gmailMessageClientMatterRes) {
+      resp = { id: data.gmailMessageId };
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function softDeleteGmailMessage(id, companyId, data) {
   let resp = {};
 
@@ -2345,6 +2407,42 @@ async function updateGmailMessageAttachment(id, data) {
 
     const cmd = new UpdateItemCommand({
       TableName: "GmailMessageAttachment",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function updateGmailMessageDescription(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "GmailMessageTable",
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
@@ -2672,7 +2770,9 @@ const resolvers = {
     gmailMessageClientMatterTag: async (ctx) => {
       return await tagGmailMessageClientMatter(ctx.arguments);
     },
-
+    gmailMessageClientMatterUntag: async (ctx) => {
+      return await untagGmailMessageClientMatter(ctx.arguments);
+    },
     gmailMessageSoftDelete: async (ctx) => {
       const { id, companyId } = ctx.arguments;
       const data = {
@@ -2715,6 +2815,16 @@ const resolvers = {
       if (details !== undefined) data.details = details;
 
       return await updateGmailMessageAttachment(id, data);
+    },
+    gmailMessageDescriptionUpdate: async (ctx) => {
+      const { id, description } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (description !== undefined) data.description = description;
+
+      return await updateGmailMessageDescription(id, data);
     },
   },
 };
