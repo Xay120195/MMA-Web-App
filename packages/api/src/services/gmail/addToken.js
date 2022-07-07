@@ -11,9 +11,11 @@ const { toUTC } = require("../../shared/toUTC");
 const getOldMessages = async (email, companyId, pageToken) => {
   console.log("getOldMessages()");
   const getMessagesByEmail = `/gmail/v1/users/${email}/messages`;
+  // const rangeFilter = " after:1656864000"; // Mon Jul 04 2022 00:00:00 GMT+0800 (Philippine Standard Time)
+  const rangeFilter = " after:1657123200"; // Mon Jul 07 2022 00:00:00 GMT+0800 (Philippine Standard Time)
   const getMessagesByEmailParams = {
     maxResults: 25,
-    q: "label:inbox after:1656864000", // Mon Jul 04 2022 00:00:00 GMT+0800 (Philippine Standard Time)
+    q: "label:inbox" + rangeFilter,
     ...(pageToken ? { pageToken } : {}),
   };
 
