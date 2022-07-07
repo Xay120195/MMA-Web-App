@@ -20,7 +20,7 @@ const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id:
   }`;
 
 const mTagEmailClientMatter = `
-  mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: ID) {
+  mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: String) {
     gmailMessageClientMatterTag(
       clientMatterId: $clientMatterId
       gmailMessageId: $gmailMessageId

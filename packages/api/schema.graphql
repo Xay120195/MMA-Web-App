@@ -670,11 +670,11 @@ type Mutation {
     snippet: String
   ): GmailMessage
   gmailMessageClientMatterTag(
-    gmailMessageId: ID
+    gmailMessageId: String
     clientMatterId: ID
   ): GmailMessage
   gmailMessageClientMatterUntag(
-    gmailMessageId: ID
+    gmailMessageId: String
   ): GmailMessage
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
