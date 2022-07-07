@@ -115,6 +115,39 @@ async function listGmailMessageAttachments(ctx) {
   return response;
 }
 
+async function listGmailPayload(ctx) {
+  const { id } = ctx.source;
+
+  try {
+    const gmailPayloadParam = {
+      TableName: "GmailPayloadTable",
+      IndexName: "byMessage",
+      KeyConditionExpression: "messageId = :messageId",
+      ExpressionAttributeValues: marshall({
+        ":messageId": id,
+      }),
+    };
+
+    const gmailPayloadCmd = new QueryCommand(gmailPayloadParam);
+    const gmailPayloadResult = await client.send(gmailPayloadCmd);
+
+    const objGmailPayload = gmailPayloadResult.Items.map((i) => unmarshall(i));
+
+    const response = objGmailPayload.sort(function (a, b) {
+      return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
+    });
+
+    return response;
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
 const resolvers = {
   GmailMessage: {
     clientMatters: async (ctx) => {
@@ -122,6 +155,9 @@ const resolvers = {
     },
     attachments: async (ctx) => {
       return listGmailMessageAttachments(ctx);
+    },
+    payload: async (ctx) => {
+      return listGmailPayload(ctx);
     },
   },
 };
