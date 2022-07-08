@@ -8,7 +8,7 @@ import Sidebar from "../sidebar";
 import { SidebarData } from "../sidebar/SidebarData";
 
 import { CgLogOut } from "react-icons/cg";
-import { FaReact } from "react-icons/fa";
+import { FaReact, FaThList } from "react-icons/fa";
 import { HiChevronDoubleRight } from "react-icons/hi";
 import AccessControl from "../../shared/accessControl";
 import ReactTooltip from "react-tooltip";
@@ -90,8 +90,18 @@ function Navbar() {
   };
 
   return (
+    <>
+    <div><FaThList
+      data-tip="Expand Menu" 
+      onClick={showSidebar}
+      style={{ color: "var(--mysteryGrey)" }}
+      className="fixed ml-4 mt-4"
+      />
+    </div>
+    
+    
     <IconContext.Provider value={{ color: "#fff" }}>
-      <div className="sidebar-collapsed sidebar">
+      <div className="sidebar-collapsed sidebar sm:hidden">
         <div className="main-grid">
           <div className="logo-grid-collapsed">
             <FaReact
@@ -164,6 +174,7 @@ function Navbar() {
         />
       )}
     </IconContext.Provider>
+    </>
   );
 }
 
