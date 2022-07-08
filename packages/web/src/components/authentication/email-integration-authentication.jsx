@@ -17,14 +17,14 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    console.log("code: ", response);
+    try {
+      const authCurrentUser = window.gapi.auth2
+        .getAuthInstance()
+        .currentUser.get()
+        .getBasicProfile().cu;
 
-    setTimeout(() => {
-      console.log(
-        "email: ",
-        window.gapi.auth2.getAuthInstance().currentUser.get().wt.cu
-      );
-      const saveRefreshToken = `
+      setTimeout(() => {
+        const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
         gmailConnectFromCode(
           email: $email
@@ -41,38 +41,31 @@ class GmailIntegration extends Component {
       }
       `;
 
-      const params = {
-        query: saveRefreshToken,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-          userId: localStorage.getItem("userId"),
-          email: window.gapi.auth2
-            .getAuthInstance()
-            .currentUser.get()
-            .getBasicProfile().cu,
-          code: response.code,
-        },
-      };
+        const params = {
+          query: saveRefreshToken,
+          variables: {
+            companyId: localStorage.getItem("companyId"),
+            userId: localStorage.getItem("userId"),
+            email: authCurrentUser,
+            code: response.code,
+          },
+        };
 
-      API.graphql(params).then((param) => {
-        console.log(param);
-        this.setState((state) => ({
-          isLogined: response,
-        }));
-        localStorage.setItem("signInData", JSON.stringify(response));
-        localStorage.setItem(
-          "emailAddressIntegration",
-          window.gapi.auth2
-            .getAuthInstance()
-            .currentUser.get()
-            .getBasicProfile().cu
-        );
+        console.log("Params", params);
 
-        setTimeout(() => {
+        API.graphql(params).then((r) => {
+          console.log("Response: ", r);
+          this.setState((state) => ({
+            isLogined: response,
+          }));
+          localStorage.setItem("signInData", JSON.stringify(response));
+          localStorage.setItem("emailAddressIntegration", authCurrentUser);
           window.location.reload();
-        }, 3000);
-      });
-    }, 1000);
+        });
+      }, 1000);
+    } catch (e) {
+      console.log("saveRefreshToken Error:", e);
+    }
   }
 
   logout(response) {
