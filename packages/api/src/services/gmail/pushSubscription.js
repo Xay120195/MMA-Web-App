@@ -237,7 +237,7 @@ const checkGmailMessages = async (
             ({ message: { id } }) =>
               new Promise((resolve, reject) => {
                 gmailAxios
-                  .get(`/gmail/v1/users/me/messages/${id}`)
+                  .get(`/gmail/v1/users/${email}/messages/${id}`)
                   .then((response) => resolve(response.data))
                   .catch(reject);
               })
@@ -427,18 +427,17 @@ const pushSubscriptionHandler = async (event) => {
       });
       
     } else {
-
       console.log(`${email} is disconnected. Stopping...`);
-      // let stop = `/gmail/v1/users/${email}/stop`;
+      let stop = `/gmail/v1/users/${email}/stop`;
 
-      // gmailAxios
-      //   .post(stop)
-      //   .then((response) => {
-      //     console.log("Stopping response: ",response);
-      //   })
-      //   .catch((message) => {
-      //     console.log(message.response.data.error);
-      //   });
+      gmailAxios
+        .post(stop)
+        .then((response) => {
+          console.log("Stopping response: ",response);
+        })
+        .catch((message) => {
+          console.log(message.response.data.error);
+        });
     }
 
     return true;
