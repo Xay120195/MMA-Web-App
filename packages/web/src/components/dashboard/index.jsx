@@ -384,15 +384,17 @@ mutation addMatter($companyId: String, $name: String) {
       style={{borderRadius: "50%"}}
     />
     <div className="bg-gray-100 p-5 sm:flex-none sm:p-0 sm:bg-white sm:h-auto"> 
+      {/*
       <div className="sm:hidden flex flex-row">
         <div className="flex-auto py-5 px-3">
           <HiMenuAlt1 className="sm:hidden text-2xl">
           </HiMenuAlt1>
         </div>
+        */}
         <div className="text-right sm:hidden">
           <h1 className="text-base py-5 px-3 font-bold">AFFIDAVITS &amp; RFI </h1>
         </div>
-      </div>
+      {/*</div>*/}
       <div className="contentDiv bg-white p-5 font-sans rounded-lg">
         <div className="relative bg-gray-100 px-12 py-8 hidden sm:block sm:px-12 sm:py-8 rounded-sm mb-8">
           <div className="grid grid-cols-4 gap-4">
