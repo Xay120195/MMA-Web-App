@@ -91,16 +91,16 @@ function Navbar() {
 
   return (
     <>
-    <div className="sm:hidden"><FaThList
+    <div className="flex sm:hidden fixed w-9 h-9 bg-gray-100 rounded-full shadow-md" style={{left:"25px", top:"33px"}}>
+      <FaThList
       data-tip="Expand Menu" 
       onClick={showSidebar}
-      style={{ color: "var(--mysteryGrey)", position:"absolute", left:"18px", top:"27px"}}
-      className="fixed ml-4 mt-4"
+      style={{ color: "var(--mysteryGrey)", margin:"auto"}}
       />
     </div>
     
     <IconContext.Provider value={{ color: "#fff" }}>
-      <div className="sidebar-collapsed sidebar hidden sm:block">
+      <div className="sidebar-collapsed sidebar hidden sm:grid">
         <div className="main-grid">
           <div className="logo-grid-collapsed">
             <FaReact

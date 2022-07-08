@@ -85,7 +85,7 @@ export function ClientMatters() {
                               <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex dropDownButton">
                                 <IoIcons.IoEllipsisVertical className="hovered"/>
                               </button>
-                              <ul className="dropdown-menu sm:absolute hidden text-gray-700 pt-1 p-2 font-semibold rounded-lg shadow-lg sm:rounded z-50 dropDownCSS">
+                              <ul className="sm:absolute hidden text-gray-700 p-4 font-semibold shadow-md z-50 dropDownCSS">
                                 {allowOpenRFI ? (
                                   <li className="my-2 p-2 sm:my-0 rounded-lg">
                                     <Link
