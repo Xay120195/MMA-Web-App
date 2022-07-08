@@ -41,7 +41,7 @@ const checkSubscriptions = async () => {
               setAccessToken(access_token);
 
               const endpoint = `/gmail/v1/users/${id}/watch`,
-                topic = `projects/${project_id}/topics/gmail-api`;
+                topic = `projects/${project_id}/topics/${process.env.REACT_APP_GMAIL_TOPIC}`;
 
               console.log("endpoint:", endpoint);
               console.log("topic:", topic);
