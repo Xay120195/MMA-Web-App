@@ -1,7 +1,6 @@
-.dropdown:hover .dropdown-menu {
+.dropdown:hover .dropDownCSS {
     display: block;
 }
-
 
 @media (max-width: 640px) { 
   .contentDiv {
@@ -24,6 +23,7 @@
   }
 
   .dropDownCSS {
+    border-radius:20px 20px 0 0;
     position:fixed;
     left:0;
     bottom:0;
@@ -65,7 +65,6 @@
   .dropDownButton {
     outline: medium invert color;
   }
-
   .dropDownCSS{
     background-color:white;
     position:absolute;
