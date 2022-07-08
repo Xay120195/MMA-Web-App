@@ -168,7 +168,7 @@ exports.addToken = async (ctx) => {
     setAccessToken(access_token);
 
     const endpoint = `/gmail/v1/users/${email}/watch`,
-      topic = `projects/${project_id}/topics/gmail-api`;
+      topic = `projects/${project_id}/topics/${process.env.REACT_APP_GMAIL_TOPIC}`;
 
     console.log("endpoint:", endpoint);
     console.log("topic:", topic);
