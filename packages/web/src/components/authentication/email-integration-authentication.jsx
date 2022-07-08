@@ -17,10 +17,13 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    console.log("code: ",response);
+    console.log("code: ", response);
 
     setTimeout(() => {
-      console.log("email: ", window.gapi.auth2.getAuthInstance().currentUser.get().wt.cu);
+      console.log(
+        "email: ",
+        window.gapi.auth2.getAuthInstance().currentUser.get().wt.cu
+      );
       const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
         gmailConnectFromCode(
@@ -43,7 +46,10 @@ class GmailIntegration extends Component {
         variables: {
           companyId: localStorage.getItem("companyId"),
           userId: localStorage.getItem("userId"),
-          email: window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu,
+          email: window.gapi.auth2
+            .getAuthInstance()
+            .currentUser.get()
+            .getBasicProfile().cu,
           code: response.code,
         },
       };
@@ -54,11 +60,19 @@ class GmailIntegration extends Component {
           isLogined: response,
         }));
         localStorage.setItem("signInData", JSON.stringify(response));
-        localStorage.setItem("emailAddressIntegration", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
-        window.location.reload();
-      });
+        localStorage.setItem(
+          "emailAddressIntegration",
+          window.gapi.auth2
+            .getAuthInstance()
+            .currentUser.get()
+            .getBasicProfile().cu
+        );
 
-    }, 1000);  
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      });
+    }, 1000);
   }
 
   logout(response) {
@@ -102,7 +116,9 @@ class GmailIntegration extends Component {
         {this.state.isLogined ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-            buttonText={"Signout - "+localStorage.getItem("emailAddressIntegration")}
+            buttonText={
+              "Signout - " + localStorage.getItem("emailAddressIntegration")
+            }
             onLogoutSuccess={this.logout}
             onFailure={this.handleLogoutFailure}
           ></GoogleLogout>
