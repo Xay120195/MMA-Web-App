@@ -4,8 +4,10 @@ import { AppRoutes } from "../../constants/AppRoutes";
 import dateFormat from "dateformat";
 import "../../assets/styles/Dashboard.css";
 import * as FaIcons from "react-icons/fa";
+import * as IoIcons from "react-icons/io5";
 import { MatterContext } from "./index";
 import Loading from "../loading/loading";
+import useWindowDimensions from "./windowDimensions";
 
 export function ClientMatters() {
   const setshowDeleteModal = (displayStatus, id) => {
@@ -25,7 +27,10 @@ export function ClientMatters() {
     error,
   } = useContext(MatterContext);
 
-  console.log("List of Client/Matters", clientMatter);
+  const {height, width} = useWindowDimensions();
+
+  //console.log("List of Client/Matters", clientMatter);
+
   const currentUserEmail = localStorage.getItem("email");
 
   function userAccessibleMatter(clientMatterId) {
@@ -55,7 +60,7 @@ export function ClientMatters() {
 
   return (
     <>
-      {view === "grid" ? (
+      {view === "grid" || width < 640 ? (
         <>
           {loading ? (
             <Loading content={"Please wait..."} />
@@ -67,7 +72,7 @@ export function ClientMatters() {
                 (item) =>
                   userAccessibleMatter(item.id) && (
                     <div
-                      className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
+                      className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 sm:mb-6 py-5 px-4"
                       key={item.id}
                     >
                       <div>
@@ -77,12 +82,12 @@ export function ClientMatters() {
                         showDeleteMatter ? (
                           <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
                             <div className="dropdown">
-                              <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
-                                <FaIcons.FaEllipsisV />
+                              <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex dropDownButton">
+                                <IoIcons.IoEllipsisVertical className="hovered"/>
                               </button>
-                              <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded z-50">
+                              <ul className="dropdown-menu sm:absolute hidden text-gray-700 pt-1 p-2 font-semibold rounded z-50 dropDownCSS">
                                 {allowOpenRFI ? (
-                                  <li className="p-2">
+                                  <li className="my-2 p-2 sm:my-0 rounded-lg">
                                     <Link
                                       to={`${AppRoutes.MATTERSRFI}/${
                                         item.id
@@ -97,7 +102,7 @@ export function ClientMatters() {
                                   </li>
                                 ) : null}
                                 {allowOpenFileBucket ? (
-                                  <li className="p-2">
+                                  <li className="my-2 p-2 sm:my-0 rounded-lg">
                                     <Link
                                       to={`${AppRoutes.FILEBUCKET}/${
                                         item.id
@@ -112,7 +117,7 @@ export function ClientMatters() {
                                   </li>
                                 ) : null}
                                 {allowOpenBackground ? (
-                                  <li className="p-2">
+                                  <li className="my-2 p-2 sm:my-0 rounded-lg">
                                     <Link
                                       to={`${AppRoutes.BRIEFS}/${
                                         item.id
@@ -128,7 +133,7 @@ export function ClientMatters() {
                                 ) : null}
                                 {showDeleteMatter && (
                                   <li
-                                    className="p-2 cursor-pointer"
+                                    className="my-2 p-2 sm:my-0 rounded-lg cursor-pointer"
                                     onClick={() =>
                                       setshowDeleteModal(true, item.id)
                                     }
@@ -197,7 +202,7 @@ export function ClientMatters() {
             <>
               {clientMatter.map((item) => (
                 <div
-                  className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
+                  className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 py-5 px-4"
                   key={item.id}
                 >
                   <div>
@@ -208,7 +213,7 @@ export function ClientMatters() {
                       <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
                         <div className="dropdown">
                           <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
-                            <FaIcons.FaEllipsisV />
+                            <IoIcons.IoEllipsisVertical/>
                           </button>
                           <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
                             {allowOpenRFI ? (

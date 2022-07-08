@@ -425,6 +425,20 @@ const pushSubscriptionHandler = async (event) => {
         success: true,
         message: "message data is accepted.",
       });
+      
+    } else {
+
+      console.log(`${email} is disconnected. Stopping...`);
+      // let stop = `/gmail/v1/users/${email}/stop`;
+
+      // gmailAxios
+      //   .post(stop)
+      //   .then((response) => {
+      //     console.log("Stopping response: ",response);
+      //   })
+      //   .catch((message) => {
+      //     console.log(message.response.data.error);
+      //   });
     }
 
     return true;
