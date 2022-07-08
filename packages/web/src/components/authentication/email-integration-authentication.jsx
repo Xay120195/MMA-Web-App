@@ -17,13 +17,14 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    const authCurrentUser = window.gapi.auth2
-      .getAuthInstance()
-      .currentUser.get()
-      .getBasicProfile().cu;
+    try {
+      const authCurrentUser = window.gapi.auth2
+        .getAuthInstance()
+        .currentUser.get()
+        .getBasicProfile().cu;
 
-    setTimeout(() => {
-      const saveRefreshToken = `
+      setTimeout(() => {
+        const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
         gmailConnectFromCode(
           email: $email
@@ -40,18 +41,18 @@ class GmailIntegration extends Component {
       }
       `;
 
-      const params = {
-        query: saveRefreshToken,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-          userId: localStorage.getItem("userId"),
-          email: authCurrentUser,
-          code: response.code,
-        },
-      };
+        const params = {
+          query: saveRefreshToken,
+          variables: {
+            companyId: localStorage.getItem("companyId"),
+            userId: localStorage.getItem("userId"),
+            email: authCurrentUser,
+            code: response.code,
+          },
+        };
 
-      console.log("Params", params);
-      try {
+        console.log("Params", params);
+
         API.graphql(params).then((r) => {
           console.log("Response: ", r);
           this.setState((state) => ({
@@ -61,10 +62,10 @@ class GmailIntegration extends Component {
           localStorage.setItem("emailAddressIntegration", authCurrentUser);
           window.location.reload();
         });
-      } catch (e) {
-        console.log("saveRefreshToken Error:", e);
-      }
-    }, 1000);
+      }, 1000);
+    } catch (e) {
+      console.log("saveRefreshToken Error:", e);
+    }
   }
 
   logout(response) {
