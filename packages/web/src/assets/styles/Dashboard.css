@@ -21,6 +21,7 @@
   .dropDownButton {
     padding: 3px; 
     margin:-3px;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
 
   .dropDownCSS {
@@ -29,6 +30,7 @@
     bottom:0;
     width:100%;
     background-color: rgb(231,231,231);
+    outline:none;
   }
   
   .dropDownCSS li:hover {
@@ -49,15 +51,18 @@
     box-shadow: 0 9px 25px 0 rgb(132 128 177 / 28%);
     border: none;
     outline: none;
-    background-color:#d4d4d4
+    background-color:#d4d4d4;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
   .scrollButton:hover {
-    background-color:rgb(28,193,233)
+    background-color:rgb(28,193,233);
   }
 }
 
 @media (min-width: 640px) { 
   .dropDownCSS{
+    outline: medium invert color;
+    background-color:white;
     position:absolute;
     width:auto;
     left:auto;

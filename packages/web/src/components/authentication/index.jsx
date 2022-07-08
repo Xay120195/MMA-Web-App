@@ -247,7 +247,7 @@ const Authentication = () => {
           </>
         )}
       </Disclosure>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2  bg-gray-100 sm:bg-white">
+      <div className="grid grid-cols-1 gap-4 min-h-screen sm:min-h-none sm:grid-cols-2  bg-gray-100 sm:bg-white">
         <div className="welcome-message">
           <h1>
             A Software Built for Managing Affidavits and Exchanging RFIs with
@@ -268,13 +268,6 @@ const Authentication = () => {
               formFields={AuthFields.login}
               className="sm:w-full test" 
             >
-              <div slot="primary-footer-content">
-                <amplify-button data-test="sign-in-button" class="hydrated">
-                  <button class="button" type="submit">
-                    <span className="font-bold">LOGIN</span>
-                  </button>
-                </amplify-button>
-              </div>
               <div className="sm:hidden font-medium text-black" slot="header-subtitle">A Software Built for Managing Affidavits and Exchanging RFIs with
               your Clients</div>
             </AmplifySignIn>
