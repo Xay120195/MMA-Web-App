@@ -6,12 +6,6 @@ body {
   font-size: calc(18px + 2vmin);
 }
 
-amplify-authenticator {
-  --background-color: blue !important;
-  --container-height: auto !important;
-}
-
-
 .welcome-message {
   display: flex !important;
   justify-content: center !important;
@@ -32,11 +26,19 @@ amplify-authenticator {
   }
 }
 
-.authcontainer {
-  padding: -10% 0 10% 0;
-  align-items: center !important;
-  justify-content: center !important;
+@media (max-width:640px) {
+  amplify-authenticator {
+    --container-height: auto !important;
+  }
+
+  .authcontainer {
+    padding: -10% 0 10% 0;
+    align-items: center !important;
+    justify-content: center !important;
+  }
 }
+
+
 
 .text-link-active {
   color: #1CC1E9;
