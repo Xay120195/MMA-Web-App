@@ -2,12 +2,10 @@
     display: block;
 }
 
-.contentDiv {
-  margin: 0 0 0 65px;
-}
 
 @media (max-width: 640px) { 
   .contentDiv {
+    margin: 0;
     min-height: calc(100vh - 104px);
   }
 
@@ -22,6 +20,7 @@
     padding: 3px; 
     margin:-3px;
     -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline:none;
   }
 
   .dropDownCSS {
@@ -60,8 +59,14 @@
 }
 
 @media (min-width: 640px) { 
-  .dropDownCSS{
+  .contentDiv {
+    margin: 0 0 0 65px;
+  }
+  .dropDownButton {
     outline: medium invert color;
+  }
+
+  .dropDownCSS{
     background-color:white;
     position:absolute;
     width:auto;
