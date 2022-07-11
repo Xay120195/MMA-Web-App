@@ -66,6 +66,7 @@
     outline: medium invert color;
   }
   .dropDownCSS{
+    border-radius:10px 10px 10px 10px;
     background-color:white;
     position:absolute;
     width:auto;
