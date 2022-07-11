@@ -17,19 +17,18 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    const authCurrentUser = window.gapi.auth2
-    .getAuthInstance()
-    .currentUser.get()
-    .getBasicProfile().cu;
+    const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
 
-    console.log("window.gapi.auth2", window.gapi.auth2);
-    console.log("getAuthInstance", window.gapi.auth2.getAuthInstance());
-    console.log("getBasicProfile", window.gapi.auth2.getAuthInstance().getBasicProfile());
-    console.log("authCurrentUser", authCurrentUser);
+    if (isSignedIn) {
+      const authCurrentUser = window.gapi.auth2
+        .getAuthInstance()
+        .currentUser.get().wt.cu;
 
-    try {
-      setTimeout(() => {
-        const saveRefreshToken = `
+      console.log("authCurrentUser: ", authCurrentUser);
+
+      try {
+        setTimeout(() => {
+          const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
         gmailConnectFromCode(
           email: $email
@@ -46,30 +45,33 @@ class GmailIntegration extends Component {
       }
       `;
 
-        const params = {
-          query: saveRefreshToken,
-          variables: {
-            companyId: localStorage.getItem("companyId"),
-            userId: localStorage.getItem("userId"),
-            email: authCurrentUser,
-            code: response.code,
-          },
-        };
+          const params = {
+            query: saveRefreshToken,
+            variables: {
+              companyId: localStorage.getItem("companyId"),
+              userId: localStorage.getItem("userId"),
+              email: authCurrentUser,
+              code: response.code,
+            },
+          };
 
-        console.log("Params", params);
+          console.log("Params", params);
 
-        API.graphql(params).then((r) => {
-          console.log("Response: ", r);
-          this.setState((state) => ({
-            isLogined: response,
-          }));
-          localStorage.setItem("signInData", JSON.stringify(response));
-          localStorage.setItem("emailAddressIntegration", authCurrentUser);
-          window.location.reload();
-        });
-      }, 1000);
-    } catch (e) {
-      console.log("saveRefreshToken Error:", e);
+          API.graphql(params).then((r) => {
+            console.log("Response: ", r);
+            this.setState((state) => ({
+              isLogined: response,
+            }));
+            localStorage.setItem("signInData", JSON.stringify(response));
+            localStorage.setItem("emailAddressIntegration", authCurrentUser);
+            window.location.reload();
+          });
+        }, 1000);
+      } catch (e) {
+        console.log("saveRefreshToken Error:", e);
+      }
+    } else {
+      console.log("Not signed in.");
     }
   }
 
@@ -114,9 +116,7 @@ class GmailIntegration extends Component {
         {this.state.isLogined ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-            buttonText={
-              "Signout - " + localStorage.getItem("emailAddressIntegration")
-            }
+            buttonText={"Signout - "+localStorage.getItem("emailAddressIntegration")}
             onLogoutSuccess={this.logout}
             onFailure={this.handleLogoutFailure}
           ></GoogleLogout>
