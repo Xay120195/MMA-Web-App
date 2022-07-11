@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { useIdleTimer } from "react-idle-timer";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
+import "../../assets/styles/Matters-rfi-page.css";
 
 
 export default function MattersRFI() {
@@ -125,14 +126,6 @@ export default function MattersRFI() {
     setshowCreateRFIModal(false);
   };
 
-  const contentDiv = {
-    margin: "0 0 0 65px",
-  };
-
-  const mainGrid = {
-    display: "grid",
-    gridtemplatecolumn: "1fr auto",
-  };
 
   // const handleDeleteRow = () => {
   //   var updatedRows = [...dataquestions];
@@ -254,22 +247,37 @@ export default function MattersRFI() {
     <>
       <div
         className={
-          "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
+          "bg-gray-100 p-5 min-h-screen flex flex-col min-w-0 break-words sm:min-h-0 sm: relative sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv"
         }
-        style={contentDiv}
       >
-        <div className="relative flex-grow flex-1">
-          <div style={mainGrid}>
-            <div>
-              <h1 className="font-bold text-3xl">
-                Request For Information&nbsp;
-                <span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">
+        <div className="relative py-2 sm:p-0 sm:flex-grow sm:flex-1">
+          <div className="flex flex-row">
+            <div className="flex-grow">
+              <h1 className="font-bold text-right text-base px-2 sm:px-0 sm:text-3xl sm:text-left">
+                Request For Information
+                <span className="hidden sm:inline text-base sm:text-3xl">&nbsp;of&nbsp;</span>
+                <br className="sm:hidden"></br>
+                <span className="text-base font-semibold sm:text-3xl">
                   {client_name}/{matter_name}
                 </span>
               </h1>
             </div>
-            <div>
+            <div className="flex shrink-0 items-center sm:absolute sm:right-0">
+              <Link to={AppRoutes.DASHBOARD}>
+                <button className="hidden align-middle sm:inline-flex shrink-0 bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                  Back &nbsp;
+                  <MdArrowForwardIos />
+                </button>
+                <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
+                  <MdArrowForwardIos style={{
+                    margin:"auto"
+                  }}/>
+                </button>
+               
+              </Link>
+            </div>
+          </div>
+          <div className="hidden sm:block px-3 sm:px-0">
               <nav aria-label="Breadcrumb" style={style} className="mt-4">
                 <ol
                   role="list"
@@ -302,22 +310,11 @@ export default function MattersRFI() {
                 </ol>
               </nav>
             </div>
-
-            <div className="absolute right-0">
-              <Link to={AppRoutes.DASHBOARD}>
-                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                  Back &nbsp;
-                  <MdArrowForwardIos />
-                </button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-7">
+          <div className="mt-4 sm:mt-7">
             <div>
               <button
                 type="button"
-                className="bg-green-100 hover:bg-green-100 text-green-500 text-sm py-1 px-4 rounded inline-flex items-center border border-green-500 shadow focus:ring mx-2"
+                className="hidden sm:inline-flex bg-green-100 hover:bg-green-100 text-green-500 text-sm py-1 px-4 rounded items-center border border-green-500 shadow focus:ring mx-2"
                 onClick={() => setshowCreateRFIModal(true)}
               >
                 NEW RFI &nbsp; <HiOutlinePlusCircle />
@@ -327,7 +324,7 @@ export default function MattersRFI() {
                 type="search"
                 placeholder="Search ..."
                 onChange={handleSearchChange}
-                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12 "
+                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full sm:w-3/12 "
               />
             </div>
           </div>
@@ -335,8 +332,8 @@ export default function MattersRFI() {
         {RFI === null ? (
           <div> </div>
         ) : RFI.length === 0 ? (
-          <div className="p-5 px-5 py-1 left-0 mt-5">
-            <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
+          <div className="sm:p-5 sm:px-5 sm:py-1 left-0 mt-5">
+            <div className="w-full h-42 bg-white sm:bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
               <BlankState
                 displayText={"There are no items to show in this view"}
                 txtLink={"add new RFI"}
@@ -346,7 +343,7 @@ export default function MattersRFI() {
             </div>
           </div>
         ) : (
-          <div className="my-5 ml-2">
+          <div className="bg-white rounded-lg p-5 pb-0 my-5 sm:p-0 sm:ml-2">
             {RFI.map((item) => (
               <div
                 className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4  cursor-pointer"

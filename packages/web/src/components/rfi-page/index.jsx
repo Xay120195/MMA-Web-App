@@ -306,7 +306,7 @@ export default function RFIPage() {
         <DragDropContext 
           // onDragEnd={handleDragEnd}
         >
-          <table className="table-fixed divide-y divide-x border-slate-500 border flex-1">
+          <table className="table-fixed divide-y divide-x border-slate-500 border flex-1 w-full">
             <thead className="bg-gray-100 z-20"  style={{ position: "sticky", top: "-1px" }}>
               <tr>
                 <th className="text-left py-4 px-4 border-slate-500 border">
