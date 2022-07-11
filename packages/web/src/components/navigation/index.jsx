@@ -91,14 +91,15 @@ function Navbar() {
 
   return (
     <>
-    <div className="flex sm:hidden fixed w-9 h-9 bg-gray-100 rounded-full shadow-md" style={{left:"25px", top:"33px"}}>
+    {!sidebar && (
+      <div className="flex sm:hidden fixed w-9 h-9 bg-white rounded-full shadow-md z-40" style={{left:"25px", top:"33px"}}>
       <FaThList
       data-tip="Expand Menu" 
       onClick={showSidebar}
       style={{ color: "var(--mysteryGrey)", margin:"auto"}}
       />
     </div>
-    
+    )}
     <IconContext.Provider value={{ color: "#fff" }}>
       <div className="sidebar-collapsed sidebar hidden sm:grid">
         <div className="main-grid">

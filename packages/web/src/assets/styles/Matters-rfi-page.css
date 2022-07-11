@@ -1,0 +1,15 @@
+.dropdown:hover .dropDownCSS {
+  display: block;
+}
+
+@media (max-width: 640px) { 
+  .contentDiv {
+    margin: 0 0 0 0px;
+  }
+}
+
+@media (min-width: 640px) { 
+  .contentDiv {
+    margin: 0 0 0 65px;
+  }
+}
