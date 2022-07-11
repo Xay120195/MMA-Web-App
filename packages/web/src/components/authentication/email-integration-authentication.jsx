@@ -17,18 +17,18 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
-
-    if (isSignedIn) {
-      const authCurrentUser = window.gapi.auth2
-        .getAuthInstance()
-        .currentUser.get().wt.cu;
-
-      console.log("authCurrentUser: ", authCurrentUser);
-
       try {
-        setTimeout(() => {
-          const saveRefreshToken = `
+      setTimeout(() => {
+      const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+      if (isSignedIn) {
+        const authCurrentUser = window.gapi.auth2
+          .getAuthInstance()
+          .currentUser.get().wt.cu;
+
+        console.log("authCurrentUser: ", authCurrentUser);
+
+
+      const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
         gmailConnectFromCode(
           email: $email
@@ -66,13 +66,16 @@ class GmailIntegration extends Component {
             localStorage.setItem("emailAddressIntegration", authCurrentUser);
             window.location.reload();
           });
+
+        } else {
+          console.log("Not signed in.");
+        }
+
         }, 1000);
+
       } catch (e) {
         console.log("saveRefreshToken Error:", e);
       }
-    } else {
-      console.log("Not signed in.");
-    }
   }
 
   logout(response) {
