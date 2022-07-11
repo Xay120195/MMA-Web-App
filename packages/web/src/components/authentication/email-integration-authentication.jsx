@@ -17,11 +17,18 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    console.log("code: ",response);
+    const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
 
-    setTimeout(() => {
-      console.log("email: ", window.gapi.auth2.getAuthInstance().currentUser.get().wt.cu);
-      const saveRefreshToken = `
+    if (isSignedIn) {
+      const authCurrentUser = window.gapi.auth2
+        .getAuthInstance()
+        .currentUser.get().wt.cu;
+
+      console.log("authCurrentUser: ", authCurrentUser);
+
+      try {
+        setTimeout(() => {
+          const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
         gmailConnectFromCode(
           email: $email
@@ -38,27 +45,34 @@ class GmailIntegration extends Component {
       }
       `;
 
-      const params = {
-        query: saveRefreshToken,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-          userId: localStorage.getItem("userId"),
-          email: window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu,
-          code: response.code,
-        },
-      };
+          const params = {
+            query: saveRefreshToken,
+            variables: {
+              companyId: localStorage.getItem("companyId"),
+              userId: localStorage.getItem("userId"),
+              email: authCurrentUser,
+              code: response.code,
+            },
+          };
 
-      API.graphql(params).then((param) => {
-        console.log(param);
-        this.setState((state) => ({
-          isLogined: response,
-        }));
-        localStorage.setItem("signInData", JSON.stringify(response));
-        localStorage.setItem("emailAddressIntegration", window.gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile().cu);
-        window.location.reload();
-      });
+          console.log("Params", params);
 
-    }, 1000);  
+          API.graphql(params).then((r) => {
+            console.log("Response: ", r);
+            this.setState((state) => ({
+              isLogined: response,
+            }));
+            localStorage.setItem("signInData", JSON.stringify(response));
+            localStorage.setItem("emailAddressIntegration", authCurrentUser);
+            window.location.reload();
+          });
+        }, 1000);
+      } catch (e) {
+        console.log("saveRefreshToken Error:", e);
+      }
+    } else {
+      console.log("Not signed in.");
+    }
   }
 
   logout(response) {
