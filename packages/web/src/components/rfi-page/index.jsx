@@ -262,6 +262,10 @@ export default function RFIPage() {
     }
   }
 
+  function testcode(){
+    console.log("hello");
+  }
+
   return (
     <>
       <div
