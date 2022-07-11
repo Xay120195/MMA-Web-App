@@ -17,12 +17,17 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-    try {
-      const authCurrentUser = window.gapi.auth2
-        .getAuthInstance()
-        .currentUser.get()
-        .getBasicProfile().cu;
+    const authCurrentUser = window.gapi.auth2
+    .getAuthInstance()
+    .currentUser.get()
+    .getBasicProfile().cu;
 
+    console.log("window.gapi.auth2", window.gapi.auth2);
+    console.log("getAuthInstance", window.gapi.auth2.getAuthInstance());
+    console.log("getBasicProfile", window.gapi.auth2.getAuthInstance().getBasicProfile());
+    console.log("authCurrentUser", authCurrentUser);
+
+    try {
       setTimeout(() => {
         const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {

@@ -1,0 +1,31 @@
+version: 1
+applications:
+  - backend:
+      phases:
+        preBuild:
+          commands:
+            - cd ..
+            - cd api
+        build:
+          commands:
+            - npm install
+            - npx sls deploy --stage dev
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - cd ..
+            - cd web
+            - npm install
+        build:
+          commands:
+            - npm run build
+      artifacts:
+        baseDirectory: build
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - .next/cache/**/*
+    appRoot: packages/web
