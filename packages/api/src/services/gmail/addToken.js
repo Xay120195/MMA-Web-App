@@ -176,6 +176,7 @@ exports.addToken = async (ctx) => {
     const { data: watchData } = await gmailAxios
       .post(endpoint, {
         topicName: topic,
+        labelIds: ["INBOX"]
       })
       .catch((message) => {
         let err = message.response.data.error,

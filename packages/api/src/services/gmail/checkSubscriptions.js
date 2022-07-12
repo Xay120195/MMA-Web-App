@@ -49,6 +49,7 @@ const checkSubscriptions = async () => {
               const { data: watchData } = await gmailAxios
                 .post(endpoint, {
                   topicName: topic,
+                  labelIds: ["INBOX"]
                 })
                 .catch((err) => console.log(err));
 

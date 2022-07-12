@@ -164,7 +164,7 @@ const TableUnsavedInfo = ({
     });
   }
 
-  const handleDownload = (html, subject) => {
+  const handleDownload = (gmailMessageId, subject, htmlContent) => {
     var opt = {
       margin:       [30, 30, 30, 30],
       filename:     subject,
@@ -174,7 +174,8 @@ const TableUnsavedInfo = ({
       pagebreak: { before: '.page-break', avoid: 'img' }
     };
 
-    var content = document.getElementById("preview_"+html);
+    var content = document.getElementById("preview_"+gmailMessageId);
+    content.innerHTML += Base64.decode(htmlContent);
 
     html2pdf().set(opt).from(content).toPdf().get('pdf').then(function (pdf) {
       window.open(pdf.output('bloburl'), '_blank');
@@ -257,7 +258,8 @@ const TableUnsavedInfo = ({
                   onClick={(e) =>
                     handleDownload(
                       item.id,
-                      item.subject
+                      item.subject,
+                      item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0]
                     )
                   }
                 >Preview Email PDF</button>
@@ -272,8 +274,6 @@ const TableUnsavedInfo = ({
                   <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                   <p>To : {item.to}</p>
                   <p>CC: {item.cc}</p>
-                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} >
-                  </p>
                   </span>
                 </div>
               </td>
