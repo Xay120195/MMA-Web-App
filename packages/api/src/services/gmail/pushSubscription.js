@@ -234,21 +234,26 @@ const checkGmailMessages = async (
         console.log("messagesAdded", JSON.stringify(messagesAdded));
         const messages = await Promise.all(
           messagesAdded.map(
-            ({ message: { id } }) =>
+            ({ message: { id, labelIds } }) =>
               new Promise((resolve, reject) => {
-                const reqMessages = `/gmail/v1/users/${email}/messages/${id}`;
+                
+                console.log("labelIds:",labelIds);
 
-                console.log("Request: ", reqMessages);
-                gmailAxios
-                  .get(reqMessages)
-                  .then((response) => {
-                    console.log("Success Response:", response);
-                    resolve(response.data);
-                  })
-                  .catch((error) => {
-                    console.log("Error Response:", error);
-                    reject(error);
-                  });
+                if (labelIds.includes("INBOX")) {
+                  const reqMessages = `/gmail/v1/users/${email}/messages/${id}`;
+
+                  console.log("Request: ", reqMessages);
+                  gmailAxios
+                    .get(reqMessages)
+                    .then((response) => {
+                      console.log("Success Response:", response);
+                      resolve(response.data);
+                    })
+                    .catch((error) => {
+                      console.log("Error Response:", error);
+                      reject(error);
+                    });
+                }
               })
           )
         );
