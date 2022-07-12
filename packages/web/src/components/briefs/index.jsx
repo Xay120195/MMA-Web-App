@@ -22,6 +22,7 @@ import { useIdleTimer } from "react-idle-timer";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 import RemoveBriefModal from "../briefs/remove-brief-modal";
+import "../../assets/styles/Briefs.css";
 
 export default function Briefs() {
   const { matter_id } = useParams();
@@ -193,10 +194,6 @@ export default function Briefs() {
     setshowCreateBriefsModal(false);
     setshowRemoveBrief(false);
     setRemoveBriefId(null);
-  };
-
-  const contentDiv = {
-    margin: "0 0 0 65px",
   };
 
   const mainGrid = {
@@ -467,70 +464,74 @@ export default function Briefs() {
     <>
       <div
         className={
-          "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
+          "bg-gray-100 p-5 min-h-screen relative flex flex-col min-w-0 break-words sm:min-h-0 sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv"
         }
-        style={contentDiv}
       >
-        <div className="relative flex-grow flex-1">
-          <div style={mainGrid}>
-            <div>
-              <h1 className="font-bold text-3xl">
-                Background Page&nbsp;
-                <span className="text-3xl">of</span>&nbsp;
-                <span className="font-semibold text-3xl">
+        <div className="relative py-2 sm:p-0 sm:flex-grow sm:flex-1">
+          <div className="flex flex-row">
+            <div className="flex-grow">
+              <h1 className="font-bold text-right text-base px-2 sm:px-0 sm:text-3xl sm:text-left">
+                Background Page
+                <span className="hidden sm:inline text-base sm:text-3xl">&nbsp;of&nbsp;</span>
+                <br className="sm:hidden"/>
+                <span className="text-base font-semibold sm:text-3xl">
                   {client_name}/{matter_name}
                 </span>
               </h1>
             </div>
-            <div>
-              <nav aria-label="Breadcrumb" style={style} className="mt-4">
-                <ol
-                  role="list"
-                  className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
-                >
-                  <li>
-                    <Link
-                      className="mr-2 text-sm font-medium text-gray-900"
-                      to={`${AppRoutes.DASHBOARD}`}
-                    >
-                      Dashboard
-                    </Link>
-                  </li>
-                  <svg
-                    width="16"
-                    height="20"
-                    viewBox="0 0 16 20"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                    className="w-4 h-5 text-gray-300"
-                  >
-                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                  </svg>
-                  <li className="text-sm">
-                    <span className="font-medium text-gray-500 px-1 flex">
-                      <AiOutlineFolderOpen /> &nbsp; Background Page{" "}
-                    </span>
-                  </li>
-                </ol>
-              </nav>
-            </div>
-
-            <div className="absolute right-0">
+            <div className="flex shrink-0 items-center sm:absolute sm:right-0">
               <Link to={AppRoutes.DASHBOARD}>
-                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                <button className="hidden align-middle sm:inline-flex shrink-0 bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring">
                   Back &nbsp;
                   <MdArrowForwardIos />
+                </button>
+                <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
+                  <MdArrowForwardIos style={{
+                    margin:"auto"
+                  }}/>
                 </button>
               </Link>
             </div>
           </div>
+          <div className="hidden sm:block px-3 sm:px-0">
+            <nav aria-label="Breadcrumb" style={style} className="mt-4">
+              <ol
+                role="list"
+                className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+              >
+                <li>
+                  <Link
+                    className="mr-2 text-sm font-medium text-gray-900"
+                    to={`${AppRoutes.DASHBOARD}`}
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <svg
+                  width="16"
+                  height="20"
+                  viewBox="0 0 16 20"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="w-4 h-5 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+                <li className="text-sm">
+                  <span className="font-medium text-gray-500 px-1 flex">
+                    <AiOutlineFolderOpen /> &nbsp; Background Page{" "}
+                  </span>
+                </li>
+              </ol>
+            </nav>
+          </div>
 
-          <div className="mt-7">
-            <div>
+          <div className="mt-4 sm:mt-7">
+            <div className="flex sm:block">
               <button
                 type="button"
-                className="bg-green-100 hover:bg-green-100 text-green-500 text-sm py-1 px-4 rounded inline-flex items-center border border-green-500 shadow focus:ring mx-2"
+                className="hidden bg-green-100 hover:bg-green-100 text-green-500 text-sm py-1 px-4 rounded sm:inline-flex items-center border border-green-500 shadow focus:ring mx-2"
                 onClick={() => setshowCreateBriefsModal(true)}
               >
                 NEW BACKGROUND &nbsp; <HiOutlinePlusCircle />
@@ -538,22 +539,30 @@ export default function Briefs() {
               <button
                 type="button"
                 className={
-                  "hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                  "hidden hover:bg-gray-200 text-black text-sm py-2 px-4 rounded sm:inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
                 }
                 onClick={handleColumn}
               >
                 SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
               </button>
+              <button
+                type="button"
+                className={
+                  "order-last bg-white hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex sm:hidden items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
+                }
+                onClick={handleColumn}
+              >
+                 <AiFillEye />
+              </button>
               {showColumn && (
                 <div
-                  className="h-40 z-50 bg-white absolute mt-2 rounded border-0 shadow outline-none"
-                  style={{ marginLeft: "13.2rem", width: "13rem" }}
+                  className="h-40 z-50 bg-white absolute sm:mt-2 rounded border-0 shadow outline-none showColumn"
                 >
-                  <p className="px-2 py-2 mx-5 text-gray-400 text-xs font-semibold">
+                  <p className="px-2 py-2 mx-2 mt-2 sm:mx-5 text-gray-400 text-xs font-semibold">
                     COLUMN OPTIONS
                   </p>
 
-                  <div className="mx-5">
+                  <div className="mx-2 sm:mx-5">
                     <div className="inline-flex">
                       <input
                         type="checkbox"
@@ -593,7 +602,7 @@ export default function Briefs() {
                 type="search"
                 placeholder="Search ..."
                 onChange={handleSearchChange}
-                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-3/12 "
+                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full sm:w-3/12 "
               />
             </div>
           </div>
@@ -602,8 +611,8 @@ export default function Briefs() {
         {Briefs === null ? (
           <div> </div>
         ) : Briefs.length === 0 ? (
-          <div className="p-5 px-5 py-1 left-0 align-center mt-5">
-            <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6">
+          <div className="sm:p-5 sm:px-5 sm:py-1 left-0 mt-5">
+            <div className="w-full h-42 bg-white sm:bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
               <BlankState
                 displayText={"There are no items to show in this view"}
                 txtLink={"add new Background"}
@@ -613,10 +622,10 @@ export default function Briefs() {
             </div>
           </div>
         ) : (
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-5">
+          <div className="shadow overflow-hidden border-b bg-white sm:border-gray-200 rounded-lg my-5 p-5 pb-0 sm:p-0">
             {Briefs.map((item) => (
               <div
-                className="w-90  bg-gray-100 rounded-lg border border-gray-200  py-4 px-4 m-2 
+                className="w-90 bg-gray-100 rounded-lg border border-gray-200 mb-6 p-5 sm:py-4 sm:px-4 sm:m-2
                 hover:border-black cursor-pointer"
                 key={item.id}
                 data-info={item.id}
