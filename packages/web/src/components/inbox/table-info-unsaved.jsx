@@ -272,8 +272,8 @@ const TableUnsavedInfo = ({
                   <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                   <p>To : {item.to}</p>
                   <p>CC: {item.cc}</p>
-                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} >
-                  </p>
+                    <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0]).split('<style>').pop().split('</style>')[0]}} >
+                    </p>
                   </span>
                 </div>
               </td>
