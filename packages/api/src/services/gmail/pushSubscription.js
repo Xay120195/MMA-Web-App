@@ -219,7 +219,7 @@ const checkGmailMessages = async (
     data: { history, historyId, nextPageToken },
   } = await gmailAxios
     .get(`/gmail/v1/users/${email}/history`, {
-      params: { startHistoryId, pageToken },
+      params: { startHistoryId, pageToken, labelId: "INBOX" },
     })
     .catch((message) =>
       console.log(`Error: /gmail/v1/users/${email}/history`, message)
