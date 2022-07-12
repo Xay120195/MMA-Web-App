@@ -4,6 +4,8 @@ import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
 
+var moment = require("moment");
+
 const ActionButtons = ({
   selectedUnsavedItems,
   selectedSavedItems,
@@ -161,6 +163,7 @@ const ActionButtons = ({
                 isGmailPDF: false,
                 gmailMessageId: item.id,
                 details: attachment.details,
+                date: new Date(item.date).toISOString(),
               },
             });
             
@@ -264,6 +267,7 @@ const ActionButtons = ({
                 isGmailAttachment: true,
                 gmailMessageId: gmailMessageId,
                 details: description,
+                date: new Date(dateEmail).toISOString(),
               },
             };
         
