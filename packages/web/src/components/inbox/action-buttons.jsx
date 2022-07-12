@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
+import { Base64 } from "js-base64";
 
 const ActionButtons = ({
   selectedUnsavedItems,
@@ -105,8 +106,8 @@ const ActionButtons = ({
   }`;
 
   const mCreateMatterFile = `
-      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailPDF: Boolean, $isGmailAttachment: Boolean, $gmailMessageId: String, $details: String) {
-        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order, isGmailPDF: $isGmailPDF, isGmailAttachment: $isGmailAttachment, gmailMessageId: $gmailMessageId, details: $details) {
+      mutation createMatterFile ($matterId: ID, $s3ObjectKey: String, $size: Int, $type: String, $name: String, $order: Int, $isGmailPDF: Boolean, $isGmailAttachment: Boolean, $gmailMessageId: String, $details: String, $date: AWSDateTime) {
+        matterFileCreate(matterId: $matterId, s3ObjectKey: $s3ObjectKey, size: $size, type: $type, name: $name, order: $order, isGmailPDF: $isGmailPDF, isGmailAttachment: $isGmailAttachment, gmailMessageId: $gmailMessageId, details: $details, date: $date) {
           id
           name
           order
@@ -142,7 +143,9 @@ const ActionButtons = ({
             clientMatterId = clientMatters.id;
           });
 
-          handleUploadGmailEmail(item.id, item.description, item.subject, clientMatterId);
+          const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
+
+          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
 
           item.attachments.items.map(attachment => {
             const request = API.graphql({
@@ -211,7 +214,7 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = (gmailMessageId, description, fileName, matterId) => {
+  const handleUploadGmailEmail = (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent) => {
     var opt = {
       margin:       [30, 30, 30, 30],
       filename:     fileName,
@@ -221,6 +224,8 @@ const ActionButtons = ({
       pagebreak: { before: '.page-break', avoid: 'img' }
     };
     var content = document.getElementById("preview_"+gmailMessageId);
+    content.innerHTML += Base64.decode(htmlContent);
+
     html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
       const file = new File([preBlob], fileName, {type: 'application/pdf'});
