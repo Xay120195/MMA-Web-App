@@ -23,7 +23,6 @@ function isIterable(variable) {
 }
 
 const getParsedGmailMessage = async (data) => {
-  
   const message = Object.assign({}, data);
   const { id: messageId, payload } = message;
 
@@ -130,7 +129,6 @@ const getParsedGmailMessage = async (data) => {
   const parts = await getParsedMessageParts(payload);
 
   const formatParts = (parts) => {
-    
     if (parts !== undefined && isIterable(parts) && parts.length > 0) {
       for (const part of parts) {
         if (Array.isArray(part)) {
@@ -233,18 +231,29 @@ const checkGmailMessages = async (
       messagesDeleted /* labelsAdded, labelsRemoved */,
     } of history) {
       if (messagesAdded) {
-        console.log("messagesAdded", messagesAdded);
+        console.log("messagesAdded", JSON.stringify(messagesAdded));
         const messages = await Promise.all(
           messagesAdded.map(
             ({ message: { id } }) =>
               new Promise((resolve, reject) => {
+                const reqMessages = `/gmail/v1/users/${email}/messages/${id}`;
+
+                console.log("Request: ", reqMessages);
                 gmailAxios
-                  .get(`/gmail/v1/users/${email}/messages/${id}`)
-                  .then((response) => resolve(response.data))
-                  .catch(reject);
+                  .get(reqMessages)
+                  .then((response) => {
+                    console.log("Success Response:", response);
+                    resolve(response.data);
+                  })
+                  .catch((error) => {
+                    console.log("Error Response:", error);
+                    reject(error);
+                  });
               })
           )
         );
+
+        console.log(messages);
 
         if (messages.length != 0) {
           const messagesToAdd = await Promise.all(
