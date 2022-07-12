@@ -204,11 +204,19 @@ export default function FileBucket() {
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
     handleModalClose();
-    setTimeout(() => {
-      setShowToast(false);
-      getMatterFiles(1);
-    }, 3000);
 
+    if(tempMatter.length > 150){
+      setTimeout(() => {
+        setShowToast(false);
+        getMatterFiles(1);
+      }, 5000);  
+    }else{
+      setTimeout(() => {
+        setShowToast(false);
+        getMatterFiles(1);
+      }, 3000);
+    }
+    
     //don't delete for single upload
     // sortedFiles.map((file) => {
     //   createMatterFile(file);
@@ -2819,7 +2827,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   __html: data.details,
                                                 }}
                                               ></span>
-                                              {(data.details === null || data.details === undefined || data.details === "" || data.details.length < 47) 
+                                              {(data.details === null || data.details === undefined || data.details === "" || data.details.length < 48) 
                                               ? <p></p>
                                               : (data.id === descriptionClassId) 
                                               ? <p></p>
@@ -2888,7 +2896,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       )
                                                     }
                                                   ></span>
-                                                  {(background.description === null || background.description === undefined || background.description === "" || background.description.length < 47) 
+                                                  {(background.description === null || background.description === undefined || background.description === "" || background.description.length < 48) 
                                                   ? <p></p>
                                                   : (background.id === descriptionClassId) 
                                                   ? <p></p>
