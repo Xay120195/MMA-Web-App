@@ -279,7 +279,7 @@ const Background = () => {
           query: qListBackground,
           variables: {
             id: matter_id,
-            limit: 25,
+            limit: 50,
             nextToken: vNextToken,
             sortOrder: "ORDER_ASC",
           },
@@ -355,7 +355,6 @@ const Background = () => {
           );
 
           if (background !== "") {
-            setTimeout(() => {
               setLoading(false);
               setMaxLoading(false);
 
@@ -375,8 +374,6 @@ const Background = () => {
               */
 
               setBackground(result);
-
-            }, 200);
           }
         }
       } else {
@@ -423,7 +420,6 @@ const Background = () => {
         );
 
         if (background !== "") {
-          setTimeout(() => {
             setLoading(false);
             setMaxLoading(false);
 
@@ -440,8 +436,6 @@ const Background = () => {
             }
 
             setBackground(result);
-
-          }, 200);
         }
       }
     } else {
