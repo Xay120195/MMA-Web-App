@@ -61,7 +61,7 @@ export default function SessionTimeout() {
                     You will be redirected to the login page..
                 </p>
                 <div className="text-center content-center">
-
+                  <button className="bg-black text-white">Login</button>
                 </div>
             </div>
           </div>
