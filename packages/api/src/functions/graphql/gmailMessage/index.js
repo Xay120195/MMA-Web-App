@@ -49,16 +49,28 @@ async function listGmailMessageClientMatters(ctx) {
         clientMattersResult.Responses.ClientMatterTable.map((i) =>
           unmarshall(i)
         );
-      const objCompClientMatters = gmailClientMattersResult.Items.map((i) =>
+      const objGmailClientMatters = gmailClientMattersResult.Items.map((i) =>
         unmarshall(i)
       );
 
-      const response = objCompClientMatters.map((item) => {
-        const filterMatter = objClientMatters.find(
-          (u) => u.id === item.clientMatterId
-        );
-        return { ...item, ...filterMatter };
-      });
+      // const response = objGmailClientMatters.map((item) => {
+      //   const filterMatter = objClientMatters.find(
+      //     (u) => u.id === item.clientMatterId
+      //   );
+      //   return { ...item, ...filterMatter };
+      // });
+
+      const response = objGmailClientMatters
+        .map((item) => {
+          const filterMatter = objClientMatters.find(
+            (u) => u.id === item.clientMatterId
+          );
+
+          if (filterMatter !== undefined) {
+            return { ...item, ...filterMatter };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
