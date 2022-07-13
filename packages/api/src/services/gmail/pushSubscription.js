@@ -219,7 +219,7 @@ const checkGmailMessages = async (
     data: { history, historyId, nextPageToken },
   } = await gmailAxios
     .get(`/gmail/v1/users/${email}/history`, {
-      params: { startHistoryId, pageToken, labelId: "INBOX" },
+      params: { startHistoryId, pageToken },
     })
     .catch((message) =>
       console.log(`Error: /gmail/v1/users/${email}/history`, message)
@@ -236,8 +236,7 @@ const checkGmailMessages = async (
           messagesAdded.map(
             ({ message: { id, labelIds } }) =>
               new Promise((resolve, reject) => {
-                
-                console.log("labelIds:",labelIds);
+                console.log("labelIds:", labelIds);
 
                 if (labelIds.includes("INBOX")) {
                   const reqMessages = `/gmail/v1/users/${email}/messages/${id}`;
@@ -253,16 +252,29 @@ const checkGmailMessages = async (
                       console.log("Error Response:", error);
                       reject(error);
                     });
+                } else {
+                  console.log("id", id, "labelIds:", labelIds);
+                  resolve();
                 }
               })
           )
         );
 
-        console.log(messages);
+        console.log("messages", messages);
 
-        if (messages.length != 0) {
+        const filteredMessages = [];
+
+        for (let i = 0; i < messages.length; i++) {
+          if (isIterable(messages[i])) {
+            filteredMessages.push(messages[i]);
+          }
+        }
+
+        console.log("filteredMessages", filteredMessages);
+
+        if (filteredMessages.length != 0) {
           const messagesToAdd = await Promise.all(
-            messages.map(getParsedGmailMessage)
+            filteredMessages.map(getParsedGmailMessage)
           );
 
           const saveEmails = await docClient
