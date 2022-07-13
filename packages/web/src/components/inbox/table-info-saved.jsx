@@ -199,7 +199,7 @@ const TableSavedInfo = ({
     });
     };
 
-    const handleDownload = (html, subject) => {
+    const handleDownload = (gmailMessageId, subject, htmlContent) => {
       var opt = {
         margin:       [30, 30, 30, 30],
         filename:     subject,
@@ -209,8 +209,8 @@ const TableSavedInfo = ({
         pagebreak: { before: '.page-break', avoid: 'img' }
       };
   
-      var content = document.getElementById("preview_"+html);
-      console.log("CONTENT:", content);
+      var content = document.getElementById("preview_"+gmailMessageId);
+      content.innerHTML += Base64.decode(htmlContent);
   
       html2pdf().set(opt).from(content).toPdf().get('pdf').then(function (pdf) {
         var totalPages = pdf.internal.getNumberOfPages();
@@ -295,7 +295,8 @@ const TableSavedInfo = ({
                   onClick={(e) =>
                     handleDownload(
                       item.id,
-                      item.subject
+                      item.subject,
+                      item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0]
                     )
                   }
                 >Preview Email PDF</button>
@@ -310,7 +311,6 @@ const TableSavedInfo = ({
                   <p>Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}</p>
                   <p>To : {item.to}</p>
                   <p>CC: {item.cc}</p>
-                  <p className="mt-8 p-2" dangerouslySetInnerHTML={{__html: Base64.decode(item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0])}} ></p>
                   </span>
                 </div>
               </td>

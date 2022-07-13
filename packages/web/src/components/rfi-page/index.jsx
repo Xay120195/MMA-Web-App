@@ -262,6 +262,14 @@ export default function RFIPage() {
     }
   }
 
+  function testcode(){
+    console.log("hello");
+  }
+
+  function testcode1(){
+    console.log("hellohi");
+  }
+
   return (
     <>
       <div
@@ -306,7 +314,7 @@ export default function RFIPage() {
         <DragDropContext 
           // onDragEnd={handleDragEnd}
         >
-          <table className="table-fixed divide-y divide-x border-slate-500 border flex-1 w-full ">
+          <table className="table-fixed divide-y divide-x border-slate-500 border flex-1 w-full">
             <thead className="bg-gray-100 z-20"  style={{ position: "sticky", top: "-1px" }}>
               <tr>
                 <th className="text-left py-4 px-4 border-slate-500 border">
@@ -325,14 +333,14 @@ export default function RFIPage() {
               <tr></tr>
             : questions.length === 0 ?
               <tr>
-                <td className="border-slate-500 border ">
+                <td className="border-slate-500 border">
                   <BlankState
                     displayText={"There are no questions to show here yet"}
                     txtLink={"start adding one"}
                     iconDisplay={BlankQuestion}
                   />
                 </td>
-                <td className="border-slate-500 border ">
+                <td className="border-slate-500 border">
                   <BlankState
                     displayText={"There are no answers to show in this section"}
                     noLink={
@@ -366,30 +374,30 @@ export default function RFIPage() {
                         : "",
                   }}
                 >
-                  <td className="h-full align-top border-slate-500 border" {...provider.dragHandleProps}> 
-                    <span className="px-3 py-5 inline-flex">
+                  <td className="h-full align-top border-slate-500 border w-1/2" {...provider.dragHandleProps}> 
+                    <div className="px-3 py-5 flex flex-row">
                       <div className="inline-flex w-12">
-                      <MdDragIndicator
-                        className="text-2xl"
-                        // onClick={() =>
-                        //  handleChageBackground(item.id)
-                        //}
-                      />
-                      <input type="checkbox" 
-                        className="cursor-pointer mr-1 mt-1"
-                        checked={selectedItems.includes(items.id)}
-                        onChange={()=>handleSelectItem(items.id)}
-                        value={items.id}
-                        disabled={true}
-                      />
+                        <MdDragIndicator
+                          className="text-2xl"
+                          // onClick={() =>
+                          //  handleChageBackground(item.id)
+                          //}
+                        />
+                        <input type="checkbox" 
+                          className="cursor-pointer mr-1 mt-1"
+                          checked={selectedItems.includes(items.id)}
+                          onChange={()=>handleSelectItem(items.id)}
+                          value={items.id}
+                          disabled={true}
+                        />
                       </div>
-                      <div className="w-full">
-                        <p> {index+1}. {items.question} </p>
+                      <div className="w-full flex-auto">
+                        <p> {index+1}. {items.question }</p>
                       </div>
-                    </span>
+                    </div>
                     
                   </td>
-                  <td className="h-full align-top border-slate-500 border">
+                  <td className="h-full align-top border-slate-500 border w-1/2">
                     <div className="px-3 py-5 ">
                       {items.answer === "" || items.answer === null 
                       ? <p>No Information</p>

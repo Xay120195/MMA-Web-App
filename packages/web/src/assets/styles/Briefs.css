@@ -1,0 +1,22 @@
+@media (min-width: 640px) { 
+  .contentDiv {
+    margin: 0 0 0 65px;
+  }
+  .showColumn {
+    margin-left: 13.2rem;
+    top:auto;
+    right:auto;
+    width: 13rem;
+  }
+}
+@media (max-width: 640px) { 
+  .contentDiv {
+    margin: 0 0 0 0px;
+  }
+  .showColumn {
+    margin-left:0rem;
+    right:0;
+    top:8.1rem;
+    width: 13rem;
+  }
+}
