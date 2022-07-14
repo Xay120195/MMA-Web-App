@@ -934,6 +934,34 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
+  GmailMessageLabelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GmailMessageLabelTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: gmailMessageId
+          AttributeType: S
+        - AttributeName: labelId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byGmailMessage
+          KeySchema:
+            - AttributeName: gmailMessageId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byLabel
+          KeySchema:
+            - AttributeName: labelId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
   GmailTokenTable:
     Type: AWS::DynamoDB::Table
     Properties:
