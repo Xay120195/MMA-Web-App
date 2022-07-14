@@ -244,7 +244,7 @@ const ActionButtons = (props) => {
         order: index + 1,
       }));
 
-      const mUpdateBackgroundOrder = `
+      /*const mUpdateBackgroundOrder = `
         mutation bulkUpdateBackgroundOrders($arrangement: [ArrangementInput]) {
           backgroundBulkUpdateOrders(arrangement: $arrangement) {
             id
@@ -257,7 +257,7 @@ const ActionButtons = (props) => {
           arrangement: rowArrangement,
         },
       });
-      console.log(response);
+      console.log(response);*/
 
       setcheckAllState(false);
       setCheckedState(new Array(background.length).fill(false));

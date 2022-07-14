@@ -1913,7 +1913,7 @@ const TableInfo = ({
           </div>
         </div>
         <div>
-          {maxLoading && wait ? (
+          {/* {maxLoading && wait ? (
             <>
             <div className="mt-1">
               <button className="bg-green-400 hover:bg-green-500 text-white text-sm p-3 rounded-full inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
@@ -1932,7 +1932,7 @@ const TableInfo = ({
             </div>
           ) : (
             <span></span>
-          )}
+          )} */}
 
           {/* {!maxLoading && loading ? (
             <span className="grid"></span>
