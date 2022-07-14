@@ -27,7 +27,7 @@ const TabsRender = ({ setOpenTab, openTab, savedEmails, unSavedEmails }) => {
                 href="#unsaved"
                 role="tablist"
               >
-                Unsaved Emails <span class="rounded-2xl border-2 px-3 py-0 bg-gray-50 mr-3">{unSavedEmails.length}</span>
+                Unsaved Emails <span className="rounded-2xl border-2 px-3 py-0 bg-gray-50 mr-3">{unSavedEmails.length}</span>
               </span>
             </li>
             <li className={"flex gap-x-2  items-center py-3 px-6 cursor-pointer " +
@@ -48,7 +48,7 @@ const TabsRender = ({ setOpenTab, openTab, savedEmails, unSavedEmails }) => {
                 href="#saved"
                 role="tablist"
               >
-                 Saved Emails <span class="rounded-2xl border-2 px-3 py-0 bg-gray-50 mr-3">{savedEmails.length}</span>
+                 Saved Emails <span className="rounded-2xl border-2 px-3 py-0 bg-gray-50 mr-3">{savedEmails.length}</span>
               </span>
             </li>
           </ul>

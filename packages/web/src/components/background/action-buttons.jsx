@@ -603,11 +603,11 @@ const ActionButtons = (props) => {
           />
           {!showDeleteButton && (
             <>
-              <div class="inline-flex rounded-md shadow-sm" role="group">
+              <div className="inline-flex rounded-md shadow-sm" role="group">
                 <button
                   onClick={handleAddRow}
                   type="button"
-                  className="inline-flex items-center bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2 rounded-l"
+                  className="inline-flex items-center bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 border-0 shadow outline-none focus:outline-none focus:ring ml-2 rounded-l"
                 >
                   Add row
                   <svg
