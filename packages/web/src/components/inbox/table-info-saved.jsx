@@ -444,7 +444,7 @@ const TableSavedInfo = ({
                       isClearable
                       isSearchable
                       onChange={(options, e) =>
-                        handleClientMatter(
+                        handleAddLabels(
                           options,
                           item.id
                         )
