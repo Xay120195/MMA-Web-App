@@ -23,6 +23,9 @@ import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 import RemoveBriefModal from "../briefs/remove-brief-modal";
 import "../../assets/styles/Briefs.css";
+import ScrollToTop from "react-scroll-to-top";
+import { BiArrowToTop } from "react-icons/bi";
+
 
 export default function Briefs() {
   const { matter_id } = useParams();
@@ -400,7 +403,7 @@ export default function Briefs() {
     //bool.current = true;
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
-    }, 60000 * 40);
+    }, 60000 * 60);
 
   };
 
@@ -462,6 +465,12 @@ export default function Briefs() {
 
   return (
     <>
+      <ScrollToTop
+        smooth
+        component={<BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>}
+        className="sm:hidden scrollButton"
+        style={{borderRadius: "50%"}}
+      />
       <div
         className={
           "bg-gray-100 p-5 min-h-screen relative flex flex-col min-w-0 break-words sm:min-h-0 sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv"
