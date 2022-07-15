@@ -416,28 +416,22 @@ const TableSavedInfo = ({
               </td>
               <td className="p-2 align-top">
                 <div className="relative">
-                  <button
-                    className="
+                  {item.labels &&
+                    item.labels.items &&
+                    item.labels.items.map((item, index) => (
+                      <button
+                        key={item.id}
+                        className=" mb-1
                   text-opacity-90 1
                   textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                    id="headlessui-popover-button-87"
-                    type="button"
-                    aria-expanded="false"
-                  >
-                    {item.labelIds}
-                  </button>
+                        id="headlessui-popover-button-87"
+                        type="button"
+                        aria-expanded="false"
+                      >
+                        {item.name}
+                      </button>
+                    ))}
                 </div>
-                {/* <CreatableSelect
-                    defaultValue={null}
-                    // options={labels}
-                    isMulti
-                    isClearable
-                    isSearchable
-                    openMenuOnClick={true}
-                    isDisabled={item.clientMatters.items.length>0 ? false : true}
-                    placeholder="Labels"
-                    className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                    /> */}
               </td>
               <td className="p-2 align-top">
                 <>
