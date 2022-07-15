@@ -249,6 +249,7 @@ type GmailMessage {
   payload: [GmailPayload]
   updatedAt: AWSDateTime
   clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
+  labels(limit: Int, nextToken: String): GmailMessagLabelsConn
   attachments: GmailMessageAttachmentConn
 }
 
@@ -480,6 +481,11 @@ type GmailMessageClientMattersConn {
   nextToken: String
 }
 
+type GmailMessagLabelsConn {
+  items: [Label]
+  nextToken: String
+}
+
 type GmailMessageAttachmentConn {
   items: [GmailMessageAttachment]
 }
@@ -673,9 +679,9 @@ type Mutation {
     gmailMessageId: String
     clientMatterId: ID
   ): GmailMessage
-  gmailMessageClientMatterUntag(
-    gmailMessageId: String
-  ): GmailMessage
+  gmailMessageClientMatterUntag(gmailMessageId: String): GmailMessage
+  gmailMessageLabelTag(gmailMessageId: String, labelId: [ID]): GmailMessage
+  gmailMessageLabelUntag(gmailMessageId: String): GmailMessage
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
   gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage]
