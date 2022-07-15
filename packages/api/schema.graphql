@@ -681,7 +681,7 @@ type Mutation {
   ): GmailMessage
   gmailMessageLabelTag(
     gmailMessageId: String
-    labelId: ID
+    labelId: [ID]
   ): GmailMessage
   gmailMessageClientMatterUntag(gmailMessageId: String): GmailMessage
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage

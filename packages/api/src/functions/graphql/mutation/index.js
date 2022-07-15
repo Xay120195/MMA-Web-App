@@ -2279,31 +2279,52 @@ async function tagGmailMessageLabel(data) {
       });
     }
 
-    arrItems.push({
-      PutRequest: {
-        Item: marshall({
-          id: v4(),
-          gmailMessageId: data.gmailMessageId,
-          labelId: data.labelId,
-        }),
-      },
+    for (var i = 0; i < data.labelId.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            gmailMessageId: data.gmailMessageId,
+            labelId: data.labelId[i],
+          }),
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
     });
 
-    const gmailMessageLabelParams = {
-      RequestItems: {
-        GmailMessageLabelTable: arrItems,
-      },
-    };
-
-    const gmailMessageLabelCmd = new BatchWriteItemCommand(
-      gmailMessageLabelParams
-    );
-
-    const gmailMessageLabelRes = await ddbClient.send(gmailMessageLabelCmd);
-
-    if (gmailMessageLabelRes) {
-      resp = { id: data.gmailMessageId };
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
     }
+
+    batches.forEach(async (data) => {
+      const gmailMessageLabelParams = {
+        RequestItems: {
+          GmailMessageLabelTable: data,
+        },
+      };
+
+      const gmailMessageLabelCmd = new BatchWriteItemCommand(
+        gmailMessageLabelParams
+      );
+      await ddbClient.send(gmailMessageLabelCmd);
+    });
+
+    resp = { id: data.gmailMessageId };
   } catch (e) {
     resp = {
       error: e.message,
