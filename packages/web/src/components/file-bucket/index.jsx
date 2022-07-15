@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
+import dateFormat from "dateformat";
 import ellipsis from "../../shared/ellipsis";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { FiUpload, FiCopy } from "react-icons/fi";
@@ -24,6 +25,9 @@ import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
 import Loading from "../loading/loading";
+import useWindowDimensions from "../../shared/windowDimensions";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+
 import {
   GrDocumentPdf,
   GrDocumentText,
@@ -44,6 +48,7 @@ import imgLoading from "../../assets/images/loading-circle.gif";
 import Multiselect from "multiselect-react-dropdown";
 import { useIdleTimer } from "react-idle-timer";
 import ScrollToTop from "react-scroll-to-top";
+import "../../assets/styles/FileBucket.css";
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
@@ -90,7 +95,7 @@ export default function FileBucket() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [descriptionClass, setDescriptionClass] = useState(true);
   const [descriptionClassId, setDescriptionClassId] = useState("");
-
+  const {height, width} = useWindowDimensions();
   let filterOptionsArray = [];
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
@@ -123,8 +128,6 @@ export default function FileBucket() {
 
   const [briefNames, setBriefNames] = useState(null); 
 
-  
-
   var moment = require("moment");
 
   const hideToast = () => {
@@ -144,12 +147,6 @@ export default function FileBucket() {
     await API.graphql(params).then((result) => {
       window.open(result.data.file.downloadURL);
     });
-  };
-
-  const contentDiv = {
-    margin: "0 0 0 65px",
-    position: "sticky",
-    top: 0,
   };
 
   const noStyle = {
@@ -2144,8 +2141,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   };
 
-
-
   const handleRedirectLink = async (e, backgroundId) => {
     var arrBackgroundResult = [];
     const backgroundRedirect = await API.graphql({
@@ -2174,17 +2169,105 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   };
 
+  //Mobile functions
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
+  const [contentHeight, setContentHeight] = useState();
+  const [readMoreStateOuter, setReadMoreStateOuter] = useState([]);
+  const [readMoreStateInner, setReadMoreStateInner] = useState([]);
 
+  function handleReadMoreStateOuter(fileId) {
+    if(readMoreStateOuter.find((temp)=>{
+      return temp === fileId;
+    }) === undefined) {
+      setReadMoreStateOuter([...readMoreStateOuter, fileId]);
+      //console.log("ADDED" + fileId);
+    } else {
+      setReadMoreStateOuter(current => current.filter((id)=> {
+        return id !== fileId;
+      }));
+      //console.log("REMOVED" + fileId);
+    }
+    //console.log("Outer", readMoreStateOuter);
+  }
 
+  function handleReadMoreStateInner(fileId, bgId) {
+    if(readMoreStateInner.find((temp)=>{
+      return temp === fileId+"/"+bgId;
+    }) === undefined) {
+      setReadMoreStateInner([...readMoreStateInner, fileId+"/"+bgId]);
+      //console.log("ADDED" + bgId);
+    } else {
+      setReadMoreStateInner(current => current.filter((id)=> {
+        return id !== (fileId+"/"+ bgId);
+      }));
+      //console.log("REMOVED" + bgId);
+    }
+    //console.log("Inner", readMoreStateInner);
+  }
+
+  function handleCollapseAll(fileId) {
+    setReadMoreStateOuter(current => current.filter((id)=> {
+      return id !== fileId;
+    }));
+    setReadMoreStateInner(current => current.filter((id)=> {
+      return id.split("/")[0] !== fileId;
+    }));
+  }
+
+  function handleExpandAll() {
+    let outerStateArray = [];
+    let innerStateArray = [];
+    matterFiles.map((data) => {
+      outerStateArray=[...outerStateArray, data.id];
+      data.backgrounds.items.map((background) => {
+        innerStateArray=[...innerStateArray, data.id+"/"+background.id];
+      });
+    });
+    setReadMoreStateOuter(outerStateArray);
+    setReadMoreStateInner(innerStateArray);
+    console.log("Inner", readMoreStateInner);
+    console.log("Outer", readMoreStateOuter);
+
+  }
+  function isReadMoreExpandedOuter(fileId) {
+    return readMoreStateOuter.find((temp)=>{
+      return temp === fileId;
+    }) !== undefined;
+  }
+  function isReadMoreExpandedInner(fileId, bgId) {
+    return readMoreStateInner.find((temp)=>{
+      return temp === fileId +"/"+bgId;
+    }) !== undefined;
+  }
+
+  function countLines(tag) {
+    var divHeight = tag.offsetHeight
+    var lineHeight = parseInt(window.getComputedStyle(tag).getPropertyValue("line-height"));
+    var lines = Math.round(divHeight / lineHeight);
+    //console.log(divHeight + " / " +  lineHeight + " = " + lines);
+    return lines;
+  }
+
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-93-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-93-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+    //console.log("HEADER LINES: " + headerLines);
+  }, [height, width, headerReadMore]);
+  
   return (
     <>
       <div
         className={
-          "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
+          "p-5 static bg-gray-100 sm:bg-white sm:relative flex flex-col min-w-screen min-h-screen sm:min-h-0 sm:min-w-0 break-words sm:shadow-lg sm:rounded contentDiv"
         }
-        style={contentDiv}
-      >
-        <div className="flex-grow flex-1">
+      > 
+        <div className="hidden sm:block flex-1">
           <div style={mainGrid}>
             <div>
               <Link to={AppRoutes.DASHBOARD}>
@@ -2199,7 +2282,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         {/* DON'T DELETE THIS PART. THIS IS A CLONE FOR SCROLLING DOWN */}
         <div
           style={{ position: "sticky", top: "0" }}
-          className=" py-5 bg-white z-30"
+          className="hidden sm:block py-5 bg-white z-30"
         >
           <p className="font-bold text-xl bg-white w-full">
             File Bucket&nbsp;<span className="text-xl">of</span>&nbsp;
@@ -2213,8 +2296,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           </p>
         </div>
         {/* END */}
-        <div className="py-5 bg-white z-40 absolute mt-10 ">
-          <p className="font-bold text-3xl">
+        <div className="flex sm:flex-none sm-block pt-3 sm:py-5 sm:bg-white sm:z-40 sm:absolute sm:mt-10 ">
+          <p className="hidden sm:block font-bold text-3xl">
             File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
             <span className="font-semibold text-3xl">
               {checkFormat(client_name)}
@@ -2224,21 +2307,59 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               {checkFormat(matter_name)}
             </span>
           </p>
+          {/* MOBILE VIEW OF HEADER */}
+          <div className="flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto"}}>
+            <p id="headerTag" className="sm:hidden font-bold pl-14" 
+              style={{lineHeight:"24px"}}>
+              <span className="font-semibold text-base">
+                {checkFormat(client_name)}
+              </span>
+              &nbsp;
+              <span className="font-light text-base text-gray-500">
+                {checkFormat(matter_name)}
+              </span>
+            </p>
+            <button 
+                className="shrink-0 invisible font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+               {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+            </button>
+          </div>
+          {/* IF HEADER LINES IS LONG, THEN OVERLAY WITH READMORE */}
+          {headerLines > 1 ? (
+            <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
+              <p className={'flex-auto pl-14 sm:hidden ' + (headerReadMore?'':'truncate')}>
+                <span className="font-semibold text-base">
+                    {checkFormat(client_name)}
+                  </span>
+                  &nbsp;
+                  <span className="font-light text-base text-gray-500">
+                    {checkFormat(matter_name)}
+                    {/*headerReadMore ? checkFormat(matter_name) : ellipsis(checkFormat(matter_name),30)*/}
+                </span>
+              </p>
+              <button 
+                onClick={()=>setHeaderReadMore(!headerReadMore)}
+                className="shrink-0 hover:bg-gray-100 text-gray-500 font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+               {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+          ) : (<></>)}
+          
         </div>
 
         <div
-          className="bg-white z-40 "
-          style={{ position: "sticky", top: "67px" }}
+          className="block sm:bg-white sm:z-40 static sm:sticky"
+          style={{top: "67px" }}
         >
-          <nav aria-label="Breadcrumb" style={style} className="mt-4">
+          <nav aria-label="Breadcrumb" style={style} className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4">
             <ol
               role="list"
-              className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+              className="px-0 flex items-left sm:space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
             >
               <li>
                 <div className="flex items-center">
                   <Link
-                    className="mr-2 text-sm font-medium text-gray-900"
+                    className="sm:mr-2 text-xs uppercase sm:normal-case sm:text-sm font-medium text-gray-400 sm:text-gray-900"
                     to={`${AppRoutes.DASHBOARD}`}
                   >
                     Dashboard
@@ -2259,7 +2380,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               <li className="text-sm">
                 <Link
                   aria-current="page"
-                  className="font-medium text-gray-900"
+                  className="text-xs uppercase sm:normal-case sm:text-sm font-medium text-gray-400 sm:text-gray-900"
                   to={`${
                     AppRoutes.BRIEFS
                   }/${matter_id}/?matter_name=${utf8_to_b64(
@@ -2283,7 +2404,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               <li className="text-sm">
                 <Link
                   aria-current="page"
-                  className="font-medium text-gray-500"
+                  className="text-xs uppercase sm:normal-case sm:text-sm  underline underline-offset-4 font-medium text-gray-700 sm:text-gray-500"
                   to={`${
                     AppRoutes.FILEBUCKET
                   }/${matter_id}/000/?matter_name=${utf8_to_b64(
@@ -2296,9 +2417,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             </ol>
           </nav>
 
-          <div className="p-2 left-0"></div>
+          <div className="hidden sm:block p-2 left-0 "></div>
           {files !== null && files.length !== 0 && (
-            <div className="w-full mb-3 pb-2">
+            <div className="hidden sm:block w-full mb-3 pb-2">
               <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
                 <IoIcons.IoIosSearch />
               </span>
@@ -2310,7 +2431,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               />
             </div>
           )}
-          <div className="z-50 pl-2 py-1 grid grid-cols-1 gap-4">
+          <div className="hidden sm:grid z-50 pl-2 py-1 grid-cols-1 gap-4">
             <div className="">
               {matterFiles !== null && matterFiles.length !== 0 && (
                 <input
@@ -2439,7 +2560,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           </div>
         </div>
 
-        <div className="px-2 py-0 left-0">
+        <div className="hidden sm:block px-2 py-0 left-0">
           <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
@@ -2454,8 +2575,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             <>
               {matterFiles.length === 0 &&
               (searchFile === undefined || searchFile === "") ? (
-                <div className="p-5 px-5 py-1 left-0">
-                  <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
+                <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
+                  <div className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
+                  style={{height:width > 640 ?"auto": contentHeight}}>
                     <BlankState
                       title={"items"}
                       txtLink={"file upload button"}
@@ -2471,508 +2593,509 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                     style={{ padding: "0.4rem" }}
                   />
                   {matterFiles !== null && matterFiles.length !== 0 ? (
-                    <div>
-                      <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                          <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
-                            <thead
-                              className="bg-gray-100 z-20"
-                              style={{ position: "sticky", top: "235px" }}
-                            >
-                              <tr>
-                                <th className="px-2 py-4 text-center whitespace-nowrap">
-                                  Item No.
-                                </th>
-                                <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
-                                  <span className="ml-4">Date &nbsp;</span>
-                                  {/* <img
-                                    src={barsFilter}
-                                    className="text-2xl w-4 mx-4"
-                                    alt="filter"
-                                    onClick={SortBydate}
-                                    style={{ cursor: "pointer" }}
-                                  /> */}
-                                  {(() => {
-                                    if (ascDesc == null) {
-                                      return (
-                                        <FaSort
-                                          className="mx-auto inline-block"
-                                          alt="Sort"
-                                          title="Sort"
-                                          onClick={SortBydate}
-                                          style={{ cursor: "pointer" }}
-                                        />
-                                      );
-                                    } else if (ascDesc === true) {
-                                      return (
-                                        <BsSortUpAlt
-                                          className="mx-auto inline-block"
-                                          alt="Sort"
-                                          title="Sort"
-                                          onClick={SortBydate}
-                                          style={{ cursor: "pointer" }}
-                                        />
-                                      );
-                                    } else if (ascDesc === false) {
-                                      return (
-                                        <BsSortDown
-                                          className="mx-auto inline-block"
-                                          alt="Sort"
-                                          title="Sort"
-                                          onClick={SortBydate}
-                                          style={{ cursor: "pointer" }}
-                                        />
-                                      );
-                                    }
-                                  })()}
-                                </th>
-                                <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
-                                  Name
-                                </th>
-                                <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
-                                  Description
-                                </th>
-                                <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
-                                  Labels
-                                </th>
-                                <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
-                                  Page Reference
-                                </th>
-                              </tr>
-                            </thead>
-                            <Droppable droppableId="droppable-1">
-                              {(provider) => (
-                                <tbody
-                                  ref={provider.innerRef}
-                                  {...provider.droppableProps}
-                                  className="bg-white divide-y divide-gray-200"
-                                >
-                                  {(filterState
-                                    ? filteredFiles
-                                    : matterFiles
-                                  ).map((data, index) => (
-                                    <Draggable
-                                      key={data.id}
-                                      draggableId={data.id}
-                                      index={index}
-                                    >
-                                      {(provider, snapshot) => (
-                                        <tr
-                                          key={data.id}
-                                          index={index}
-                                          className="h-full"
-                                          {...provider.draggableProps}
-                                          ref={provider.innerRef}
-                                          style={{
-                                            ...provider.draggableProps.style,
-                                            backgroundColor:
-                                              snapshot.isDragging ||
-                                              (active && data.id === selected)
-                                                ? "rgba(255, 255, 239, 0.767)"
-                                                : "white",
-                                          }}
-                                        >
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="px-2 py-3 align-top"
+                    <>
+                    {/*DESKTOP VIEW */}
+                    {width > 640 ? (<>
+                      <div className="hidden sm:block"> 
+                        <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
+                          <DragDropContext onDragEnd={handleDragEnd}>
+                            <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
+                              <thead
+                                className="bg-gray-100 z-20"
+                                style={{ position: "sticky", top: "235px" }}
+                              >
+                                <tr>
+                                  <th className="px-2 py-4 text-center whitespace-nowrap">
+                                    Item No.
+                                  </th>
+                                  <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
+                                    <span className="ml-4">Date &nbsp;</span>
+                                    {/* <img
+                                      src={barsFilter}
+                                      className="text-2xl w-4 mx-4"
+                                      alt="filter"
+                                      onClick={SortBydate}
+                                      style={{ cursor: "pointer" }}
+                                    /> */}
+                                    {(() => {
+                                      if (ascDesc == null) {
+                                        return (
+                                          <FaSort
+                                            className="mx-auto inline-block"
+                                            alt="Sort"
+                                            title="Sort"
+                                            onClick={SortBydate}
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        );
+                                      } else if (ascDesc === true) {
+                                        return (
+                                          <BsSortUpAlt
+                                            className="mx-auto inline-block"
+                                            alt="Sort"
+                                            title="Sort"
+                                            onClick={SortBydate}
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        );
+                                      } else if (ascDesc === false) {
+                                        return (
+                                          <BsSortDown
+                                            className="mx-auto inline-block"
+                                            alt="Sort"
+                                            title="Sort"
+                                            onClick={SortBydate}
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        );
+                                      }
+                                    })()}
+                                  </th>
+                                  <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                    Name
+                                  </th>
+                                  <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
+                                    Description
+                                  </th>
+                                  <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                    Labels
+                                  </th>
+                                  <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
+                                    Page Reference
+                                  </th>
+                                </tr>
+                              </thead>
+                              <Droppable droppableId="droppable-1">
+                                {(provider) => (
+                                  <tbody
+                                    ref={provider.innerRef}
+                                    {...provider.droppableProps}
+                                    className="bg-white divide-y divide-gray-200"
+                                  >
+                                    {(filterState
+                                      ? filteredFiles
+                                      : matterFiles
+                                    ).map((data, index) => (
+                                      <Draggable
+                                        key={data.id}
+                                        draggableId={data.id}
+                                        index={index}
+                                      >
+                                        {(provider, snapshot) => (
+                                          <tr
+                                            key={data.id}
+                                            index={index}
+                                            className="h-full"
+                                            {...provider.draggableProps}
+                                            ref={provider.innerRef}
+                                            style={{
+                                              ...provider.draggableProps.style,
+                                              backgroundColor:
+                                                snapshot.isDragging ||
+                                                (active && data.id === selected)
+                                                  ? "rgba(255, 255, 239, 0.767)"
+                                                  : "white",
+                                            }}
                                           >
-                                            <div className="grid grid-cols-1 border-l-2">
+                                            <td
+                                              {...provider.dragHandleProps}
+                                              className="px-2 py-3 align-top"
+                                            >
+                                              <div className="grid grid-cols-1 border-l-2">
+                                                <div className="inline-flex mb-16">
+                                                  <MdDragIndicator
+                                                    className="text-2xl"
+                                                    onClick={() =>
+                                                      handleChageBackground(
+                                                        data.id
+                                                      )
+                                                    }
+                                                  />
+                                                  <input
+                                                    className="cursor-pointer mr-1"
+                                                    onChange={handleSelectItem}
+                                                    type="checkbox"
+                                                    checked={selectedItems.includes(
+                                                      data.id
+                                                    )}
+                                                    value={data.id}
+                                                    id={`data-${data.id}`}
+                                                    disabled={
+                                                      deletingState ? true : false
+                                                    }
+                                                  />
+
+                                                  <span className="text-xs">
+                                                    {index + 1}
+                                                  </span>
+                                                </div>
+
+                                                {data.backgrounds.items
+                                                  .sort((a, b) =>
+                                                    a.order > b.order ? 1 : -1
+                                                  )
+                                                  .map((background, counter) => (
+                                                    <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
+                                                      {index + 1}.{counter + 1}
+                                                    </div>
+                                                  ))}
+                                              </div>
+                                            </td>
+                                            <td className="align-top py-2">
                                               <div className="inline-flex mb-16">
-                                                <MdDragIndicator
-                                                  className="text-2xl"
-                                                  onClick={() =>
-                                                    handleChageBackground(
+                                                <DatePicker
+                                                  popperProps={{
+                                                    positionFixed: true,
+                                                  }}
+                                                  className="border w-28 rounded text-xs py-2 px-1 border-gray-300"
+                                                  dateFormat="dd MMM yyyy"
+                                                  selected={
+                                                    data.date === null ? null : data.date === undefined ? null : new Date(data.date)
+                                                  }
+                                                  placeholderText="No Date"
+                                                  onChange={(selected) =>
+                                                    handleChangeDate(
+                                                      selected,
                                                       data.id
                                                     )
                                                   }
                                                 />
-                                                <input
-                                                  className="cursor-pointer mr-1"
-                                                  onChange={handleSelectItem}
-                                                  type="checkbox"
-                                                  checked={selectedItems.includes(
-                                                    data.id
-                                                  )}
-                                                  value={data.id}
-                                                  id={`data-${data.id}`}
-                                                  disabled={
-                                                    deletingState ? true : false
-                                                  }
-                                                />
-
-                                                <span className="text-xs">
-                                                  {index + 1}
-                                                </span>
+                                                {/* <p>{data.date === undefined? "null" : data.date}</p> */}
                                               </div>
 
                                               {data.backgrounds.items
                                                 .sort((a, b) =>
                                                   a.order > b.order ? 1 : -1
                                                 )
-                                                .map((background, counter) => (
-                                                  <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
-                                                    {index + 1}.{counter + 1}
+                                                .map((background, index) => (
+                                                  <div className="text-xs block mt-2">
+                                                    <DatePicker
+                                                      popperProps={{
+                                                        positionFixed: true,
+                                                      }}
+                                                      className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
+                                                      dateFormat="dd MMM yyyy"
+                                                      selected={
+                                                        background.date === null ? null : background.date === undefined ? null : new Date(background.date)
+                                                      }
+                                                      placeholderText="No Date"
+                                                      onChange={(selected) =>
+                                                        handleChangeDateBackground(
+                                                          selected,
+                                                          background.id,
+                                                          data.id
+                                                        )
+                                                      }
+                                                    />
                                                   </div>
                                                 ))}
-                                            </div>
-                                          </td>
-                                          <td className="align-top py-2">
-                                            <div className="inline-flex mb-16">
-                                              <DatePicker
-                                                popperProps={{
-                                                  positionFixed: true,
-                                                }}
-                                                className="border w-28 rounded text-xs py-2 px-1 border-gray-300"
-                                                dateFormat="dd MMM yyyy"
-                                                selected={
-                                                  data.date === null ? null : data.date === undefined ? null : new Date(data.date)
-                                                }
-                                                placeholderText="No Date"
-                                                onChange={(selected) =>
-                                                  handleChangeDate(
-                                                    selected,
-                                                    data.id
-                                                  )
-                                                }
-                                              />
-                                              {/* <p>{data.date === undefined? "null" : data.date}</p> */}
-                                            </div>
-
-                                            {data.backgrounds.items
-                                              .sort((a, b) =>
-                                                a.order > b.order ? 1 : -1
-                                              )
-                                              .map((background, index) => (
-                                                <div className="text-xs block mt-2">
-                                                  <DatePicker
-                                                    popperProps={{
-                                                      positionFixed: true,
-                                                    }}
-                                                    className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
-                                                    dateFormat="dd MMM yyyy"
-                                                    selected={
-                                                      background.date === null ? null : background.date === undefined ? null : new Date(background.date)
-                                                    }
-                                                    placeholderText="No Date"
-                                                    onChange={(selected) =>
-                                                      handleChangeDateBackground(
-                                                        selected,
-                                                        background.id,
+                                            </td>
+                                            <td
+                                              {...provider.dragHandleProps}
+                                              className="px-2 py-3 align-top place-items-center relative flex-wrap"
+                                            >
+                                              <div className="inline-flex">
+                                                {data.type
+                                                  .split("/")
+                                                  .slice(0, -1)
+                                                  .join("/") === "image" ? (
+                                                  <GrDocumentImage className="text-2xl" />
+                                                ) : data.type
+                                                    .split("/")
+                                                    .slice(0, -1)
+                                                    .join("/") === "audio" ? (
+                                                  <FaRegFileAudio className="text-2xl" />
+                                                ) : data.type
+                                                    .split("/")
+                                                    .slice(0, -1)
+                                                    .join("/") === "video" ? (
+                                                  <FaRegFileVideo className="text-2xl" />
+                                                ) : data.type
+                                                    .split("/")
+                                                    .slice(0, -1)
+                                                    .join("/") === "text" ? (
+                                                  <GrDocumentTxt className="text-2xl" />
+                                                ) : data.type
+                                                    .split("/")
+                                                    .slice(0, -1)
+                                                    .join("/") ===
+                                                    "application" &&
+                                                  data.type.split(".").pop() ===
+                                                    "sheet" ? (
+                                                  <GrDocumentExcel className="text-2xl" />
+                                                ) : data.type
+                                                    .split("/")
+                                                    .slice(0, -1)
+                                                    .join("/") ===
+                                                    "application" &&
+                                                  data.type.split(".").pop() ===
+                                                    "document" ? (
+                                                  <GrDocumentWord className="text-2xl" />
+                                                ) : data.type
+                                                    .split("/")
+                                                    .slice(0, -1)
+                                                    .join("/") ===
+                                                    "application" &&
+                                                  data.type.split(".").pop() ===
+                                                    "text" ? (
+                                                  <GrDocumentText className="text-2xl" />
+                                                ) : data.type
+                                                    .split("/")
+                                                    .slice(0, -1)
+                                                    .join("/") ===
+                                                  "application" ? (
+                                                  <GrDocumentPdf className="text-2xl" />
+                                                ) : (
+                                                  <GrDocumentText className="text-2xl" />
+                                                )}
+                                                &nbsp;&nbsp;
+                                                <span
+                                                  className="p-2 w-52 font-poppins"
+                                                  style={{
+                                                    cursor: "auto",
+                                                    outlineColor:
+                                                      "rgb(204, 204, 204, 0.5)",
+                                                    outlineWidth: "thin",
+                                                  }}
+                                                  suppressContentEditableWarning={
+                                                    true
+                                                  }
+                                                  onClick={(event) =>
+                                                    handleNameContent(
+                                                      event,
+                                                      data.name,
+                                                      data.id
+                                                    )
+                                                  }
+                                                  onInput={(event) =>
+                                                    handleOnChangeName(event)
+                                                  }
+                                                  onBlur={(e) =>
+                                                    handleSaveName(
+                                                      e,
+                                                      data.name,
+                                                      data.id
+                                                    )
+                                                  }
+                                                  contentEditable={
+                                                    updateProgess ? false : true
+                                                  }
+                                                >
+                                                  {data.name}
+                                                </span>
+                                                <span>
+                                                  <AiOutlineDownload
+                                                    className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
+                                                    onClick={() =>
+                                                      previewAndDownloadFile(
                                                         data.id
                                                       )
                                                     }
                                                   />
-                                                </div>
-                                              ))}
-                                          </td>
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="px-2 py-3 align-top place-items-center relative flex-wrap"
-                                          >
-                                            <div className="inline-flex">
-                                              {data.type
-                                                .split("/")
-                                                .slice(0, -1)
-                                                .join("/") === "image" ? (
-                                                <GrDocumentImage className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "audio" ? (
-                                                <FaRegFileAudio className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "video" ? (
-                                                <FaRegFileVideo className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") === "text" ? (
-                                                <GrDocumentTxt className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") ===
-                                                  "application" &&
-                                                data.type.split(".").pop() ===
-                                                  "sheet" ? (
-                                                <GrDocumentExcel className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") ===
-                                                  "application" &&
-                                                data.type.split(".").pop() ===
-                                                  "document" ? (
-                                                <GrDocumentWord className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") ===
-                                                  "application" &&
-                                                data.type.split(".").pop() ===
-                                                  "text" ? (
-                                                <GrDocumentText className="text-2xl" />
-                                              ) : data.type
-                                                  .split("/")
-                                                  .slice(0, -1)
-                                                  .join("/") ===
-                                                "application" ? (
-                                                <GrDocumentPdf className="text-2xl" />
-                                              ) : (
-                                                <GrDocumentText className="text-2xl" />
-                                              )}
-                                              &nbsp;&nbsp;
-                                              <span
-                                                className="p-2 w-52 font-poppins"
-                                                style={{
-                                                  cursor: "auto",
-                                                  outlineColor:
-                                                    "rgb(204, 204, 204, 0.5)",
-                                                  outlineWidth: "thin",
-                                                }}
-                                                suppressContentEditableWarning={
-                                                  true
-                                                }
-                                                onClick={(event) =>
-                                                  handleNameContent(
-                                                    event,
-                                                    data.name,
-                                                    data.id
-                                                  )
-                                                }
-                                                onInput={(event) =>
-                                                  handleOnChangeName(event)
-                                                }
-                                                onBlur={(e) =>
-                                                  handleSaveName(
-                                                    e,
-                                                    data.name,
-                                                    data.id
-                                                  )
-                                                }
-                                                contentEditable={
-                                                  updateProgess ? false : true
-                                                }
-                                              >
-                                                {data.name}
-                                              </span>
-                                              <span>
-                                                <AiOutlineDownload
-                                                  className="text-blue-400 mx-1 text-2xl cursor-pointer right-0 absolute"
-                                                  onClick={() =>
-                                                    previewAndDownloadFile(
+                                                </span>
+                                              </div>
+                                              <p className="text-red-400 filename-validation">
+                                                {data.id === fileId && fileAlert}
+                                              </p>{" "}
+                                              {/* do not change */}
+                                            </td>
+                                            <td
+                                              {...provider.dragHandleProps}
+                                              className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
+                                            >
+                                              <div className="flex mb-12">
+                                                <span
+                                                  className={
+                                                    data.id === descriptionClassId
+                                                      ? "w-full p-2 font-poppins h-full mx-2"
+                                                      : "w-96 p-2 font-poppins h-full mx-2 single-line"
+                                                  }
+                                                  style={{
+                                                    cursor: "auto",
+                                                    outlineColor:
+                                                      "rgb(204, 204, 204, 0.5)",
+                                                    outlineWidth: "thin",
+                                                  }}
+                                                  suppressContentEditableWarning={
+                                                    true
+                                                  }
+                                                  onClick={(event) =>
+                                                    handleDetailsContent(
+                                                      event,
+                                                      data.details,
                                                       data.id
                                                     )
                                                   }
-                                                />
+                                                  onInput={(event) =>
+                                                    handleOnChangeDetails(event)
+                                                  }
+                                                  onBlur={(e) =>
+                                                    handleSaveDetails(
+                                                      e,
+                                                      data.details,
+                                                      data.id
+                                                    )
+                                                  }
+                                                  contentEditable={
+                                                    updateProgess ? false : true
+                                                  }
+                                                  dangerouslySetInnerHTML={{
+                                                    __html: data.details,
+                                                  }}
+                                                ></span>
+                                                {(data.details === null || data.details === undefined || data.details === "" || data.details.length < 47) 
+                                                ? <p></p>
+                                                : (data.id === descriptionClassId) 
+                                                ? <p></p>
+                                                : <p className="py-2 -ml-1">...</p>}
+                                              </div>
+                                              <br />
+                                              <span className="text-red-400 filename-validation">
+                                                {data.id === detId && descAlert}
                                               </span>
-                                            </div>
-                                            <p className="text-red-400 filename-validation">
-                                              {data.id === fileId && fileAlert}
-                                            </p>{" "}
-                                            {/* do not change */}
-                                          </td>
-
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
-                                          >
-                                            <div className="flex mb-12">
-                                              <span
-                                                className={
-                                                  data.id === descriptionClassId
-                                                    ? "w-full p-2 font-poppins h-full mx-2"
-                                                    : "w-96 p-2 font-poppins h-full mx-2 single-line"
-                                                }
-                                                style={{
-                                                  cursor: "auto",
-                                                  outlineColor:
-                                                    "rgb(204, 204, 204, 0.5)",
-                                                  outlineWidth: "thin",
-                                                }}
-                                                suppressContentEditableWarning={
-                                                  true
-                                                }
-                                                onClick={(event) =>
-                                                  handleDetailsContent(
-                                                    event,
-                                                    data.details,
-                                                    data.id
-                                                  )
-                                                }
-                                                onInput={(event) =>
-                                                  handleOnChangeDetails(event)
-                                                }
-                                                onBlur={(e) =>
-                                                  handleSaveDetails(
-                                                    e,
-                                                    data.details,
-                                                    data.id
-                                                  )
-                                                }
-                                                contentEditable={
-                                                  updateProgess ? false : true
-                                                }
-                                                dangerouslySetInnerHTML={{
-                                                  __html: data.details,
-                                                }}
-                                              ></span>
-                                              {(data.details === null || data.details === undefined || data.details === "" || data.details.length < 47) 
-                                              ? <p></p>
-                                              : (data.id === descriptionClassId) 
-                                              ? <p></p>
-                                              : <p className="py-2 -ml-1">...</p>}
-                                            </div>
-                                            <br />
-                                            <span className="text-red-400 filename-validation">
-                                              {data.id === detId && descAlert}
-                                            </span>
-
-                                            {data.backgrounds.items
-                                              .sort((a, b) =>
-                                                a.order > b.order ? 1 : -1
-                                              )
-                                              .map((background, i) => (
-                                                <div className="flex mt-3.5">
-                                                  <span
-                                                    className={
-                                                      background.id ===
-                                                      descriptionClassId
-                                                        ? "w-full p-2 font-poppins h-full mx-2"
-                                                        : "w-96 p-2 font-poppins h-full mx-2 single-line"
-                                                    }
-                                                    style={{
-                                                      cursor: "auto",
-                                                      outlineColor:
-                                                        "rgb(204, 204, 204, 0.5)",
-                                                      outlineWidth: "thin",
-                                                    }}
-                                                    suppressContentEditableWarning
-                                                    onClick={(event) =>
-                                                      handleDescContent(
-                                                        event,
-                                                        background.description,
-                                                        background.id,
-                                                        index + "-" + i
-                                                      )
-                                                    }
-                                                    dangerouslySetInnerHTML={{
-                                                      __html:
-                                                        background.description,
-                                                    }}
-                                                    onInput={(event) =>
-                                                      handleChangeDesc(event)
-                                                    }
-                                                    onBlur={(e) =>
-                                                      handleSaveDesc(
-                                                        e,
-                                                        background.description,
-                                                        background.date,
-                                                        background.id
-                                                      )
-                                                    }
-                                                    contentEditable={true}
-                                                    ref={(el) =>
-                                                      (itemsRef.current[
-                                                        index + "-" + i
-                                                      ] = el)
-                                                    }
-                                                    onFocus={(e) =>
-                                                      handleChangeDescription(
-                                                        e,
-                                                        background.description,
-                                                        background.id,
-                                                        index + "-" + i
-                                                      )
-                                                    }
-                                                  ></span>
-                                                  {(background.description === null || background.description === undefined || background.description === "" || background.description.length < 47) 
-                                                  ? <p></p>
-                                                  : (background.id === descriptionClassId) 
-                                                  ? <p></p>
-                                                  : <p className="py-2 -ml-1">...</p>}
-                                                </div>
-                                              ))}
-                                          </td>
-
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="px-2 py-3 align-top place-items-center relative flex-wrap"
-                                          >
-                                            <CreatableSelect
-                                              defaultValue={() =>
-                                                defaultOptions(
-                                                  data.labels.items
-                                                )
-                                              }
-                                              options={labels}
-                                              isMulti
-                                              isClearable
-                                              isSearchable
-                                              openMenuOnClick={true}
-                                              onChange={(options, e) =>
-                                                handleLabelChanged(
-                                                  options,
-                                                  data.id, e,
-                                                  data.labels.items
-                                                )
-                                              }
-                                              placeholder="Labels"
-                                              className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                            />
-                                          </td>
-                                          <td
-                                            {...provider.dragHandleProps}
-                                            className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
-                                          >
-                                            <div className="grid grid-cols-1">
-                                              <div className="flex mb-24"></div>
 
                                               {data.backgrounds.items
                                                 .sort((a, b) =>
                                                   a.order > b.order ? 1 : -1
                                                 )
-                                                .map((background, index) => (
-                                                  
-                                                    (background.briefs.items[0] === null || background.briefs.items[0] === undefined)
-                                                    ?
-                                                    <div
-                                                      className="h-10.5 py-3 p-1 mb-1.5"
-                                                      key={background.id}
-                                                      index={index}
-            
-                                                    ></div>
-                                                    : 
-                                                    <div
-                                                      className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                      key={background.id}
-                                                      index={index}
-                                                      onClick={(event) =>  handleRedirectLink(event,background.id)}
-                                                    >
-                                                      <b>
-                                                      {((background.order) + ". " + background.briefs.items[0].name) }
-                                                        
-                                                      </b>
-                                                    
-                                                    </div>
-                                                  
-                                                  
+                                                .map((background, i) => (
+                                                  <div className="flex mt-3.5">
+                                                    <span
+                                                      className={
+                                                        background.id ===
+                                                        descriptionClassId
+                                                          ? "w-full p-2 font-poppins h-full mx-2"
+                                                          : "w-96 p-2 font-poppins h-full mx-2 single-line"
+                                                      }
+                                                      style={{
+                                                        cursor: "auto",
+                                                        outlineColor:
+                                                          "rgb(204, 204, 204, 0.5)",
+                                                        outlineWidth: "thin",
+                                                      }}
+                                                      suppressContentEditableWarning
+                                                      onClick={(event) =>
+                                                        handleDescContent(
+                                                          event,
+                                                          background.description,
+                                                          background.id,
+                                                          index + "-" + i
+                                                        )
+                                                      }
+                                                      dangerouslySetInnerHTML={{
+                                                        __html:
+                                                          background.description,
+                                                      }}
+                                                      onInput={(event) =>
+                                                        handleChangeDesc(event)
+                                                      }
+                                                      onBlur={(e) =>
+                                                        handleSaveDesc(
+                                                          e,
+                                                          background.description,
+                                                          background.date,
+                                                          background.id
+                                                        )
+                                                      }
+                                                      contentEditable={true}
+                                                      ref={(el) =>
+                                                        (itemsRef.current[
+                                                          index + "-" + i
+                                                        ] = el)
+                                                      }
+                                                      onFocus={(e) =>
+                                                        handleChangeDescription(
+                                                          e,
+                                                          background.description,
+                                                          background.id,
+                                                          index + "-" + i
+                                                        )
+                                                      }
+                                                    ></span>
+                                                    {(background.description === null || background.description === undefined || background.description === "" || background.description.length < 47) 
+                                                    ? <p></p>
+                                                    : (background.id === descriptionClassId) 
+                                                    ? <p></p>
+                                                    : <p className="py-2 -ml-1">...</p>}
+                                                  </div>
                                                 ))}
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      )}
-                                    </Draggable>
-                                  ))}
-                                  {provider.placeholder}
-                                </tbody>
-                              )}
-                            </Droppable>
-                          </table>
-                        </DragDropContext>
-                      </div>
+                                            </td>
+                                            <td
+                                              {...provider.dragHandleProps}
+                                              className="px-2 py-3 align-top place-items-center relative flex-wrap"
+                                            >
+                                              <CreatableSelect
+                                                defaultValue={() =>
+                                                  defaultOptions(
+                                                    data.labels.items
+                                                  )
+                                                }
+                                                options={labels}
+                                                isMulti
+                                                isClearable
+                                                isSearchable
+                                                openMenuOnClick={true}
+                                                onChange={(options, e) =>
+                                                  handleLabelChanged(
+                                                    options,
+                                                    data.id, e,
+                                                    data.labels.items
+                                                  )
+                                                }
+                                                placeholder="Labels"
+                                                className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                              />
+                                            </td>
+                                            <td
+                                              {...provider.dragHandleProps}
+                                              className="w-96 px-2 py-3 align-top place-items-center relative flex-wrap"
+                                            >
+                                              <div className="grid grid-cols-1">
+                                                <div className="flex mb-24"></div>
+
+                                                {data.backgrounds.items
+                                                  .sort((a, b) =>
+                                                    a.order > b.order ? 1 : -1
+                                                  )
+                                                  .map((background, index) => (
+                                                    
+                                                      (background.briefs.items[0] === null || background.briefs.items[0] === undefined)
+                                                      ?
+                                                      <div
+                                                        className="h-10.5 py-3 p-1 mb-1.5"
+                                                        key={background.id}
+                                                        index={index}
+              
+                                                      ></div>
+                                                      : 
+                                                      <div
+                                                        className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                        key={background.id}
+                                                        index={index}
+                                                        onClick={(event) =>  handleRedirectLink(event,background.id)}
+                                                      >
+                                                        <b>
+                                                        {((background.order) + ". " + background.briefs.items[0].name) }
+                                                          
+                                                        </b>
+                                                      
+                                                      </div>
+                                                    
+                                                    
+                                                  ))}
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provider.placeholder}
+                                  </tbody>
+                                )}
+                              </Droppable>
+                            </table>
+                          </DragDropContext>
+                        </div>
                       <div>
                         {maxLoading || filterState ? (
                           <div className="flex justify-center items-center mt-5">
@@ -2999,6 +3122,103 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       </div>
                       <div className="p-2"></div>
                     </div>
+                    </>) : (<>
+                    {/* MOBILE VIEW */}
+                    <div className="flex flex-col py-5 bg-white rounded-lg sm:hidden" style={{height:contentHeight}}>
+                      <div className="px-5">
+                        <p className="text-cyan-400 text-right">
+                          <button onClick={()=>handleExpandAll()}>
+                            Expand All
+                          </button>
+                        </p>  
+                      </div>
+                      <div className="px-5 overflow-y-auto h-min" >
+                        {matterFiles.map((data, index,arr) => (
+                          <div key={data.id} className="flex flex-col" style ={{
+                            borderBottomWidth: index+1 !== arr.length ? 2 : 0, 
+                            borderBottomStyle:"dashed",
+                            paddingTop:index===0 ? 0 : 20,
+                            paddingBottom: index+1 !== arr.length ? 20 : 0
+                          }}>
+                            <div className="flex flex-row">
+                              <div className="font-semibold text-cyan-400">
+                                {index + 1}&nbsp;&nbsp;
+                              </div>
+                              <div className="flex flex-col flex-auto">
+                                <div className="w-full pb-2">
+                                  <p className="font-medium text-cyan-400">
+                                    {data.date!== null | data.date!==undefined ? dateFormat(
+                                        data.date,
+                                        "dd mmmm yyyy"
+                                      ) : "NO DATE"}
+                                    </p>
+                                    <div className="flex flex-row">
+                                      <p className="flex-auto"> {data.name} </p>
+                                      <AiOutlineDownload
+                                        className="text-blue-400 text-base cursor-pointer"
+                                        onClick={() =>
+                                          previewAndDownloadFile(
+                                            data.id
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    
+                                    <p className={isReadMoreExpandedOuter(data.id)?"block":"hidden"}> {data.details} </p>
+                                </div>
+                                {data.backgrounds.items
+                                .sort((a, b) =>
+                                  a.order > b.order ? 1 : -1
+                                )
+                                .map((background, counter) => (
+                                  <div className="flex flex-row" key={background.id}>
+                                    <div className="font-semibold text-cyan-400">
+                                      {index + 1}.{counter + 1} &nbsp;
+                                    </div>
+                                    <div>
+                                      <p className={(!isReadMoreExpandedOuter(data.id)?'block':'hidden') + ' text-cyan-400'}>
+                                        <button onClick={()=>handleReadMoreStateOuter(data.id)} >
+                                          read more <FiChevronDown className="inline"/>
+                                        </button>
+                                      </p>
+                                      <p  className= 'font-medium text-cyan-400'>
+                                        <span className={(isReadMoreExpandedOuter(data.id)?'inline-block':'hidden')}>
+                                          {background.date!== null | background.date!==undefined ? dateFormat(
+                                            background.date,
+                                            "dd mmmm yyyy"
+                                          ) : "NO DATE"}
+                                          &nbsp;
+                                        </span>
+                                        <button 
+                                        className={isReadMoreExpandedOuter(data.id)?'inline-block':'hidden'}
+                                        onClick={()=>handleReadMoreStateInner(data.id, background.id)}>
+                                        {!isReadMoreExpandedInner(data.id, background.id)? 
+                                        (<span>&nbsp; read more <FiChevronDown className="inline"/></span>)
+                                        : (<span>&nbsp; read less <FiChevronUp className="inline"/></span>)
+                                        }
+                                        </button>
+                                      </p>
+                                      <p className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}>
+                                        {background.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                                {isReadMoreExpandedOuter(data.id) ? (
+                                <button className="mt-3 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>
+                                  collapse all <FiChevronUp className="inline"/>
+                                </button>) 
+                                : (<></>)}
+                              </div>
+                            </div>
+                          </div>                         
+                        ))}
+                      </div>
+                    </div>
+                    </>)}
+
+                    </>
+                    
                   ) : (
                     <div className="p-5 px-5 py-1 left-0">
                       <div className="w-full h-42 mb-6 py-1 px-1 grid justify-items-center">

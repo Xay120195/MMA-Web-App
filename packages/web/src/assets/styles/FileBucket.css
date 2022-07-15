@@ -1,0 +1,18 @@
+.contentDiv {
+  position: "sticky";
+  top: 0;
+}
+@media (max-width: 640px) { 
+  .contentDiv {
+    margin: "0 0 0 0px";
+  }
+  .fileBucketContainer{
+    height: calc(100vh - 177px);
+  }
+}
+
+@media (min-width: 640px) {
+  .contentDiv {
+    margin: "0 0 0 65px";
+  }
+}
