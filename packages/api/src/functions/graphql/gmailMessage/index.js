@@ -49,22 +49,105 @@ async function listGmailMessageClientMatters(ctx) {
         clientMattersResult.Responses.ClientMatterTable.map((i) =>
           unmarshall(i)
         );
-      const objCompClientMatters = gmailClientMattersResult.Items.map((i) =>
+      const objGmailClientMatters = gmailClientMattersResult.Items.map((i) =>
         unmarshall(i)
       );
 
-      const response = objCompClientMatters.map((item) => {
-        const filterMatter = objClientMatters.find(
-          (u) => u.id === item.clientMatterId
-        );
-        return { ...item, ...filterMatter };
-      });
+      // const response = objGmailClientMatters.map((item) => {
+      //   const filterMatter = objClientMatters.find(
+      //     (u) => u.id === item.clientMatterId
+      //   );
+      //   return { ...item, ...filterMatter };
+      // });
+
+      const response = objGmailClientMatters
+        .map((item) => {
+          const filterMatter = objClientMatters.find(
+            (u) => u.id === item.clientMatterId
+          );
+
+          if (filterMatter !== undefined) {
+            return { ...item, ...filterMatter };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
         nextToken: gmailClientMattersResult.LastEvaluatedKey
           ? Buffer.from(
               JSON.stringify(gmailClientMattersResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
+async function listGmailMessageLabels(ctx) {
+  console.log("listGmailMessageLabels()");
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+  try {
+    const gmailLabelsParam = {
+      TableName: "GmailMessageLabelTable",
+      IndexName: "byGmailMessage",
+      KeyConditionExpression: "gmailMessageId = :gmailMessageId",
+      ExpressionAttributeValues: marshall({
+        ":gmailMessageId": id,
+      }),
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+    if (limit !== undefined) {
+      gmailLabelsParam.Limit = limit;
+    }
+    const gmailLabelsCmd = new QueryCommand(gmailLabelsParam);
+    const gmailLabelsResult = await client.send(gmailLabelsCmd);
+    const labelIds = gmailLabelsResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.labelId })
+    );
+    if (labelIds.length !== 0) {
+      const labelsParam = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
+        },
+      };
+      const labelsCmd = new BatchGetItemCommand(labelsParam);
+      const labelsResult = await client.send(labelsCmd);
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
+      );
+      const objGmailLabels = gmailLabelsResult.Items.map((i) => unmarshall(i));
+      const response = objGmailLabels
+        .map((item) => {
+          const filterMatter = objLabels.find((u) => u.id === item.labelId);
+          if (filterMatter !== undefined) {
+            return { ...item, ...filterMatter };
+          }
+        })
+        .filter((a) => a !== undefined);
+      return {
+        items: response,
+        nextToken: gmailLabelsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(gmailLabelsResult.LastEvaluatedKey)
             ).toString("base64")
           : null,
       };
@@ -152,6 +235,9 @@ const resolvers = {
   GmailMessage: {
     clientMatters: async (ctx) => {
       return listGmailMessageClientMatters(ctx);
+    },
+    labels: async (ctx) => {
+      return listGmailMessageLabels(ctx);
     },
     attachments: async (ctx) => {
       return listGmailMessageAttachments(ctx);

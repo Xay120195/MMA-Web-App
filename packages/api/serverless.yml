@@ -628,6 +628,11 @@ custom:
         response: false
       - dataSource: LambdaGmailMessageDS
         type: GmailMessage
+        field: labels
+        request: false
+        response: false
+      - dataSource: LambdaGmailMessageDS
+        type: GmailMessage
         field: attachments
         request: false
         response: false

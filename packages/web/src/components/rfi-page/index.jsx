@@ -186,14 +186,6 @@ export default function RFIPage() {
     //if modal is active and user moved, automatic logout (session expired)
     //bool.current = false;
     if(showSessionTimeout){
-      setTimeout(() => {
-        Auth.signOut().then(() => {
-          clearLocalStorage();
-          console.log("Sign out completed.");
-          history.push("/");
-        });
-      
-        function clearLocalStorage() {
           localStorage.removeItem("userId");
           localStorage.removeItem("email");
           localStorage.removeItem("firstName");
@@ -202,8 +194,6 @@ export default function RFIPage() {
           localStorage.removeItem("company");
           localStorage.removeItem("companyId");
           localStorage.removeItem("access");
-        }
-      }, 3000);
     }
 
     clearTimeout(timeoutId);
@@ -216,7 +206,7 @@ export default function RFIPage() {
     //bool.current = true;
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
-    }, 60000 * 40);
+    }, 60000 * 60);
 
   };
 
@@ -260,6 +250,14 @@ export default function RFIPage() {
     }else{
       return false;
     }
+  }
+
+  function testcode(){
+    console.log("hello");
+  }
+
+  function testcode1(){
+    console.log("hellohi");
   }
 
   return (

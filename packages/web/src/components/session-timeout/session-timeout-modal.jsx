@@ -3,6 +3,7 @@ import { Redirect, useHistory } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import Illustration from "../../assets/images/session-timeout.png";
 import { Auth } from "aws-amplify";
+import {AiFillRightCircle} from "react-icons/ai";
 
 
 export default function SessionTimeout() {
@@ -17,7 +18,7 @@ export default function SessionTimeout() {
     setShowToast(false);
   };
 
-  const Signout = async () => {
+  async function Signout(){
       await Auth.signOut().then(() => {
         clearLocalStorage();
         console.log("Sign out completed.");
@@ -58,10 +59,14 @@ export default function SessionTimeout() {
                 </h1>
                 <p className="content-center items-center justify-items-center">
                     You weren't clicking around anymore, so we logged you out for your protection.
-                    You will be redirected to the login page..
+                    Please Login again.
                 </p>
                 <div className="text-center content-center">
-
+                  <button className="bg-gray-800 text-white px-3 py-1 rounded"
+                    onClick={()=>Signout()}
+                  >
+                    <div className="inline-flex text-white mt-1">Go to Login <AiFillRightCircle className="mt-1/2 ml-1"/></div>
+                  </button>
                 </div>
             </div>
           </div>

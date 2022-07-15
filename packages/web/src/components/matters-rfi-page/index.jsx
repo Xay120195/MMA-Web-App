@@ -234,7 +234,7 @@ export default function MattersRFI() {
     //bool.current = true;
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
-    }, 60000 * 40);
+    }, 60000 * 60);
 
   };
 
