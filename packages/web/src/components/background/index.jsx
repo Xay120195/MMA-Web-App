@@ -65,6 +65,7 @@ const Background = () => {
   const [pageSize, setPageSize] = useState(20);
   const [pageIndex, setPageIndex] = useState(1);
   const [vNextToken, setVnextToken] = useState(null);
+  const [vPrevToken, setVprevToken] = useState([]);
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
   const [briefName, setBriefName] = useState("");
@@ -213,7 +214,12 @@ const Background = () => {
       },
     });
 
+    var arrConcatPrevToken = vPrevToken.concat(vNextToken);
+    setVprevToken([...new Set(arrConcatPrevToken)]);
+    console.log("PREV TOKEN: ", arrConcatPrevToken);
+
     setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+    console.log("InitialLoad If NextToken: ", backgroundOpt.data.brief.backgrounds.nextToken);
 
     if (backgroundOpt.data.brief.backgrounds.items !== null) {
       result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -273,13 +279,15 @@ const Background = () => {
           query: qListBackground,
           variables: {
             id: matter_id,
-            limit: 25,
+            limit: 50,
             nextToken: vNextToken,
             sortOrder: "ORDER_ASC",
           },
         });
 
         setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
+
+        console.log("Loadmore If NextToken: ", backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
         if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
           result = backgroundOpt.data.clientMatter.backgrounds.items.map(
@@ -298,8 +306,12 @@ const Background = () => {
               setLoading(false);
               setMaxLoading(false);
 
+              /** Concat previous items 
               let arrConcat = background.concat(result);
               setBackground([...new Set(sortByOrder(arrConcat))]);
+              */
+
+              setBackground(result);
             }, 1000);
           }
         }
@@ -322,9 +334,13 @@ const Background = () => {
           },
         });
 
+        var arrConcatPrevToken = vPrevToken.concat(vNextToken);
+        setVprevToken([...new Set(arrConcatPrevToken)]);
+        console.log("PREV TOKEN: ", arrConcatPrevToken);
+
         setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
 
-        console.log(backgroundOpt);
+        //console.log("Loadmore If NextToken: ", backgroundOpt.data.brief.backgrounds.nextToken);
 
         if (backgroundOpt.data.brief.backgrounds.items !== null) {
           result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -339,7 +355,6 @@ const Background = () => {
           );
 
           if (background !== "") {
-            setTimeout(() => {
               setLoading(false);
               setMaxLoading(false);
 
@@ -353,26 +368,12 @@ const Background = () => {
                       .toLowerCase()
                       .includes(searchDescription.toLowerCase())
                   );
-                console.log("HELO", searchDescription);
               }
-
-              // if (ascDesc !== null) {
-              //   console.log("sorting is ascending?", ascDesc);
-
-              //   if (ascDesc === true) {
-              //     console.log("set order by Date ASC");
-              //     arrConcat = arrConcat.sort(compareValues("date"));
-              //   } else if (!ascDesc) {
-              //     console.log("set order by Date DESC");
-              //     arrConcat = arrConcat.sort(compareValues("date", "desc"));
-              //   }
-
-              //   setBackground([...new Set(arrConcat)]);
-              // } else {
-              //   setBackground([...new Set(sortByOrder(arrConcat))]);
-              // }
+              /** Concat previous items 
               setBackground([...new Set(sortByOrder(arrConcat))]);
-            }, 200);
+              */
+
+              setBackground(result);
           }
         }
       } else {
@@ -382,10 +383,71 @@ const Background = () => {
     }
   };
 
+  const loadPrevBackground = async () => {
+    if (vPrevToken.length > 1 && !loading) {
+      setLoading(true);
+      let result = [];
+
+      const lastTokenFrom = vPrevToken.slice(-1);
+
+      const updatedToken = vPrevToken.filter(x => !new Set(lastTokenFrom).has(x));
+
+      const lastTokenQuery = updatedToken.slice(-1);
+
+      const backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: {
+          id: background_id,
+          limit: 50,
+          nextToken: lastTokenQuery[0],
+          sortOrder: "ORDER_ASC",
+        },
+      });
+
+      setVprevToken(updatedToken);
+      setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+
+      if (backgroundOpt.data.brief.backgrounds.items !== null) {
+        result = backgroundOpt.data.brief.backgrounds.items.map(
+          ({ id, description, date, createdAt, order, files }) => ({
+            createdAt: createdAt,
+            id: id,
+            description: description,
+            date: date,
+            order: order,
+            files: files,
+          })
+        );
+
+        if (background !== "") {
+            setLoading(false);
+            setMaxLoading(false);
+
+            var arrConcat = background.concat(result);
+
+            if (searchDescription !== "") {
+              arrConcat = background
+                .concat(result)
+                .filter((x) =>
+                  x.description
+                    .toLowerCase()
+                    .includes(searchDescription.toLowerCase())
+                );
+            }
+
+            setBackground(result);
+        }
+      }
+    } else {
+      console.log("Last Result!- NEW");
+      setMaxLoading(true);
+    }
+  }
+
   var timeoutId;
 
   const handleOnAction = (event) => {
-    loadMoreBackground();
+    //loadMoreBackground();
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
@@ -415,14 +477,14 @@ const Background = () => {
   };
 
   const handleOnIdle = (event) => {
-    loadMoreBackground();
+    //loadMoreBackground();
 
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
     // check.current = true;
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
-    }, 60000 * 40);
+    }, 60000 * 60);
 
   };
 
@@ -853,16 +915,32 @@ const Background = () => {
           />
 
           {/* {background !== null && background.length !== 0 && ( */}
-          <div className="pl-2 py-1 grid grid-cols-1 mb-3 pr-8">
-            <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
-              <IoIcons.IoIosSearch />
-            </span>
-            <input
-              type="search"
-              placeholder="Type to search description in the Background ..."
-              onChange={handleSearchDescriptionChange}
-              className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-            />
+          <div className="pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
+            <div className="col-span-9">
+              <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+                <IoIcons.IoIosSearch />
+              </span>
+              <input
+                type="search"
+                placeholder="Type to search description in the Background ..."
+                onChange={handleSearchDescriptionChange}
+                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+              />
+            </div>
+            <div className="ml-2 inline-flex float-right">
+              <button 
+                className={vPrevToken.length > 1 ? "bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" : "font-bold py-2 px-4 text-white bg-gray-300 rounded opacity-50 cursor-not-allowed"} 
+                onClick={loadPrevBackground}
+              >
+                Prev
+              </button>
+              <button 
+                className={vNextToken !== null ? "bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r" : "font-bold py-2 px-4 text-white bg-gray-300 rounded opacity-50 cursor-not-allowed"} 
+                onClick={loadMoreBackground}
+              >
+                Next
+              </button>
+            </div>
           </div>
           {/* )} */}
         </div>
