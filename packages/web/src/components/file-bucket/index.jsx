@@ -22,7 +22,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Loading from "../loading/loading";
 import useWindowDimensions from "../../shared/windowDimensions";
 import { BiArrowToTop } from "react-icons/bi";
-import { FiUpload, FiCopy, FiChevronDown, FiChevronUp, FiChevronsDown} from "react-icons/fi";
+import { FiUpload, FiCopy, FiChevronDown, FiChevronUp, FiChevronsDown, FiChevronsUp} from "react-icons/fi";
 import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
@@ -2176,6 +2176,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [readMoreStateOuter, setReadMoreStateOuter] = useState([]);
   const [readMoreStateInner, setReadMoreStateInner] = useState([]); 
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isExpandAllActive, setIsExpandAllActive] = useState(false);
 
   function handleReadMoreStateOuter(fileId) {
     if(readMoreStateOuter.find((temp)=>{
@@ -2209,19 +2210,28 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return id.split("/")[0] !== fileId;
     }));
   }
-
-  function handleExpandAll() {
-    let outerStateArray = [];
-    let innerStateArray = [];
-    matterFiles.map((data) => {
-      outerStateArray=[...outerStateArray, data.id];
-      data.backgrounds.items.map((background) => {
-        innerStateArray=[...innerStateArray, data.id+"/"+background.id];
+  
+  useEffect(()=>{
+    console.log("TRIGGERED");
+    if(isExpandAllActive) {
+      let outerStateArray = [];
+      let innerStateArray = [];
+      matterFiles.map((data) => {
+        outerStateArray=[...outerStateArray, data.id];
+        data.backgrounds.items.map((background) => {
+          innerStateArray=[...innerStateArray, data.id+"/"+background.id];
+        });
       });
-    });
-    setReadMoreStateOuter(outerStateArray);
-    setReadMoreStateInner(innerStateArray);
-  }
+      setReadMoreStateOuter(outerStateArray);
+      setReadMoreStateInner(innerStateArray);
+      console.log("EXPAND");
+    } else {
+      setReadMoreStateOuter([]);
+      setReadMoreStateInner([]);
+      console.log("COLLAPSE");
+    }
+  },[isExpandAllActive])
+
   function isReadMoreExpandedOuter(fileId) {
     return readMoreStateOuter.find((temp)=>{
       return temp === fileId;
@@ -3129,8 +3139,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                     <div className="flex flex-col py-5 bg-white rounded-lg sm:hidden" style={{height:contentHeight}}>
                       <div className="px-5">
                         <p className="text-cyan-400 text-right">
-                          <button onClick={()=>handleExpandAll()}>
-                            Expand All <FiChevronsDown className="inline"/>
+                          <button onClick={()=>setIsExpandAllActive(!isExpandAllActive)}>
+                            {isExpandAllActive? <>
+                              Collapse All <FiChevronsUp className="inline"/>
+                            </> : <>
+                              Expand All <FiChevronsDown className="inline"/>
+                            </>}
                           </button>
                         </p>  
                       </div>

@@ -26,6 +26,12 @@
   .scrollButtonsFileBucket:hover {
     background-color:rgb(28,193,233);
   }
+  .line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+  }
 }
 
 @media (min-width: 640px) {
