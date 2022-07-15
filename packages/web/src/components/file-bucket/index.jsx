@@ -1589,7 +1589,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     // bool.current = true;
     timeoutId = setTimeout(() => {
         setShowSessionTimeout(true);
-    }, 60000 * 40);
+    }, 60000 * 60);
   };
 
   useIdleTimer({

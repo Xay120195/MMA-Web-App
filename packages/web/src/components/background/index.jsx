@@ -484,7 +484,7 @@ const Background = () => {
     // check.current = true;
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
-    }, 60000 * 40);
+    }, 60000 * 60);
 
   };
 
