@@ -679,11 +679,9 @@ type Mutation {
     gmailMessageId: String
     clientMatterId: ID
   ): GmailMessage
-  gmailMessageLabelTag(
-    gmailMessageId: String
-    labelId: [ID]
-  ): GmailMessage
   gmailMessageClientMatterUntag(gmailMessageId: String): GmailMessage
+  gmailMessageLabelTag(gmailMessageId: String, labelId: [ID]): GmailMessage
+  gmailMessageLabelUntag(gmailMessageId: String): GmailMessage
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
   gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage]
