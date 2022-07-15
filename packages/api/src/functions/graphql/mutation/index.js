@@ -2247,6 +2247,74 @@ async function tagGmailMessageClientMatter(data) {
   return resp;
 }
 
+async function tagGmailMessageLabel(data) {
+  let resp = {};
+
+  try {
+    const arrItems = [];
+
+    const gmailMessageLabelIdParams = {
+      TableName: "GmailMessageLabelTable",
+      IndexName: "byGmailMessage",
+      KeyConditionExpression: "gmailMessageId = :gmailMessageId",
+      // FilterExpression: "labelId = :labelId",
+      ExpressionAttributeValues: marshall({
+        ":gmailMessageId": data.gmailMessageId,
+        // ":labelId": data.labelId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    const gmailMessageLabelIdCmd = new QueryCommand(gmailMessageLabelIdParams);
+    const gmailMessageLabelIdRes = await ddbClient.send(gmailMessageLabelIdCmd);
+
+    for (var a = 0; a < gmailMessageLabelIdRes.Items.length; a++) {
+      var gmailMessageLabelId = {
+        id: gmailMessageLabelIdRes.Items[a].id,
+      };
+      arrItems.push({
+        DeleteRequest: {
+          Key: gmailMessageLabelId,
+        },
+      });
+    }
+
+    arrItems.push({
+      PutRequest: {
+        Item: marshall({
+          id: v4(),
+          gmailMessageId: data.gmailMessageId,
+          labelId: data.labelId,
+        }),
+      },
+    });
+
+    const gmailMessageLabelParams = {
+      RequestItems: {
+        GmailMessageLabelTable: arrItems,
+      },
+    };
+
+    const gmailMessageLabelCmd = new BatchWriteItemCommand(
+      gmailMessageLabelParams
+    );
+
+    const gmailMessageLabelRes = await ddbClient.send(gmailMessageLabelCmd);
+
+    if (gmailMessageLabelRes) {
+      resp = { id: data.gmailMessageId };
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function untagGmailMessageClientMatter(data) {
   let resp = {};
 
@@ -2773,6 +2841,11 @@ const resolvers = {
     gmailMessageClientMatterUntag: async (ctx) => {
       return await untagGmailMessageClientMatter(ctx.arguments);
     },
+
+    gmailMessageLabelTag: async (ctx) => {
+      return await tagGmailMessageLabel(ctx.arguments);
+    },
+
     gmailMessageSoftDelete: async (ctx) => {
       const { id, companyId } = ctx.arguments;
       const data = {
