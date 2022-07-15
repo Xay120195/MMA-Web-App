@@ -7,13 +7,9 @@ import { Redirect, useHistory } from "react-router-dom";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
 import { useParams } from "react-router-dom";
-import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
-import * as IoIcons from "react-icons/io";
 import DatePicker from "react-datepicker";
 import dateFormat from "dateformat";
 import ellipsis from "../../shared/ellipsis";
-import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
-import { FiUpload, FiCopy } from "react-icons/fi";
 import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
@@ -23,10 +19,14 @@ import { Auth } from "aws-amplify";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import CreatableSelect from "react-select/creatable";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
 import Loading from "../loading/loading";
 import useWindowDimensions from "../../shared/windowDimensions";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { BiArrowToTop } from "react-icons/bi";
+import { FiUpload, FiCopy, FiChevronDown, FiChevronUp, FiChevronsDown} from "react-icons/fi";
+import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
+import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
+import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
+import * as IoIcons from "react-icons/io";
 
 import {
   GrDocumentPdf,
@@ -2174,21 +2174,19 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [headerLines, setHeaderLines] = useState();
   const [contentHeight, setContentHeight] = useState();
   const [readMoreStateOuter, setReadMoreStateOuter] = useState([]);
-  const [readMoreStateInner, setReadMoreStateInner] = useState([]);
+  const [readMoreStateInner, setReadMoreStateInner] = useState([]); 
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   function handleReadMoreStateOuter(fileId) {
     if(readMoreStateOuter.find((temp)=>{
       return temp === fileId;
     }) === undefined) {
       setReadMoreStateOuter([...readMoreStateOuter, fileId]);
-      //console.log("ADDED" + fileId);
     } else {
       setReadMoreStateOuter(current => current.filter((id)=> {
         return id !== fileId;
       }));
-      //console.log("REMOVED" + fileId);
     }
-    //console.log("Outer", readMoreStateOuter);
   }
 
   function handleReadMoreStateInner(fileId, bgId) {
@@ -2196,14 +2194,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return temp === fileId+"/"+bgId;
     }) === undefined) {
       setReadMoreStateInner([...readMoreStateInner, fileId+"/"+bgId]);
-      //console.log("ADDED" + bgId);
     } else {
       setReadMoreStateInner(current => current.filter((id)=> {
         return id !== (fileId+"/"+ bgId);
       }));
-      //console.log("REMOVED" + bgId);
     }
-    //console.log("Inner", readMoreStateInner);
   }
 
   function handleCollapseAll(fileId) {
@@ -2226,9 +2221,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     });
     setReadMoreStateOuter(outerStateArray);
     setReadMoreStateInner(innerStateArray);
-    console.log("Inner", readMoreStateInner);
-    console.log("Outer", readMoreStateOuter);
-
   }
   function isReadMoreExpandedOuter(fileId) {
     return readMoreStateOuter.find((temp)=>{
@@ -2245,10 +2237,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     var divHeight = tag.offsetHeight
     var lineHeight = parseInt(window.getComputedStyle(tag).getPropertyValue("line-height"));
     var lines = Math.round(divHeight / lineHeight);
-    //console.log(divHeight + " / " +  lineHeight + " = " + lines);
     return lines;
   }
-
+  function handleScrollEvent(e) {
+    const top = e.target.scrollTop > 20;
+    if (top) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
+  }
+  function handleScrollToTop () {
+    let d = document.getElementById("mobileContent");
+    d.scrollTo(0, 0);
+  }
   useEffect(() => {
     var headerTag = document.getElementById('headerTag');
     setHeaderLines(countLines(headerTag));
@@ -2257,7 +2259,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     } else {
       setContentHeight(height-93-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
     }
-    //console.log("HEADER LINES: " + headerLines);
   }, [height, width, headerReadMore]);
   
   return (
@@ -2404,7 +2405,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               <li className="text-sm">
                 <Link
                   aria-current="page"
-                  className="text-xs uppercase sm:normal-case sm:text-sm  underline underline-offset-4 font-medium text-gray-700 sm:text-gray-500"
+                  className="text-xs uppercase sm:normal-case sm:text-sm underline underline-offset-4 sm:no-underline font-medium text-gray-700 sm:text-gray-500"
                   to={`${
                     AppRoutes.FILEBUCKET
                   }/${matter_id}/000/?matter_name=${utf8_to_b64(
@@ -2587,15 +2588,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 </div>
               ) : (
                 <>
-                  <ScrollToTop
-                    smooth
-                    color="rgb(117, 117, 114);"
-                    style={{ padding: "0.4rem" }}
-                  />
                   {matterFiles !== null && matterFiles.length !== 0 ? (
                     <>
+                      
                     {/*DESKTOP VIEW */}
                     {width > 640 ? (<>
+                      <ScrollToTop
+                        smooth
+                        color="rgb(117, 117, 114);"
+                        style={{ padding: "0.4rem" }}
+                      />
                       <div className="hidden sm:block"> 
                         <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
                           <DragDropContext onDragEnd={handleDragEnd}>
@@ -3128,11 +3130,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       <div className="px-5">
                         <p className="text-cyan-400 text-right">
                           <button onClick={()=>handleExpandAll()}>
-                            Expand All
+                            Expand All <FiChevronsDown className="inline"/>
                           </button>
                         </p>  
                       </div>
-                      <div className="px-5 overflow-y-auto h-min" >
+                      <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="px-5 overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
+                        {showScrollButton ? (<>
+                        <div className="scrollButtonsFileBucket flex" onClick={() => handleScrollToTop()}>
+                          <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
+                        </div>
+                        </>) : (<></>)}
                         {matterFiles.map((data, index,arr) => (
                           <div key={data.id} className="flex flex-col" style ={{
                             borderBottomWidth: index+1 !== arr.length ? 2 : 0, 
@@ -3141,41 +3148,49 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                             paddingBottom: index+1 !== arr.length ? 20 : 0
                           }}>
                             <div className="flex flex-row">
-                              <div className="font-semibold text-cyan-400">
-                                {index + 1}&nbsp;&nbsp;
+                              <div className="flex flex-col relative">
+                                <div className="absolute left-0 right-0 mx-auto bottom-2 rounded-full bg-gray-200" style={{height:"5.5px", width:"5.5px"}}></div>
+                                <div className="font-semibold text-cyan-400">
+                                {index + 1}
+                                </div>
+                                <div className="relative flex-auto mb-2" style={{
+                                  backgroundImage: "linear-gradient(#e5e7eb, #e5e7eb)",
+                                  backgroundSize: "1px 100%",
+                                  backgroundRepeat: "no-repeat",
+                                  backgroundPosition: "center center"}}>
+                                </div>
                               </div>
-                              <div className="flex flex-col flex-auto">
-                                <div className="w-full pb-2">
+                              <div className="ml-2 flex flex-col flex-auto">
+                                <div className="w-full">
                                   <p className="font-medium text-cyan-400">
                                     {data.date!== null | data.date!==undefined ? dateFormat(
                                         data.date,
                                         "dd mmmm yyyy"
                                       ) : "NO DATE"}
-                                    </p>
-                                    <div className="flex flex-row">
-                                      <p className="flex-auto"> {data.name} </p>
-                                      <AiOutlineDownload
-                                        className="text-blue-400 text-base cursor-pointer"
-                                        onClick={() =>
-                                          previewAndDownloadFile(
-                                            data.id
-                                          )
-                                        }
-                                      />
-                                    </div>
-                                    
-                                    <p className={isReadMoreExpandedOuter(data.id)?"block":"hidden"}> {data.details} </p>
+                                  </p>
+                                  <div className="flex flex-row">
+                                    <p className="flex-auto"> {data.name} </p>
+                                    <AiOutlineDownload
+                                      className="text-cyan-400 text-base cursor-pointer"
+                                      onClick={() =>
+                                        previewAndDownloadFile(
+                                          data.id
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                  <p className={(isReadMoreExpandedOuter(data.id)?"block":"hidden") + ' mt-1'}> {data.details} </p>
                                 </div>
                                 {data.backgrounds.items
                                 .sort((a, b) =>
                                   a.order > b.order ? 1 : -1
                                 )
                                 .map((background, counter) => (
-                                  <div className="flex flex-row" key={background.id}>
-                                    <div className="font-semibold text-cyan-400">
-                                      {index + 1}.{counter + 1} &nbsp;
+                                  <div className="flex flex-row mt-2" key={background.id}>
+                                    <div className={(isReadMoreExpandedOuter(data.id)?"text-cyan-400":"text-gray-300")+ ' font-semibold'}>
+                                      {index + 1}.{counter + 1}
                                     </div>
-                                    <div>
+                                    <div className="ml-2">
                                       <p className={(!isReadMoreExpandedOuter(data.id)?'block':'hidden') + ' text-cyan-400'}>
                                         <button onClick={()=>handleReadMoreStateOuter(data.id)} >
                                           read more <FiChevronDown className="inline"/>
@@ -3204,11 +3219,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                     </div>
                                   </div>
                                 ))}
-                                {isReadMoreExpandedOuter(data.id) ? (
-                                <button className="mt-3 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>
-                                  collapse all <FiChevronUp className="inline"/>
-                                </button>) 
-                                : (<></>)}
+                                {isReadMoreExpandedOuter(data.id) && ((data.details!== "" & data.details!== undefined & data.details!== null) | (data.backgrounds.items!== null &  data.backgrounds.items.length > 0))? (
+                                  <button className="h-5 block relative mt-3 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>
+                                    collapse all <FiChevronUp className="inline"/>
+                                  </button> 
+                                ) : (<></>)}
                               </div>
                             </div>
                           </div>                         
