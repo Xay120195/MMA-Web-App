@@ -277,6 +277,7 @@ type GmailMessageAttachment {
   name: String
   details: String
   order: Int
+  labels: GmailAttachmentLabelConn
   updatedAt: AWSDateTime
 }
 
@@ -488,6 +489,11 @@ type GmailMessagLabelsConn {
 
 type GmailMessageAttachmentConn {
   items: [GmailMessageAttachment]
+}
+
+type GmailAttachmentLabelConn {
+  items: [Label]
+  nextToken: String
 }
 
 type Query {
