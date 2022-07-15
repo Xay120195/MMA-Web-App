@@ -391,7 +391,7 @@ const TableUnsavedInfo = ({
                   >
                     {item.labelIds}
                   </button>
-                  <CreatableSelect
+                  {/* <CreatableSelect
                     defaultValue={null}
                     // options={labels}
                     isMulti
@@ -401,13 +401,13 @@ const TableUnsavedInfo = ({
                     isDisabled={
                       item.clientMatters.items.length > 0 ? false : true
                     }
-                    // onChange={
-                    //   (options, e) =>
-                    // handleLabelChanged()
-                    //}
+                    onChange={
+                      (options, e) =>
+                    handleAddLabel(item.clientMatters.items.id)
+                    }
                     placeholder="Labels"
                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                  />
+                  /> */}
                 </div>
               </td>
               <td className="p-2 align-top">
