@@ -621,6 +621,16 @@ custom:
         field: gmailMessageClientMatterUntag
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageLabelTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageLabelUntag
+        request: false
+        response: false
       - dataSource: LambdaGmailMessageDS
         type: GmailMessage
         field: clientMatters
