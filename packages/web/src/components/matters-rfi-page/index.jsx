@@ -20,6 +20,8 @@ import "../../assets/styles/Matters-rfi-page.css";
 import ScrollToTop from "react-scroll-to-top";
 import { BiArrowToTop } from "react-icons/bi";
 
+
+
 export default function MattersRFI() {
   const { matter_id } = useParams();
 
@@ -263,13 +265,9 @@ export default function MattersRFI() {
     <>
       <ScrollToTop
         smooth
-        component={
-          <BiArrowToTop
-            style={{ color: "white", display: "block", margin: "auto" }}
-          />
-        }
+        component={<BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>}
         className="sm:hidden scrollButton"
-        style={{ borderRadius: "50%" }}
+        style={{borderRadius: "50%"}}
       />
       <div
         className={

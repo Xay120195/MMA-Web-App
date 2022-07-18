@@ -7,8 +7,7 @@ import * as FaIcons from "react-icons/fa";
 import * as IoIcons from "react-icons/io5";
 import { MatterContext } from "./index";
 import Loading from "../loading/loading";
-import useWindowDimensions from "./windowDimensions";
-
+import useWindowDimensions from "../../shared/windowDimensions";
 export function ClientMatters() {
   const setshowDeleteModal = (displayStatus, id) => {
     onShowDeleteModal(displayStatus, id);
