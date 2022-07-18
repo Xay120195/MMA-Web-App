@@ -683,6 +683,11 @@ custom:
         field: labels
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelTag
+        request: false
+        response: false
 
     # Data Sources
     dataSources:
