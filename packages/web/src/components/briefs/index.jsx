@@ -207,7 +207,6 @@ export default function Briefs() {
     if (val.length > 0) {
       setBriefs(
         Briefs.filter((item) => {
-          console.log(item.name.toLowerCase());
           return (
             item.name
               .toLowerCase()
@@ -222,9 +221,9 @@ export default function Briefs() {
   };
 
   const handleSearchChange = (e) => {
-    console.log("L114" + e.target.value);
+    //console.log("L114" + e.target.value);
     searchText(e.target.value);
-    setSearchTable(e.target.value);
+    //setSearchTable(e.target.value);
   };
 
   const style = {
