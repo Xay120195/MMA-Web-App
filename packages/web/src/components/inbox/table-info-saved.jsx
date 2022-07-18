@@ -418,9 +418,9 @@ const TableSavedInfo = ({
                 <div className="relative">
                   {item.labels &&
                     item.labels.items &&
-                    item.labels.items.map((item, index) => (
+                    item.labels.items.map((i, index) => (
                       <button
-                        key={item.id}
+                        key={i.id}
                         className=" mb-1
                   text-opacity-90 1
                   textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
@@ -428,9 +428,29 @@ const TableSavedInfo = ({
                         type="button"
                         aria-expanded="false"
                       >
-                        {item.name}
+                        {i.name}
                       </button>
                     ))}
+
+                  {item.attachments &&
+                    item.attachments.items.map(
+                      (attach, index) =>
+                        attach.labels &&
+                        attach.labels.items &&
+                        attach.labels.items.map((lbl, index) => (
+                          <button
+                            key={lbl.id}
+                            className=" mb-1
+                  text-opacity-90 1
+                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                            id="headlessui-popover-button-87"
+                            type="button"
+                            aria-expanded="false"
+                          >
+                            {lbl.name}
+                          </button>
+                        ))
+                    )}
                 </div>
               </td>
               <td className="p-2 align-top">
