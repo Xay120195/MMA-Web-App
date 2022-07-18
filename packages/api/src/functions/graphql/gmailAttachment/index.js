@@ -77,7 +77,7 @@ async function listGmailAttachmentLabels(ctx) {
 }
 
 const resolvers = {
-  GmailAttachment: {
+  GmailMessageAttachment: {
     labels: async (ctx) => {
       return listGmailAttachmentLabels(ctx);
     },
