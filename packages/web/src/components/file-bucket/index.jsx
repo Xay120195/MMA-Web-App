@@ -2299,7 +2299,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           if(lines >= 5) {
             let bool = (!isReadMoreExpandedDesc(data.id) &&
             (isReadMoreExpandedOuter(data.id) || (data.backgrounds.items=== null|| data.backgrounds.items.length===0)));
-            descButtonTag.style.display = bool ? "inline-block": "none";
+            descButtonTag.style.display = true ? "inline-block": "none";
+            descButtonTag.innerHTML = bool ? "read more...": "read less...";
           } else {
             descButtonTag.style.display = 'none';
           }
