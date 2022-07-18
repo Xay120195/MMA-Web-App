@@ -1487,7 +1487,7 @@ const TableInfo = ({
                             <tbody
                               ref={provider.innerRef}
                               {...provider.droppableProps}
-                              className="autoSizer-container bg-white divide-y divide-gray-200"
+                              className="bg-white divide-y divide-gray-200"
                               style={{width:"100%", height:"100vh"}}
                             >
                               <AutoSizer>
@@ -1506,7 +1506,16 @@ const TableInfo = ({
                                       cache={cache.current} 
                                       parent={parent} 
                                       rowIndex={index} 
-                                       >
+                                      columnIndex={0} 
+                                      >
+                                        <div 
+                                        style={{
+                                          ...style,
+                                          whiteSpace: "pre",
+                                          textOverflow: "ellipsis",
+                                          width: "100%"
+                                        }}
+                                        >
                                           <Draggable
                                             key={item.id + "-" + index}
                                             draggableId={item.id + "-" + index}
@@ -1891,6 +1900,7 @@ const TableInfo = ({
                                               <td></td>
                                             </tr>
                                           )}
+                                        </div>
                                       </CellMeasurer>
                                     );
                                   }}
