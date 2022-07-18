@@ -208,7 +208,6 @@ const Background = () => {
       query: qBriefBackgroundList,
       variables: {
         id: background_id,
-        limit: 50,
         nextToken: null,
         sortOrder: "ORDER_ASC",
       },
