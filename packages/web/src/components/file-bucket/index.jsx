@@ -3188,9 +3188,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                         <p className="text-cyan-400 text-right">
                           <button onClick={()=>setIsExpandAllActive(!isExpandAllActive)}>
                             {isExpandAllActive? <>
-                              Collapse All <FiChevronsUp className="inline"/>
+                              &nbsp;Collapse All <FiChevronsUp className="inline"/>
                             </> : <>
-                              Expand All <FiChevronsDown className="inline"/>
+                              &nbsp;Expand All <FiChevronsDown className="inline"/>
                             </>}
                           </button>
                         </p>  
@@ -3263,6 +3263,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   a.order > b.order ? 1 : -1
                                 )
                                 .map((background, counter) => (
+                                  <>
                                   <div className="flex flex-row mt-1" key={background.id}>
                                     <div className={(isReadMoreExpandedOuter(data.id)?"text-cyan-400":"text-gray-300")+ ' font-semibold'}>
                                       {index + 1}.{counter + 1}
@@ -3290,11 +3291,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         }
                                         </button>
                                       </p>
-                                      <p className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}>
-                                        {background.description}
-                                      </p>
                                     </div>
                                   </div>
+                                  <p className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}>
+                                        {background.description}
+                                      </p>
+                                  </>
+                                  
                                 ))}
                                 {(isReadMoreExpandedDesc(data.id) | isReadMoreExpandedOuter(data.id)) && ((data.details!== "" & data.details!== undefined & data.details!== null) | (data.backgrounds.items!== null & data.backgrounds.items.length > 0))? (
                                   <button className="h-5 block relative mt-1 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>
