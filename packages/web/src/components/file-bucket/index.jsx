@@ -2299,7 +2299,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           if(lines >= 5) {
             let bool = (!isReadMoreExpandedDesc(data.id) &&
             (isReadMoreExpandedOuter(data.id) || (data.backgrounds.items=== null|| data.backgrounds.items.length===0)));
-            descButtonTag.style.display = true ? "inline-block": "none";
+            descButtonTag.style.display = bool ? "inline-block": "none";
             descButtonTag.innerHTML = bool ? "read more...": "read less...";
           } else {
             descButtonTag.style.display = 'none';
@@ -3283,8 +3283,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           ) : "NO DATE"}
                                           &nbsp;
                                         </span>
-                                        <button 
-                                        className={isReadMoreExpandedOuter(data.id)?'inline-block':'hidden'}
+                                        <button
+                                        className={isReadMoreExpandedOuter(data.id)&&background.description!== null&&background.description!==""?'inline-block':'hidden'}
                                         onClick={()=>handleReadMoreStateInner(data.id, background.id)}>
                                         {!isReadMoreExpandedInner(data.id, background.id)? 
                                         (<span>&nbsp; read more <FiChevronDown className="inline"/></span>)
