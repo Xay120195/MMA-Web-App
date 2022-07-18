@@ -2336,7 +2336,6 @@ async function tagGmailMessageLabel(data) {
   return resp;
 }
 
-
 async function tagGmailAttachmentLabel(data) {
   let resp = {};
 
@@ -2355,8 +2354,12 @@ async function tagGmailAttachmentLabel(data) {
       ProjectionExpression: "id",
     };
 
-    const gmailAttachmentLabelIdCmd = new QueryCommand(gmailAttachmentLabelIdParams);
-    const gmailAttachmentLabelIdRes = await ddbClient.send(gmailAttachmentLabelIdCmd);
+    const gmailAttachmentLabelIdCmd = new QueryCommand(
+      gmailAttachmentLabelIdParams
+    );
+    const gmailAttachmentLabelIdRes = await ddbClient.send(
+      gmailAttachmentLabelIdCmd
+    );
 
     for (var a = 0; a < gmailAttachmentLabelIdRes.Items.length; a++) {
       var gmailAttachmentLabelId = {
@@ -2531,6 +2534,68 @@ async function untagGmailMessageLabel(data) {
 
     if (gmailMessageLabelRes) {
       resp = { id: data.gmailMessageId };
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function untagGmailAttachmentLabel(data) {
+  let resp = {};
+
+  try {
+    const arrItems = [];
+
+    const gmailAttachmentLabelIdParams = {
+      TableName: "GmailAttachmentLabelTable",
+      IndexName: "byGmailAttachment",
+      KeyConditionExpression: "attachmentId = :attachmentId",
+      ExpressionAttributeValues: marshall({
+        ":attachmentId": data.attachmentId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    const gmailAttachmentLabelIdCmd = new QueryCommand(
+      gmailAttachmentLabelIdParams
+    );
+    const gmailAttachmentLabelIdRes = await ddbClient.send(
+      gmailAttachmentLabelIdCmd
+    );
+
+    for (var a = 0; a < gmailAttachmentLabelIdRes.Items.length; a++) {
+      var gmailAttachmentLabelId = {
+        id: gmailAttachmentLabelIdRes.Items[a].id,
+      };
+      arrItems.push({
+        DeleteRequest: {
+          Key: gmailAttachmentLabelId,
+        },
+      });
+    }
+
+    const gmailAttachmentLabelParams = {
+      RequestItems: {
+        GmailAttachmentLabelTable: arrItems,
+      },
+    };
+
+    const gmailAttachmentLabelCmd = new BatchWriteItemCommand(
+      gmailAttachmentLabelParams
+    );
+
+    const gmailAttachmentLabelRes = await ddbClient.send(
+      gmailAttachmentLabelCmd
+    );
+
+    if (gmailAttachmentLabelRes) {
+      resp = { id: data.attachmentId };
     }
   } catch (e) {
     resp = {
@@ -3018,6 +3083,9 @@ const resolvers = {
 
     gmailAttachmentLabelTag: async (ctx) => {
       return await tagGmailAttachmentLabel(ctx.arguments);
+    },
+    gmailAttachmentLabelUntag: async (ctx) => {
+      return await untagGmailAttachmentLabel(ctx.arguments);
     },
 
     gmailMessageSoftDelete: async (ctx) => {
