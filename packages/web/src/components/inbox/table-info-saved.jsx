@@ -432,9 +432,6 @@ const TableSavedInfo = ({
                       </button>
                     ))}
 
-                  {item.attachments.items &&
-                    item.attachments.items.length !== 0 &&
-                    console.log("item.attachments", item)}
                   {item.attachments &&
                     item.attachments.items.map(
                       (attach, index) =>

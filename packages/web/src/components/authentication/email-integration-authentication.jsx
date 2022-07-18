@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { GoogleLogin, GoogleLogout } from "react-google-login";
 import { API } from "aws-amplify";
+var momentTZ = require("moment-timezone");
+
 class GmailIntegration extends Component {
   constructor(props) {
     super(props);
@@ -17,24 +19,24 @@ class GmailIntegration extends Component {
   }
 
   async login(response) {
-      try {
+    try {
       setTimeout(() => {
-      const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
-      if (isSignedIn) {
-        const authCurrentUser = window.gapi.auth2
-          .getAuthInstance()
-          .currentUser.get().wt.cu;
+        const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+        if (isSignedIn) {
+          const authCurrentUser = window.gapi.auth2
+            .getAuthInstance()
+            .currentUser.get().wt.cu;
 
-        console.log("authCurrentUser: ", authCurrentUser);
+          console.log("authCurrentUser: ", authCurrentUser);
 
-
-      const saveRefreshToken = `
-      mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String) {
+          const saveRefreshToken = `
+      mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String, $userTimeZone: String) {
         gmailConnectFromCode(
           email: $email
           userId: $userId
           companyId: $companyId
           code: $code
+          userTimeZone: $userTimeZone
         ) {
           id
           refreshToken
@@ -52,6 +54,7 @@ class GmailIntegration extends Component {
               userId: localStorage.getItem("userId"),
               email: authCurrentUser,
               code: response.code,
+              userTimeZone: momentTZ.tz.guess(),
             },
           };
 
@@ -66,16 +69,13 @@ class GmailIntegration extends Component {
             localStorage.setItem("emailAddressIntegration", authCurrentUser);
             window.location.reload();
           });
-
         } else {
           console.log("Not signed in.");
         }
-
-        }, 1000);
-
-      } catch (e) {
-        console.log("saveRefreshToken Error:", e);
-      }
+      }, 1000);
+    } catch (e) {
+      console.log("saveRefreshToken Error:", e);
+    }
   }
 
   logout(response) {
@@ -119,7 +119,9 @@ class GmailIntegration extends Component {
         {this.state.isLogined ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-            buttonText={"Signout - "+localStorage.getItem("emailAddressIntegration")}
+            buttonText={
+              "Signout - " + localStorage.getItem("emailAddressIntegration")
+            }
             onLogoutSuccess={this.logout}
             onFailure={this.handleLogoutFailure}
           ></GoogleLogout>
