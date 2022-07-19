@@ -12,6 +12,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { AiOutlineFolderOpen } from "react-icons/ai";
 import { BsFillTrashFill } from "react-icons/bs";
 import * as FaIcons from "react-icons/fa";
+import {FiChevronDown, FiChevronUp, FiChevronsDown, FiChevronsUp} from "react-icons/fi";
 import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import { useParams } from "react-router-dom";
 import { API } from "aws-amplify";
@@ -25,7 +26,7 @@ import RemoveBriefModal from "../briefs/remove-brief-modal";
 import "../../assets/styles/Briefs.css";
 import ScrollToTop from "react-scroll-to-top";
 import { BiArrowToTop } from "react-icons/bi";
-
+import useWindowDimensions from "../../shared/windowDimensions";
 
 export default function Briefs() {
   const { matter_id } = useParams();
@@ -463,6 +464,35 @@ export default function Briefs() {
     
   };
 
+  const checkFormat = (str) => {
+    var check = str;
+    check = check.replace("%20", " "); //returns my_name
+    return check;
+  };
+
+  {/* MOBILE CONST */}
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
+  const [contentHeight, setContentHeight] = useState();
+  const {height, width} = useWindowDimensions();
+  const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] = useState(true);
+
+  function countLines(tag) {
+    var divHeight = tag.offsetHeight
+    var lineHeight = parseInt(window.getComputedStyle(tag).getPropertyValue("line-height"));
+    var lines = Math.round(divHeight / lineHeight);
+    return lines;
+  }
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-93-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-93-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+  }, [height, width, headerReadMore]);
+  
   return (
     <>
       <ScrollToTop
@@ -476,9 +506,9 @@ export default function Briefs() {
           "bg-gray-100 p-5 min-h-screen relative flex flex-col min-w-0 break-words sm:min-h-0 sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv"
         }
       >
-        <div className="relative py-2 sm:p-0 sm:flex-grow sm:flex-1">
+        <div className="relative pt-3 sm:p-0 sm:flex-grow sm:flex-1">
           <div className="flex flex-row">
-            <div className="flex-grow">
+            <div className="flex-grow hidden sm:block">
               <h1 className="font-bold text-right text-base px-2 sm:px-0 sm:text-3xl sm:text-left">
                 Background Page
                 <span className="hidden sm:inline text-base sm:text-3xl">&nbsp;of&nbsp;</span>
@@ -488,29 +518,53 @@ export default function Briefs() {
                 </span>
               </h1>
             </div>
-            <div className="flex shrink-0 items-center sm:absolute sm:right-0">
-              <Link to={AppRoutes.DASHBOARD}>
-                <button className="hidden align-middle sm:inline-flex shrink-0 bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                  Back &nbsp;
-                  <MdArrowForwardIos />
-                </button>
-                <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
-                  <MdArrowForwardIos style={{
-                    margin:"auto"
-                  }}/>
-                </button>
-              </Link>
+            {/* MOBILE VIEW OF HEADER */}
+            <div className="flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto"}}>
+              <p id="headerTag" className="sm:hidden font-bold pl-14" 
+                style={{lineHeight:"24px"}}>
+                <span className="font-semibold text-base">
+                  {checkFormat(client_name)}
+                </span>
+                &nbsp;
+                <span className="font-light text-base text-gray-500">
+                  {checkFormat(matter_name)}
+                </span>
+              </p>
+              <button 
+                  className="shrink-0 invisible font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
             </div>
+            {/* IF HEADER LINES IS LONG, THEN OVERLAY WITH READMORE */}
+            {headerLines > 1 ? (
+            <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
+              <p className={'flex-auto pl-14 sm:hidden ' + (headerReadMore?'':'truncate')}>
+                <span className="font-semibold text-base">
+                    {checkFormat(client_name)}
+                  </span>
+                  &nbsp;
+                  <span className="font-light text-base text-gray-500">
+                    {checkFormat(matter_name)}
+                    {/*headerReadMore ? checkFormat(matter_name) : ellipsis(checkFormat(matter_name),30)*/}
+                </span>
+              </p>
+              <button 
+                onClick={()=>setHeaderReadMore(!headerReadMore)}
+                className="shrink-0 hover:bg-gray-100 text-gray-500 font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+          ) : (<></>)}
           </div>
-          <div className="hidden sm:block px-3 sm:px-0">
-            <nav aria-label="Breadcrumb" style={style} className="mt-4">
+          <div className="sm:px-0">
+            <nav aria-label="Breadcrumb" style={style} className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4">
               <ol
                 role="list"
-                className="px-0 flex items-left space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+                className="px-0 flex items-left sm:space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
               >
                 <li>
                   <Link
-                    className="mr-2 text-sm font-medium text-gray-900"
+                    className="text-xs uppercase sm:normal-case sm:text-sm sm:mr-2 sm:text-sm font-medium text-gray-400 sm:text-gray-900"
                     to={`${AppRoutes.DASHBOARD}`}
                   >
                     Dashboard
@@ -528,15 +582,39 @@ export default function Briefs() {
                   <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
                 </svg>
                 <li className="text-sm">
-                  <span className="font-medium text-gray-500 px-1 flex">
-                    <AiOutlineFolderOpen /> &nbsp; Background Page{" "}
+                  <span className="text-xs uppercase sm:normal-case sm:text-sm underline underline-offset-4 sm:no-underline font-medium text-gray-700 sm:text-gray-500">
+                    <AiOutlineFolderOpen className="hidden sm:inline-block"/> <span className="sm:inline hidden">&nbsp;&nbsp;</span>Background Page{" "}
                   </span>
+                </li>
+                <svg
+                  width="16"
+                  height="20"
+                  viewBox="0 0 16 20"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="sm:hidden w-4 h-5 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+                <li className="text-sm sm:hidden">
+                  <Link
+                    aria-current="page"
+                    className="text-xs uppercase sm:normal-case sm:text-sm sm:mr-2 sm:text-sm font-medium text-gray-400 sm:text-gray-900"
+                    to={`${
+                      AppRoutes.FILEBUCKET
+                    }/${matter_id}/000/?matter_name=${utf8_to_b64(
+                      matter_name
+                    )}&client_name=${utf8_to_b64(client_name)}`}
+                    >
+                    File Bucket
+                  </Link>
                 </li>
               </ol>
             </nav>
           </div>
 
-          <div className="mt-4 sm:mt-7">
+          <div className="hidden sm:block mt-4 sm:mt-7">
             <div className="flex sm:block">
               <button
                 type="button"
@@ -553,15 +631,6 @@ export default function Briefs() {
                 onClick={handleColumn}
               >
                 SHOW/HIDE COLUMNS &nbsp; <AiFillEye />
-              </button>
-              <button
-                type="button"
-                className={
-                  "order-last bg-white hover:bg-gray-200 text-black text-sm py-2 px-4 rounded inline-flex sm:hidden items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
-                }
-                onClick={handleColumn}
-              >
-                 <AiFillEye />
               </button>
               {showColumn && (
                 <div
@@ -611,7 +680,7 @@ export default function Briefs() {
                 type="search"
                 placeholder="Search ..."
                 onChange={handleSearchChange}
-                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full sm:w-3/12 "
+                className="hidden sm:block px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full sm:w-3/12 "
               />
             </div>
           </div>
@@ -631,10 +700,20 @@ export default function Briefs() {
             </div>
           </div>
         ) : (
-          <div className="shadow overflow-hidden border-b bg-white sm:border-gray-200 rounded-lg my-5 p-5 pb-0 sm:p-0">
+          <div className="sm:shadow overflow-hidden border-b bg-white sm:border-gray-200 rounded-lg sm:my-5 p-5 pb-0 sm:p-0"
+          style={{height:width > 640 ?"auto": contentHeight}}>
+            <div className="items-stretch flex">
+              <button className={(isAllFilesSelectedButton ? "border-black" : "border-white") + " border-b-2 py-2 font-semibold"}>
+                All Files
+              </button>
+              <button className={(!isAllFilesSelectedButton ? "border-black" : "border-white") + " ml-5 border-b-2 py-2 font-semibold"}>
+                Brief
+              </button>
+            </div>
+            <div className="px-5 overflow-y-auto h-min">
             {Briefs.map((item) => (
               <div
-                className="w-90 bg-gray-100 rounded-lg border border-gray-200 mb-6 p-5 sm:py-4 sm:px-4 sm:m-2
+                className="w-90 bg-gray-100 rounded-lg border border-gray-200 mt-5 p-5 sm:py-4 sm:px-4 sm:m-2
                 hover:border-black cursor-pointer"
                 key={item.id}
                 data-info={item.id}
@@ -750,6 +829,8 @@ export default function Briefs() {
                 </div>
               </div>
             ))}
+            </div>
+            
           </div>
         )}
       </div>

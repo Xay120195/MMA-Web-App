@@ -95,7 +95,6 @@ export default function FileBucket() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [descriptionClass, setDescriptionClass] = useState(true);
   const [descriptionClassId, setDescriptionClassId] = useState("");
-  const {height, width} = useWindowDimensions();
   let filterOptionsArray = [];
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
@@ -2178,7 +2177,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [readMoreStateDesc, setReadMoreStateDesc] = useState([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isExpandAllActive, setIsExpandAllActive] = useState(false);
-
+  const {height, width} = useWindowDimensions();
+  
   function handleReadMoreStateDesc (fileId) {
     if(readMoreStateDesc.find((temp)=>{
       return temp === fileId;
