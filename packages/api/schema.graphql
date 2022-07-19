@@ -265,6 +265,7 @@ type GmailToken {
   refreshToken: String
   userId: ID
   companyId: ID
+  userTimeZone: String
   updatedAt: AWSDateTime
 }
 
@@ -688,6 +689,11 @@ type Mutation {
   gmailMessageClientMatterUntag(gmailMessageId: String): GmailMessage
   gmailMessageLabelTag(gmailMessageId: String, labelId: [ID]): GmailMessage
   gmailMessageLabelUntag(gmailMessageId: String): GmailMessage
+  gmailAttachmentLabelTag(
+    attachmentId: String
+    labelId: [ID]
+  ): GmailMessageAttachment
+  gmailAttachmentLabelUntag(attachmentId: String): GmailMessageAttachment
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
   gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage]
@@ -696,6 +702,7 @@ type Mutation {
     code: String
     userId: ID
     companyId: ID
+    userTimeZone: String
   ): GmailToken
   gmailDisconnect(email: String): GmailToken
   gmailMessageAttachmentCreate(

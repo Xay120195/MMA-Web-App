@@ -67,6 +67,12 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
             s3ObjectKey
             size
             type
+            labels {
+              items {
+                id
+                name
+              }
+            }
           }
         }
       }
