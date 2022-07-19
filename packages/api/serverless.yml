@@ -61,6 +61,8 @@ functions:
     handler: src/functions/graphql/user/index.handler
   gmailmessage-fn:
     handler: src/functions/graphql/gmailMessage/index.handler
+  gmail-attachment-fn:
+    handler: src/functions/graphql/gmailAttachment/index.handler
   gmail-re-subsription-fn:
     handler: src/functions/event-bridge/gmail-re-subscription/index.handler
     timeout: 60
@@ -676,6 +678,21 @@ custom:
         field: gmailMessageDescriptionUpdate
         request: false
         response: false
+      - dataSource: LambdaGmailAttachmentDS
+        type: GmailMessageAttachment
+        field: labels
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelUntag
+        request: false
+        response: false
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA
@@ -726,6 +743,10 @@ custom:
         name: LambdaGmailMessageDS
         config:
           functionName: gmailmessage-fn
+      - type: AWS_LAMBDA
+        name: LambdaGmailAttachmentDS
+        config:
+          functionName: gmail-attachment-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}
