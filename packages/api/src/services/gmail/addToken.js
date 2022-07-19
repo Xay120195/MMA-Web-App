@@ -1,4 +1,3 @@
-
 const {
   docClient,
   refreshTokens,
@@ -27,7 +26,7 @@ const getEmailStartDate = async (email, inputTZ) => {
       ":connectedEmail": email,
     }),
     ScanIndexForward: false,
-    ProjectionExpression: "receivedAt",
+
     Limit: 1,
   };
 
@@ -39,28 +38,28 @@ const getEmailStartDate = async (email, inputTZ) => {
   const parseGmailResponse = gmailResult.Items.map((data) => unmarshall(data));
   console.log("parseGmailResponse", parseGmailResponse);
 
+  let input;
   if (parseGmailResponse.length != 0) {
-    const lastEmailReceived = parseGmailResponse[0].receivedAt;
-    console.log(
-      "Previously Connected last:",
-      new Date(lastEmailReceived).toISOString()
-    );
-    console.log("Current Date (Unix):", lastEmailReceived);
-    return lastEmailReceived;
+    const lastEmailReceived = parseGmailResponse[0].date;
+    console.log("Previously Connected last:", lastEmailReceived);
+    input = momentTZ(lastEmailReceived).tz(inputTZ);
   } else {
-    const input = momentTZ().tz(inputTZ);
-    const getDate = momentTZ(input, inputTZ).format("YYYY-MM-DD");
-    const getTZ = momentTZ(input, inputTZ).format("Z");
-    const midnightDate = `${getDate}T00:00:00${getTZ}`;
-    console.log("Current Date (Midnight): ", midnightDate);
-    console.log(
-      "Formatted Current Date: ",
-      momentTZ(new Date(midnightDate)).tz(inputTZ).format("LLLL")
-    );
-    const unix = momentTZ(new Date(midnightDate)).tz(inputTZ).unix();
-    console.log("Current Date (Unix):", unix);
-    return unix;
+    input = momentTZ().tz(inputTZ);
   }
+
+  console.log("Current Date: ", input);
+
+  const getDate = momentTZ(input, inputTZ).format("YYYY-MM-DD");
+  const getTZ = momentTZ(input, inputTZ).format("Z");
+  const midnightDate = `${getDate}T00:00:00${getTZ}`;
+  console.log("Current Date (Midnight): ", midnightDate);
+  console.log(
+    "Formatted Current Date: ",
+    momentTZ(new Date(midnightDate)).tz(inputTZ).format("LLLL")
+  );
+  const unix = momentTZ(new Date(midnightDate)).tz(inputTZ).unix();
+  console.log("Current Date (Unix):", unix);
+  return unix;
 };
 
 const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
@@ -206,9 +205,8 @@ exports.addToken = async (ctx) => {
 
   try {
     const payload = ctx;
-    console.log("addToken Context: ",ctx);
+    console.log("addToken Context: ", ctx);
     const { email, refreshToken, userTimeZone = "Australia/Sydney" } = ctx;
-    
 
     const {
       data: { access_token },
@@ -281,7 +279,8 @@ exports.addToken = async (ctx) => {
       console.log("docClient.put Failed:", message);
     }
 
-    const rangeFilter = "after:" + await getEmailStartDate(email, userTimeZone);
+    const rangeFilter =
+      "after:" + (await getEmailStartDate(email, userTimeZone));
     console.log("rangeFilter:", rangeFilter);
 
     await getOldMessages(email, payload.companyId, rangeFilter);
