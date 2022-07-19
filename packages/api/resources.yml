@@ -904,7 +904,7 @@ Resources:
         - AttributeName: connectedEmail
           AttributeType: S
         - AttributeName: receivedAt
-          AttributeType: S
+          AttributeType: N
           
       KeySchema:
         - AttributeName: id
