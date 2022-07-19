@@ -6,7 +6,7 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listGmailAttachmentLabels(ctx) {
-  console.log("listGmailAttachmentLabels()");
+  
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
   try {

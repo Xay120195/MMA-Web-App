@@ -66,7 +66,7 @@ exports.handler = async () => {
                 updatedAt: toUTC(new Date()),
               };
 
-              console.log("Save to GmailTokenTable:", items);
+              // console.log("Save to GmailTokenTable:", items);
               await docClient
                 .put({
                   TableName: "GmailTokenTable",
