@@ -1,11 +1,17 @@
-import React from "react";
-import { GrClose } from "react-icons/gr";
-import { RiFileInfoLine } from "react-icons/ri";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useRef } from 'react';
+import { GrClose } from 'react-icons/gr';
+import { RiFileInfoLine } from 'react-icons/ri';
+import { useForm } from 'react-hook-form';
+import anime from 'animejs';
 
 export default function CreateRFIModal(props) {
-
-  const { register, formState: { errors }, handleSubmit } = useForm();
+  const modalOverlay = useRef(null);
+  const modalContent = useRef(null);
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
 
   const handleModalClose = () => {
     props.handleModalClose();
@@ -18,9 +24,34 @@ export default function CreateRFIModal(props) {
     props.handleSave(rfiName);
   };
 
+  useEffect((e) => {
+    anime({
+      targets: modalOverlay.current,
+      opacity: [0, 1],
+      duration: 200,
+      easing: 'easeInOutQuad',
+      complete: () => {
+        anime({
+          targets: modalContent.current,
+          scale: [0.9, 1],
+          opacity: [0, 1],
+          duration: 200,
+          easing: 'easeInOutQuad',
+        });
+      },
+    });
+  }, []);
+
   return (
     <form onSubmit={handleSubmit(handleSave)}>
-      <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+      <div
+        ref={modalOverlay}
+        className="fixed inset-0 z-40 bg-black bg-opacity-60 opacity-0"
+      ></div>
+      <div
+        ref={modalContent}
+        className="opacity-0 scale-90 justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
+      >
         <div className="relative w-full my-6 mx-auto max-w-3xl">
           <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
             <div className="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
@@ -42,10 +73,12 @@ export default function CreateRFIModal(props) {
                   type="text"
                   className="bg-purple-white shadow rounded border-0 py-3 pl-8 w-full"
                   placeholder="RFI Name"
-                  {...register("rfiName", { required: true })}
+                  {...register('rfiName', { required: true })}
                 />
               </div>
-              {errors.rfiName?.type === 'required' && <small className="text-red-400">RFI name is required</small>}
+              {errors.rfiName?.type === 'required' && (
+                <small className="text-red-400">RFI name is required</small>
+              )}
             </div>
             <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
               <button
@@ -65,7 +98,6 @@ export default function CreateRFIModal(props) {
           </div>
         </div>
       </div>
-      <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
     </form>
   );
 }

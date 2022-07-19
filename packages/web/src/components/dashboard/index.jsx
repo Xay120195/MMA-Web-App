@@ -13,6 +13,7 @@ import { Welcome } from './welcome';
 import { ClientMatters } from './matters-list';
 import { useForm } from 'react-hook-form';
 import DeleteMatterModal from './delete-matters-modal';
+import ShareMatterModal from './share-matter-modal';
 import ToastNotification from '../toast-notification';
 import '../../assets/styles/Dashboard.css';
 import AccessControl from '../../shared/accessControl';
@@ -25,6 +26,7 @@ import SessionTimeout from '../session-timeout/session-timeout-modal';
 import { Auth } from 'aws-amplify';
 import { useHistory } from 'react-router-dom';
 import { BiArrowToTop } from 'react-icons/bi';
+import anime from 'animejs';
 
 import {
   getMatterList,
@@ -37,6 +39,8 @@ import ScrollToTop from 'react-scroll-to-top';
 export const MatterContext = createContext();
 
 export default function Dashboard() {
+  const dashboardMainPage = useRef(null);
+
   const [matterlist, dispatch] = useReducer(clientMatterReducers, initialState);
   const [error, setError] = useState(false);
   const [userInfo, setuserInfo] = useState(null);
@@ -46,6 +50,7 @@ export default function Dashboard() {
   const [matterName, setmatterName] = useState(null);
 
   const [showDeleteModal, setshowDeleteModal] = useState(false);
+  const [showShareModal, setshowShareModal] = useState(false);
 
   const [showCreateMatter, setShowCreateMatter] = useState(false);
   const [showDeleteMatter, setShowDeleteMatter] = useState(false);
@@ -53,6 +58,7 @@ export default function Dashboard() {
   const [allowOpenRFI, setAllowOpenRFI] = useState(false);
   const [allowOpenBackground, setAllowOpenBackground] = useState(false);
   const [allowOpenMatter, setAllowOpenMattersOverview] = useState(false);
+  const [allowOpenShareMatter, setAllowOpenShareMatter] = useState(false);
 
   const [clientsOptions, setClientsOptions] = useState();
   const [mattersOptions, setMattersOptions] = useState();
@@ -180,9 +186,14 @@ export default function Dashboard() {
     setshowDeleteModal(false);
   };
 
+  const handleShareMatterModal = () => {
+    setshowShareModal(true);
+  };
+
   const handleShowDeleteModal = (displayStatus, id) => {
     setshowDeleteModal(displayStatus, id);
     setSelectedClientMatter(id);
+    setshowShareModal(true);
   };
 
   const handleDeleteModal = () => {
@@ -513,6 +524,7 @@ mutation addMatter($companyId: String, $name: String) {
           </div>
 
           <div
+            ref={dashboardMainPage}
             className={
               //Made every view to tile view in dashboard
               mattersView === 'grid'
@@ -527,7 +539,9 @@ mutation addMatter($companyId: String, $name: String) {
                 error: errorMatter,
                 view: mattersView,
                 onShowDeleteModal: handleShowDeleteModal,
+                onShowShareModal: handleShareMatterModal,
                 showDeleteMatter: showDeleteMatter,
+                showShareModal: showShareModal,
                 allowOpenMatter: allowOpenMatter,
                 allowOpenFileBucket: allowOpenFileBucket,
                 allowOpenBackground: allowOpenBackground,

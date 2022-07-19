@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppRoutes } from '../../constants/AppRoutes';
 import dateFormat from 'dateformat';
@@ -8,8 +8,11 @@ import * as IoIcons from 'react-icons/io5';
 import { MatterContext } from './index';
 import Loading from '../loading/loading';
 import useWindowDimensions from './windowDimensions';
+import ShareMatterModal from './share-matter-modal';
 
 export function ClientMatters() {
+  const [showShareModal, setShowShareModal] = useState(false);
+
   const setshowDeleteModal = (displayStatus, id) => {
     onShowDeleteModal(displayStatus, id);
   };
@@ -74,7 +77,7 @@ export function ClientMatters() {
                 (item) =>
                   userAccessibleMatter(item.id) && (
                     <div
-                      className="w-full h-auto minh bg-gray-100 rounded-lg border border-gray-200 py-5 px-4 hover:shadow-md shadow-sm transition-shadow duration-200"
+                      className="w-full h-auto relative bg-gray-100 rounded-lg border border-gray-200 py-5 px-4 hover:shadow-md shadow-sm transition-shadow duration-200"
                       key={item.id}
                     >
                       <div>
@@ -133,6 +136,23 @@ export function ClientMatters() {
                                     </Link>
                                   </li>
                                 ) : null}
+                                <div className="relative">
+                                  {showShareModal && (
+                                    <ShareMatterModal
+                                      closeHandler={(e) =>
+                                        setShowShareModal(false)
+                                      }
+                                    />
+                                  )}
+                                  <li
+                                    onClick={(e) => {
+                                      setShowShareModal(true);
+                                    }}
+                                    className="p-2 rounded-lg cursor-pointer"
+                                  >
+                                    Share RFI
+                                  </li>
+                                </div>
                                 {showDeleteMatter && (
                                   <li
                                     className="my-2 p-2 sm:my-0 rounded-lg cursor-pointer text-red-500"
