@@ -7,15 +7,31 @@ const {
 const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC } = require("../../shared/toUTC");
-// const { v4 } = require("uuid");
-const getOldMessages = async (email, companyId, pageToken) => {
+var momentTZ = require("moment-timezone");
+
+const getEmailStartDate = (inputTZ) => {
+  console.log("Timezone:", inputTZ);
+  const input = momentTZ().tz(inputTZ);
+  const getDate = momentTZ(input, inputTZ).format("YYYY-MM-DD");
+  const getTZ = momentTZ(input, inputTZ).format("Z");
+  const midnightDate = `${getDate}T00:00:00${getTZ}`;
+  console.log("Current Date (Midnight): ", midnightDate);
+  console.log(
+    "Formatted Current Date: ",
+    momentTZ(new Date(midnightDate)).tz(inputTZ).format("LLLL")
+  );
+  const unix = momentTZ(new Date(midnightDate)).tz(inputTZ).unix();
+  console.log("Current Date (Unix):", unix);
+  return unix;
+};
+
+const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
   console.log("getOldMessages()");
+
   const getMessagesByEmail = `/gmail/v1/users/${email}/messages`;
-  // const rangeFilter = " after:1656864000"; // Mon Jul 04 2022 00:00:00 GMT+0800 (Philippine Standard Time)
-  const rangeFilter = " after:1657123200"; // Mon Jul 07 2022 00:00:00 GMT+0800 (Philippine Standard Time)
   const getMessagesByEmailParams = {
     maxResults: 25,
-    q: "label:inbox" + rangeFilter,
+    q: ("label:inbox " + rangeFilter).trim(),
     ...(pageToken ? { pageToken } : {}),
   };
 
@@ -143,7 +159,8 @@ const getOldMessages = async (email, companyId, pageToken) => {
       console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
     }
   }
-  if (nextPageToken) await getOldMessages(email, companyId, nextPageToken);
+  if (nextPageToken)
+    await getOldMessages(email, companyId, rangeFilter, nextPageToken);
 };
 
 exports.addToken = async (ctx) => {
@@ -152,7 +169,7 @@ exports.addToken = async (ctx) => {
   try {
     const payload = ctx;
 
-    const { email, refreshToken } = ctx;
+    const { email, refreshToken, userTimeZone = "Australia/Sydney" } = ctx;
 
     const {
       data: { access_token },
@@ -176,7 +193,7 @@ exports.addToken = async (ctx) => {
     const { data: watchData } = await gmailAxios
       .post(endpoint, {
         topicName: topic,
-        labelIds: ["INBOX"]
+        labelIds: ["INBOX"],
       })
       .catch((message) => {
         let err = message.response.data.error,
@@ -225,7 +242,11 @@ exports.addToken = async (ctx) => {
       console.log("docClient.put Failed:", message);
     }
 
-    await getOldMessages(email, payload.companyId);
+    const rangeFilter = "after:" + getEmailStartDate(userTimeZone);
+
+    console.log("rangeFilter:", rangeFilter);
+
+    await getOldMessages(email, payload.companyId, rangeFilter);
 
     const response = {
       id: items.id,
