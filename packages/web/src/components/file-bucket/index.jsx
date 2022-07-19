@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
@@ -2176,8 +2176,21 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [contentHeight, setContentHeight] = useState();
   const [readMoreStateOuter, setReadMoreStateOuter] = useState([]);
   const [readMoreStateInner, setReadMoreStateInner] = useState([]); 
+  const [readMoreStateDesc, setReadMoreStateDesc] = useState([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isExpandAllActive, setIsExpandAllActive] = useState(false);
+
+  function handleReadMoreStateDesc (fileId) {
+    if(readMoreStateDesc.find((temp)=>{
+      return temp === fileId;
+    }) === undefined) {
+      setReadMoreStateDesc([...readMoreStateDesc, fileId]);
+    } else {
+      setReadMoreStateDesc(current => current.filter((id)=> {
+        return id !== fileId;
+      }));
+    }
+  }
 
   function handleReadMoreStateOuter(fileId) {
     if(readMoreStateOuter.find((temp)=>{
@@ -2207,6 +2220,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setReadMoreStateOuter(current => current.filter((id)=> {
       return id !== fileId;
     }));
+    setReadMoreStateDesc(current => current.filter((id)=> {
+      return id !== fileId;
+    }));
     setReadMoreStateInner(current => current.filter((id)=> {
       return id.split("/")[0] !== fileId;
     }));
@@ -2216,17 +2232,21 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     console.log("TRIGGERED");
     if(isExpandAllActive) {
       let outerStateArray = [];
+      let descStateArray = [];
       let innerStateArray = [];
       matterFiles.map((data) => {
         outerStateArray=[...outerStateArray, data.id];
+        descStateArray=[...descStateArray, data.id];
         data.backgrounds.items.map((background) => {
           innerStateArray=[...innerStateArray, data.id+"/"+background.id];
         });
       });
+      setReadMoreStateDesc(descStateArray);
       setReadMoreStateOuter(outerStateArray);
       setReadMoreStateInner(innerStateArray);
       console.log("EXPAND");
     } else {
+      setReadMoreStateDesc([]);
       setReadMoreStateOuter([]);
       setReadMoreStateInner([]);
       console.log("COLLAPSE");
@@ -2238,11 +2258,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return temp === fileId;
     }) !== undefined;
   }
+  function isReadMoreExpandedDesc(fileId) {
+    return readMoreStateDesc.find((temp)=>{
+      return temp === fileId;
+    }) !== undefined;
+  }
+
   function isReadMoreExpandedInner(fileId, bgId) {
     return readMoreStateInner.find((temp)=>{
       return temp === fileId +"/"+bgId;
     }) !== undefined;
   }
+
 
   function countLines(tag) {
     var divHeight = tag.offsetHeight
@@ -2262,6 +2289,28 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     let d = document.getElementById("mobileContent");
     d.scrollTo(0, 0);
   }
+
+  useEffect(()=> {
+    if(matterFiles!=null) {
+      matterFiles.map((data)=>{
+        var descTag = document.getElementById(data.id+".desc");
+        if(descTag!== null) {
+          var lines = countLines(descTag);
+          var descButtonTag = document.getElementById(data.id+".descButton");
+          if(lines >= 5) {
+            let bool = (!isReadMoreExpandedDesc(data.id) &&
+            (isReadMoreExpandedOuter(data.id) || (data.backgrounds.items=== null|| data.backgrounds.items.length===0)));
+            descButtonTag.style.display = bool ? "inline-block": "none";
+            descButtonTag.innerHTML = bool ? "read more...": "read less...";
+          } else {
+            descButtonTag.style.display = 'none';
+          }
+        }
+      })
+    }
+    
+  }, [matterFiles, readMoreStateDesc, readMoreStateOuter, width])
+
   useEffect(() => {
     var headerTag = document.getElementById('headerTag');
     setHeaderLines(countLines(headerTag));
@@ -2601,7 +2650,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 <>
                   {matterFiles !== null && matterFiles.length !== 0 ? (
                     <>
-                      
                     {/*DESKTOP VIEW */}
                     {width > 640 ? (<>
                       <ScrollToTop
@@ -3142,9 +3190,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                         <p className="text-cyan-400 text-right">
                           <button onClick={()=>setIsExpandAllActive(!isExpandAllActive)}>
                             {isExpandAllActive? <>
-                              Collapse All <FiChevronsUp className="inline"/>
+                              &nbsp;Collapse All <FiChevronsUp className="inline"/>
                             </> : <>
-                              Expand All <FiChevronsDown className="inline"/>
+                              &nbsp;Expand All <FiChevronsDown className="inline"/>
                             </>}
                           </button>
                         </p>  
@@ -3184,9 +3232,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       ) : "NO DATE"}
                                   </p>
                                   <div className="flex flex-row">
-                                    <p className="flex-auto"> {data.name} </p>
+                                    <div className="flex-auto">
+                                      <p className={(!isReadMoreExpandedOuter(data.id)?"line-clamp-2":"")}> {data.name} </p>
+                                    </div>
                                     <AiOutlineDownload
-                                      className="text-cyan-400 text-base cursor-pointer"
+                                      className="ml-1 flex-none text-cyan-400 text-base cursor-pointer"
                                       onClick={() =>
                                         previewAndDownloadFile(
                                           data.id
@@ -3194,14 +3244,29 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       }
                                     />
                                   </div>
-                                  <p className={(isReadMoreExpandedOuter(data.id)?"block":"hidden") + ' mt-1'}> {data.details} </p>
+                                    <p id={data.id+".desc"} className={(
+                                      isReadMoreExpandedOuter(data.id) && data.details ? (!isReadMoreExpandedDesc(data.id)?' line-clamp-5 ':' ') 
+                                      : ' hidden ') + ' mt-1'}> 
+                                      {data.details}&nbsp;
+                                    </p>
+                                    <button id={data.id+'.descButton'} className="text-cyan-400" 
+                                    onClick={()=>handleReadMoreStateDesc(data.id)} >
+                                        read more...
+                                    </button>
+                                    <button className={(!isReadMoreExpandedOuter(data.id)&&
+                                    (data.backgrounds.items=== null|| data.backgrounds.items.length===0)&& 
+                                    ((data.details!=="" && data.details!==null))?'block':'hidden') + ' text-cyan-400 mt-1' }
+                                    onClick={()=>handleReadMoreStateOuter(data.id)}>
+                                      read more <FiChevronDown className="inline"/>
+                                    </button>
                                 </div>
                                 {data.backgrounds.items
                                 .sort((a, b) =>
                                   a.order > b.order ? 1 : -1
                                 )
-                                .map((background, counter) => (
-                                  <div className="flex flex-row mt-2" key={background.id}>
+                                .map((background, counter,arr) => (
+                                  <>
+                                  <div className={(isReadMoreExpandedOuter(data.id) ||  counter == arr.length-1 ? "block" : "hidden")+ " flex flex-row mt-1"} key={background.id}>
                                     <div className={(isReadMoreExpandedOuter(data.id)?"text-cyan-400":"text-gray-300")+ ' font-semibold'}>
                                       {index + 1}.{counter + 1}
                                     </div>
@@ -3212,15 +3277,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         </button>
                                       </p>
                                       <p  className= 'font-medium text-cyan-400'>
-                                        <span className={(isReadMoreExpandedOuter(data.id)?'inline-block':'hidden')}>
+                                        <span className={(isReadMoreExpandedOuter(data.id)?'inline-block':'hidden')+ ' font-medium'}>
                                           {background.date!== null | background.date!==undefined ? dateFormat(
                                             background.date,
                                             "dd mmmm yyyy"
                                           ) : "NO DATE"}
                                           &nbsp;
                                         </span>
-                                        <button 
-                                        className={isReadMoreExpandedOuter(data.id)?'inline-block':'hidden'}
+                                        <button
+                                        className={isReadMoreExpandedOuter(data.id)&&background.description!== null&&background.description!==""?'inline-block':'hidden'}
                                         onClick={()=>handleReadMoreStateInner(data.id, background.id)}>
                                         {!isReadMoreExpandedInner(data.id, background.id)? 
                                         (<span>&nbsp; read more <FiChevronDown className="inline"/></span>)
@@ -3228,14 +3293,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         }
                                         </button>
                                       </p>
-                                      <p className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}>
-                                        {background.description}
-                                      </p>
                                     </div>
                                   </div>
+                                  <p className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}>
+                                        {background.description}
+                                      </p>
+                                  </>
+                                  
                                 ))}
-                                {isReadMoreExpandedOuter(data.id) && ((data.details!== "" & data.details!== undefined & data.details!== null) | (data.backgrounds.items!== null &  data.backgrounds.items.length > 0))? (
-                                  <button className="h-5 block relative mt-3 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>
+                                {(isReadMoreExpandedDesc(data.id) | isReadMoreExpandedOuter(data.id)) && ((data.details!== "" & data.details!== undefined & data.details!== null) | (data.backgrounds.items!== null & data.backgrounds.items.length > 0))? (
+                                  <button className="h-5 block relative mt-1 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>
                                     collapse all <FiChevronUp className="inline"/>
                                   </button> 
                                 ) : (<></>)}
