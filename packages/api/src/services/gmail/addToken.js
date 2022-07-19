@@ -1,3 +1,4 @@
+
 const {
   docClient,
   refreshTokens,
@@ -7,6 +8,9 @@ const {
 const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC } = require("../../shared/toUTC");
+const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
+const ddbClient = require("../../lib/dynamodb-client");
+const { QueryCommand } = require("@aws-sdk/client-dynamodb");
 var momentTZ = require("moment-timezone");
 
 const getEmailStartDate = async (email, inputTZ) => {
