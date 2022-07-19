@@ -83,7 +83,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
 
   console.log("Request:", getMessagesByEmail);
   console.log("Params:", getMessagesByEmailParams);
-  // console.log("Result messageIds:", messageIds);
+  console.log("Result messageIds:", messageIds);
 
   if (messageIds != undefined && messageIds.length != 0) {
     const messages = await Promise.all(

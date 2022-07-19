@@ -905,7 +905,6 @@ Resources:
           AttributeType: S
         - AttributeName: receivedAt
           AttributeType: N
-          
       KeySchema:
         - AttributeName: id
           KeyType: HASH
