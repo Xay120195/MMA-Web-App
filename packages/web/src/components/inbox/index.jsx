@@ -103,6 +103,12 @@ const listClientMatters = `
             id
             name
           }
+          labels {
+            items {
+              id
+              name
+            }
+          }
         }
       }
     }

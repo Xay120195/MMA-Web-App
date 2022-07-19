@@ -278,56 +278,72 @@ const TableUnsavedInfo = ({
   }`;
 
 
-  const handleAddLabel = async (e, gmailMessageID) => {
-    console.log("gmailid", gmailMessageID);
-    console.log("labelid", e[0].value);
-    if (e.value !== null) {
+  const handleAddLabel = async (e, gmid) => {
+    var selectedLabels = [];
+
+    for(var i=0; i<e.length; i++){
+      selectedLabels = [...selectedLabels, e[i].value];
+    }
+
+    console.log("selectedLabels", selectedLabels);
+    if (e.length > 0) {
       const result = await API.graphql({
         query: mAddEmailLabel,
         variables: {
-          labelId: e.value,
-          gmailMessageId: gmailMessageID,
+          labelId: selectedLabels,
+          gmailMessageId: gmid,
         },
       });
-
-      console.log("arrrr", unSavedEmails);
-      console.log("result", result);
-      // var objIndex = unSavedEmails.findIndex(
-      //   (obj) => obj.id === gmailMessageID
-      // );
-      // unSavedEmails[objIndex].labels.items = [...unSavedEmails[objIndex].labels.items, 
-      //   {
-      //     id: e.value,
-      //     client: { id: "", name: "" },
-      //     matter: { id: "", name: "" },
-      //   },
-      // ];
+    }else{
+      const result = await API.graphql({
+        query: mAddEmailLabel,
+        variables: {
+          labelId: [],
+          gmailMessageId: gmid,
+        },
+      });
     }
+    console.log("MainArray", unSavedEmails);
   };
 
-  const handleAddEmailAttachmentLabel = async (e, attachmentid) => {
-    console.log("gmailid", attachmentid);
-    console.log("labelid", e);
-    if (e.value !== null) {
+  const handleAddEmailAttachmentLabel = async (e, atid) => {
+    var selectedLabels = [];
+
+    for(var i=0; i<e.length; i++){
+      selectedLabels = [...selectedLabels, e[i].value];
+    }
+
+    if (e.length > 0) {
       const result = await API.graphql({
         query: mAddEmailAttachmentLabel,
         variables: {
-          labelId: [e[0].value],
-          attachmentId: attachmentid,
+          labelId: selectedLabels,
+          attachmentId: atid,
         },
       });
+    }else{
+      const result = await API.graphql({
+        query: mAddEmailAttachmentLabel,
+        variables: {
+          labelId: [],
+          attachmentId: atid,
+        },
+      });
+    }
 
-      console.log("result", result);
-      // var objIndex = unSavedEmails.findIndex(
-      //   (obj) => obj.id === gmailMessageID
-      // );
-      // unSavedEmails[objIndex].labels.items = [...unSavedEmails[objIndex].labels.items, 
-      //   {
-      //     id: e.value,
-      //     client: { id: "", name: "" },
-      //     matter: { id: "", name: "" },
-      //   },
-      // ];
+    console.log("MainArray", unSavedEmails);
+  };
+
+  const defaultLabels = (items) => {
+    if (items !== null) {
+      const newOptions = items.map(({ id: value, name: label }) => ({
+        value,
+        label,
+      }));
+      console.log("optionscheck",newOptions);
+      return newOptions;
+    } else {
+      return null;
     }
   };
 
@@ -365,7 +381,6 @@ const TableUnsavedInfo = ({
                 <input
                   key={item.id}
                   className="cursor-pointer mr-1"
-                  //onChange={handleSelectItem}
                   onChange={(e) =>
                     handleSelectItem(e, item.clientMatters.items.length)
                   }
@@ -478,10 +493,10 @@ const TableUnsavedInfo = ({
                 ></p>
                 {item.attachments.items.map((item_attach, index) => (
                   <React.Fragment key={item_attach.id}>
-                    <div className="flex items-start mt-1">
+                    <div className="flex items-start mt-5">
                       <p
                         className="
-                  cursor-pointer mr-1 text-opacity-90 1
+                  cursor-pointer mr-1 text-opacity-90 1 
                   textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                         id={item_attach.id}
                         title={item_attach.name}
@@ -504,24 +519,6 @@ const TableUnsavedInfo = ({
                         onBlur={(e) => handleSaveDesc(e, item_attach.id)}
                         contentEditable={true}
                       ></div>
-                        {/* <CreatableSelect
-                          defaultValue={null}
-                          isMulti
-                          isClearable
-                          options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label"}, {value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label 2"}]}
-                          isSearchable
-                          openMenuOnClick={true}
-                          isDisabled={
-                            checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
-                          }
-                          onClick={()=>alert("hello")}
-                          onChange={
-                            (options, e) =>
-                          handleAddEmailAttachmentLabel(options, item_attach.id)
-                          }
-                          placeholder="Labels"
-                          className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                        /> */}
                     </div>
                   </React.Fragment>
                 ))}
@@ -539,27 +536,11 @@ const TableUnsavedInfo = ({
                     {item.labelIds}
                   </button>
                   <CreatableSelect
-                    defaultValue={null}
-                    isMulti
-                    isClearable
-                    options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label"}, {value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label 2"}]}
-                    isSearchable
-                    openMenuOnClick={true}
-                    isDisabled={
-                      checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
+                    defaultValue={() =>
+                      defaultLabels(
+                        item.labels.items
+                      )
                     }
-                    onClick={()=>alert("hello")}
-                    onChange={
-                      (options, e) =>
-                    handleAddLabel(options, item.id)
-                    }
-                    placeholder="Labels"
-                    className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                  />
-                </div>
-                {item.attachments.items.map((item_attach, index) => (
-                  <CreatableSelect
-                    defaultValue={null}
                     isMulti
                     isClearable
                     options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
@@ -568,10 +549,29 @@ const TableUnsavedInfo = ({
                     isDisabled={
                       checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
                     }
-                    onClick={()=>alert("hello")}
                     onChange={
-                      (options, e) =>
-                    handleAddEmailAttachmentLabel(options, item_attach.id)
+                      (e) => handleAddLabel(e, item.id)
+                    }
+                    placeholder="Labels"
+                    className="-mt-4 pb-5 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                  />
+                </div>
+                {item.attachments.items.map((item_attach, index) => (
+                  <CreatableSelect
+                    defaultValue={() =>
+                      defaultLabels(
+                        item_attach.labels.items
+                      )
+                    }
+                    isMulti
+                    isClearable
+                    options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
+                    openMenuOnClick={true}
+                    isDisabled={
+                      checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
+                    }
+                    onChange={
+                      (e) => handleAddEmailAttachmentLabel(e, item_attach.id)
                     }
                     placeholder="Labels"
                     className=" w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
