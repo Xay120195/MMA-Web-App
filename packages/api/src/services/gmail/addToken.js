@@ -80,9 +80,9 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
     })
     .catch(({ err }) => console.log("Error in getMessagesByEmail", err));
 
-  console.log("Request:", getMessagesByEmail);
-  console.log("Params:", getMessagesByEmailParams);
-  console.log("Result messageIds:", messageIds);
+  // console.log("Request:", getMessagesByEmail);
+  // console.log("Params:", getMessagesByEmailParams);
+  // console.log("Result messageIds:", messageIds);
 
   if (messageIds != undefined && messageIds.length != 0) {
     const messages = await Promise.all(
@@ -136,7 +136,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
       })
       .promise();
 
-    console.log("Save to GmailMessageTable:", saveEmails);
+    // console.log("Save to GmailMessageTable:", saveEmails);
 
     const filterMessagesIDs = messagesToAdd.map((Item) => {
       return {
@@ -156,20 +156,20 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
       ExpressionAttributeValues: { ":companyId": companyId },
     };
 
-    console.log("Get Existing Gmail Messages by Company:", params);
+    // console.log("Get Existing Gmail Messages by Company:", params);
 
     const getExistingGmailMessages = await docClient.query(params).promise();
 
     const existingGmailMessages = getExistingGmailMessages.Items.map(
       (Item) => Item.gmailMessageId
     );
-    console.log("Existing Gmail Messages", existingGmailMessages);
+    // console.log("Existing Gmail Messages", existingGmailMessages);
 
     const nonExistingGmailMessages = filterMessagesIDs.filter(
       (f) => !existingGmailMessages.includes(f.id)
     );
 
-    console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
+    // console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
 
     if (nonExistingGmailMessages.length != 0) {
       const saveCompanyEmails = await docClient
@@ -193,7 +193,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
         })
         .promise();
 
-      console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
+      // console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
     }
   }
   if (nextPageToken)
@@ -205,7 +205,7 @@ exports.addToken = async (ctx) => {
 
   try {
     const payload = ctx;
-    console.log("addToken Context: ", ctx);
+    // console.log("addToken Context: ", ctx);
     const { email, refreshToken, userTimeZone = "Australia/Sydney" } = ctx;
 
     const {
@@ -236,7 +236,6 @@ exports.addToken = async (ctx) => {
         let err = message.response.data.error,
           gmailWatchError =
             "Only one user push notification client allowed per developer (call /stop then try again)";
-
         console.log("Error in fetching history ID:", err);
 
         if (err.message == gmailWatchError) {
@@ -267,14 +266,14 @@ exports.addToken = async (ctx) => {
     };
 
     try {
-      console.log("Save to GmailTokenTable:", items);
+      // console.log("Save to GmailTokenTable:", items);
       const request = await docClient
         .put({
           TableName: "GmailTokenTable",
           Item: items,
         })
         .promise();
-      console.log("Response:", request);
+      // console.log("Response:", request);
     } catch ({ message }) {
       console.log("docClient.put Failed:", message);
     }
