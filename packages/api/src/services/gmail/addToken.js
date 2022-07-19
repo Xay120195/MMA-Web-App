@@ -31,15 +31,19 @@ const getEmailStartDate = async (email, inputTZ) => {
     Limit: 1,
   };
 
+  console.log("gmailParam", gmailParam);
   const gmailCmd = new QueryCommand(gmailParam);
+  console.log("gmailCmd", gmailCmd);
   const gmailResult = await ddbClient.send(gmailCmd);
+  console.log("gmailResult", gmailResult);
   const parseGmailResponse = gmailResult.Items.map((data) => unmarshall(data));
+  console.log("parseGmailResponse", parseGmailResponse);
 
   if (parseGmailResponse.length != 0) {
     const lastEmailReceived = parseGmailResponse[0].receivedAt;
     console.log(
       "Previously Connected last:",
-      new Date(parseInt(lastEmailReceived)).toISOString()
+      new Date(lastEmailReceived).toISOString()
     );
     console.log("Current Date (Unix):", lastEmailReceived);
     return lastEmailReceived;
@@ -202,8 +206,9 @@ exports.addToken = async (ctx) => {
 
   try {
     const payload = ctx;
-
+    console.log("addToken Context: ",ctx);
     const { email, refreshToken, userTimeZone = "Australia/Sydney" } = ctx;
+    
 
     const {
       data: { access_token },
@@ -276,8 +281,7 @@ exports.addToken = async (ctx) => {
       console.log("docClient.put Failed:", message);
     }
 
-    const rangeFilter = "after:" + getEmailStartDate(email, userTimeZone);
-
+    const rangeFilter = "after:" + await getEmailStartDate(email, userTimeZone);
     console.log("rangeFilter:", rangeFilter);
 
     await getOldMessages(email, payload.companyId, rangeFilter);
