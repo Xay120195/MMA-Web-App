@@ -307,12 +307,12 @@ const TableUnsavedInfo = ({
 
   const handleAddEmailAttachmentLabel = async (e, attachmentid) => {
     console.log("gmailid", attachmentid);
-    console.log("labelid", e[0].value);
+    console.log("labelid", e);
     if (e.value !== null) {
       const result = await API.graphql({
-        query: mAddEmailLabel,
+        query: mAddEmailAttachmentLabel,
         variables: {
-          labelId: e.value,
+          labelId: [e[0].value],
           attachmentId: attachmentid,
         },
       });
@@ -504,7 +504,7 @@ const TableUnsavedInfo = ({
                         onBlur={(e) => handleSaveDesc(e, item_attach.id)}
                         contentEditable={true}
                       ></div>
-                        <CreatableSelect
+                        {/* <CreatableSelect
                           defaultValue={null}
                           isMulti
                           isClearable
@@ -521,7 +521,7 @@ const TableUnsavedInfo = ({
                           }
                           placeholder="Labels"
                           className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                        />
+                        /> */}
                     </div>
                   </React.Fragment>
                 ))}
@@ -557,6 +557,26 @@ const TableUnsavedInfo = ({
                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                   />
                 </div>
+                {item.attachments.items.map((item_attach, index) => (
+                  <CreatableSelect
+                    defaultValue={null}
+                    isMulti
+                    isClearable
+                    options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
+                    isSearchable
+                    openMenuOnClick={true}
+                    isDisabled={
+                      checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
+                    }
+                    onClick={()=>alert("hello")}
+                    onChange={
+                      (options, e) =>
+                    handleAddEmailAttachmentLabel(options, item_attach.id)
+                    }
+                    placeholder="Labels"
+                    className=" w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                  />
+                ))}
               </td>
               <td className="p-2 align-top">
                 <React.Fragment key={item.id}>
