@@ -1,0 +1,21 @@
+.stripe:nth-child(4n) {
+            background-color: #F9F9F9;
+}
+
+.hover:hover{
+ color: #1cc1e9;
+ margin-bottom: 1rem;
+ transform: scale(1.85);
+ font-weight: bold;
+}
+
+.hoverActive {
+color: #1cc1e9;
+ margin-bottom: 1rem;
+ transform: scale(1.85);
+ font-weight: bold;
+}
+
+.hoverActive:hover {
+    color: greenyellow;
+}
