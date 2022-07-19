@@ -55,6 +55,10 @@ const TableUnsavedInfo = ({
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
 
+  const [enabledArrays, setEnabledArrays] = useState([]);
+
+  const [options, setOptions] = useState(null);
+
   const handleSnippet = (e) => {
     setSnippetId(e.target.id);
     setShow(true);
@@ -143,6 +147,10 @@ const TableUnsavedInfo = ({
         },
       ];
     }
+
+    let temp = [...enabledArrays];
+    temp = [...temp, gmailMessageId];
+    setEnabledArrays(temp);
   };
 
   const handleSaveMainDesc = async (e, id) => {
@@ -202,6 +210,127 @@ const TableUnsavedInfo = ({
         window.open(pdf.output("bloburl"), "_blank");
       });
   };
+
+  function checkArrLength(arrLength) {
+    const arr = arrLength > 0 ? true : false;
+    return arr;
+  }
+
+  function checkEnable(id) {
+    const arr = enabledArrays.find(element => element === id);
+    return arr;
+  }
+
+  const listLabels = `
+    query listLabels($clientMatterId: ID) {
+      clientMatter(id: $clientMatterId) {
+        labels {
+          items {
+            id
+            name
+          }
+        }
+      }
+    }
+    `;
+
+  const getOptions = (cmID) => {
+    var cmid;
+    cmID.map(x => cmid = x.id);
+
+    console.log("cmid", cmid);
+    const labelsOpt = API.graphql({
+      query: listLabels,
+      variables: {
+        clientMatterId: cmid
+      },
+    });
+
+    var returnArr = [];
+
+    if(labelsOpt.data.clientMatter!==null){
+      labelsOpt.data.clientMatter.labels.items.map(x=> returnArr = [...returnArr, {value: x.id, label: x.name}])
+    }
+    console.log("returnArr", returnArr);
+
+    const optionss = [{value: "1", label: "1"}, {value: "2", label: "2"}];
+
+    console.log(optionss);
+    if(labelsOpt!==null){
+      return optionss;
+    }else{
+      return null;
+    }
+  }
+
+  const mAddEmailLabel = `
+  mutation saveGmailMessageLabel($gmailMessageId: String, $labelId: [ID]) {
+    gmailMessageLabelTag(labelId: $labelId, gmailMessageId: $gmailMessageId) {
+      id
+    }
+  }`;
+
+  const mAddEmailAttachmentLabel = `
+  mutation saveGmailAttachmentLabel($attachmentId: String, $labelId: [ID]) {
+    gmailAttachmentLabelTag(attachmentId: $attachmentId, labelId: $labelId) {
+      id
+    }
+  }`;
+
+
+  const handleAddLabel = async (e, gmailMessageID) => {
+    console.log("gmailid", gmailMessageID);
+    console.log("labelid", e[0].value);
+    if (e.value !== null) {
+      const result = await API.graphql({
+        query: mAddEmailLabel,
+        variables: {
+          labelId: e.value,
+          gmailMessageId: gmailMessageID,
+        },
+      });
+
+      console.log("arrrr", unSavedEmails);
+      console.log("result", result);
+      // var objIndex = unSavedEmails.findIndex(
+      //   (obj) => obj.id === gmailMessageID
+      // );
+      // unSavedEmails[objIndex].labels.items = [...unSavedEmails[objIndex].labels.items, 
+      //   {
+      //     id: e.value,
+      //     client: { id: "", name: "" },
+      //     matter: { id: "", name: "" },
+      //   },
+      // ];
+    }
+  };
+
+  const handleAddEmailAttachmentLabel = async (e, attachmentid) => {
+    console.log("gmailid", attachmentid);
+    console.log("labelid", e[0].value);
+    if (e.value !== null) {
+      const result = await API.graphql({
+        query: mAddEmailLabel,
+        variables: {
+          labelId: e.value,
+          attachmentId: attachmentid,
+        },
+      });
+
+      console.log("result", result);
+      // var objIndex = unSavedEmails.findIndex(
+      //   (obj) => obj.id === gmailMessageID
+      // );
+      // unSavedEmails[objIndex].labels.items = [...unSavedEmails[objIndex].labels.items, 
+      //   {
+      //     id: e.value,
+      //     client: { id: "", name: "" },
+      //     matter: { id: "", name: "" },
+      //   },
+      // ];
+    }
+  };
+
 
   return (
     <>
@@ -375,6 +504,24 @@ const TableUnsavedInfo = ({
                         onBlur={(e) => handleSaveDesc(e, item_attach.id)}
                         contentEditable={true}
                       ></div>
+                        <CreatableSelect
+                          defaultValue={null}
+                          isMulti
+                          isClearable
+                          options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label"}, {value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label 2"}]}
+                          isSearchable
+                          openMenuOnClick={true}
+                          isDisabled={
+                            checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
+                          }
+                          onClick={()=>alert("hello")}
+                          onChange={
+                            (options, e) =>
+                          handleAddEmailAttachmentLabel(options, item_attach.id)
+                          }
+                          placeholder="Labels"
+                          className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                        />
                     </div>
                   </React.Fragment>
                 ))}
@@ -391,23 +538,24 @@ const TableUnsavedInfo = ({
                   >
                     {item.labelIds}
                   </button>
-                  {/* <CreatableSelect
+                  <CreatableSelect
                     defaultValue={null}
-                    // options={labels}
                     isMulti
                     isClearable
+                    options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label"}, {value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "Test Label 2"}]}
                     isSearchable
                     openMenuOnClick={true}
                     isDisabled={
-                      item.clientMatters.items.length > 0 ? false : true
+                      checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
                     }
+                    onClick={()=>alert("hello")}
                     onChange={
                       (options, e) =>
-                    handleAddLabel(item.clientMatters.items.id)
+                    handleAddLabel(options, item.id)
                     }
                     placeholder="Labels"
                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                  /> */}
+                  />
                 </div>
               </td>
               <td className="p-2 align-top">
