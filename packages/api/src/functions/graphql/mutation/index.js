@@ -2044,6 +2044,8 @@ async function createGmailMessage(data) {
       to: data.to,
       subject: data.subject,
       snippet: data.snippet,
+      connectedEmail: data.connectedEmail,
+      receivedAt: data.receivedAt,
       createdAt: toUTC(new Date()),
     };
 
