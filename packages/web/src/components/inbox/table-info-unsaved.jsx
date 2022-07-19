@@ -42,6 +42,7 @@ const TableUnsavedInfo = ({
   matterList,
   maxLoadingUnSavedEmail,
   getUnSavedEmails,
+  labelsList,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -221,47 +222,47 @@ const TableUnsavedInfo = ({
     return arr;
   }
 
-  const listLabels = `
-    query listLabels($clientMatterId: ID) {
-      clientMatter(id: $clientMatterId) {
-        labels {
-          items {
-            id
-            name
-          }
-        }
-      }
-    }
-    `;
+  // const listLabels = `
+  //   query listLabels($clientMatterId: ID) {
+  //     clientMatter(id: $clientMatterId) {
+  //       labels {
+  //         items {
+  //           id
+  //           name
+  //         }
+  //       }
+  //     }
+  //   }
+  //   `;
 
-  const getOptions = (cmID) => {
-    var cmid;
-    cmID.map(x => cmid = x.id);
+  // const getOptions = (cmID) => {
+  //   var cmid;
+  //   cmID.map(x => cmid = x.id);
 
-    console.log("cmid", cmid);
-    const labelsOpt = API.graphql({
-      query: listLabels,
-      variables: {
-        clientMatterId: cmid
-      },
-    });
+  //   console.log("cmid", cmid);
+  //   const labelsOpt = API.graphql({
+  //     query: listLabels,
+  //     variables: {
+  //       clientMatterId: cmid
+  //     },
+  //   });
 
-    var returnArr = [];
+  //   var returnArr = [];
 
-    if(labelsOpt.data.clientMatter!==null){
-      labelsOpt.data.clientMatter.labels.items.map(x=> returnArr = [...returnArr, {value: x.id, label: x.name}])
-    }
-    console.log("returnArr", returnArr);
+  //   if(labelsOpt.data.clientMatter!==null){
+  //     labelsOpt.data.clientMatter.labels.items.map(x=> returnArr = [...returnArr, {value: x.id, label: x.name}])
+  //   }
+  //   console.log("returnArr", returnArr);
 
-    const optionss = [{value: "1", label: "1"}, {value: "2", label: "2"}];
+  //   const optionss = [{value: "1", label: "1"}, {value: "2", label: "2"}];
 
-    console.log(optionss);
-    if(labelsOpt!==null){
-      return optionss;
-    }else{
-      return null;
-    }
-  }
+  //   console.log(optionss);
+  //   if(labelsOpt!==null){
+  //     return optionss;
+  //   }else{
+  //     return null;
+  //   }
+  // }
 
   const mAddEmailLabel = `
   mutation saveGmailMessageLabel($gmailMessageId: String, $labelId: [ID]) {
@@ -340,9 +341,38 @@ const TableUnsavedInfo = ({
         value,
         label,
       }));
-      console.log("optionscheck",newOptions);
       return newOptions;
     } else {
+      return null;
+    }
+  };
+
+  const getOptions = (cmidarr) => {
+    var mainLabels = labelsList;
+    var cmid;
+    console.log("cmidinoptions", cmidarr);
+    console.log("mainLabels",labelsList);
+
+    if(cmidarr.length > 0){
+      cmid = cmidarr[0].client.id
+    }else{
+      cmid = '';
+    }
+
+    if(labelsList.length>0){
+      for(var i=0; i<labelsList.length; i++){
+        console.log("optionscheck",labelsList[i]);
+        if(mainLabels[i].cmid === cmid){
+          const newOptions = mainLabels[i].labelsExtracted.map(({ id: value, name: label }) => ({
+              value,
+              label,
+            }));
+          return newOptions;
+        }else{
+          return null;
+        }
+      }
+    }else{
       return null;
     }
   };
@@ -493,7 +523,7 @@ const TableUnsavedInfo = ({
                 ></p>
                 {item.attachments.items.map((item_attach, index) => (
                   <React.Fragment key={item_attach.id}>
-                    <div className="flex items-start mt-5">
+                    <div className="flex items-start mt-2">
                       <p
                         className="
                   cursor-pointer mr-1 text-opacity-90 1 
@@ -543,7 +573,8 @@ const TableUnsavedInfo = ({
                     }
                     isMulti
                     isClearable
-                    options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
+                    // options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
+                    options={getOptions(item.clientMatters.items)}
                     isSearchable
                     openMenuOnClick={true}
                     isDisabled={
@@ -553,7 +584,7 @@ const TableUnsavedInfo = ({
                       (e) => handleAddLabel(e, item.id)
                     }
                     placeholder="Labels"
-                    className="-mt-4 pb-5 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                    className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                   />
                 </div>
                 {item.attachments.items.map((item_attach, index) => (
@@ -565,7 +596,7 @@ const TableUnsavedInfo = ({
                     }
                     isMulti
                     isClearable
-                    options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
+                    options={getOptions(item.clientMatters.items)}
                     openMenuOnClick={true}
                     isDisabled={
                       checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
@@ -574,7 +605,7 @@ const TableUnsavedInfo = ({
                       (e) => handleAddEmailAttachmentLabel(e, item_attach.id)
                     }
                     placeholder="Labels"
-                    className=" w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                    className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                   />
                 ))}
               </td>
