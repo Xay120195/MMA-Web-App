@@ -1,3 +1,4 @@
+
 const {
   docClient,
   refreshTokens,
@@ -7,22 +8,59 @@ const {
 const { client_id, client_secret, project_id } = require("./config");
 const { getParsedGmailMessage } = require("./pushSubscription");
 const { toUTC } = require("../../shared/toUTC");
+const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
+const ddbClient = require("../../lib/dynamodb-client");
+const { QueryCommand } = require("@aws-sdk/client-dynamodb");
 var momentTZ = require("moment-timezone");
 
-const getEmailStartDate = (inputTZ) => {
+const getEmailStartDate = async (email, inputTZ) => {
+  console.log("Connected Email:", email);
   console.log("Timezone:", inputTZ);
-  const input = momentTZ().tz(inputTZ);
-  const getDate = momentTZ(input, inputTZ).format("YYYY-MM-DD");
-  const getTZ = momentTZ(input, inputTZ).format("Z");
-  const midnightDate = `${getDate}T00:00:00${getTZ}`;
-  console.log("Current Date (Midnight): ", midnightDate);
-  console.log(
-    "Formatted Current Date: ",
-    momentTZ(new Date(midnightDate)).tz(inputTZ).format("LLLL")
-  );
-  const unix = momentTZ(new Date(midnightDate)).tz(inputTZ).unix();
-  console.log("Current Date (Unix):", unix);
-  return unix;
+
+  // check if already connected before
+  // get the last email fetched
+  const gmailParam = {
+    TableName: "GmailMessageTable",
+    IndexName: "byConnectedEmail",
+    KeyConditionExpression: "connectedEmail = :connectedEmail",
+    ExpressionAttributeValues: marshall({
+      ":connectedEmail": email,
+    }),
+    ScanIndexForward: false,
+    ProjectionExpression: "receivedAt",
+    Limit: 1,
+  };
+
+  console.log("gmailParam", gmailParam);
+  const gmailCmd = new QueryCommand(gmailParam);
+  console.log("gmailCmd", gmailCmd);
+  const gmailResult = await ddbClient.send(gmailCmd);
+  console.log("gmailResult", gmailResult);
+  const parseGmailResponse = gmailResult.Items.map((data) => unmarshall(data));
+  console.log("parseGmailResponse", parseGmailResponse);
+
+  if (parseGmailResponse.length != 0) {
+    const lastEmailReceived = parseGmailResponse[0].receivedAt;
+    console.log(
+      "Previously Connected last:",
+      new Date(lastEmailReceived).toISOString()
+    );
+    console.log("Current Date (Unix):", lastEmailReceived);
+    return lastEmailReceived;
+  } else {
+    const input = momentTZ().tz(inputTZ);
+    const getDate = momentTZ(input, inputTZ).format("YYYY-MM-DD");
+    const getTZ = momentTZ(input, inputTZ).format("Z");
+    const midnightDate = `${getDate}T00:00:00${getTZ}`;
+    console.log("Current Date (Midnight): ", midnightDate);
+    console.log(
+      "Formatted Current Date: ",
+      momentTZ(new Date(midnightDate)).tz(inputTZ).format("LLLL")
+    );
+    const unix = momentTZ(new Date(midnightDate)).tz(inputTZ).unix();
+    console.log("Current Date (Unix):", unix);
+    return unix;
+  }
 };
 
 const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
@@ -45,7 +83,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
 
   console.log("Request:", getMessagesByEmail);
   console.log("Params:", getMessagesByEmailParams);
-  // console.log("Result messageIds:", messageIds);
+  console.log("Result messageIds:", messageIds);
 
   if (messageIds != undefined && messageIds.length != 0) {
     const messages = await Promise.all(
@@ -168,8 +206,9 @@ exports.addToken = async (ctx) => {
 
   try {
     const payload = ctx;
-
+    console.log("addToken Context: ",ctx);
     const { email, refreshToken, userTimeZone = "Australia/Sydney" } = ctx;
+    
 
     const {
       data: { access_token },
@@ -242,8 +281,7 @@ exports.addToken = async (ctx) => {
       console.log("docClient.put Failed:", message);
     }
 
-    const rangeFilter = "after:" + getEmailStartDate(userTimeZone);
-
+    const rangeFilter = "after:" + await getEmailStartDate(email, userTimeZone);
     console.log("rangeFilter:", rangeFilter);
 
     await getOldMessages(email, payload.companyId, rangeFilter);
