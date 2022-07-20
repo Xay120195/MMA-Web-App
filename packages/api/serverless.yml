@@ -679,11 +679,20 @@ custom:
         request: false
         response: false
       - dataSource: LambdaGmailAttachmentDS
-        type: GmailAttachment
+        type: GmailMessageAttachment
         field: labels
         request: false
         response: false
-
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelUntag
+        request: false
+        response: false
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA

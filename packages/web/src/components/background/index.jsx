@@ -208,7 +208,6 @@ const Background = () => {
       query: qBriefBackgroundList,
       variables: {
         id: background_id,
-        limit: 50,
         nextToken: null,
         sortOrder: "ORDER_ASC",
       },
@@ -916,7 +915,7 @@ const Background = () => {
 
           {/* {background !== null && background.length !== 0 && ( */}
           <div className="pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
-            <div className="col-span-9">
+            <div className="col-span-12">
               <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
                 <IoIcons.IoIosSearch />
               </span>
@@ -927,7 +926,7 @@ const Background = () => {
                 className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
               />
             </div>
-            <div className="ml-2 inline-flex float-right">
+            {/*<div className="hidden ml-2 inline-flex float-right">
               <button 
                 className={vPrevToken.length > 1 ? "bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" : "font-bold py-2 px-4 text-white bg-gray-300 rounded opacity-50 cursor-not-allowed"} 
                 onClick={loadPrevBackground}
@@ -940,7 +939,7 @@ const Background = () => {
               >
                 Next
               </button>
-            </div>
+              </div>*/}
           </div>
           {/* )} */}
         </div>
