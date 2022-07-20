@@ -14,12 +14,12 @@ const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { toUTC, toLocalTime } = require("../shared/toUTC");
 
-export async function generatePresignedUrl(Key, src) {
+export async function generatePresignedUrl(Key, src, origin) {
   console.log("generatePresignedUrl", src);
 
   let fileScr = "gmail-api";
 
-  if (!src.isGmailAttachment && !src.isGmailPDF) {
+  if (!src.isGmailAttachment && !src.isGmailPDF && origin === "file-bucket") {
     fileScr = "file-bucket";
   }
 
@@ -33,11 +33,13 @@ export async function generatePresignedUrl(Key, src) {
     Key: "public/" + Key,
   };
 
-  if (
-    src.type.split("/").slice(0, -1).join("/") !== "image" &&
-    src.type !== "application/pdf"
-  ) {
-    request.ResponseContentDisposition = "attachment";
+  if (src.type) {
+    if (
+      src.type.split("/").slice(0, -1).join("/") !== "image" &&
+      src.type !== "application/pdf"
+    ) {
+      request.ResponseContentDisposition = "attachment";
+    }
   }
 
   const cmd = new GetObjectCommand(request);
