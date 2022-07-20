@@ -147,7 +147,7 @@ const Inbox = () => {
   const [maxLoadingUnSavedEmail, setMaxLoadingUnSavedEmail] = useState(false);
   const [tokenEmail, setTokenEmail] = useState("");
   const [refreshToken, setRefreshToken] = useState("");
-
+  const [saveLoading, setSaveLoading] = useState(false);
   const [labelsList, setLabelsList] = useState([]);
 
   const hideToast = () => {
@@ -401,6 +401,8 @@ const Inbox = () => {
             setResultMessage={setResultMessage}
             setShowToast={setShowToast}
             emailIntegration={emailIntegration}
+            saveLoading={saveLoading}
+            setSaveLoading={setSaveLoading}
           />
         </div>
 

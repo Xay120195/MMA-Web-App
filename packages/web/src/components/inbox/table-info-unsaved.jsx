@@ -35,6 +35,13 @@ mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: Strin
   }
 }`;
 
+const qGetFileDownloadLink = `
+query getAttachmentDownloadLink($id: String) {
+  gmailAttachment(id: $id) {
+    downloadURL
+  }
+}`;
+
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
@@ -371,6 +378,18 @@ const TableUnsavedInfo = ({
     }
   };
 
+  const previewAndDownloadFile = async (id) => {
+    const params = {
+      query: qGetFileDownloadLink,
+      variables: {
+        id: id,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      window.open(result.data.gmailAttachment.downloadURL);
+    });
+  };
 
   return (
     <>
@@ -517,11 +536,17 @@ const TableUnsavedInfo = ({
                 ></p>
                 {item.attachments.items.map((item_attach, index) => (
                   <React.Fragment key={item_attach.id}>
-                    <div className="flex items-start mt-2">
+                    <div className="flex items-start mt-2" 
+                    onClick={() =>
+                      previewAndDownloadFile(
+                        item_attach.id
+                      )
+                    }
+                    >
                       <p
                         className="
-                  cursor-pointer mr-1 text-opacity-90 1 
-                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
+                        cursor-pointer mr-1 text-opacity-90 1 
+                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                         id={item_attach.id}
                         title={item_attach.name}
                       >
