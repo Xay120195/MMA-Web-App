@@ -3,11 +3,11 @@ import { Link, useHistory } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import "../../assets/styles/AccountSettings.css";
-import { MdArrowForwardIos } from "react-icons/md";
+import { MdArrowForwardIos, MdKeyboardArrowLeft } from "react-icons/md";
 import { FiFilter, FiSend } from "react-icons/fi";
 import { AiOutlineDown } from "react-icons/ai";
 import { FaUserCircle } from "react-icons/fa";
-import { BiDotsVerticalRounded } from "react-icons/bi";
+import { BiDotsVerticalRounded, BiSort } from "react-icons/bi";
 import {
   HiOutlineShare,
   HiOutlinePlusCircle,
@@ -16,17 +16,32 @@ import {
   HiMinusCircle,
   HiTrash,
 } from "react-icons/hi";
-import AddContactModal from "./add-contact-modal";
+import { FaUsers } from "react-icons/fa";
+import "./contacts.css";
+import AddContactModal from "./add-contact-revamp-modal";
+import dummy from "./dummy.json";
+import User from "./user";
+import { alphabet } from "./alphabet";
+import { BiSortAZ, BiSortZA } from "react-icons/bi";
+import DeleteModal from "./delete-modal";
 
 export default function Contacts() {
+
   const [showAddContactModal, setshowAddContactModal] = useState(false);
   const handleModalClose = () => {
     setshowAddContactModal(false);
   };
 
   const [contacts, setContacts] = useState(null);
+  const [ActiveMenu, setActiveMenu] = useState("Contacts");
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
+  const [ActiveLetter, setActiveLetter] = useState("a");
+  const [IsSortedReverse, setIsSortedReverse] = useState(false);
+
+
+  
+  const [ContactList, setContactList] = useState();
   const hideToast = () => {
     setShowToast(false);
   };
@@ -84,147 +99,234 @@ export default function Contacts() {
     handleModalClose();
   };
 
+  const RenderGroup = ({ cl, letterNow }) => {
+    return (
+      <>
+        {cl.map((user) => (
+          <tr className="stripe text-left" key={user.id}>
+            <User user={user} setContactList={setContactList} ContactList={ContactList} />
+          </tr>
+        ))}
+      </>
+    );
+  };
+
+  //Filter Name Alphabetically
+  useEffect(() => {
+    dummy.sort((a, b) => a.name.localeCompare(b.name));
+    setContactList(dummy);
+  }, []);
+
+  let history = useHistory();
+
+  const handleSort = (sortedReverse, sortBy) => {
+    if (sortedReverse) {
+      if (sortBy === "name") {
+        dummy.sort((a, b) => a.name.localeCompare(b.name));
+        alphabet.sort()
+      } else if (sortBy === "type") {
+        dummy.sort((a, b) => a.type.localeCompare(b.type));
+         alphabet.sort();
+      } else if (sortBy === "company") {
+        dummy.sort((a, b) => a.company.localeCompare(b.company));
+         alphabet.sort();
+      }
+    } else {
+      if (sortBy === "name") {
+        dummy.sort((a, b) => a.name.localeCompare(b.name)).reverse();
+        alphabet.sort().reverse();
+      } else if (sortBy === "type") {
+        dummy.sort((a, b) => a.type.localeCompare(b.type)).reverse();
+        alphabet.sort().reverse();
+      } else if (sortBy === "company") {
+        dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
+        alphabet.sort().reverse();
+      } else {
+        dummy.sort().reverse();
+      }
+    }
+  };
+
+  const RenderSort = ({ sortBy }) => {
+    return (
+      <>
+        {IsSortedReverse ? (
+          <BiSortAZ
+            onClick={() => {
+              setIsSortedReverse(!IsSortedReverse);
+              handleSort(IsSortedReverse, sortBy);
+            }}
+            className="text-sm cursor-pointer hover:text-gray-500"
+          />
+        ) : (
+          <BiSortZA
+            onClick={() => {
+              setIsSortedReverse(!IsSortedReverse);
+              handleSort(IsSortedReverse, sortBy);
+            }}
+            className="text-sm cursor-pointer hover:text-gray-500"
+          />
+        )}
+      </>
+    );
+  };
+
+  const handleScroll = (event) => {
+    console.log("scrollTop: ", event.currentTarget.scrollTop);
+    console.log("offsetHeight: ", event.currentTarget.offsetHeight);
+  };
+
   return (
     <>
       <div
+        onScroll={handleScroll}
         className={
           "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
         }
         style={contentDiv}
       >
-        <div className="relative flex-grow flex-1">
-          <div style={mainGrid}>
+        {/*TopView*/}
+        <div className="py-5 flex flex-row items-center">
+          <MdKeyboardArrowLeft
+            className="cursor-pointer hover:text-gray-500"
+            onClick={() => history.goBack()}
+          />
+
+          <div className="flex flex-col justify-center">
             <div>
-              <h1 className="font-bold text-3xl">&nbsp; Contacts</h1>
+              <h1 className="font-semibold text-lg">
+                &nbsp; Contacts
+                <span className=""> of {`Matthew Douglas`}</span>
+              </h1>
             </div>
-            <div className="absolute right-0">
-              {/* <Link to={AppRoutes.DASHBOARD}> */}
-              <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                Back &nbsp;
-                <MdArrowForwardIos />
-              </button>
-              {/* </Link> */}
+            <div>
+              <span className="ml-3 flex flex-row text-xs font-bold">
+                <FaUsers className="text-sm" color={`gray`} /> &nbsp; CONTACTS
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="p-5 left-0">
-          <div>
-            <span className={"text-sm mt-3 font-medium"}>CONTACTS</span>
-          </div>
-        </div>
-
-        <div className="p-5 left-0">
-          <div>
-            <input
-              type="checkbox"
-              name="check_all"
-              id="check_all"
-              className="cursor-pointer mr-2"
-              // checked={checkAllState}
-              // onChange={(e) => handleCheckAllChange(e.target.checked)}
-            />
-            {/* {showAddRow && ( */}
-            <button
-              className="bg-green-400 hover:bg-green-500 text-white text-sm py-1 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-              onClick={() => setshowAddContactModal(true)}
+        <div className="flex flex-col ">
+          <div className="py-3 flex flex-row gap-4">
+            <div
+              className={
+                ActiveMenu === "Contacts"
+                  ? `mr-right font-semibold hover:text-gray-500 cursor-pointer`
+                  : `mr-right hover:text-gray-500 cursor-pointer`
+              }
             >
-              Add Contact &nbsp;
-              <HiOutlinePlusCircle />
-            </button>
-            {/* )} */}
-            {/* {showExport && ( */}
-            <button className="bg-gray-50 hover:bg-gray-100 text-black text-sm py-1 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2">
-              Manage Filters &nbsp;
-              <FiFilter />
-            </button>
-            {/* )} */}
-            {/* {showDeleteRow && ( */}
-            <button
-              className="bg-red-400 hover:bg-red-500 text-white text-sm py-1 px-2 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring ml-2"
-              // onClick={() => handleDeleteRow(this)}
+              Contacts &nbsp; {dummy.length}
+            </div>
+            <div
+              className={
+                ActiveMenu === "Teams"
+                  ? `mr-right font-semibold hover:text-gray-500 cursor-pointer`
+                  : `mr-right hover:text-gray-500 cursor-pointer`
+              }
             >
-              Delete &nbsp;
-              <HiTrash />
-            </button>
-            {/* )} */}
-          </div>
-        </div>
-
-        <div className="p-5 left-0">
-          <div className="grid grid-cols-4 gap-4">
-            {contacts !== null &&
-              contacts.length !== 0 &&
-              contacts.map((contact) => (
-                <div
-                  key={contact.id}
-                  className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4"
+              Teams &nbsp; {"0"}
+            </div>
+            <div className="ml-auto">
+              <div>
+                {/* {showAddRow && ( */}
+                <button
+                  className="bg-green-400 hover:bg-green-500 text-white text-sm py-1 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                  onClick={() => setshowAddContactModal(true)}
                 >
-                  <div className=" py-1 text-right">
-                    <div
-                      className="bg-white hover:bg-gray-100 text-black font-semibold py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                      // onClick={() => handleAddRow()}
-                    >
-                      {contact.userType} &nbsp; <AiOutlineDown />
-                    </div>{" "}
-                    &nbsp;
-                    <div
-                      className="bg-blue-400 hover:bg-blue-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                      // onClick={() => handleAddRow()}
-                    >
-                      Send &nbsp; <FiSend />
-                    </div>
-                  </div>
-                  <div className="flex items-start py-3">
-                    <div className="py-4 px-1">
-                      <input
-                        type="checkbox"
-                        name="check_all"
-                        id="check_all"
-                        className="cursor-pointer mr-2"
-                      />
-                    </div>
-                    <div className="py-3">
-                      <FaUserCircle className="text-2xl" />
-                    </div>
-                    <div className="details-txt px-3">
-                      <div className="flex items-start">
-                        <p className="font-semibold text-black">
-                          {contact.firstName} {contact.lastName}
-                        </p>{" "}
-                        &nbsp;{" "}
-                        {/* <p className="font-semibold">
-                          {" "}
-                          {contact.company.cname}
-                        </p> */}
-                      </div>
-                      <p>{contact.email}</p>
-                    </div>
-
-                    <div className="right-0 py-3">
-                      <BiDotsVerticalRounded />
-                    </div>
-                  </div>
-
-                  {/* <div className="py-5 text-center">
-                    <div>
-                      <p className="font-semibold text-slate-700  ">
-                        TAGGED MATTERS
-                      </p>
-                    </div>
-                  </div> */}
-                </div>
-              ))}
+                  Add Contact &nbsp;
+                </button>
+              </div>
+            </div>
           </div>
+          <div className="flex flex-row">
+            <div
+              className={
+                ActiveMenu === "Contacts"
+                  ? `rounded-full bg-gray-500 w-28 h-0.5`
+                  : `rounded-full  bg-gray-100 w-28 h-0.5`
+              }
+            ></div>
+            <div
+              className={
+                ActiveMenu === "Teams"
+                  ? `bg-black w-28 h-0.5`
+                  : `rounded-full  bg-gray-100 w-52 h-0.5`
+              }
+            ></div>
+            <div className="rounded-full bg-gray-100 w-full h-0.5"></div>
+          </div>
+        </div>
+
+        {/*FILTER A-Z*/}
+        <div className="top-60 fixed">
+          {alphabet.map((a, idx) =>
+            ActiveLetter === a ? (
+              <div key={idx} className="py-0.5 hoverActive cursor-pointer">
+                {a.toUpperCase()}
+              </div>
+            ) : (
+              <div className="py-0.5 hover cursor-pointer">
+                {a.toUpperCase()}
+              </div>
+            )
+          )}
+        </div>
+
+        <div className="pl-6 flex flex-row w-full h-full items-center">
+          <table className="table-auto w-full">
+            <thead className="text-left">
+              <th>
+                <div className="p-5 flex flex-row gap-1 items-center">
+                  Name <RenderSort sortBy={"name"} />
+                </div>
+              </th>
+              <th>Email</th>
+              <th>Team</th>
+              <th>
+                <div className="flex flex-row gap-1 items-center">
+                  User Type <RenderSort sortBy={"type"} />
+                </div>
+              </th>
+              <th>
+                <div className="flex flex-row gap-1 items-center">
+                  Company <RenderSort sortBy={"company"} />
+                </div>
+              </th>
+              <th></th>
+            </thead>
+            <tbody className="w-full">
+              {ContactList &&
+                alphabet.map((a, idx) => (
+                  <>
+                    <tr key={idx} onScroll={() => console.log("TEST")}>
+                      <div className="px-5 py-1">
+                        <span className="scale-125 hover:text-cyan-500 font-semibold text-gray-400">
+                          {a.toUpperCase()}
+                        </span>
+                      </div>
+                    </tr>
+
+                    <RenderGroup
+                      cl={ContactList.filter((u) =>
+                        u.name.toLowerCase().startsWith(a)
+                      )}
+                    />
+                  </>
+                ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {showAddContactModal && (
         <AddContactModal
-          handleSave={handleAddContact}
+          close={() => setshowAddContactModal(false)}
           handleModalClose={handleModalClose}
         />
       )}
+
+      
     </>
   );
 }
