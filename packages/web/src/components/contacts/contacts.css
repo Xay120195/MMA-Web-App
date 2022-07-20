@@ -1,4 +1,4 @@
-.stripe:nth-child(4n) {
+.stripe:nth-child(odd) {
             background-color: #F9F9F9;
 }
 

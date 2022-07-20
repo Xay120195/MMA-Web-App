@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { GoTrashcan } from "react-icons/go";
 import { BsPencilSquare } from "react-icons/bs";
+import DeleteModal from "./delete-modal";
+
 export default function User({ user }) {
+  const [showDeleteModal, setshowDeleteModal] = useState(false);
+
   return (
     <>
       <td>
@@ -29,9 +33,16 @@ export default function User({ user }) {
         <div className="flex flex-row items-center justify-center gap-4">
           {" "}
           <BsPencilSquare className="text-gray-500 hover:text-gray-700 cursor-pointer" />
-          <GoTrashcan className="text-gray-500 hover:text-red-500 cursor-pointer" />
+          <GoTrashcan
+            className="text-gray-500 hover:text-red-500 cursor-pointer"
+            onClick={() => setshowDeleteModal(true)}
+          />
         </div>
       </td>
+      {showDeleteModal && (
+        <DeleteModal close={() => setshowDeleteModal(false)} />
+      )}
+      
     </>
   );
 }

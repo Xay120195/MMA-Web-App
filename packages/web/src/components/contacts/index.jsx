@@ -23,8 +23,10 @@ import dummy from "./dummy.json";
 import User from "./user";
 import { alphabet } from "./alphabet";
 import { BiSortAZ, BiSortZA } from "react-icons/bi";
+import DeleteModal from "./delete-modal";
 
 export default function Contacts() {
+
   const [showAddContactModal, setshowAddContactModal] = useState(false);
   const handleModalClose = () => {
     setshowAddContactModal(false);
@@ -37,6 +39,8 @@ export default function Contacts() {
   const [ActiveLetter, setActiveLetter] = useState("a");
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
 
+
+  
   const [ContactList, setContactList] = useState();
   const hideToast = () => {
     setShowToast(false);
@@ -99,7 +103,7 @@ export default function Contacts() {
     return (
       <>
         {cl.map((user) => (
-          <tr className="text-left" key={user.id}>
+          <tr className="stripe text-left" key={user.id}>
             <User user={user} />
           </tr>
         ))}
@@ -119,18 +123,24 @@ export default function Contacts() {
     if (sortedReverse) {
       if (sortBy === "name") {
         dummy.sort((a, b) => a.name.localeCompare(b.name));
+        alphabet.sort()
       } else if (sortBy === "type") {
         dummy.sort((a, b) => a.type.localeCompare(b.type));
+         alphabet.sort();
       } else if (sortBy === "company") {
         dummy.sort((a, b) => a.company.localeCompare(b.company));
+         alphabet.sort();
       }
     } else {
       if (sortBy === "name") {
         dummy.sort((a, b) => a.name.localeCompare(b.name)).reverse();
+        alphabet.sort().reverse();
       } else if (sortBy === "type") {
         dummy.sort((a, b) => a.type.localeCompare(b.type)).reverse();
+        alphabet.sort().reverse();
       } else if (sortBy === "company") {
         dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
+        alphabet.sort().reverse();
       } else {
         dummy.sort().reverse();
       }
@@ -250,9 +260,9 @@ export default function Contacts() {
 
         {/*FILTER A-Z*/}
         <div className="top-60 fixed">
-          {alphabet.map((a) =>
+          {alphabet.map((a, idx) =>
             ActiveLetter === a ? (
-              <div className="py-0.5 hoverActive cursor-pointer">
+              <div key={idx} className="py-0.5 hoverActive cursor-pointer">
                 {a.toUpperCase()}
               </div>
             ) : (
@@ -287,9 +297,9 @@ export default function Contacts() {
             </thead>
             <tbody className="w-full">
               {ContactList &&
-                alphabet.map((a) => (
+                alphabet.map((a, idx) => (
                   <>
-                    <tr onScroll={() => console.log("TEST")}>
+                    <tr key={idx} onScroll={() => console.log("TEST")}>
                       <div className="px-5 py-1">
                         <span className="scale-125 hover:text-cyan-500 font-semibold text-gray-400">
                           {a.toUpperCase()}
@@ -315,6 +325,8 @@ export default function Contacts() {
           handleModalClose={handleModalClose}
         />
       )}
+
+      
     </>
   );
 }
