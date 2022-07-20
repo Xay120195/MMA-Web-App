@@ -537,11 +537,6 @@ const TableUnsavedInfo = ({
                 {item.attachments.items.map((item_attach, index) => (
                   <React.Fragment key={item_attach.id}>
                     <div className="flex items-start mt-2" 
-                    onClick={() =>
-                      previewAndDownloadFile(
-                        item_attach.id
-                      )
-                    }
                     >
                       <p
                         className="
@@ -549,6 +544,11 @@ const TableUnsavedInfo = ({
                         textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                         id={item_attach.id}
                         title={item_attach.name}
+                        onClick={() =>
+                          previewAndDownloadFile(
+                            item_attach.id
+                          )
+                        }
                       >
                         {item_attach.name.substring(0, 20)}
                         {item_attach.name.length >= 20 ? "..." : ""}
