@@ -23,14 +23,17 @@ function isIterable(variable) {
 }
 
 const getParsedGmailMessage = async (data) => {
-  console.log("getParsedGmailMessage()");
   const message = Object.assign({}, data);
   const { id: messageId, payload } = message;
 
+  // console.log("getParsedGmailMessage()", message);
+  console.log("getParsedGmailMessage()");
+
   const getParsedMessageParts = async (messagePart) => {
-    console.log("getParsedMessageParts()", messagePart);
+    // console.log("getParsedMessageParts()", messagePart);
+    console.log("getParsedMessageParts()");
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
-    console.log("subParts", subParts);
+    // console.log("subParts", subParts);
 
     if (subParts !== undefined)
       return await Promise.all(subParts.map(getParsedMessageParts));
@@ -74,9 +77,10 @@ const getParsedGmailMessage = async (data) => {
         .get({ TableName: "GmailMessageAttachment", Key: { id: fid } })
         .promise();
 
-      console.log("getExistingAttachments:", getExistingAttachments);
+      // console.log("getExistingAttachments:", getExistingAttachments);
+      console.log("getExistingAttachments()");
       if (getExistingAttachments === undefined) {
-        console.log("Save Attachments To Database:", filename);
+        // console.log("Save Attachments To Database:", filename);
         try {
           const saveAttachmentsParams = {
             id: fid,
@@ -88,7 +92,7 @@ const getParsedGmailMessage = async (data) => {
             details: "",
             updatedAt: toUTC(new Date()),
           };
-          console.log("Params:", saveAttachmentsParams);
+          // console.log("Params:", saveAttachmentsParams);
 
           const saveAttachments = await docClient
             .put({
@@ -96,7 +100,7 @@ const getParsedGmailMessage = async (data) => {
               Item: saveAttachmentsParams,
             })
             .promise();
-          console.log("Response:", filename, saveAttachments);
+          // console.log("Response:", filename, saveAttachments);
         } catch (message) {
           console.log("docClient.put Failed:", filename, message);
         }
@@ -110,9 +114,9 @@ const getParsedGmailMessage = async (data) => {
             Body: Buffer.from(data, "base64"),
           };
 
-          console.log("Params:", saveAttachmentsToS3);
+          // console.log("Params:", saveAttachmentsToS3);
           const s3Response = await s3.putObject(saveAttachmentsToS3).promise();
-          console.log("Response:", fileName, s3Response);
+          // console.log("Response:", fileName, s3Response);
         } catch (message) {
           console.log("s3.putObject Failed:", filename, message);
         }
@@ -128,8 +132,6 @@ const getParsedGmailMessage = async (data) => {
   const parts = await getParsedMessageParts(payload);
 
   const formatParts = (parts) => {
-    // console.log("formatParts", parts);
-
     if (parts !== undefined && isIterable(parts) && parts.length > 0) {
       for (const part of parts) {
         if (Array.isArray(part)) {
@@ -215,15 +217,15 @@ const checkGmailMessages = async (
   pageToken
 ) => {
   console.log("checkGmailMessages()");
-  console.log("Params:", email, startHistoryId, companyId, pageToken);
+  console.log("Get History:", email, startHistoryId, companyId, pageToken);
   const {
     data: { history, historyId, nextPageToken },
   } = await gmailAxios
-    .get(`/gmail/v1/users/me/history`, {
+    .get(`/gmail/v1/users/${email}/history`, {
       params: { startHistoryId, pageToken },
     })
     .catch((message) =>
-      console.log("Error: /gmail/v1/users/me/history", message)
+      console.log(`Error: /gmail/v1/users/${email}/history`, message)
     );
 
   if (history) {
@@ -232,21 +234,50 @@ const checkGmailMessages = async (
       messagesDeleted /* labelsAdded, labelsRemoved */,
     } of history) {
       if (messagesAdded) {
+        // console.log("messagesAdded", JSON.stringify(messagesAdded));
         const messages = await Promise.all(
           messagesAdded.map(
-            ({ message: { id } }) =>
+            ({ message: { id, labelIds } }) =>
               new Promise((resolve, reject) => {
-                gmailAxios
-                  .get(`/gmail/v1/users/${email}/messages/${id}`)
-                  .then((response) => resolve(response.data))
-                  .catch(reject);
+                // console.log("labelIds:", labelIds);
+
+                if (labelIds.includes("INBOX")) {
+                  const reqMessages = `/gmail/v1/users/${email}/messages/${id}`;
+
+                  // console.log("Request: ", reqMessages);
+                  gmailAxios
+                    .get(reqMessages)
+                    .then((response) => {
+                      // console.log("Success Response:", response);
+                      resolve(response.data);
+                    })
+                    .catch((error) => {
+                      console.log("Error Response:", error);
+                      reject(error);
+                    });
+                } else {
+                  console.log("id", id, "labelIds:", labelIds);
+                  resolve();
+                }
               })
           )
         );
 
-        if (messages.length != 0) {
+        // console.log("messages", messages);
+
+        const filteredMessages = [];
+
+        for (let i = 0; i < messages.length; i++) {
+          if (isIterable(messages[i])) {
+            filteredMessages.push(messages[i]);
+          }
+        }
+
+        // console.log("filteredMessages", filteredMessages);
+
+        if (filteredMessages.length != 0) {
           const messagesToAdd = await Promise.all(
-            messages.map(getParsedGmailMessage)
+            filteredMessages.map(getParsedGmailMessage)
           );
 
           const saveEmails = await docClient
@@ -283,7 +314,8 @@ const checkGmailMessages = async (
             })
             .promise();
 
-          console.log("Save to GmailMessageTable:", saveEmails);
+          // console.log("Save to GmailMessageTable:", saveEmails);
+          console.log("Save to GmailMessageTable:");
 
           const filterMessagesIDs = messagesToAdd.map((Item) => {
             return {
@@ -303,7 +335,8 @@ const checkGmailMessages = async (
             ExpressionAttributeValues: { ":companyId": companyId },
           };
 
-          console.log("Get Existing Gmail Messages by Company:", params);
+          // console.log("Get Existing Gmail Messages by Company:", params);
+          console.log("Get Existing Gmail Messages by Company:");
 
           const getExistingGmailMessages = await docClient
             .query(params)
@@ -312,13 +345,13 @@ const checkGmailMessages = async (
           const existingGmailMessages = getExistingGmailMessages.Items.map(
             (Item) => Item.gmailMessageId
           );
-          console.log("Existing Gmail Messages", existingGmailMessages);
+          // console.log("Existing Gmail Messages", existingGmailMessages);
 
           const nonExistingGmailMessages = filterMessagesIDs.filter(
             (f) => !existingGmailMessages.includes(f.id)
           );
 
-          console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
+          // console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
 
           if (nonExistingGmailMessages.length != 0) {
             try {
@@ -344,10 +377,11 @@ const checkGmailMessages = async (
                   },
                 })
                 .promise();
-              console.log(
-                "Save to CompanyGmailMessageTable:",
-                saveCompanyEmails
-              );
+              // console.log(
+              //   "Save to CompanyGmailMessageTable:",
+              //   saveCompanyEmails
+              // );
+              console.log("Save to CompanyGmailMessageTable:");
             } catch ({ message }) {
               console.log("Error in Saving CompanyGmailMessageTable", message);
             }
@@ -380,7 +414,7 @@ const pushSubscriptionHandler = async (event) => {
 
   try {
     const payload = JSON.parse(event.body);
-    console.log("payload: ", payload);
+    // console.log("payload: ", payload);
 
     const { emailAddress: email, historyId } = JSON.parse(
       Buffer.from(payload.message.data, "base64").toString("utf-8")
@@ -425,7 +459,6 @@ const pushSubscriptionHandler = async (event) => {
         success: true,
         message: "message data is accepted.",
       });
-      
     } else {
       console.log(`${email} is disconnected. Stopping...`);
       let stop = `/gmail/v1/users/${email}/stop`;
@@ -433,7 +466,7 @@ const pushSubscriptionHandler = async (event) => {
       gmailAxios
         .post(stop)
         .then((response) => {
-          console.log("Stopping response: ",response);
+          // console.log("Stopping response: ", response);
         })
         .catch((message) => {
           console.log(message.response.data.error);

@@ -6,7 +6,6 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listUserClientMatter(ctx) {
-  console.log("listUserClientMatter()");
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
@@ -108,7 +107,6 @@ async function listUserClientMatter(ctx) {
 const resolvers = {
   User: {
     clientMatters: async (ctx) => {
-      console.log("listUserClientMatter");
       return listUserClientMatter(ctx);
     },
   },

@@ -61,6 +61,8 @@ functions:
     handler: src/functions/graphql/user/index.handler
   gmailmessage-fn:
     handler: src/functions/graphql/gmailMessage/index.handler
+  gmail-attachment-fn:
+    handler: src/functions/graphql/gmailAttachment/index.handler
   gmail-re-subsription-fn:
     handler: src/functions/event-bridge/gmail-re-subscription/index.handler
     timeout: 60
@@ -621,9 +623,24 @@ custom:
         field: gmailMessageClientMatterUntag
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageLabelTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailMessageLabelUntag
+        request: false
+        response: false
       - dataSource: LambdaGmailMessageDS
         type: GmailMessage
         field: clientMatters
+        request: false
+        response: false
+      - dataSource: LambdaGmailMessageDS
+        type: GmailMessage
+        field: labels
         request: false
         response: false
       - dataSource: LambdaGmailMessageDS
@@ -659,6 +676,21 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: gmailMessageDescriptionUpdate
+        request: false
+        response: false
+      - dataSource: LambdaGmailAttachmentDS
+        type: GmailMessageAttachment
+        field: labels
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelUntag
         request: false
         response: false
     # Data Sources
@@ -711,6 +743,10 @@ custom:
         name: LambdaGmailMessageDS
         config:
           functionName: gmailmessage-fn
+      - type: AWS_LAMBDA
+        name: LambdaGmailAttachmentDS
+        config:
+          functionName: gmail-attachment-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

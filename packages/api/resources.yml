@@ -901,9 +901,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
+        - AttributeName: connectedEmail
+          AttributeType: S
+        - AttributeName: receivedAt
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byConnectedEmail
+          KeySchema:
+            - AttributeName: connectedEmail
+              KeyType: HASH
+            - AttributeName: receivedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
   GmailMessageClientMatterTable:
@@ -930,6 +943,34 @@ Resources:
         - IndexName: byClientMatter
           KeySchema:
             - AttributeName: clientMatterId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+  GmailMessageLabelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GmailMessageLabelTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: gmailMessageId
+          AttributeType: S
+        - AttributeName: labelId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byGmailMessage
+          KeySchema:
+            - AttributeName: gmailMessageId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byLabel
+          KeySchema:
+            - AttributeName: labelId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
@@ -990,6 +1031,34 @@ Resources:
         - IndexName: byMessage
           KeySchema:
             - AttributeName: messageId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+  GmailAttachmentLabelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GmailAttachmentLabelTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: attachmentId
+          AttributeType: S
+        - AttributeName: labelId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byGmailAttachment
+          KeySchema:
+            - AttributeName: attachmentId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byLabel
+          KeySchema:
+            - AttributeName: labelId
               KeyType: HASH
           Projection:
             ProjectionType: ALL

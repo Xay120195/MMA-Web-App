@@ -249,6 +249,7 @@ type GmailMessage {
   payload: [GmailPayload]
   updatedAt: AWSDateTime
   clientMatters(limit: Int, nextToken: String): GmailMessageClientMattersConn
+  labels(limit: Int, nextToken: String): GmailMessagLabelsConn
   attachments: GmailMessageAttachmentConn
 }
 
@@ -264,6 +265,7 @@ type GmailToken {
   refreshToken: String
   userId: ID
   companyId: ID
+  userTimeZone: String
   updatedAt: AWSDateTime
 }
 
@@ -276,6 +278,7 @@ type GmailMessageAttachment {
   name: String
   details: String
   order: Int
+  labels: GmailAttachmentLabelConn
   updatedAt: AWSDateTime
 }
 
@@ -480,8 +483,18 @@ type GmailMessageClientMattersConn {
   nextToken: String
 }
 
+type GmailMessagLabelsConn {
+  items: [Label]
+  nextToken: String
+}
+
 type GmailMessageAttachmentConn {
   items: [GmailMessageAttachment]
+}
+
+type GmailAttachmentLabelConn {
+  items: [Label]
+  nextToken: String
 }
 
 type Query {
@@ -668,14 +681,21 @@ type Mutation {
     to: String
     subject: String
     snippet: String
+    connectedEmail: String
+    receivedAt: String
   ): GmailMessage
   gmailMessageClientMatterTag(
     gmailMessageId: String
     clientMatterId: ID
   ): GmailMessage
-  gmailMessageClientMatterUntag(
-    gmailMessageId: String
-  ): GmailMessage
+  gmailMessageClientMatterUntag(gmailMessageId: String): GmailMessage
+  gmailMessageLabelTag(gmailMessageId: String, labelId: [ID]): GmailMessage
+  gmailMessageLabelUntag(gmailMessageId: String): GmailMessage
+  gmailAttachmentLabelTag(
+    attachmentId: String
+    labelId: [ID]
+  ): GmailMessageAttachment
+  gmailAttachmentLabelUntag(attachmentId: String): GmailMessageAttachment
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
   gmailMessageBulkSoftDelete(id: [ID], companyId: ID): [GmailMessage]
@@ -684,6 +704,7 @@ type Mutation {
     code: String
     userId: ID
     companyId: ID
+    userTimeZone: String
   ): GmailToken
   gmailDisconnect(email: String): GmailToken
   gmailMessageAttachmentCreate(

@@ -1,26 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
-import BlankState from '../dynamic-blankstate';
-import { HiOutlinePlusCircle } from 'react-icons/hi';
-import { MdArrowForwardIos, MdArrowBack } from 'react-icons/md';
-import { AppRoutes } from '../../constants/AppRoutes';
-import CreateRFIModal from './create-RFI-modal';
-import ToastNotification from '../toast-notification';
-import AccessControl from '../../shared/accessControl';
-import { FaUserCircle } from 'react-icons/fa';
-import { AiOutlineFolderOpen } from 'react-icons/ai';
-import BlankList from '../../assets/images/RFI_Blank_List.svg';
-import { useParams } from 'react-router-dom';
-import { API } from 'aws-amplify';
-import { Link } from 'react-router-dom';
-import { useIdleTimer } from 'react-idle-timer';
-import SessionTimeout from '../session-timeout/session-timeout-modal';
-import { Auth } from 'aws-amplify';
+import React, { useState, useEffect, useRef } from "react";
+import { useHistory } from "react-router-dom";
+import BlankState from "../dynamic-blankstate";
+import { HiOutlinePlusCircle } from "react-icons/hi";
+import { MdArrowForwardIos } from "react-icons/md";
+import { AppRoutes } from "../../constants/AppRoutes";
+import CreateRFIModal from "./create-RFI-modal";
+import ToastNotification from "../toast-notification";
+import AccessControl from "../../shared/accessControl";
+import { FaUserCircle } from "react-icons/fa";
+import { AiOutlineFolderOpen } from "react-icons/ai";
+import BlankList from "../../assets/images/RFI_Blank_List.svg";
+import { useParams } from "react-router-dom";
+import { API } from "aws-amplify";
+import { Link } from "react-router-dom";
+import { useIdleTimer } from "react-idle-timer";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import { Auth } from "aws-amplify";
+import "../../assets/styles/Matters-rfi-page.css";
+import ScrollToTop from "react-scroll-to-top";
+import { BiArrowToTop } from "react-icons/bi";
+
+
 
 export default function MattersRFI() {
   const { matter_id } = useParams();
 
-  const modalRFIAlertMsg = 'RFI Name successfully created.';
+  const modalRFIAlertMsg = "RFI Name successfully created.";
 
   const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
 
@@ -31,7 +36,8 @@ export default function MattersRFI() {
   const [allowUpdateQuestion, setAllowUpdateQuestion] = useState(false);
   const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-
+  const [copyRFI, setcopyRFI] = useState([]);
+  
   let history = useHistory();
   const bool = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
@@ -72,7 +78,7 @@ export default function MattersRFI() {
     `;
 
   const getRFI = async () => {
-    console.log('matterid', matter_id);
+    console.log("matterid", matter_id);
 
     const params = {
       query: listRFI,
@@ -83,8 +89,9 @@ export default function MattersRFI() {
 
     await API.graphql(params).then((rfi) => {
       const RFIList = rfi.data.clientMatter.rfis.items;
-      console.log('mfl', RFIList);
+      console.log("mfl", RFIList);
       setRFI(RFIList);
+      setcopyRFI(RFIList);
     });
   };
 
@@ -95,8 +102,8 @@ export default function MattersRFI() {
   });
 
   const handleSaveRFI = async (rfiname) => {
-    console.log('matterid', matter_id);
-    console.log('rfiname', rfiname);
+    console.log("matterid", matter_id);
+    console.log("rfiname", rfiname);
 
     const addRFI = await API.graphql({
       query: mCreateRFI,
@@ -108,7 +115,7 @@ export default function MattersRFI() {
 
     const getID = addRFI.data.rfiCreate.id;
 
-    console.log('RFI name:', addRFI);
+    console.log("RFI name:", addRFI);
     setalertMessage(modalRFIAlertMsg);
     handleModalClose();
     setShowToast(true);
@@ -123,15 +130,6 @@ export default function MattersRFI() {
     setshowCreateRFIModal(false);
   };
 
-  const contentDiv = {
-    margin: '0 0 0 65px',
-  };
-
-  const mainGrid = {
-    display: 'grid',
-    gridtemplatecolumn: '1fr auto',
-  };
-
   // const handleDeleteRow = () => {
   //   var updatedRows = [...dataquestions];
   //   var _data = [];
@@ -143,18 +141,35 @@ export default function MattersRFI() {
   //   setQuestion(_data);
   // };
 
+  const searchRFI = (val) => {
+    if (val.length > 0) {
+      setRFI(
+        RFI.filter(
+          (rfi) =>
+            rfi.name
+              .toLowerCase()
+              .replace(" ", "")
+              .includes(val.toLowerCase().replace(" ", "")) === true
+        )
+      );
+    } else {
+      setRFI(copyRFI);
+    }
+  };
+
   const handleSearchChange = (e) => {
-    console.log('L114' + e.target.value);
+    console.log("L114" + e.target.value);
+    searchRFI(e.target.value);
     setSearchTable(e.target.value);
   };
 
   const style = {
-    paddingLeft: '0rem',
+    paddingLeft: "0rem",
   };
 
   function visitRFI(id, name) {
-    const m_name = getQueryVariable('matter_name');
-    const c_name = getQueryVariable('client_name');
+    const m_name = getQueryVariable("matter_name");
+    const c_name = getQueryVariable("client_name");
 
     history.push(
       `${
@@ -167,9 +182,9 @@ export default function MattersRFI() {
 
   function getQueryVariable(variable) {
     var query = window.location.search.substring(1);
-    var vars = query.split('&');
+    var vars = query.split("&");
     for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split('=');
+      var pair = vars[i].split("=");
       if (pair[0] === variable) {
         return pair[1];
       }
@@ -185,23 +200,23 @@ export default function MattersRFI() {
     return decodeURIComponent(escape(window.atob(str)));
   }
 
-  const m_name = getQueryVariable('matter_name');
-  const c_name = getQueryVariable('client_name');
+  const m_name = getQueryVariable("matter_name");
+  const c_name = getQueryVariable("client_name");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
   const formatDisplayDate = (val) => {
     let date = new Date(val);
-    const day = date.toLocaleString('default', { day: '2-digit' });
-    const month = date.toLocaleString('default', { month: 'short' });
-    const year = date.toLocaleString('default', { year: 'numeric' });
-    return day + ' ' + month + ' ' + year;
+    const day = date.toLocaleString("default", { day: "2-digit" });
+    const month = date.toLocaleString("default", { month: "short" });
+    const year = date.toLocaleString("default", { year: "numeric" });
+    return day + " " + month + " " + year;
   };
 
   var timeoutId;
   //SESSION TIMEOUT
   const handleOnAction = (event) => {
-    console.log('user is clicking');
+    console.log("user is clicking");
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
@@ -210,19 +225,19 @@ export default function MattersRFI() {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
-          console.log('Sign out completed.');
-          history.push('/');
+          console.log("Sign out completed.");
+          history.push("/");
         });
 
         function clearLocalStorage() {
-          localStorage.removeItem('userId');
-          localStorage.removeItem('email');
-          localStorage.removeItem('firstName');
-          localStorage.removeItem('lastName');
-          localStorage.removeItem('userType');
-          localStorage.removeItem('company');
-          localStorage.removeItem('companyId');
-          localStorage.removeItem('access');
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
         }
       }, 3000);
     }
@@ -236,7 +251,7 @@ export default function MattersRFI() {
     //bool.current = true;
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
-    }, 60000 * 40);
+    }, 60000 * 60);
   };
 
   useIdleTimer({
@@ -248,101 +263,114 @@ export default function MattersRFI() {
 
   return (
     <>
+      <ScrollToTop
+        smooth
+        component={<BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>}
+        className="sm:hidden scrollButton"
+        style={{borderRadius: "50%"}}
+      />
       <div
         className={
-          'p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white'
+          "bg-gray-100 p-5 min-h-screen flex flex-col min-w-0 break-words sm:min-h-0 sm: relative sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv"
         }
-        style={contentDiv}
       >
-        <div className="relative flex-grow flex-1">
-          <div style={mainGrid}>
-            <div>
+        <div className="relative py-2 sm:p-0 sm:flex-grow sm:flex-1">
+          <div className="flex flex-row">
+            <div className="flex-grow">
+              <h1 className="font-bold text-right text-base px-2 sm:px-0 sm:text-3xl sm:text-left">
+                Request For Information
+                <span className="hidden sm:inline text-base sm:text-3xl">
+                  &nbsp;of&nbsp;
+                </span>
+                <br className="sm:hidden"></br>
+                <span className="text-base font-semibold sm:text-3xl">
+                  {client_name}/{matter_name}
+                </span>
+              </h1>
+            </div>
+            <div className="flex shrink-0 items-center sm:absolute sm:right-0">
               <Link to={AppRoutes.DASHBOARD}>
-                <button className="bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded flex gap-2 items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                  <MdArrowBack />
-                  <span className="font-semibold">Back to Dashboard</span>
+                <button className="hidden align-middle sm:inline-flex shrink-0 bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                  Back &nbsp;
+                  <MdArrowForwardIos />
+                </button>
+                <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
+                  <MdArrowForwardIos
+                    style={{
+                      margin: "auto",
+                    }}
+                  />
                 </button>
               </Link>
             </div>
-
-            <h1 className="flex flex-col my-8">
-              <span className="text-3xl font-bold">
-                Request For Information
-              </span>
-              <span className="font-semibold text-xl">
-                {client_name}/{matter_name}
-              </span>
-            </h1>
-            <div>
-              <nav aria-label="Breadcrumb" style={style} className="mt-4">
-                <ol
-                  role="list"
-                  className="px-0 flex items-left space-x-2 lg:max-w-7xl lg:px-8"
-                >
-                  <li>
-                    <Link
-                      className="mr-2 text-sm font-medium text-gray-900"
-                      to={`${AppRoutes.DASHBOARD}`}
-                    >
-                      Dashboard
-                    </Link>
-                  </li>
-                  <svg
-                    width="16"
-                    height="20"
-                    viewBox="0 0 16 20"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                    className="w-4 h-5 text-gray-300"
-                  >
-                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                  </svg>
-                  <li className="text-sm">
-                    <span className="font-medium text-gray-500 px-1 flex">
-                      <AiOutlineFolderOpen /> &nbsp; RFI List{' '}
-                    </span>
-                  </li>
-                </ol>
-              </nav>
-            </div>
           </div>
+          <div className="hidden sm:block px-3 sm:px-0">
+            <nav aria-label="Breadcrumb" style={style} className="mt-4">
+              <ol
+                role="list"
+                className="px-0 flex items-left space-x-2 lg:max-w-7xl lg:px-8"
+              >
+                <li>
+                  <Link
+                    className="mr-2 text-sm font-medium text-gray-900"
+                    to={`${AppRoutes.DASHBOARD}`}
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <svg
+                  width="16"
+                  height="20"
+                  viewBox="0 0 16 20"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="w-4 h-5 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+                <li className="text-sm">
+                  <span className="font-medium text-gray-500 px-1 flex">
+                    <AiOutlineFolderOpen /> &nbsp; RFI List{" "}
+                  </span>
+                </li>
+              </ol>
+            </nav>
+          </div>
+          <div className="mt-4 sm:mt-7">
+            <div>
+              <button
+                type="button"
+                className="hidden sm:inline-flex bg-green-100 hover:bg-green-100 text-green-500 text-sm py-1 px-4 rounded items-center border border-green-500 shadow focus:ring mx-2"
+                onClick={() => setshowCreateRFIModal(true)}
+              >
+                NEW RFI &nbsp; <HiOutlinePlusCircle />
+              </button>
 
-          <div className="mt-10 mb-4">
-            <div className="flex justify-between items-center gap-2">
               <input
                 type="search"
                 placeholder="Search ..."
                 onChange={handleSearchChange}
-                className="p-2 px-5 border-2 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 w-full md:w-5/12 "
+                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full sm:w-3/12 "
               />
-
-              <button
-                type="button"
-                className="p-2 px-5 bg-green-100 hover:bg-green-100 text-green-500 text-sm rounded flex items-center self-end gap-2 border border-green-500 shadow focus:ring w-max"
-                onClick={() => setshowCreateRFIModal(true)}
-              >
-                <span className="w-max hidden md:block">Add New RFI</span>
-                <HiOutlinePlusCircle size={20} />
-              </button>
             </div>
           </div>
         </div>
         {RFI === null ? (
           <div> </div>
         ) : RFI.length === 0 ? (
-          <div className="p-5 px-5 py-1 left-0 mt-5">
-            <div className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
+          <div className="sm:p-5 sm:px-5 sm:py-1 left-0 mt-5">
+            <div className="w-full h-42 bg-white sm:bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
               <BlankState
-                displayText={'There are no items to show in this view'}
-                txtLink={'add new RFI'}
+                displayText={"There are no items to show in this view"}
+                txtLink={"add new RFI"}
                 iconDisplay={BlankList}
                 handleClick={() => setshowCreateRFIModal(true)}
               />
             </div>
           </div>
         ) : (
-          <div className="my-5 ml-2">
+          <div className="bg-white rounded-lg p-5 pb-0 my-5 sm:p-0 sm:ml-2">
             {RFI.map((item) => (
               <div
                 className="w-full h-42 bg-gray-100 rounded-lg border border-gray-200 mb-6 py-5 px-4  cursor-pointer"
@@ -365,7 +393,7 @@ export default function MattersRFI() {
                       >
                         {item.createdAt
                           ? formatDisplayDate(item.createdAt)
-                          : 'No date'}
+                          : "No date"}
                       </p>
                     </div>
                   </div>

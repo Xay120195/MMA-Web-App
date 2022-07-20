@@ -1,0 +1,42 @@
+@media (min-width: 640px) { 
+  .contentDiv {
+    margin: 0 0 0 65px;
+  }
+  .showColumn {
+    margin-left: 13.2rem;
+    top:auto;
+    right:auto;
+    width: 13rem;
+  }
+}
+@media (max-width: 640px) { 
+  .contentDiv {
+    margin: 0 0 0 0px;
+  }
+  .showColumn {
+    margin-left:0rem;
+    right:0;
+    top:8.1rem;
+    width: 13rem;
+  }
+
+  .scrollButton {
+    right: 40px;
+    bottom: 40px;
+    position: fixed;
+    z-index: 2;
+    cursor: pointer;
+    border-radius: 7px;
+    width: 40px;
+    height: 40px;
+    transition: opacity 1s ease-in-out;
+    box-shadow: 0 9px 25px 0 rgb(132 128 177 / 28%);
+    border: none;
+    outline: none;
+    background-color:#d4d4d4;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+  }
+  .scrollButton:hover {
+    background-color:rgb(28,193,233);
+  }
+}
