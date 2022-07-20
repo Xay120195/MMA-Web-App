@@ -62,6 +62,13 @@ const ActionButtons = ({
   const qGmailMessagesbyCompany = `
   query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
     company(id: $id) {
+      gmailToken {
+        refreshToken
+        id
+        userId
+        companyId
+        updatedAt
+      }
       gmailMessages(
         isDeleted: $isDeleted
         isSaved: $isSaved
@@ -73,11 +80,19 @@ const ActionButtons = ({
           id
           from
           to
+          cc
+          bcc
           subject
           date
           snippet
           payload {
             content
+          }
+          labels {
+            items {
+              id
+              name
+            }
           }
           description
           clientMatters {
@@ -101,6 +116,12 @@ const ActionButtons = ({
               s3ObjectKey
               size
               type
+              labels {
+                items {
+                  id
+                  name
+                }
+              }
             }
           }
         }
@@ -125,7 +146,7 @@ const ActionButtons = ({
       var clientMatterId = "";
       var emailList = "";
 
-      /*const params = {
+      const params = {
         query: qGmailMessagesbyCompany,
         variables: {
           id: companyId,
@@ -137,22 +158,22 @@ const ActionButtons = ({
   
       await API.graphql(params).then((result) => {
         emailList = result.data.company.gmailMessages.items;
-      });*/
+      });
 
       // Add to Saved Emails
-      let  arrSavedEmails = unSavedEmails.filter(function(item){
+      let  arrSavedEmails = emailList.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) !== -1;
       });
       setSavedEmails(savedEmails.concat(arrSavedEmails));
 
       // Remove from Unsaved Emails
-      let  arrRemoveUnSavedEmails = unSavedEmails.filter(function(item){
+      let  arrRemoveUnSavedEmails = emailList.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) === -1;
       });
       setUnsavedEmails(arrRemoveUnSavedEmails);
 
       selectedUnsavedItems.map((obj) => {
-        const filteredUnsavedArr = unSavedEmails.filter(item => item.id === obj);
+        const filteredUnsavedArr = emailList.filter(item => item.id === obj);
 
         filteredUnsavedArr.map((item) => {
 
