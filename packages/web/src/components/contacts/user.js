@@ -3,7 +3,7 @@ import { GoTrashcan } from "react-icons/go";
 import { BsPencilSquare } from "react-icons/bs";
 import DeleteModal from "./delete-modal";
 
-export default function User({ user }) {
+export default function User({ user, setContactList, ContactList }) {
   const [showDeleteModal, setshowDeleteModal] = useState(false);
 
   return (
@@ -40,9 +40,13 @@ export default function User({ user }) {
         </div>
       </td>
       {showDeleteModal && (
-        <DeleteModal close={() => setshowDeleteModal(false)} />
+        <DeleteModal
+          close={() => setshowDeleteModal(false)}
+          toDeleteid={user.id}
+          setContactList={setContactList}
+          ContactList={ContactList}
+        />
       )}
-      
     </>
   );
 }
