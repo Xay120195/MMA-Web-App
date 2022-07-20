@@ -1054,6 +1054,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         value,
         label,
       }));
+      console.log("optionscheck",newOptions);
       return newOptions;
     } else {
       return null;

@@ -103,6 +103,12 @@ const listClientMatters = `
             id
             name
           }
+          labels {
+            items {
+              id
+              name
+            }
+          }
         }
       }
     }
@@ -141,6 +147,8 @@ const Inbox = () => {
   const [maxLoadingUnSavedEmail, setMaxLoadingUnSavedEmail] = useState(false);
   const [tokenEmail, setTokenEmail] = useState("");
   const [refreshToken, setRefreshToken] = useState("");
+
+  const [labelsList, setLabelsList] = useState([]);
 
   const hideToast = () => {
     setShowToast(false);
@@ -273,6 +281,17 @@ const Inbox = () => {
       });
   
       setMatterList(filtered.sort((a, b) => a.label - b.label));
+
+      var store = [];
+      for(var i=0; i<clientMattersOpt.data.company.clientMatters.items.length; i++){
+        console.log("extractedlabels", clientMattersOpt.data.company.clientMatters.items[i].labels.items); //array of options
+        console.log("cmid", clientMattersOpt.data.company.clientMatters.items[i].client.id);
+        store = [...store, {cmid: clientMattersOpt.data.company.clientMatters.items[i].client.id, 
+                            labelsExtracted: clientMattersOpt.data.company.clientMatters.items[i].labels.items}];
+      }
+
+      console.log("extractedlabels", store);
+      setLabelsList(store);
     }
   }
 
@@ -404,6 +423,7 @@ const Inbox = () => {
                 matterList={matterList}
                 maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
                 getUnSavedEmails={getUnSavedEmails}
+                labelsList={labelsList}
               />
             </div>
             <div className={openTab === 2 ? "block" : "hidden"} id="link2">

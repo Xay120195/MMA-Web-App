@@ -1,4 +1,3 @@
-
 const {
   docClient,
   refreshTokens,
@@ -27,36 +26,40 @@ const getEmailStartDate = async (email, inputTZ) => {
       ":connectedEmail": email,
     }),
     ScanIndexForward: false,
-    ProjectionExpression: "receivedAt",
+
     Limit: 1,
   };
 
+  console.log("gmailParam", gmailParam);
   const gmailCmd = new QueryCommand(gmailParam);
+  console.log("gmailCmd", gmailCmd);
   const gmailResult = await ddbClient.send(gmailCmd);
+  console.log("gmailResult", gmailResult);
   const parseGmailResponse = gmailResult.Items.map((data) => unmarshall(data));
+  console.log("parseGmailResponse", parseGmailResponse);
 
+  let input;
   if (parseGmailResponse.length != 0) {
-    const lastEmailReceived = parseGmailResponse[0].receivedAt;
-    console.log(
-      "Previously Connected last:",
-      new Date(parseInt(lastEmailReceived)).toISOString()
-    );
-    console.log("Current Date (Unix):", lastEmailReceived);
-    return lastEmailReceived;
+    const lastEmailReceived = parseGmailResponse[0].date;
+    console.log("Previously Connected last:", lastEmailReceived);
+    input = momentTZ(lastEmailReceived).tz(inputTZ);
   } else {
-    const input = momentTZ().tz(inputTZ);
-    const getDate = momentTZ(input, inputTZ).format("YYYY-MM-DD");
-    const getTZ = momentTZ(input, inputTZ).format("Z");
-    const midnightDate = `${getDate}T00:00:00${getTZ}`;
-    console.log("Current Date (Midnight): ", midnightDate);
-    console.log(
-      "Formatted Current Date: ",
-      momentTZ(new Date(midnightDate)).tz(inputTZ).format("LLLL")
-    );
-    const unix = momentTZ(new Date(midnightDate)).tz(inputTZ).unix();
-    console.log("Current Date (Unix):", unix);
-    return unix;
+    input = momentTZ().tz(inputTZ);
   }
+
+  console.log("Current Date: ", input);
+
+  const getDate = momentTZ(input, inputTZ).format("YYYY-MM-DD");
+  const getTZ = momentTZ(input, inputTZ).format("Z");
+  const midnightDate = `${getDate}T00:00:00${getTZ}`;
+  console.log("Current Date (Midnight): ", midnightDate);
+  console.log(
+    "Formatted Current Date: ",
+    momentTZ(new Date(midnightDate)).tz(inputTZ).format("LLLL")
+  );
+  const unix = momentTZ(new Date(midnightDate)).tz(inputTZ).unix();
+  console.log("Current Date (Unix):", unix);
+  return unix;
 };
 
 const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
@@ -77,8 +80,8 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
     })
     .catch(({ err }) => console.log("Error in getMessagesByEmail", err));
 
-  console.log("Request:", getMessagesByEmail);
-  console.log("Params:", getMessagesByEmailParams);
+  // console.log("Request:", getMessagesByEmail);
+  // console.log("Params:", getMessagesByEmailParams);
   // console.log("Result messageIds:", messageIds);
 
   if (messageIds != undefined && messageIds.length != 0) {
@@ -133,7 +136,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
       })
       .promise();
 
-    console.log("Save to GmailMessageTable:", saveEmails);
+    // console.log("Save to GmailMessageTable:", saveEmails);
 
     const filterMessagesIDs = messagesToAdd.map((Item) => {
       return {
@@ -153,20 +156,20 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
       ExpressionAttributeValues: { ":companyId": companyId },
     };
 
-    console.log("Get Existing Gmail Messages by Company:", params);
+    // console.log("Get Existing Gmail Messages by Company:", params);
 
     const getExistingGmailMessages = await docClient.query(params).promise();
 
     const existingGmailMessages = getExistingGmailMessages.Items.map(
       (Item) => Item.gmailMessageId
     );
-    console.log("Existing Gmail Messages", existingGmailMessages);
+    // console.log("Existing Gmail Messages", existingGmailMessages);
 
     const nonExistingGmailMessages = filterMessagesIDs.filter(
       (f) => !existingGmailMessages.includes(f.id)
     );
 
-    console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
+    // console.log("Non-Existing Gmail Messages", nonExistingGmailMessages);
 
     if (nonExistingGmailMessages.length != 0) {
       const saveCompanyEmails = await docClient
@@ -190,7 +193,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
         })
         .promise();
 
-      console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
+      // console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
     }
   }
   if (nextPageToken)
@@ -202,7 +205,7 @@ exports.addToken = async (ctx) => {
 
   try {
     const payload = ctx;
-
+    // console.log("addToken Context: ", ctx);
     const { email, refreshToken, userTimeZone = "Australia/Sydney" } = ctx;
 
     const {
@@ -233,7 +236,6 @@ exports.addToken = async (ctx) => {
         let err = message.response.data.error,
           gmailWatchError =
             "Only one user push notification client allowed per developer (call /stop then try again)";
-
         console.log("Error in fetching history ID:", err);
 
         if (err.message == gmailWatchError) {
@@ -264,20 +266,20 @@ exports.addToken = async (ctx) => {
     };
 
     try {
-      console.log("Save to GmailTokenTable:", items);
+      // console.log("Save to GmailTokenTable:", items);
       const request = await docClient
         .put({
           TableName: "GmailTokenTable",
           Item: items,
         })
         .promise();
-      console.log("Response:", request);
+      // console.log("Response:", request);
     } catch ({ message }) {
       console.log("docClient.put Failed:", message);
     }
 
-    const rangeFilter = "after:" + getEmailStartDate(email, userTimeZone);
-
+    const rangeFilter =
+      "after:" + (await getEmailStartDate(email, userTimeZone));
     console.log("rangeFilter:", rangeFilter);
 
     await getOldMessages(email, payload.companyId, rangeFilter);

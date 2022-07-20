@@ -395,7 +395,6 @@ async function listCompanyGmailMessages(ctx) {
       compCMParam.Limit = limit;
     }
 
-    console.log(compCMParam);
     const compCMCmd = new QueryCommand(compCMParam);
     const compCMResult = await client.send(compCMCmd);
 

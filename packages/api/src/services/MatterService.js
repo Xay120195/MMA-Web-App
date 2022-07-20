@@ -15,8 +15,7 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { toUTC, toLocalTime } = require("../shared/toUTC");
 
 export async function generatePresignedUrl(Key, src) {
-  console.log("generatePresignedUrl");
-  console.log(src);
+  console.log("generatePresignedUrl", src);
 
   let fileScr = "gmail-api";
 
