@@ -125,7 +125,7 @@ const ActionButtons = ({
       var clientMatterId = "";
       var emailList = "";
 
-      /*const params = {
+      const params = {
         query: qGmailMessagesbyCompany,
         variables: {
           id: companyId,
@@ -137,16 +137,16 @@ const ActionButtons = ({
   
       await API.graphql(params).then((result) => {
         emailList = result.data.company.gmailMessages.items;
-      });*/
+      });
 
       // Add to Saved Emails
-      let  arrSavedEmails = unSavedEmails.filter(function(item){
+      let  arrSavedEmails = emailList.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) !== -1;
       });
       setSavedEmails(savedEmails.concat(arrSavedEmails));
 
       // Remove from Unsaved Emails
-      let  arrRemoveUnSavedEmails = unSavedEmails.filter(function(item){
+      let  arrRemoveUnSavedEmails = emailList.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) === -1;
       });
       setUnsavedEmails(arrRemoveUnSavedEmails);
