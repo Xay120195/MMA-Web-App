@@ -584,7 +584,7 @@ const TableUnsavedInfo = ({
                   >
                     {item.labelIds}
                   </button>
-                  <CreatableSelect
+                  {/* <CreatableSelect
                     defaultValue={() =>
                       defaultLabels(
                         item.labels.items
@@ -592,7 +592,6 @@ const TableUnsavedInfo = ({
                     }
                     isMulti
                     isClearable
-                    //options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
                     options={getOptions(item.clientMatters.items)}
                     isSearchable
                     openMenuOnClick={true}
@@ -604,9 +603,9 @@ const TableUnsavedInfo = ({
                     }
                     placeholder="Labels"
                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                  />
+                  /> */}
                 </div>
-                {item.attachments.items.map((item_attach, index) => (
+                {/* {item.attachments.items.map((item_attach, index) => (
                   <CreatableSelect
                     defaultValue={() =>
                       defaultLabels(
@@ -616,7 +615,6 @@ const TableUnsavedInfo = ({
                     isMulti
                     isClearable
                     options={getOptions(item.clientMatters.items)}
-                    // options={[{value: "123", label: "123"}]}
                     openMenuOnClick={true}
                     isDisabled={
                       checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
@@ -627,7 +625,7 @@ const TableUnsavedInfo = ({
                     placeholder="Labels"
                     className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                   />
-                ))}
+                ))} */}
               </td>
               <td className="p-2 align-top">
                 <React.Fragment key={item.id}>
