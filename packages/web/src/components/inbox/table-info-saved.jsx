@@ -416,7 +416,7 @@ const TableSavedInfo = ({
               </td>
               <td className="p-2 align-top">
                 <div className="relative">
-                  {item.labels &&
+                  {/* {item.labels &&
                     item.labels.items &&
                     item.labels.items.map((i, index) => (
                       <button
@@ -450,7 +450,7 @@ const TableSavedInfo = ({
                             {lbl.name}
                           </button>
                         ))
-                    )}
+                    )} */}
                 </div>
               </td>
               <td className="p-2 align-top">
