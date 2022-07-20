@@ -142,7 +142,10 @@ export default function AddContactModal({ close }) {
             </svg>
           </button>
           <button
-            onClick={() => console.log("Submitted", InputData)}
+            onClick={() => {
+              console.log("Submitted", InputData);
+              close();
+            }}
             className="p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-500 text-white font-medium gap-1 flex flex-row justify-start items-start text-md hover:bg-green-400 cursor-pointer focus:ring"
           >
             Add Contact

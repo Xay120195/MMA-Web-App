@@ -104,7 +104,7 @@ export default function Contacts() {
       <>
         {cl.map((user) => (
           <tr className="stripe text-left" key={user.id}>
-            <User user={user} />
+            <User user={user} setContactList={setContactList} ContactList={ContactList} />
           </tr>
         ))}
       </>
