@@ -36,11 +36,11 @@ mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: Strin
 }`;
 
 const qGetFileDownloadLink = `
-  query getFileDownloadLink($id: ID) {
-    file(id: $id) {
-      downloadURL
-    }
-  }`;
+query getAttachmentDownloadLink($id: String) {
+  gmailAttachment(id: $id) {
+    downloadURL
+  }
+}`;
 
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
@@ -387,7 +387,7 @@ const TableUnsavedInfo = ({
     };
 
     await API.graphql(params).then((result) => {
-      window.open(result.data.file.downloadURL);
+      window.open(result.data.gmailAttachment.downloadURL);
     });
   };
 
