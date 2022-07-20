@@ -42,9 +42,11 @@ functions:
     handler: src/functions/graphql/query/index.handler
   mutation-fn:
     handler: src/functions/graphql/mutation/index.handler
-    timeout: 300
+    timeout: 60
+    # (Do not uncomment) env-variables: REACT_APP_COGNITO_USER_POOL_ID REACT_APP_GMAIL_REDIRECT_URI REACT_APP_GMAIL_TOPIC REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET
   file-fn:
     handler: src/functions/graphql/file/index.handler
+    # (Do not uncomment) env-variables: REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET REACT_APP_S3_UPLOAD_BUCKET
   company-fn:
     handler: src/functions/graphql/company/index.handler
   clientmatter-fn:
@@ -61,16 +63,18 @@ functions:
     handler: src/functions/graphql/user/index.handler
   gmailmessage-fn:
     handler: src/functions/graphql/gmailMessage/index.handler
+  gmail-attachment-fn:
+    handler: src/functions/graphql/gmailAttachment/index.handler
   gmail-re-subsription-fn:
     handler: src/functions/event-bridge/gmail-re-subscription/index.handler
-    timeout: 60
     events:
       - schedule: rate(6 hours)
+    # (Do not uncomment) env-variables: REACT_APP_GMAIL_TOPIC
   gmail-watch-webhook-fn:
     handler: src/services/gmail/pushSubscription.pushSubscriptionHandler
     timeout: 60
     url: true
-
+    # (Do not uncomment) env-variables: REACT_APP_GMAIL_TOPIC REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET
 custom:
   dynamodb:
     # If you only want to use DynamoDB Local in some stages, declare them here
@@ -93,7 +97,6 @@ custom:
       defaultAction: ALLOW
       userPoolId: !Ref CognitoUserPool
     mappingTemplatesLocation: src/mapping-templates
-
     mappingTemplates:
       # Company
       - dataSource: LambdaQueryDS
@@ -676,6 +679,21 @@ custom:
         field: gmailMessageDescriptionUpdate
         request: false
         response: false
+      - dataSource: LambdaGmailAttachmentDS
+        type: GmailMessageAttachment
+        field: labels
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelTag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: gmailAttachmentLabelUntag
+        request: false
+        response: false
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA
@@ -726,6 +744,10 @@ custom:
         name: LambdaGmailMessageDS
         config:
           functionName: gmailmessage-fn
+      - type: AWS_LAMBDA
+        name: LambdaGmailAttachmentDS
+        config:
+          functionName: gmail-attachment-fn
 
 resources: # CloudFormation template syntax
   - ${file(./resources.yml)}

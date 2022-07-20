@@ -19,6 +19,8 @@ const ActionButtons = ({
   setShowToast,
   setResultMessage,
   emailIntegration,
+  setSavedEmails,
+  setUnsavedEmails,
 }) => {
 
   Storage.configure({
@@ -60,6 +62,13 @@ const ActionButtons = ({
   const qGmailMessagesbyCompany = `
   query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
     company(id: $id) {
+      gmailToken {
+        refreshToken
+        id
+        userId
+        companyId
+        updatedAt
+      }
       gmailMessages(
         isDeleted: $isDeleted
         isSaved: $isSaved
@@ -71,11 +80,19 @@ const ActionButtons = ({
           id
           from
           to
+          cc
+          bcc
           subject
           date
           snippet
           payload {
             content
+          }
+          labels {
+            items {
+              id
+              name
+            }
           }
           description
           clientMatters {
@@ -99,6 +116,12 @@ const ActionButtons = ({
               s3ObjectKey
               size
               type
+              labels {
+                items {
+                  id
+                  name
+                }
+              }
             }
           }
         }
@@ -137,8 +160,21 @@ const ActionButtons = ({
         emailList = result.data.company.gmailMessages.items;
       });
 
+      // Add to Saved Emails
+      let  arrSavedEmails = emailList.filter(function(item){
+        return selectedUnsavedItems.indexOf(item.id) !== -1;
+      });
+      setSavedEmails(savedEmails.concat(arrSavedEmails));
+
+      // Remove from Unsaved Emails
+      let  arrRemoveUnSavedEmails = emailList.filter(function(item){
+        return selectedUnsavedItems.indexOf(item.id) === -1;
+      });
+      setUnsavedEmails(arrRemoveUnSavedEmails);
+
       selectedUnsavedItems.map((obj) => {
         const filteredUnsavedArr = emailList.filter(item => item.id === obj);
+
         filteredUnsavedArr.map((item) => {
 
           item.clientMatters.items.map(clientMatters => {
@@ -183,10 +219,8 @@ const ActionButtons = ({
         setResultMessage("Successfully saved an email.");
         setShowToast(true);
         setTimeout(() => {
-          getUnSavedEmails();
-          getSavedEmails();
           setSelectedUnsavedItems([]);
-        }, 2000);
+        }, 1000);
       
     } else {
       selectedSavedItems.map((obj) => {
@@ -199,13 +233,24 @@ const ActionButtons = ({
           },
         });
       });
+
+      // Add to unsaved Emails
+      let  arrSavedEmails = savedEmails.filter(function(item){
+        return selectedSavedItems.indexOf(item.id) !== -1;
+      });
+      setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
+
+      // Remove from saved Emails
+      let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
+        return selectedSavedItems.indexOf(item.id) === -1;
+      });
+      setSavedEmails(arrRemoveUnSavedEmails);
+
       setResultMessage("Successfully saved an email.");
       setShowToast(true);
       setTimeout(() => {
-        getSavedEmails();
-        getUnSavedEmails();
         setSelectedUnsavedItems([]);
-      }, 2000);
+      }, 1000);
     }
   };
 
