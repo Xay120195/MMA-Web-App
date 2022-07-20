@@ -330,7 +330,7 @@ const TableSavedInfo = ({
                   )}
                 </p>
                 <button
-                  className="no-underline hover:underline text-xs text-blue-400"
+                  className="hidden no-underline hover:underline text-xs text-blue-400"
                   onClick={(e) =>
                     handleDownload(
                       item.id,
