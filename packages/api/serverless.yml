@@ -65,6 +65,7 @@ functions:
     handler: src/functions/graphql/gmailMessage/index.handler
   gmail-attachment-fn:
     handler: src/functions/graphql/gmailAttachment/index.handler
+    # (Do not uncomment) env-variables: REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET REACT_APP_S3_UPLOAD_BUCKET
   gmail-re-subsription-fn:
     handler: src/functions/event-bridge/gmail-re-subscription/index.handler
     events:
@@ -584,6 +585,11 @@ custom:
         field: gmailMessage
         request: false
         response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: gmailAttachment
+        request: false
+        response: false
       - dataSource: LambdaCompanyDS
         type: Company
         field: gmailMessages
@@ -682,6 +688,11 @@ custom:
       - dataSource: LambdaGmailAttachmentDS
         type: GmailMessageAttachment
         field: labels
+        request: false
+        response: false
+      - dataSource: LambdaGmailAttachmentDS
+        type: GmailMessageAttachment
+        field: downloadURL
         request: false
         response: false
       - dataSource: LambdaMutationDS

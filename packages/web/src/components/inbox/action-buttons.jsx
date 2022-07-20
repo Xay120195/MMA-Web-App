@@ -3,6 +3,7 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
+import Bars from "react-loading-icons";
 
 var moment = require("moment");
 
@@ -21,6 +22,8 @@ const ActionButtons = ({
   emailIntegration,
   setSavedEmails,
   setUnsavedEmails,
+  setSaveLoading,
+  saveLoading
 }) => {
 
   Storage.configure({
@@ -145,6 +148,7 @@ const ActionButtons = ({
     if(status) {
       var clientMatterId = "";
       var emailList = "";
+      setSaveLoading(true);
 
       const params = {
         query: qGmailMessagesbyCompany,
@@ -220,9 +224,12 @@ const ActionButtons = ({
         setShowToast(true);
         setTimeout(() => {
           setSelectedUnsavedItems([]);
+          setSaveLoading(false);
         }, 1000);
       
     } else {
+      setSaveLoading(true);
+
       selectedSavedItems.map((obj) => {
         const request = API.graphql({
           query: mSaveUnsavedEmails,
@@ -250,6 +257,7 @@ const ActionButtons = ({
       setShowToast(true);
       setTimeout(() => {
         setSelectedUnsavedItems([]);
+        setSaveLoading(false);
       }, 1000);
     }
   };
@@ -262,7 +270,7 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent) => {
+  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent) => {
     var opt = {
       margin:       [30, 30, 30, 30],
       filename:     fileName,
@@ -274,7 +282,7 @@ const ActionButtons = ({
     var content = document.getElementById("preview_"+gmailMessageId);
     content.innerHTML += Base64.decode(htmlContent);
 
-    html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
+    await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
       const file = new File([preBlob], fileName, {type: 'application/pdf'});
 
@@ -373,10 +381,12 @@ const ActionButtons = ({
               <button
                 type="button"
                 onClick={() => handleEmails(true)}
-                className={"bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
-                disabled={false} 
+                className={saveLoading ?
+                  "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
+                  : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
+                disabled={saveLoading ? true : false} 
               >
-                Save Emails
+                {saveLoading ?  'Saving Emails...' : 'Save Emails'}
               </button>
             </>
           ) : (
@@ -389,9 +399,12 @@ const ActionButtons = ({
               <button
                 type="button"
                 onClick={() => handleEmails(false)}
-                className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"
+                className={saveLoading ?
+                  "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
+                  : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
+                disabled={saveLoading ? true : false} 
               >
-                Unsave Emails
+                {saveLoading ?  'Unsaving Emails...' : 'UnSave Emails'}
               </button>
             </>
           ) : (<></>)}
