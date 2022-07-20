@@ -229,47 +229,6 @@ const TableUnsavedInfo = ({
     return arr;
   }
 
-  // const listLabels = `
-  //   query listLabels($clientMatterId: ID) {
-  //     clientMatter(id: $clientMatterId) {
-  //       labels {
-  //         items {
-  //           id
-  //           name
-  //         }
-  //       }
-  //     }
-  //   }
-  //   `;
-
-  // const getOptions = (cmID) => {
-  //   var cmid;
-  //   cmID.map(x => cmid = x.id);
-
-  //   console.log("cmid", cmid);
-  //   const labelsOpt = API.graphql({
-  //     query: listLabels,
-  //     variables: {
-  //       clientMatterId: cmid
-  //     },
-  //   });
-
-  //   var returnArr = [];
-
-  //   if(labelsOpt.data.clientMatter!==null){
-  //     labelsOpt.data.clientMatter.labels.items.map(x=> returnArr = [...returnArr, {value: x.id, label: x.name}])
-  //   }
-  //   console.log("returnArr", returnArr);
-
-  //   const optionss = [{value: "1", label: "1"}, {value: "2", label: "2"}];
-
-  //   console.log(optionss);
-  //   if(labelsOpt!==null){
-  //     return optionss;
-  //   }else{
-  //     return null;
-  //   }
-  // }
 
   const mAddEmailLabel = `
   mutation saveGmailMessageLabel($gmailMessageId: String, $labelId: [ID]) {
@@ -282,6 +241,15 @@ const TableUnsavedInfo = ({
   mutation saveGmailAttachmentLabel($attachmentId: String, $labelId: [ID]) {
     gmailAttachmentLabelTag(attachmentId: $attachmentId, labelId: $labelId) {
       id
+    }
+  }`;
+
+  const mTagFileLabel = `
+  mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
+    fileLabelTag(file: {id: $fileId}, label: $labels) {
+      file {
+        id
+      }
     }
   }`;
 
@@ -316,9 +284,13 @@ const TableUnsavedInfo = ({
 
   const handleAddEmailAttachmentLabel = async (e, atid) => {
     var selectedLabels = [];
+    var taggedLabels = [];
+
+    console.log("arrr", unSavedEmails);
 
     for(var i=0; i<e.length; i++){
       selectedLabels = [...selectedLabels, e[i].value];
+      taggedLabels = [...taggedLabels, {id: e[i].value, name: e[i].label}];
     }
 
     if (e.length > 0) {
@@ -329,6 +301,16 @@ const TableUnsavedInfo = ({
           attachmentId: atid,
         },
       });
+
+      // const result1 = await API.graphql({
+      //   query: mTagFileLabel,
+      //   variables: {
+      //     labels: taggedLabels,
+      //     fileId: atid,
+      //   },
+      // });
+
+      // console.log("tagging", result1);
     }else{
       const result = await API.graphql({
         query: mAddEmailAttachmentLabel,
@@ -337,9 +319,20 @@ const TableUnsavedInfo = ({
           attachmentId: atid,
         },
       });
+
+      // const result1 = await API.graphql({
+      //   query: mTagFileLabel,
+      //   variables: {
+      //     labels: [],
+      //     fileId: atid,
+      //   },
+      // });
+
+      // console.log("tagging", result1);
     }
 
     console.log("MainArray", unSavedEmails);
+
   };
 
   const defaultLabels = (items) => {
@@ -357,8 +350,6 @@ const TableUnsavedInfo = ({
   const getOptions = (cmidarr) => {
     var mainLabels = labelsList;
     var cmid;
-    console.log("cmidinoptions", cmidarr);
-    console.log("mainLabels",labelsList);
 
     if(cmidarr.length > 0){
       cmid = cmidarr[0].client.id
@@ -368,15 +359,18 @@ const TableUnsavedInfo = ({
 
     if(labelsList.length>0){
       for(var i=0; i<labelsList.length; i++){
-        console.log("optionscheck",labelsList[i]);
-        if(mainLabels[i].cmid === cmid){
-          const newOptions = mainLabels[i].labelsExtracted.map(({ id: value, name: label }) => ({
-              value,
-              label,
-            }));
-          return newOptions;
-        }else{
+        // console.log("optionscheck",labelsList[i]);
+
+        if(mainLabels[i].labelsExtracted.length === 0){
           return null;
+        }else{
+          if(mainLabels[i].cmid === cmid){
+            const newOptions = mainLabels[i].labelsExtracted.map(({ id: value, name: label }) => ({
+                value,
+                label,
+              }));
+            return newOptions;
+          }
         }
       }
     }else{
@@ -598,7 +592,7 @@ const TableUnsavedInfo = ({
                     }
                     isMulti
                     isClearable
-                    // options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
+                    //options={[{value: "c3bb6cd1-8d69-48f9-95b6-e4ddf46a52bc" , label: "test"}, {value: "c2896ea6-6a1f-4668-8844-7294eef18e8e", label: "test6"}]}
                     options={getOptions(item.clientMatters.items)}
                     isSearchable
                     openMenuOnClick={true}
@@ -622,6 +616,7 @@ const TableUnsavedInfo = ({
                     isMulti
                     isClearable
                     options={getOptions(item.clientMatters.items)}
+                    // options={[{value: "123", label: "123"}]}
                     openMenuOnClick={true}
                     isDisabled={
                       checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true

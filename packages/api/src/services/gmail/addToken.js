@@ -29,14 +29,11 @@ const getEmailStartDate = async (email, inputTZ) => {
 
     Limit: 1,
   };
-
-  console.log("gmailParam", gmailParam);
+  
   const gmailCmd = new QueryCommand(gmailParam);
-  console.log("gmailCmd", gmailCmd);
   const gmailResult = await ddbClient.send(gmailCmd);
-  console.log("gmailResult", gmailResult);
   const parseGmailResponse = gmailResult.Items.map((data) => unmarshall(data));
-  console.log("parseGmailResponse", parseGmailResponse);
+  
 
   let input;
   if (parseGmailResponse.length != 0) {
