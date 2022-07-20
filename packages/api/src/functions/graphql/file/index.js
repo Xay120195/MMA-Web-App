@@ -169,7 +169,8 @@ const resolvers = {
     downloadURL: async (ctx) => {
       return generatePresignedUrl(
         ctx.source.s3ObjectKey,
-        ctx.source
+        ctx.source,
+        "file-bucket"
       );
     },
     labels: async (ctx) => {

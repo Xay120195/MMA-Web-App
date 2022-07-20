@@ -81,7 +81,8 @@ const resolvers = {
     downloadURL: async (ctx) => {
       return generatePresignedUrl(
         ctx.source.s3ObjectKey,
-        ctx.source
+        ctx.source,
+        "gmail-api"
       );
     },
     labels: async (ctx) => {
