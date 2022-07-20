@@ -12,7 +12,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { AiOutlineFolderOpen } from "react-icons/ai";
 import { BsFillTrashFill } from "react-icons/bs";
 import * as FaIcons from "react-icons/fa";
-import {FiChevronDown, FiChevronUp, FiChevronsDown, FiChevronsUp} from "react-icons/fi";
+import {FiChevronDown, FiChevronUp, FiChevronRight} from "react-icons/fi";
 import BlankList from "../../assets/images/RFI_Blank_List.svg";
 import { useParams } from "react-router-dom";
 import { API } from "aws-amplify";
@@ -494,8 +494,9 @@ export default function Briefs() {
   const [headerReadMore, setHeaderReadMore] = useState(false);
   const [headerLines, setHeaderLines] = useState();
   const [contentHeight, setContentHeight] = useState();
-  const {height, width} = useWindowDimensions();
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] = useState(true);
+  const {height, width} = useWindowDimensions();
 
   function countLines(tag) {
     var divHeight = tag.offsetHeight
@@ -507,20 +508,27 @@ export default function Briefs() {
     var headerTag = document.getElementById('headerTag');
     setHeaderLines(countLines(headerTag));
     if(headerReadMore) {
-      setContentHeight(height-93-headerTag.offsetHeight);
+      setContentHeight(height-94-headerTag.offsetHeight);
     } else {
-      setContentHeight(height-93-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+      setContentHeight(height-94-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
     }
   }, [height, width, headerReadMore]);
-  
+
+  function handleScrollEvent(e) {
+    const top = e.target.scrollTop > 20;
+    if (top) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
+  }
+  function handleScrollToTop () {
+    let d = document.getElementById("mobileContent");
+    d.scrollTo(0, 0);
+  }
+
   return (
     <>
-      <ScrollToTop
-        smooth
-        component={<BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>}
-        className="sm:hidden scrollButton"
-        style={{borderRadius: "50%"}}
-      />
       <div
         className={
           "bg-gray-100 p-5 min-h-screen relative flex flex-col min-w-0 break-words sm:min-h-0 sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv"
@@ -537,6 +545,19 @@ export default function Briefs() {
                   {client_name}/{matter_name}
                 </span>
               </h1>
+            </div>
+            <div className="hidden sm:flex shrink-0 items-center sm:absolute sm:right-0">
+              <Link to={AppRoutes.DASHBOARD}>
+                <button className="hidden align-middle sm:inline-flex shrink-0 bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                  Back &nbsp;
+                  <MdArrowForwardIos />
+                </button>
+                <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
+                  <MdArrowForwardIos style={{
+                    margin:"auto"
+                  }}/>
+                </button>
+              </Link>
             </div>
             {/* MOBILE VIEW OF HEADER */}
             <div className="flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto"}}>
@@ -602,8 +623,11 @@ export default function Briefs() {
                   <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
                 </svg>
                 <li className="text-sm">
-                  <span className="text-xs uppercase sm:normal-case sm:text-sm underline underline-offset-4 sm:no-underline font-medium text-gray-700 sm:text-gray-500">
-                    <AiOutlineFolderOpen className="hidden sm:inline-block"/> <span className="sm:inline hidden">&nbsp;&nbsp;</span>Background Page{" "}
+                  <span className="text-xs sm:px-1 sm:flex uppercase sm:normal-case sm:text-sm underline underline-offset-4 sm:no-underline font-medium text-gray-700 sm:text-gray-500">
+                    <AiOutlineFolderOpen className="hidden sm:inline-block"/> 
+                    <span className="sm:inline hidden">&nbsp;&nbsp;</span>
+                    Background
+                    <span className="sm:inline hidden font-medium">&nbsp;Page</span>{" "}
                   </span>
                 </li>
                 <svg
@@ -709,8 +733,9 @@ export default function Briefs() {
         {Briefs === null ? (
           <div> </div>
         ) : Briefs.length === 0 ? (
-          <div className="sm:p-5 sm:px-5 sm:py-1 left-0 mt-5">
-            <div className="w-full h-42 bg-white sm:bg-gray-100 rounded-lg border border-gray-200 mb-6 py-1 px-1">
+          <div className="sm:p-5 sm:px-5 sm:py-1 left-0 sm:mt-5">
+            <div className="w-full flex items-center sm:flex-none h-42 bg-white sm:bg-gray-100 rounded-lg sm:border border-gray-200 sm:mb-6 sm:py-1 sm:px-1" 
+            style={{height: width > 640 ? "auto" : contentHeight}}>
               <BlankState
                 displayText={"There are no items to show in this view"}
                 txtLink={"add new Background"}
@@ -719,10 +744,11 @@ export default function Briefs() {
               />
             </div>
           </div>
+          
         ) : (
-          <div className="sm:shadow overflow-hidden border-b bg-white sm:border-gray-200 rounded-lg sm:my-5 p-5 pb-0 sm:p-0"
-          style={{height:width > 640 ?"auto": contentHeight}}>
-            <div className="items-stretch flex">
+          <div className="flex flex-col sm:block sm:shadow sm:overflow-hidden border-b bg-white sm:border-gray-200 rounded-lg sm:my-5 py-5 sm:p-0"
+          style={{height:(width>640 ? "auto":contentHeight)}}>
+            <div className="mx-5 sm:hidden items-stretch flex border-b border-gray-200">
               <button className={(isAllFilesSelectedButton ? "border-black" : "border-white") + " border-b-2 py-2 font-semibold"}>
                 All Files
               </button>
@@ -730,20 +756,25 @@ export default function Briefs() {
                 Brief
               </button>
             </div>
-            <div className="px-5 overflow-y-auto h-min">
+            <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="px-5 sm:px-0 overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
+              {showScrollButton ? (<>
+              <div className="scrollButtonBrief flex" onClick={() => handleScrollToTop()}>
+                <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
+              </div>
+              </>) : (<></>)}
             {Briefs.map((item) => (
               <div
-                className="w-90 bg-gray-100 rounded-lg border border-gray-200 mt-5 p-5 sm:py-4 sm:px-4 sm:m-2
+                className="w-90 bg-gray-100 rounded-lg border border-gray-200 mt-5 py-3 px-5 sm:py-4 sm:px-4 sm:m-2
                 hover:border-black cursor-pointer"
                 key={item.id}
                 data-info={item.id}
                 onMouseOver={handleMouseOver} 
                 onMouseOut={handleMouseOut}
               >
-                <div >
-                  <div className="grid grid-cols-4 gap-4" onClick={() => visitBrief(item.id)} >
+                <div className="flex sm:block">
+                  <div className="flex-auto grid grid-cols-4 gap-4" onClick={() => visitBrief(item.id)} >
                     <div
-                      className={`col-span-2 ${
+                      className={`col-span-4 sm:col-span-2 ${
                         !showBName && `py-2 px-2 mb-2`
                       } ${!showDate && `py-1 px-1 mb-2`}`}
                     >
@@ -774,13 +805,16 @@ export default function Briefs() {
                               onBlur={(e) =>
                                 handleSaveBriefName(e, item.name, item.id)
                               }
-                              className="inline-flex items-center focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1"
+                              className="hidden sm:inline-flex items-center focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1"
                               dangerouslySetInnerHTML={{
                                 __html: item.name,
                               }}
                             />
+                            <p className="sm:hidden line-clamp-1 items-center focus:outline-none text-gray-800 dark:text-gray-100 font-semibold mb-1">
+                              {item.name}
+                            </p>
                             {isHovering && isHoveringId === item.id && (
-                              <div
+                              <div className="hidden sm:block"
                               >
                                 <MdEdit className="text-blue-500 hover:text-blue-300 inline-flex items-center ml-2 mr-1" 
                                 onClickCapture={e => e.stopPropagation()}
@@ -790,22 +824,30 @@ export default function Briefs() {
                           </div>
                         </>
                       )}
-
-                      {showDate && (
+                      <div className="flex col-span-4 items-center">  
+                        <div className="mr-2 sm:hidden inline-flex" onClick={() => visitBrief(item.id)} >
+                          {/* Added for mobile version */}
+                          {showTag && <FaUserCircle className={`h-5 w-5 `} />}
+                        </div>
+                        {showDate && (
                         <p
                           data-info={item.id}
                           onMouseOver={handleMouseOver} 
                           onMouseOut={handleMouseOut}
                           tabIndex="0"
-                          className="focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
+                          className="sm:inline focus:outline-none text-gray-400 dark:text-gray-100 text-xs"
                         >
                           {item.date ? formatDisplayDate(item.date) : "No date"}
                         </p>
-                      )}
+                        )}
+                        </div>
                     </div>
                   </div>
-
-                  <div className="float-right inline-flex -mt-10 mr-8" onClick={() => visitBrief(item.id)} >
+                  <div className="flex ml-5 items-center sm:hidden font-bold text">
+                    {/* Added for mobile version */}
+                    <FiChevronRight/>
+                  </div>
+                  <div className="hidden sm:inline-flex float-right inline-flex -mt-10 mr-8" onClick={() => visitBrief(item.id)} >
                     {showTag && <FaUserCircle className={`h-10 w-10 `} />}
                     {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -823,7 +865,7 @@ export default function Briefs() {
                       />
                     </svg> */}
                   </div>
-                  <div className="float-right inline-flex -mt-8 ml-4" >
+                  <div className="hidden sm:inline-flex float-right -mt-8 ml-4" >
                       {/* <BsFillTrashFill className="float-right text-md mb-10 text-red-500 hover:text-red-300 inline-flex items-center " 
                       onClick={(e) => handleShowRemoveModal(item.id) }
                       /> */}
