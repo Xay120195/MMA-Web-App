@@ -33,11 +33,13 @@ export async function generatePresignedUrl(Key, src) {
     Key: "public/" + Key,
   };
 
-  if (
-    src.type.split("/").slice(0, -1).join("/") !== "image" &&
-    src.type !== "application/pdf"
-  ) {
-    request.ResponseContentDisposition = "attachment";
+  if (src.type) {
+    if (
+      src.type.split("/").slice(0, -1).join("/") !== "image" &&
+      src.type !== "application/pdf"
+    ) {
+      request.ResponseContentDisposition = "attachment";
+    }
   }
 
   const cmd = new GetObjectCommand(request);
