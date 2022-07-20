@@ -376,7 +376,9 @@ const Inbox = () => {
             getUnSavedEmails={getUnSavedEmails}
             getSavedEmails={getSavedEmails}
             unSavedEmails={unSavedEmails}
+            setUnsavedEmails={setUnsavedEmails}
             savedEmails={savedEmails}
+            setSavedEmails={setSavedEmails}
             setResultMessage={setResultMessage}
             setShowToast={setShowToast}
             emailIntegration={emailIntegration}
