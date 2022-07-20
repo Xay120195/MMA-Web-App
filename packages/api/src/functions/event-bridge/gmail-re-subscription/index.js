@@ -12,7 +12,7 @@ const {
   client_secret,
   project_id,
 } = require("../../../services/gmail/config");
-
+const { toUTC, toLocalTime } = require("../../../shared/toUTC");
 exports.handler = async () => {
   console.log("Event Bridge: Gmail Re-Subscription");
   let responseBody = "";
