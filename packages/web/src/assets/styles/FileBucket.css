@@ -3,11 +3,6 @@
   top: 0;
 }
 
-div {
-  transition: width 2s, height 2s;
-  transition-timing-function: ease-in-out;
-
-}
 @media (max-width: 640px) { 
   .contentDiv {
     margin: "0 0 0 0px";
