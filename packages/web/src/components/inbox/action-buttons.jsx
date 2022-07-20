@@ -3,7 +3,6 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
-import Bars from "react-loading-icons";
 
 var moment = require("moment");
 
