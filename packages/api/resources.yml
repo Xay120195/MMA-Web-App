@@ -901,9 +901,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
+        - AttributeName: connectedEmail
+          AttributeType: S
+        - AttributeName: receivedAt
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byConnectedEmail
+          KeySchema:
+            - AttributeName: connectedEmail
+              KeyType: HASH
+            - AttributeName: receivedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
 
   GmailMessageClientMatterTable:

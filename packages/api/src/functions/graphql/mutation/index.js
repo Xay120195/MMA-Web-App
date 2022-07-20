@@ -2044,6 +2044,8 @@ async function createGmailMessage(data) {
       to: data.to,
       subject: data.subject,
       snippet: data.snippet,
+      connectedEmail: data.connectedEmail,
+      receivedAt: data.receivedAt,
       createdAt: toUTC(new Date()),
     };
 
@@ -3101,7 +3103,7 @@ const resolvers = {
       return await bulkSoftDeleteGmailMessage(ctx.arguments);
     },
     gmailConnectFromCode: async (ctx) => {
-      const { code, email, userId, companyId } = ctx.arguments;
+      const { code, email, userId, companyId, userTimeZone } = ctx.arguments;
       const token = await googleAuth.getToken(code);
 
       const data = {
@@ -3109,6 +3111,7 @@ const resolvers = {
         userId,
         companyId,
         refreshToken: token.tokens.refresh_token,
+        userTimeZone
       };
 
       return addToken(data);

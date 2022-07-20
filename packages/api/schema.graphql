@@ -681,6 +681,8 @@ type Mutation {
     to: String
     subject: String
     snippet: String
+    connectedEmail: String
+    receivedAt: String
   ): GmailMessage
   gmailMessageClientMatterTag(
     gmailMessageId: String

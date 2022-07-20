@@ -61,7 +61,8 @@ export default function Briefs() {
   const [isHoveringId, setIsHoveringId] = useState(null);
   const [showRemoveBrief, setshowRemoveBrief] = useState(false);
   const [removeBriefId, setRemoveBriefId] = useState(null);
-  
+
+  const [BriefsCopy, setBriefsCopy] = useState();
 
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
@@ -147,6 +148,7 @@ export default function Briefs() {
       const matterFilesList = brief.data.clientMatter.briefs.items;
       console.log("mfl", matterFilesList);
       setBriefs(matterFilesList);
+      setBriefsCopy(matterFilesList);
     });
   };
 
@@ -205,9 +207,27 @@ export default function Briefs() {
     gridtemplatecolumn: "1fr auto",
   };
 
+  const searchText = (val) => {
+    if (val.length > 0) {
+      setBriefs(
+        Briefs.filter((item) => {
+          return (
+            item.name
+              .toLowerCase()
+              .replace(" ", "")
+              .includes(val.toLowerCase().replace(" ", "")) === true
+          );
+        })
+      );
+    } else {
+      setBriefs(BriefsCopy);
+    }
+  };
+
   const handleSearchChange = (e) => {
-    console.log("L114" + e.target.value);
-    setSearchTable(e.target.value);
+    //console.log("L114" + e.target.value);
+    searchText(e.target.value);
+    //setSearchTable(e.target.value);
   };
 
   const style = {

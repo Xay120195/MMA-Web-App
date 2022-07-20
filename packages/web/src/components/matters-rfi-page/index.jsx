@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef     } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
 import { HiOutlinePlusCircle } from "react-icons/hi";
@@ -36,11 +36,11 @@ export default function MattersRFI() {
   const [allowUpdateQuestion, setAllowUpdateQuestion] = useState(false);
   const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-
+  const [copyRFI, setcopyRFI] = useState([]);
+  
   let history = useHistory();
   const bool = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
-
 
   const handleBlankStateClick = () => {
     // console.log("Blank State Button was clicked!");
@@ -91,6 +91,7 @@ export default function MattersRFI() {
       const RFIList = rfi.data.clientMatter.rfis.items;
       console.log("mfl", RFIList);
       setRFI(RFIList);
+      setcopyRFI(RFIList);
     });
   };
 
@@ -129,7 +130,6 @@ export default function MattersRFI() {
     setshowCreateRFIModal(false);
   };
 
-
   // const handleDeleteRow = () => {
   //   var updatedRows = [...dataquestions];
   //   var _data = [];
@@ -141,8 +141,25 @@ export default function MattersRFI() {
   //   setQuestion(_data);
   // };
 
+  const searchRFI = (val) => {
+    if (val.length > 0) {
+      setRFI(
+        RFI.filter(
+          (rfi) =>
+            rfi.name
+              .toLowerCase()
+              .replace(" ", "")
+              .includes(val.toLowerCase().replace(" ", "")) === true
+        )
+      );
+    } else {
+      setRFI(copyRFI);
+    }
+  };
+
   const handleSearchChange = (e) => {
     console.log("L114" + e.target.value);
+    searchRFI(e.target.value);
     setSearchTable(e.target.value);
   };
 
@@ -198,20 +215,20 @@ export default function MattersRFI() {
 
   var timeoutId;
   //SESSION TIMEOUT
-  const handleOnAction =  (event) => {
+  const handleOnAction = (event) => {
     console.log("user is clicking");
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
     bool.current = false;
-    if(showSessionTimeout){
+    if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
           console.log("Sign out completed.");
           history.push("/");
         });
-      
+
         function clearLocalStorage() {
           localStorage.removeItem("userId");
           localStorage.removeItem("email");
@@ -235,7 +252,6 @@ export default function MattersRFI() {
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
     }, 60000 * 60);
-
   };
 
   useIdleTimer({
@@ -244,7 +260,6 @@ export default function MattersRFI() {
     onIdle: handleOnIdle,
     debounce: 1000,
   });
-
 
   return (
     <>
@@ -264,7 +279,9 @@ export default function MattersRFI() {
             <div className="flex-grow">
               <h1 className="font-bold text-right text-base px-2 sm:px-0 sm:text-3xl sm:text-left">
                 Request For Information
-                <span className="hidden sm:inline text-base sm:text-3xl">&nbsp;of&nbsp;</span>
+                <span className="hidden sm:inline text-base sm:text-3xl">
+                  &nbsp;of&nbsp;
+                </span>
                 <br className="sm:hidden"></br>
                 <span className="text-base font-semibold sm:text-3xl">
                   {client_name}/{matter_name}
@@ -278,47 +295,48 @@ export default function MattersRFI() {
                   <MdArrowForwardIos />
                 </button>
                 <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
-                  <MdArrowForwardIos style={{
-                    margin:"auto"
-                  }}/>
+                  <MdArrowForwardIos
+                    style={{
+                      margin: "auto",
+                    }}
+                  />
                 </button>
-               
               </Link>
             </div>
           </div>
           <div className="hidden sm:block px-3 sm:px-0">
-              <nav aria-label="Breadcrumb" style={style} className="mt-4">
-                <ol
-                  role="list"
-                  className="px-0 flex items-left space-x-2 lg:max-w-7xl lg:px-8"
-                >
-                  <li>
-                    <Link
-                      className="mr-2 text-sm font-medium text-gray-900"
-                      to={`${AppRoutes.DASHBOARD}`}
-                    >
-                      Dashboard
-                    </Link>
-                  </li>
-                  <svg
-                    width="16"
-                    height="20"
-                    viewBox="0 0 16 20"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                    className="w-4 h-5 text-gray-300"
+            <nav aria-label="Breadcrumb" style={style} className="mt-4">
+              <ol
+                role="list"
+                className="px-0 flex items-left space-x-2 lg:max-w-7xl lg:px-8"
+              >
+                <li>
+                  <Link
+                    className="mr-2 text-sm font-medium text-gray-900"
+                    to={`${AppRoutes.DASHBOARD}`}
                   >
-                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                  </svg>
-                  <li className="text-sm">
-                    <span className="font-medium text-gray-500 px-1 flex">
-                      <AiOutlineFolderOpen /> &nbsp; RFI List{" "}
-                    </span>
-                  </li>
-                </ol>
-              </nav>
-            </div>
+                    Dashboard
+                  </Link>
+                </li>
+                <svg
+                  width="16"
+                  height="20"
+                  viewBox="0 0 16 20"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="w-4 h-5 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+                <li className="text-sm">
+                  <span className="font-medium text-gray-500 px-1 flex">
+                    <AiOutlineFolderOpen /> &nbsp; RFI List{" "}
+                  </span>
+                </li>
+              </ol>
+            </nav>
+          </div>
           <div className="mt-4 sm:mt-7">
             <div>
               <button
@@ -398,9 +416,7 @@ export default function MattersRFI() {
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
-      {showSessionTimeout && (
-        <SessionTimeout/>
-      )}
+      {showSessionTimeout && <SessionTimeout />}
     </>
   );
 }

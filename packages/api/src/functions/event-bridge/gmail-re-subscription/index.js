@@ -12,7 +12,7 @@ const {
   client_secret,
   project_id,
 } = require("../../../services/gmail/config");
-
+const { toUTC, toLocalTime } = require("../../../shared/toUTC");
 exports.handler = async () => {
   console.log("Event Bridge: Gmail Re-Subscription");
   let responseBody = "";
@@ -66,7 +66,7 @@ exports.handler = async () => {
                 updatedAt: toUTC(new Date()),
               };
 
-              console.log("Save to GmailTokenTable:", items);
+              // console.log("Save to GmailTokenTable:", items);
               await docClient
                 .put({
                   TableName: "GmailTokenTable",
