@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
+import BlankStateMobile from "../blank-state-mobile";
 import { HiOutlinePlusCircle } from "react-icons/hi";
 import { MdArrowForwardIos, MdDownload, MdEdit, MdDelete } from "react-icons/md";
+import Illustration from "../../assets/images/no-data.svg";
 // import { matter_rfi, questions } from "./data-source";
 import { AppRoutes } from "../../constants/AppRoutes";
 // import CreateRFIModal from "./create-RFI-modal";
@@ -736,12 +738,20 @@ export default function Briefs() {
           <div className="sm:p-5 sm:px-5 sm:py-1 left-0 sm:mt-5">
             <div className="w-full flex items-center sm:flex-none h-42 bg-white sm:bg-gray-100 rounded-lg sm:border border-gray-200 sm:mb-6 sm:py-1 sm:px-1" 
             style={{height: width > 640 ? "auto" : contentHeight}}>
+              {width > 640 ? (
               <BlankState
                 displayText={"There are no items to show in this view"}
                 txtLink={"add new Background"}
                 iconDisplay={BlankList}
                 handleClick={() => setshowCreateBriefsModal(true)}
-              />
+              />) : (
+                <BlankStateMobile
+                header={"There are no items to show in this view."}
+                content={"Any added files in the desktop will appear here"}
+                svg={Illustration}
+                />
+              )}
+              
             </div>
           </div>
           
