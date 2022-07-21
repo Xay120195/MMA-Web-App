@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import BlankState from "../blank-state";
+import BlankStateMobile from "../blank-state-mobile";
 import { Redirect, useHistory } from "react-router-dom";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
@@ -27,6 +28,7 @@ import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
 import { AiOutlineDownload, AiFillTags } from "react-icons/ai";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import * as IoIcons from "react-icons/io";
+import Illustration from "../../assets/images/no-data.svg";
 
 import {
   GrDocumentPdf,
@@ -95,7 +97,6 @@ export default function FileBucket() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [descriptionClass, setDescriptionClass] = useState(true);
   const [descriptionClassId, setDescriptionClassId] = useState("");
-  const {height, width} = useWindowDimensions();
   let filterOptionsArray = [];
 
   const [showRemoveFileModal, setshowRemoveFileModal] = useState(false);
@@ -2146,7 +2147,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [readMoreStateDesc, setReadMoreStateDesc] = useState([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isExpandAllActive, setIsExpandAllActive] = useState(false);
-
+  const {height, width} = useWindowDimensions();
+  
   function handleReadMoreStateDesc (fileId) {
     if(readMoreStateDesc.find((temp)=>{
       return temp === fileId;
@@ -2606,11 +2608,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
                   <div className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
                   style={{height:width > 640 ?"auto": contentHeight}}>
-                    <BlankState
+                    {width > 640 ? (
+                      <BlankState
                       title={"items"}
                       txtLink={"file upload button"}
                       handleClick={() => setShowUploadModal(true)}
                     />
+                    ) : (
+                      <BlankStateMobile
+                        header={"There are no items to show in this view."}
+                        content={"Any uploaded files in the desktop will appear here"}
+                        svg={Illustration}
+                      />
+                    )}
+                    
                   </div>
                 </div>
               ) : (
@@ -3180,7 +3191,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                               <div className="flex flex-col relative">
                                 <div className="absolute left-0 right-0 mx-auto bottom-2 rounded-full bg-gray-200" style={{height:"5.5px", width:"5.5px"}}></div>
                                 <div className="font-semibold text-cyan-400">
-                                {index + 1}
+                                  {index + 1}
                                 </div>
                                 <div className="relative flex-auto mb-2" style={{
                                   backgroundImage: "linear-gradient(#e5e7eb, #e5e7eb)",
