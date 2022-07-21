@@ -68,8 +68,8 @@ const getParsedGmailMessage = async (data) => {
         .replace(/\s/g, "")
         .replace(/\.[^/.]+$/, "")
         .toLowerCase();
-      if (trimName.length > 40) trimName = trimName.substring(0, 40);
-
+      if (trimName.length > 40) trimName = trimName.slice(trimName.length - 40);
+      
       const fid = messageId + trimName,
         fileName = `${messageId}/${filename}`;
 
@@ -80,7 +80,7 @@ const getParsedGmailMessage = async (data) => {
       // console.log("getExistingAttachments:", getExistingAttachments);
       console.log("getExistingAttachments()");
       if (getExistingAttachments === undefined) {
-        // console.log("Save Attachments To Database:", filename);
+        console.log("Save Attachments To Database:", filename);
         try {
           const saveAttachmentsParams = {
             id: fid,
