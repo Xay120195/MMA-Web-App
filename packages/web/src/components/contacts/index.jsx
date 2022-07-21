@@ -1,46 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
-import ToastNotification from "../toast-notification";
-import { API } from "aws-amplify";
-import "../../assets/styles/AccountSettings.css";
-import { MdArrowForwardIos, MdKeyboardArrowLeft } from "react-icons/md";
-import { FiFilter, FiSend } from "react-icons/fi";
-import { AiOutlineDown } from "react-icons/ai";
-import { FaUserCircle } from "react-icons/fa";
-import { BiDotsVerticalRounded, BiSort } from "react-icons/bi";
-import {
-  HiOutlineShare,
-  HiOutlinePlusCircle,
-  HiOutlineFilter,
-  HiMinus,
-  HiMinusCircle,
-  HiTrash,
-} from "react-icons/hi";
-import { FaUsers } from "react-icons/fa";
-import "./contacts.css";
-import AddContactModal from "./add-contact-revamp-modal";
-import dummy from "./dummy.json";
-import User from "./user";
-import { alphabet } from "./alphabet";
-import { BiSortAZ, BiSortZA } from "react-icons/bi";
-import DeleteModal from "./delete-modal";
+import '../../assets/styles/AccountSettings.css';
+import './contacts.css';
+
+import { CgChevronLeft, CgSortAz, CgSortZa, CgTrash } from 'react-icons/cg';
+import { FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
+import { Link, useHistory } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+
+import { API } from 'aws-amplify';
+import AddContactModal from './add-contact-revamp-modal';
+import DeleteModal from './delete-modal';
+import ToastNotification from '../toast-notification';
+import User from './user';
+import { alphabetArray } from './alphabet';
+import dummy from './dummy.json';
 
 export default function Contacts() {
-
   const [showAddContactModal, setshowAddContactModal] = useState(false);
   const handleModalClose = () => {
     setshowAddContactModal(false);
   };
 
+  const [shortcutSelected, setShortcutSelected] = useState('');
+
   const [contacts, setContacts] = useState(null);
-  const [ActiveMenu, setActiveMenu] = useState("Contacts");
+  const [ActiveMenu, setActiveMenu] = useState('Contacts');
   const [showToast, setShowToast] = useState(false);
-  const [resultMessage, setResultMessage] = useState("");
-  const [ActiveLetter, setActiveLetter] = useState("a");
+  const [resultMessage, setResultMessage] = useState('');
+  const [ActiveLetter, setActiveLetter] = useState('a');
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
 
-
-  
   const [ContactList, setContactList] = useState();
   const hideToast = () => {
     setShowToast(false);
@@ -74,7 +62,7 @@ export default function Contacts() {
     const params = {
       query: qGetContacts,
       variables: {
-        companyId: localStorage.getItem("companyId"),
+        companyId: localStorage.getItem('companyId'),
       },
     };
 
@@ -85,12 +73,12 @@ export default function Contacts() {
   };
 
   const contentDiv = {
-    margin: "0 0 0 65px",
+    margin: '0 0 0 65px',
   };
 
   const mainGrid = {
-    display: "grid",
-    gridtemplatecolumn: "1fr auto",
+    display: 'grid',
+    gridtemplatecolumn: '1fr auto',
   };
 
   const handleAddContact = (returnedUser) => {
@@ -111,36 +99,30 @@ export default function Contacts() {
     );
   };
 
-  //Filter Name Alphabetically
-  useEffect(() => {
-    dummy.sort((a, b) => a.name.localeCompare(b.name));
-    setContactList(dummy);
-  }, []);
-
   let history = useHistory();
 
   const handleSort = (sortedReverse, sortBy) => {
     if (sortedReverse) {
-      if (sortBy === "name") {
+      if (sortBy === 'name') {
         dummy.sort((a, b) => a.name.localeCompare(b.name));
-        alphabet.sort()
-      } else if (sortBy === "type") {
+        alphabetArray.sort();
+      } else if (sortBy === 'type') {
         dummy.sort((a, b) => a.type.localeCompare(b.type));
-         alphabet.sort();
-      } else if (sortBy === "company") {
+        alphabetArray.sort();
+      } else if (sortBy === 'company') {
         dummy.sort((a, b) => a.company.localeCompare(b.company));
-         alphabet.sort();
+        alphabetArray.sort();
       }
     } else {
-      if (sortBy === "name") {
+      if (sortBy === 'name') {
         dummy.sort((a, b) => a.name.localeCompare(b.name)).reverse();
-        alphabet.sort().reverse();
-      } else if (sortBy === "type") {
+        alphabetArray.sort().reverse();
+      } else if (sortBy === 'type') {
         dummy.sort((a, b) => a.type.localeCompare(b.type)).reverse();
-        alphabet.sort().reverse();
-      } else if (sortBy === "company") {
+        alphabetArray.sort().reverse();
+      } else if (sortBy === 'company') {
         dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
-        alphabet.sort().reverse();
+        alphabetArray.sort().reverse();
       } else {
         dummy.sort().reverse();
       }
@@ -151,33 +133,276 @@ export default function Contacts() {
     return (
       <>
         {IsSortedReverse ? (
-          <BiSortAZ
+          <CgSortAz
             onClick={() => {
               setIsSortedReverse(!IsSortedReverse);
               handleSort(IsSortedReverse, sortBy);
             }}
-            className="text-sm cursor-pointer hover:text-gray-500"
+            className="text-xl cursor-pointer hover:text-gray-500"
           />
         ) : (
-          <BiSortZA
+          <CgSortZa
             onClick={() => {
               setIsSortedReverse(!IsSortedReverse);
               handleSort(IsSortedReverse, sortBy);
             }}
-            className="text-sm cursor-pointer hover:text-gray-500"
+            className="text-xl cursor-pointer hover:text-gray-500"
           />
         )}
       </>
     );
   };
 
-  const handleScroll = (event) => {
-    console.log("scrollTop: ", event.currentTarget.scrollTop);
-    console.log("offsetHeight: ", event.currentTarget.offsetHeight);
+  const useOnIntersect = (ref) => {
+    const [isIntersecting, setIsIntersecting] = useState(false);
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsIntersecting(entry.isIntersecting);
+    });
+    useEffect(() => {
+      observer.observe(ref.current);
+      return () => observer.unobserve(ref.current);
+    }, [ref]);
+
+    return isIntersecting;
   };
+
+  const scrollToView = (target) => {
+    const el = document.getElementById(target);
+    el && el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleScroll = (event) => {
+    console.log('scrollTop: ', event.currentTarget.scrollTop);
+    console.log('offsetHeight: ', event.currentTarget.offsetHeight);
+  };
+
+  useEffect(() => {
+    //Filter Name Alphabetically
+    dummy.sort((a, b) => a.name.localeCompare(b.name));
+    setContactList(dummy);
+
+    // observe the scroll event and set the active letter
+    window.addEventListener(
+      'scroll',
+      () => {
+        const maxScrollHeight = document.body.scrollHeight;
+        const currentScrollPos = window.pageYOffset;
+        // get the current scroll position
+        const currentScrollPosInPercent = currentScrollPos / maxScrollHeight;
+        // get the letter based on the current scroll position in percent
+        const currentLetter = Math.floor(
+          alphabetArray.length * (currentScrollPosInPercent - 0.05)
+        );
+
+        // set the active letter
+        setShortcutSelected(
+          alphabetArray[
+            Math.max(0, Math.min(currentLetter, alphabetArray.length - 1))
+          ]
+        );
+      },
+      { passive: true }
+    );
+  }, []);
 
   return (
     <>
+      <main className="pl-0 p-5 sm:pl-20 w-full ">
+        {/* header */}
+        <div className="sticky top-0 py-4 flex items-center gap-2 bg-white z-10">
+          <div
+            onClick={() => history.replace('/dashboard')}
+            className="w-8 py-5 cursor-pointer"
+          >
+            <CgChevronLeft />
+          </div>
+          <div>
+            <p>
+              <span className="text-lg font-bold">Contacts</span>{' '}
+              <span className="text-lg font-light">
+                {' '}
+                of {`Matthew Douglas`}
+              </span>
+            </p>
+            <div className="flex items-center gap-3 text-gray-500">
+              <FaUsers />
+              <p className="font-semibold">Contacts</p>
+            </div>
+          </div>
+        </div>
+
+        {/* tabs and action buttons */}
+        <div>
+          <div className="flex justify-between items-center border-b-2 border-gray-200 ">
+            {/* tabs */}
+            <div className="flex items-center gap-x-8 w-max">
+              <p
+                className={`py-5 border-b-2 flex items-center gap-x-3 border-transparent cursor-pointer font-medium ${
+                  true && 'border-gray-700 '
+                }`}
+              >
+                Contacts{' '}
+                <span className="text-sm rounded-full flex items-center justify-center font-semibold">
+                  15
+                </span>
+              </p>
+              <p
+                className={`py-5 border-b-2 flex items-center gap-x-3 border-transparent cursor-pointer font-medium ${
+                  false && 'border-gray-700 '
+                }`}
+              >
+                Team{' '}
+                <span className="text-sm rounded-full flex items-center justify-center font-semibold">
+                  0
+                </span>
+              </p>
+            </div>
+            {/* action buttons */}
+            <div className="flex items-center gap-x-5">
+              <button
+                onClick={() => setshowAddContactModal(true)}
+                className="py-2 px-4 bg-green-400 rounded w-max font-semibold text-white"
+              >
+                Add Contact
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* main content */}
+        <div className="relative w-full flex gap-x-5 py-5 max-w-[100vw]">
+          {/* alphabet array */}
+          <div className="px-3 py-2 ">
+            <div className="sticky top-20 flex flex-col gap-y-1 pt-5">
+              {alphabetArray.map((letter) => {
+                // check if letter is in dummy array
+                const isLetter = dummy.some((user) =>
+                  user.name.startsWith(letter)
+                );
+                if (isLetter) {
+                  return (
+                    <p
+                      key={letter}
+                      onClick={(e) => {
+                        setShortcutSelected(letter);
+                        scrollToView(letter);
+                      }}
+                      style={{
+                        transform: `translateX(${
+                          letter === shortcutSelected ? '10px' : '0px'
+                        })`,
+                      }}
+                      className={`text-center text-gray-400 cursor-pointer transition-all font-bold  hover:scale-110 hover:text-blue-600 ${
+                        shortcutSelected === letter && 'text-blue-600'
+                      }`}
+                    >
+                      {letter}
+                    </p>
+                  );
+                }
+              })}
+            </div>
+          </div>
+          {/* table */}
+          <div className="w-full py-2">
+            <table className="w-full text-left">
+              {/* headers */}
+              <thead className="sticky top-20 bg-white z-10">
+                <tr>
+                  <th className="p-2">
+                    <div className="flex items-center gap-x-2">
+                      Name {<RenderSort sortBy="name" />}
+                    </div>
+                  </th>
+                  <th className="p-2">Email</th>
+                  <th className="p-2">Team</th>
+                  <th className="p-2">
+                    <div className="flex items-center gap-x-2 ">
+                      User Type {<RenderSort sortBy="type" />}
+                    </div>
+                  </th>
+                  <th className="p-2">
+                    <div className="flex items-center gap-x-2">
+                      Company {<RenderSort type="company" />}
+                    </div>
+                  </th>
+                  <th className="p-2 w-20 " />
+                </tr>
+              </thead>
+              {/* content */}
+              <tbody className="relative">
+                {alphabetArray.map((letter) => (
+                  <>
+                    {dummy.some((user) => user.name.startsWith(letter)) && (
+                      <>
+                        <tr id={letter} key={letter} className="">
+                          <td className="pt-4 px-2">
+                            <div className="flex items-center gap-x-2">
+                              <p
+                                className={`${
+                                  shortcutSelected == letter
+                                    ? 'text-blue-600 font-bold'
+                                    : 'text-gray-700 font-semibold'
+                                }  text-lg `}
+                              >
+                                {letter}
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                        {dummy.map(
+                          (contact, index) =>
+                            contact.name.charAt(0) == letter && (
+                              <tr key={contact.name} className=" ">
+                                <td className="p-2">
+                                  <div className="flex items-center gap-x-2 ">
+                                    <span>
+                                      <img
+                                        className="rounded-full w-8 h-8"
+                                        src={`https://i.pravatar.cc/70?img=${index}`}
+                                      />
+                                    </span>
+                                    <p className="font-semibold">
+                                      {contact.name}
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="p-2">{contact.email}</td>
+                                <td className="p-2">{contact.team}</td>
+                                <td className="p-2 w-64 ">
+                                  <div className="flex items-center gap-x-2 ">
+                                    <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
+                                      {contact.type}
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="p-2">{contact.company}</td>
+
+                                <td className="p-2">
+                                  <div className="flex items-center gap-x-2">
+                                    <button className="p-3 rounded w-max font-semibold text-gray-500">
+                                      <FaEdit />
+                                    </button>
+                                    <button className="p-3 text-red-400 rounded w-max font-semibold ">
+                                      <CgTrash />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                        )}
+                      </>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      {/* 
+
       <div
         onScroll={handleScroll}
         className={
@@ -185,7 +410,7 @@ export default function Contacts() {
         }
         style={contentDiv}
       >
-        {/*TopView*/}
+        
         <div className="py-5 flex flex-row items-center">
           <MdKeyboardArrowLeft
             className="cursor-pointer hover:text-gray-500"
@@ -229,7 +454,6 @@ export default function Contacts() {
             </div>
             <div className="ml-auto">
               <div>
-                {/* {showAddRow && ( */}
                 <button
                   className="bg-green-400 hover:bg-green-500 text-white text-sm py-1 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                   onClick={() => setshowAddContactModal(true)}
@@ -258,7 +482,7 @@ export default function Contacts() {
           </div>
         </div>
 
-        {/*FILTER A-Z*/}
+        
         <div className="top-60 fixed">
           {alphabet.map((a, idx) =>
             ActiveLetter === a ? (
@@ -319,14 +543,13 @@ export default function Contacts() {
         </div>
       </div>
 
+      */}
       {showAddContactModal && (
         <AddContactModal
           close={() => setshowAddContactModal(false)}
           handleModalClose={handleModalClose}
         />
       )}
-
-      
     </>
   );
 }
