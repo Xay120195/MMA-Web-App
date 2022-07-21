@@ -343,7 +343,7 @@ const TableSavedInfo = ({
                               .split('data":"')
                               .pop()
                               .split('"}')[0]
-                          ),
+                          ).replace("body{color:", ""),
                         }}
                       ></p>
                     </div>
