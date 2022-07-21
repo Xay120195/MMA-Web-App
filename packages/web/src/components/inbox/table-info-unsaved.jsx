@@ -479,11 +479,12 @@ const TableUnsavedInfo = ({
                               .split('data":"')
                               .pop()
                               .split('"}')[0]
-                          ),
+                          ).replace("body{color:", ""),
                         }}
                       ></p>
                     </div>
                   )}
+                  
                 </span>
                 <button
                   className="hidden no-underline hover:underline text-xs text-blue-400"
