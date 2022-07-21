@@ -4,7 +4,7 @@ const {
   BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
-
+var momentTZ = require("moment-timezone");
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
@@ -351,6 +351,9 @@ async function listCompanyGmailMessages(ctx) {
     isDeleted = false,
     isSaved = false,
     recipient,
+    startDate,
+    endDate,
+    userTimeZone = "Australia/Sydney",
   } = ctx.arguments;
 
   let indexName,
@@ -370,17 +373,27 @@ async function listCompanyGmailMessages(ctx) {
         ":isSaved": isSaved,
         ":isDeleted": isDeleted,
       },
-      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"];
+      FilterExpression = ["isSaved = :isSaved", "isDeleted = :isDeleted"],
+      ConditionExpression = ["companyId = :companyId"];
 
     if (recipient) {
       ExpressionAttributeValues[":recipient"] = recipient.toLowerCase();
       FilterExpression.push("begins_with(filters, :recipient)");
     }
 
+    if (startDate && endDate) {
+      const getTZ = momentTZ(startDate).tz(userTimeZone).format("Z");
+      const stDate = new Date(`${startDate}T00:00:00${getTZ}`).getTime();
+      const eDate = new Date(`${endDate}T23:59:59${getTZ}`).getTime();
+      ExpressionAttributeValues[":startDate"] = stDate.toString();
+      ExpressionAttributeValues[":endDate"] = eDate.toString();
+      ConditionExpression.push("dateReceived BETWEEN :startDate AND :endDate");
+    }
+
     const compCMParam = {
       TableName: "CompanyGmailMessageTable",
       IndexName: indexName,
-      KeyConditionExpression: "companyId = :companyId",
+      KeyConditionExpression: ConditionExpression.join(" AND "),
       FilterExpression: FilterExpression.join(" AND "),
       ExpressionAttributeValues: marshall(ExpressionAttributeValues),
 
@@ -536,8 +549,7 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run company >>", ctx.info.fieldName);
-  console.log("~aqs.watch:: arguments >>", ctx.arguments);
+  console.log("~aqs.watch:: run company >>", ctx.info.fieldName, ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];
