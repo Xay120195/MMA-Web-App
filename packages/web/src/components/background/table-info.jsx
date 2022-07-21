@@ -7,7 +7,7 @@ import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
-import { List, AutoSizer, CellMeasurer, CellMeasurerCache } from "react-virtualized";
+import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
 
 import {
   BsFillTrashFill,
@@ -1095,7 +1095,8 @@ const TableInfo = ({
   
         console.log("new filess", newFilesResult);
         setBackground(updateArrFiles);
-        window.location.reload();
+        //cache.current.recomputeRowHeights();
+        //window.location.reload();
         // }
       }, 3000);
 
@@ -1489,17 +1490,20 @@ const TableInfo = ({
                               ref={provider.innerRef}
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
-                              style={{width:"100%", height:"90vh"}}
+                              style={{width:"100%", height:"100vh"}}
                             >
-                              <AutoSizer>
-                                {({ width, height, scrollTop }) => (
+                              <WindowScroller>
+                              {({ height, scrollTop }) => (
+                                <AutoSizer disableHeight>
+                                {({ width }) => (
                                   <List
+                                  autoHeight
+                                  scrollTop={scrollTop}
                                   width={width}
                                   height={height}
                                   rowHeight={cache.current.rowHeight}
                                   deferredMeasurementCache={cache.current}
                                   rowCount={background.length}
-                                  scrollTop={scrollTop}
                                   rowRenderer={({ key, index, style, parent }) => {
                                     const item = background[index];
                                     return (
@@ -1913,6 +1917,8 @@ const TableInfo = ({
                                 />
                                 )}
                               </AutoSizer>
+                              )}
+                              </WindowScroller>
                               {provider.placeholder}
                             </tbody>
                           )}
