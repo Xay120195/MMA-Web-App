@@ -35,6 +35,13 @@ const mUpdateRowDescription = `mutation saveGmailDescription($id: String, $descr
   }
 }`;
 
+const qGetFileDownloadLink = `
+query getAttachmentDownloadLink($id: String) {
+  gmailAttachment(id: $id) {
+    downloadURL
+  }
+}`;
+
 const TableSavedInfo = ({
   selectedSavedItems,
   setSelectedSavedItems,
@@ -241,6 +248,19 @@ const TableSavedInfo = ({
       });
   };
 
+  const previewAndDownloadFile = async (id) => {
+    const params = {
+      query: qGetFileDownloadLink,
+      variables: {
+        id: id,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      window.open(result.data.gmailAttachment.downloadURL);
+    });
+  };
+
   return (
     <>
       <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs border-b-2 border-l-2 border-r-2 border-slate-100">
@@ -387,10 +407,15 @@ const TableSavedInfo = ({
                     <div className="flex items-start mt-1">
                       <p
                         className="
-                  cursor-pointer mr-1 text-opacity-90 1
-                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
+                        cursor-pointer mr-1 text-opacity-90 1
+                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                         id={item_attach.id}
                         title={item_attach.name}
+                        onClick={() =>
+                          previewAndDownloadFile(
+                            item_attach.id
+                          )
+                        }
                       >
                         {item_attach.name.substring(0, 20)}
                         {item_attach.name.length >= 20 ? "..." : ""}
