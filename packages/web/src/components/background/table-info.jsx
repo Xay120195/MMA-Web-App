@@ -136,7 +136,7 @@ const TableInfo = ({
 
   const cache = useRef(new CellMeasurerCache({
     fixedWidth: true,
-    defaultHeight: 100,
+    defaultHeight: 20,
   }));
 
   var moment = require("moment");
@@ -1095,9 +1095,9 @@ const TableInfo = ({
   
         console.log("new filess", newFilesResult);
         setBackground(updateArrFiles);
-        //cache.current.recomputeRowHeights();
-        //window.location.reload();
-        // }
+
+        const newRowsIndex = background.map((val, index) => index);
+        newRowsIndex.forEach(index => cache.current.clear(index));
       }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
@@ -1490,7 +1490,7 @@ const TableInfo = ({
                               ref={provider.innerRef}
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
-                              style={{width:"100%", height:"100vh"}}
+                              style={{width:"100%", height:"auto"}}
                             >
                               <WindowScroller>
                               {({ height, scrollTop }) => (
@@ -1514,13 +1514,16 @@ const TableInfo = ({
                                       rowIndex={index} 
                                       columnIndex={0}
                                       >
+                                      {({ registerChild }) => (
                                         <div 
                                         style={{
                                           ...style,
                                           width: "100%",
                                           height: "100%",
                                           border: '1px solid #f0f0f0', 
+                                          display: 'flex',
                                         }}
+                                        ref={registerChild}
                                         >
                                           <Draggable
                                             key={item.id + "-" + index}
@@ -1911,6 +1914,7 @@ const TableInfo = ({
                                             </tr>
                                           )}
                                         </div>
+                                        )}
                                       </CellMeasurer>
                                     );
                                   }}
