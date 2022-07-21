@@ -193,6 +193,7 @@ const ActionButtons = ({
           });
 
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
+          console.log("PAYLOAD:", payload);
 
           setTimeout(() => {
             handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
@@ -285,7 +286,7 @@ const ActionButtons = ({
       pagebreak: { before: '.page-break', avoid: 'img' }
     };
     var content = document.getElementById("preview_"+gmailMessageId);
-    content.innerHTML += Base64.decode(htmlContent);
+    content.innerHTML += Base64.decode(htmlContent).replace("body{color:", "");
 
     await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
