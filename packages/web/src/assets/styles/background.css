@@ -19,3 +19,8 @@
 .separator:not(:empty)::after {
   margin-left: 0.25em;
 }
+
+.react-datepicker__tab-loop {
+  position: fixed;
+  z-index: 50;
+}
