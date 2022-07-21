@@ -1,13 +1,13 @@
-.dropdown:hover .dropDownCSS {
+.dropdown:hover .dropDownCSS{
     display: block;
 }
 
-@media (max-width: 640px) { 
-  .contentDiv {
-    margin: 0;
-    min-height: calc(100vh - 104px);
-  }
+.dropdown:hover .dropDownBg{
+  display: block;
+}
 
+
+@media (max-width: 640px) { 
   .dropDownButton:hover .hovered{
     color:white;
   }
@@ -28,7 +28,7 @@
     left:0;
     bottom:0;
     width:100%;
-    background-color: rgb(231,231,231);
+    background-color: white;
     outline:none;
   }
   
@@ -37,31 +37,9 @@
     color:white;
   }
 
-  .scrollButton {
-    right: 40px;
-    bottom: 40px;
-    position: fixed;
-    z-index: 2;
-    cursor: pointer;
-    border-radius: 7px;
-    width: 40px;
-    height: 40px;
-    transition: opacity 1s ease-in-out;
-    box-shadow: 0 9px 25px 0 rgb(132 128 177 / 28%);
-    border: none;
-    outline: none;
-    background-color:#d4d4d4;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-  }
-  .scrollButton:hover {
-    background-color:rgb(28,193,233);
-  }
 }
 
 @media (min-width: 640px) { 
-  .contentDiv {
-    margin: 0 0 0 65px;
-  }
   .dropDownButton {
     outline: medium invert color;
   }
