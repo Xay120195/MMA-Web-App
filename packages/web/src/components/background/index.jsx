@@ -5,16 +5,24 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos } from "react-icons/md";
 import { useIdleTimer } from "react-idle-timer";
 import BreadCrumb from "../breadcrumb/breadcrumb";
+import { AiOutlineFolderOpen, AiOutlineDownload} from "react-icons/ai";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import ToastNotification from "../toast-notification";
 import * as IoIcons from "react-icons/io";
+import { BiArrowToTop } from "react-icons/bi";
 import { BitlyClient } from "bitly-react";
-
+import "../../assets/styles/BackgroundPage.css";
 import { API } from "aws-amplify";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 import { Redirect, useHistory } from "react-router-dom";
+import useWindowDimensions from "../../shared/windowDimensions";
+import {FiChevronDown, FiChevronUp} from "react-icons/fi";
+import dateFormat from "dateformat";
+import "../../assets/styles/BlankState.css";
+import BlankStateMobile from "../blank-state-mobile";
+import Illustration from "../../assets/images/no-data.svg";
 
 // const contentDiv = {
 //   margin: "0 0 0 65px",
@@ -24,7 +32,7 @@ import { Redirect, useHistory } from "react-router-dom";
 //   display: "grid",
 //   gridtemplatecolumn: "1fr auto",
 // };
-
+  
 const Background = () => {
   //const [matterList, setClientMattersList] = useState([]);
   const [background, setBackground] = useState([]);
@@ -237,7 +245,7 @@ const Background = () => {
       setPageIndex(1);
 
       if (background !== null) {
-        console.log(result);
+        console.log("I AM IN HERE", result);
         // setBackground(sortByOrder(result)); // no sorting needed
         setBackground(sortByOrder(result));
         setWait(true);
@@ -768,14 +776,121 @@ const Background = () => {
     setShareLink(result.url);
   }
   */
+  const qGetFileDownloadLink = `
+  query getFileDownloadLink($id: ID) {
+    file(id: $id) {
+      downloadURL
+    }
+  }`;
+
+  const previewAndDownloadFile = async (id) => {
+    const params = {
+      query: qGetFileDownloadLink,
+      variables: {
+        id: id,
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      window.open(result.data.file.downloadURL);
+    });
+  };
+
+  const checkFormat = (str) => {
+    var check = str;
+    check = check.replace("%20", " "); //returns my_name
+    return check;
+  };
+
+  const style = {
+    paddingLeft: "0rem",
+  };
+  function utf8_to_b64(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
+  }
+  {/* MOBILE CONST */}
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
+  const [contentHeight, setContentHeight] = useState();
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] = useState(true);
+  const {height, width} = useWindowDimensions();
+  const [readMoreState, setReadMoreState] = useState([]);
+
+  function countLines(tag) {
+    var divHeight = tag.offsetHeight
+    var lineHeight = parseInt(window.getComputedStyle(tag).getPropertyValue("line-height"));
+    var lines = Math.round(divHeight / lineHeight);
+    return lines;
+  }
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-94-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-94-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+  }, [height, width, headerReadMore]);
+
+  useEffect(()=> {
+    if(background!=null) {
+      background.map((data)=>{
+        var descTag = document.getElementById(data.id+".desc");
+        var fileTag = document.getElementById(data.id+".files");
+        if(descTag!== null) {
+          var descLines = countLines(descTag);
+          var fileLines = countLines(fileTag);
+          var descButtonTag = document.getElementById(data.id+".descButton");
+          if(descLines > 6 || fileLines > 1) {
+            descButtonTag.style.display = "inline-block";
+          } else {
+            descButtonTag.style.display = 'none';
+          }
+        }
+      })
+    }
+    
+  }, [background, readMoreState, width])
+
+  function handleScrollEvent(e) {
+    const top = e.target.scrollTop > 20;
+    if (top) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
+  }
+  function handleScrollToTop () {
+    let d = document.getElementById("mobileContent");
+    d.scrollTo(0, 0);
+  }
+
+  function handleReadMoreState(fileId) {
+    if(readMoreState.find((temp)=>{
+      return temp === fileId;
+    }) === undefined) {
+      setReadMoreState([...readMoreState, fileId]);
+    } else {
+      setReadMoreState(current => current.filter((id)=> {
+        return id !== fileId;
+      }));
+    }
+  }
+
+  function isReadMoreExpanded(fileId) {
+    return readMoreState.find((temp)=>{
+      return temp === fileId;
+    }) !== undefined;
+  }
+
 
   return (
     <>
       <div
-        className={"shadow-lg rounded bg-white z-30"}
-        style={{ margin: "0 0 0 65px" }}
+        className={"sm: shadow-lg sm:rounded bg-gray-100 sm:bg-white z-30 p-5 sm:p-0 contentDiv"}
       >
-        <div className="px-6 mt-5 -ml-1">
+        <div className="hidden sm:block px-6 mt-5 -ml-1">
           <Link
             to={`${
               AppRoutes.BRIEFS
@@ -789,13 +904,12 @@ const Background = () => {
             </button>
           </Link>
         </div>
-
         <div
           style={{ position: "sticky", top: "0" }}
-          className="py-5 z-30 ml-4 bg-white"
+          className="py-5 z-30 ml-4 sbg-gray-100 sm:bg-white hidden sm:block"
         >
           <div className="flex font-bold text-xl">
-            
+
               <p
                 className="px-1 text-xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
                 dangerouslySetInnerHTML={{
@@ -809,10 +923,8 @@ const Background = () => {
             
           </div>
         </div>
-
-        <div className="py-5 bg-white z-40 absolute -mt-20 ml-5">
+        <div className="hidden sm:block py-5 bg-gray-100 sm:bg-white z-40 absolute -mt-20 ml-5">
           <div className="flex font-bold text-3xl">
-            
               <p
                 suppressContentEditableWarning={true}
                 style={{
@@ -837,84 +949,185 @@ const Background = () => {
             
           </div>
         </div>
-
         <div
-          className="bg-white z-30 ml-4"
-          style={{ position: "sticky", top: "72px" }}
-        >
-          <BreadCrumb
-            matterId={matter_id}
-            client_name={client_name}
-            matter_name={matter_name}
-            briefId={background_id}
-          />
-          <ActionButtons
-            setSelectedItems={setSelectedItems}
-            selectedItems={selectedItems}
-            background={background}
-            setBackground={setBackground}
-            idList={idList}
-            checkAllState={checkAllState}
-            setcheckAllState={setcheckAllState}
-            checkedState={checkedState}
-            setCheckedState={setCheckedState}
-            totalChecked={totalChecked}
-            settotalChecked={settotalChecked}
-            setId={setId}
-            search={search}
-            setSearch={setSearch}
-            getId={getId}
-            matterId={matter_id}
-            getBackground={getBackground}
-            selectedRowsBG={selectedRowsBG}
-            setSelectedRowsBG={setSelectedRowsBG}
-            setShowModalParagraph={setShowModalParagraph}
-            paragraph={paragraph}
-            showDeleteButton={showDeleteButton}
-            setShowDeleteButton={setShowDeleteButton}
-            activateButton={activateButton}
-            setactivateButton={setActivateButton}
-            handleManageFiles={handleManageFiles}
-            checkNo={checkNo}
-            setCheckNo={setCheckNo}
-            checkDate={checkDate}
-            setCheckDate={setCheckDate}
-            checkDesc={checkDesc}
-            setCheckDesc={setCheckDesc}
-            checkDocu={checkDocu}
-            setCheckDocu={setCheckDocu}
-            checkedStateShowHide={checkedStateShowHide}
-            setCheckedStateShowHide={setCheckedStateShowHide}
-            pageTotal={pageTotal}
-            pageIndex={pageIndex}
-            pageSize={pageSize}
-            pageSizeConst={pageSizeConst}
-            getPaginateItems={getPaginateItems}
-            selectRow={selectRow}
-            setSelectRow={setSelectRow}
-            setPasteButton={setPasteButton}
-            pasteButton={pasteButton}
-            setSrcIndex={setSrcIndex}
-            srcIndex={srcIndex}
-            setNewRow={setNewRow}
-            newRow={newRow}
-            setMaxLoading={setMaxLoading}
-            sortByOrder={sortByOrder}
-            briefId={background_id}
-            client_name={client_name}
-            matter_name={matter_name}
-            holdDelete={holdDelete}
-            setHoldDelete={setHoldDelete}
-            setTargetRow={setTargetRow}
-            targetRow={targetRow}
-            highlightRow={highlightRow}
-            setHighlightRow={setHighlightRow}
-            pastedRows={pastedRows}
-            setPastedRows={setPastedRows}
-          />
-
+          className="bg-gray-100 sm:bg-white z-30 sm:ml-4 static sm:sticky"
+          style={{top: "72px" }}
+        > 
+          <div className="hidden sm:block">
+            <BreadCrumb
+              matterId={matter_id}
+              client_name={client_name}
+              matter_name={matter_name}
+              briefId={background_id}
+            />
+          </div>
+          <div className="pt-3 sm:hidden">
+            {/* MOBILE VIEW OF HEADER */}
+            <div className="sm:hidden flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto", marginRight:"20px"}}>
+              <p id="headerTag" className="sm:hidden font-bold pl-14" 
+                style={{lineHeight:"24px"}}>
+                <span className="font-semibold text-base">
+                  {checkFormat(client_name)}
+                </span>
+                &nbsp;
+                <span className="font-light text-base text-gray-500">
+                  {checkFormat(matter_name)}
+                </span>
+              </p>
+              <button 
+                  className="shrink-0 invisible font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+            {/* IF HEADER LINES IS LONG, THEN OVERLAY WITH READMORE */}
+            {headerLines > 1 ? (
+            <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
+              <p className={'flex-auto pl-14 sm:hidden ' + (headerReadMore?'':'truncate')}>
+                <span className="font-semibold text-base">
+                    {checkFormat(client_name)}
+                  </span>
+                  &nbsp;
+                  <span className="font-light text-base text-gray-500">
+                    {checkFormat(matter_name)}
+                    {/*headerReadMore ? checkFormat(matter_name) : ellipsis(checkFormat(matter_name),30)*/}
+                </span>
+              </p>
+              <button 
+                onClick={()=>setHeaderReadMore(!headerReadMore)}
+                className="shrink-0 hover:bg-gray-100 text-gray-500 font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+            ) : (<></>)}
+            <div className="sm:px-0">
+              <nav aria-label="Breadcrumb" style={style} className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4">
+                <ol
+                  role="list"
+                  className="px-0 flex items-left sm:space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
+                >
+                  <li>
+                    <Link
+                      className="text-xs uppercase sm:normal-case sm:text-sm sm:mr-2 sm:text-sm font-medium text-gray-400 sm:text-gray-900"
+                      to={`${AppRoutes.DASHBOARD}`}
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <svg
+                    width="16"
+                    height="20"
+                    viewBox="0 0 16 20"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    className="w-4 h-5 text-gray-300"
+                  >
+                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                  </svg>
+                  <li className="text-sm">
+                    <span className="text-xs sm:px-1 sm:flex uppercase sm:normal-case sm:text-sm underline underline-offset-4 sm:no-underline font-medium text-gray-700 sm:text-gray-500">
+                      <AiOutlineFolderOpen className="hidden sm:inline-block"/> 
+                      <span className="sm:inline hidden">&nbsp;&nbsp;</span>
+                      Background
+                      <span className="sm:inline hidden font-medium">&nbsp;Page</span>{" "}
+                    </span>
+                  </li>
+                  <svg
+                    width="16"
+                    height="20"
+                    viewBox="0 0 16 20"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    className="sm:hidden w-4 h-5 text-gray-300"
+                  >
+                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                  </svg>
+                  <li className="text-sm sm:hidden">
+                    <Link
+                      aria-current="page"
+                      className="text-xs uppercase sm:normal-case sm:text-sm sm:mr-2 sm:text-sm font-medium text-gray-400 sm:text-gray-900"
+                      to={`${
+                        AppRoutes.FILEBUCKET
+                      }/${matter_id}/000/?matter_name=${utf8_to_b64(
+                        matter_name
+                      )}&client_name=${utf8_to_b64(client_name)}`}
+                      >
+                      File Bucket
+                    </Link>
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+          <div className="hidden sm:block">
+            <ActionButtons
+              setSelectedItems={setSelectedItems}
+              selectedItems={selectedItems}
+              background={background}
+              setBackground={setBackground}
+              idList={idList}
+              checkAllState={checkAllState}
+              setcheckAllState={setcheckAllState}
+              checkedState={checkedState}
+              setCheckedState={setCheckedState}
+              totalChecked={totalChecked}
+              settotalChecked={settotalChecked}
+              setId={setId}
+              search={search}
+              setSearch={setSearch}
+              getId={getId}
+              matterId={matter_id}
+              getBackground={getBackground}
+              selectedRowsBG={selectedRowsBG}
+              setSelectedRowsBG={setSelectedRowsBG}
+              setShowModalParagraph={setShowModalParagraph}
+              paragraph={paragraph}
+              showDeleteButton={showDeleteButton}
+              setShowDeleteButton={setShowDeleteButton}
+              activateButton={activateButton}
+              setactivateButton={setActivateButton}
+              handleManageFiles={handleManageFiles}
+              checkNo={checkNo}
+              setCheckNo={setCheckNo}
+              checkDate={checkDate}
+              setCheckDate={setCheckDate}
+              checkDesc={checkDesc}
+              setCheckDesc={setCheckDesc}
+              checkDocu={checkDocu}
+              setCheckDocu={setCheckDocu}
+              checkedStateShowHide={checkedStateShowHide}
+              setCheckedStateShowHide={setCheckedStateShowHide}
+              pageTotal={pageTotal}
+              pageIndex={pageIndex}
+              pageSize={pageSize}
+              pageSizeConst={pageSizeConst}
+              getPaginateItems={getPaginateItems}
+              selectRow={selectRow}
+              setSelectRow={setSelectRow}
+              setPasteButton={setPasteButton}
+              pasteButton={pasteButton}
+              setSrcIndex={setSrcIndex}
+              srcIndex={srcIndex}
+              setNewRow={setNewRow}
+              newRow={newRow}
+              setMaxLoading={setMaxLoading}
+              sortByOrder={sortByOrder}
+              briefId={background_id}
+              client_name={client_name}
+              matter_name={matter_name}
+              holdDelete={holdDelete}
+              setHoldDelete={setHoldDelete}
+              setTargetRow={setTargetRow}
+              targetRow={targetRow}
+              highlightRow={highlightRow}
+              setHighlightRow={setHighlightRow}
+              pastedRows={pastedRows}
+              setPastedRows={setPastedRows}
+            />
+          </div>
           {/* {background !== null && background.length !== 0 && ( */}
-          <div className="pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
+          <div className="hidden sm:block pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
             <div className="col-span-12">
               <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
                 <IoIcons.IoIosSearch />
@@ -943,8 +1156,9 @@ const Background = () => {
           </div>
           {/* )} */}
         </div>
-
-        <TableInfo
+        {/* DESKTOP VIEW OF CONTENTS */}
+        {width > 640 ? (
+          <TableInfo
           selectedItems={selectedItems}
           setSelectedItems={setSelectedItems}
           client_name={client_name}
@@ -1023,6 +1237,91 @@ const Background = () => {
           checkedRows={checkedRows}
           setCheckedRows={setCheckedRows}
         />
+        ) : (
+        <>
+        {/* MOBILE VIEW OF CONTENTS */}
+        {background=== null || background.length === 0 ? (
+        <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
+          <div className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
+          style={{height:width > 640 ?"auto": contentHeight}}>
+            <BlankStateMobile
+              header={"There are no items to show in this view."}
+              content={"Any added files in the desktop will appear here"}
+              svg={Illustration}
+            />
+          </div>
+        </div>
+        ): (
+          <div className="bg-white rounded-lg py-5 flex" style={{height:contentHeight}}>
+            <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="relative flex flex-col overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
+              {showScrollButton ? (<>
+                <div className="scrollButtonBG flex" onClick={() => handleScrollToTop()}>
+                  <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
+                </div>
+                </>) : (<></>)}
+              {background.map((item, index,arr)=>(
+                <div className="w-full px-5" key={item.id}>
+                  <div className="flex flex-row" style={{
+                    borderBottomWidth: index+1 !== arr.length ? 2 : 0, 
+                    borderBottomStyle:"dashed",
+                    paddingTop:index===0 ? 0 : 20,
+                    paddingBottom:  20 }}>
+                    <p className="font-semibold text-cyan-400">{index +1}</p>
+                    <div className="ml-2">
+                      <p className="font-medium text-cyan-400">
+                        {item.date !== null && item.date !== "" ? dateFormat(item.date,"dd mmmm yyyy") : "No date"}
+                      </p>
+                      {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
+                      <p id={item.id+".desc"}className="absolute invisible" style={{top:-1000,marginRight:'20px'}}>
+                        {item.description}
+                      </p>
+                      <p className={(isReadMoreExpanded(item.id)? "" : "line-clamp-6")}>
+                        {item.description}
+                      </p>
+                      <button id={item.id+".descButton"} className="text-cyan-400 mb-2" onClick={()=>handleReadMoreState(item.id)}>
+                      {(isReadMoreExpanded(item.id) ? "read less...": "read more...")}
+                      </button>
+                        {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
+                        <p id={item.id+".files"} className="absolute invisible" style={{top:-1000,marginRight:'20px',lineHeight:"30px"}}>
+                          {item.files.items.map((file) => (
+                            <button key={file.id} className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1">
+                              {file.name}&nbsp;<AiOutlineDownload
+                                className="text-gray-400 text-sm cursor-pointer inline-block"
+                                onClick={() =>
+                                  previewAndDownloadFile(
+                                    file.id
+                                  )
+                                }
+                              />
+                            </button>
+                          ))}
+                        </p>
+                        <p className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1")} style={{lineHeight:"30px"}}>
+                          {item.files.items.map((file) => (
+                            <button key={file.id} className="font-extralight text-sm text-gray-400 border rounded-lg px-2 mr-2 my-1">
+                              {file.name}&nbsp;<AiOutlineDownload
+                                className="text-gray-400 text-sm cursor-pointer inline-block"
+                                onClick={() =>
+                                  previewAndDownloadFile(
+                                    file.id
+                                  )
+                                }
+                              />
+                            </button>
+                          ))}
+                        </p>
+
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        </>
+        )}
+
 
         {showToast && (
           <ToastNotification title={alertMessage} hideToast={hideToast} />
