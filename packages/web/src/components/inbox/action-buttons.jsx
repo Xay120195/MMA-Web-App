@@ -3,6 +3,7 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
+//import { useWorker, WORKER_STATUS } from "@koale/useworker";
 
 var moment = require("moment");
 
@@ -19,6 +20,10 @@ const ActionButtons = ({
   setShowToast,
   setResultMessage,
   emailIntegration,
+  setSavedEmails,
+  setUnsavedEmails,
+  setSaveLoading,
+  saveLoading
 }) => {
 
   Storage.configure({
@@ -60,6 +65,13 @@ const ActionButtons = ({
   const qGmailMessagesbyCompany = `
   query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String) {
     company(id: $id) {
+      gmailToken {
+        refreshToken
+        id
+        userId
+        companyId
+        updatedAt
+      }
       gmailMessages(
         isDeleted: $isDeleted
         isSaved: $isSaved
@@ -71,11 +83,19 @@ const ActionButtons = ({
           id
           from
           to
+          cc
+          bcc
           subject
           date
           snippet
           payload {
             content
+          }
+          labels {
+            items {
+              id
+              name
+            }
           }
           description
           clientMatters {
@@ -99,6 +119,12 @@ const ActionButtons = ({
               s3ObjectKey
               size
               type
+              labels {
+                items {
+                  id
+                  name
+                }
+              }
             }
           }
         }
@@ -117,11 +143,19 @@ const ActionButtons = ({
       }
   `;
 
+  /*const [
+    sortWorker,
+    { status: sortWorkerStatus, kill: killWorker }
+  ] = useWorker();*/
+
+  //console.log("WORKER:", sortWorkerStatus);
+
   const handleEmails = async (status) => {
     // Soon will change this to bulk mutation 
     if(status) {
       var clientMatterId = "";
       var emailList = "";
+      setSaveLoading(true);
 
       const params = {
         query: qGmailMessagesbyCompany,
@@ -137,8 +171,21 @@ const ActionButtons = ({
         emailList = result.data.company.gmailMessages.items;
       });
 
+      // Add to Saved Emails
+      let  arrSavedEmails = emailList.filter(function(item){
+        return selectedUnsavedItems.indexOf(item.id) !== -1;
+      });
+      setSavedEmails(savedEmails.concat(arrSavedEmails));
+
+      // Remove from Unsaved Emails
+      let  arrRemoveUnSavedEmails = emailList.filter(function(item){
+        return selectedUnsavedItems.indexOf(item.id) === -1;
+      });
+      setUnsavedEmails(arrRemoveUnSavedEmails);
+
       selectedUnsavedItems.map((obj) => {
         const filteredUnsavedArr = emailList.filter(item => item.id === obj);
+
         filteredUnsavedArr.map((item) => {
 
           item.clientMatters.items.map(clientMatters => {
@@ -147,8 +194,10 @@ const ActionButtons = ({
 
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
 
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
-
+          setTimeout(() => {
+            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
+          }, 0);
+          
           item.attachments.items.map(attachment => {
             const request = API.graphql({
               query: mSaveAttachmentEmailsToMatter,
@@ -170,42 +219,51 @@ const ActionButtons = ({
           });
         });
 
-        const request = API.graphql({
+        API.graphql({
           query: mSaveUnsavedEmails,
           variables: {
             companyId: companyId,
             id: obj,
             isSaved: status
           },
+        }).then((result)=> {
+          setResultMessage("Successfully saved an email.");
+          setShowToast(true);
+          setSelectedUnsavedItems([]);
+          setSaveLoading(false);
         });
       });
 
-        setResultMessage("Successfully saved an email.");
-        setShowToast(true);
-        setTimeout(() => {
-          getUnSavedEmails();
-          getSavedEmails();
-          setSelectedUnsavedItems([]);
-        }, 2000);
-      
     } else {
+      setSaveLoading(true);
+
       selectedSavedItems.map((obj) => {
-        const request = API.graphql({
+        API.graphql({
           query: mSaveUnsavedEmails,
           variables: {
             companyId: companyId,
             id: obj,
             isSaved: status
           },
+        }).then((result)=> {
+          setResultMessage("Successfully saved an email.");
+          setShowToast(true);
+          setSelectedUnsavedItems([]);
+          setSaveLoading(false);
+
+          // Add to unsaved Emails
+          let  arrSavedEmails = savedEmails.filter(function(item){
+            return selectedSavedItems.indexOf(item.id) !== -1;
+          });
+          setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
+
+          // Remove from saved Emails
+          let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
+            return selectedSavedItems.indexOf(item.id) === -1;
+          });
+          setSavedEmails(arrRemoveUnSavedEmails);
         });
       });
-      setResultMessage("Successfully saved an email.");
-      setShowToast(true);
-      setTimeout(() => {
-        getSavedEmails();
-        getUnSavedEmails();
-        setSelectedUnsavedItems([]);
-      }, 2000);
     }
   };
 
@@ -217,7 +275,7 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent) => {
+  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent) => {
     var opt = {
       margin:       [30, 30, 30, 30],
       filename:     fileName,
@@ -229,7 +287,7 @@ const ActionButtons = ({
     var content = document.getElementById("preview_"+gmailMessageId);
     content.innerHTML += Base64.decode(htmlContent);
 
-    html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
+    await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
       const file = new File([preBlob], fileName, {type: 'application/pdf'});
 
@@ -328,10 +386,12 @@ const ActionButtons = ({
               <button
                 type="button"
                 onClick={() => handleEmails(true)}
-                className={"bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
-                disabled={false} 
+                className={saveLoading ?
+                  "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
+                  : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
+                disabled={saveLoading ? true : false} 
               >
-                Save Emails
+                {saveLoading ?  'Saving Emails...' : 'Save Emails'}
               </button>
             </>
           ) : (
@@ -344,9 +404,12 @@ const ActionButtons = ({
               <button
                 type="button"
                 onClick={() => handleEmails(false)}
-                className="bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"
+                className={saveLoading ?
+                  "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
+                  : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
+                disabled={saveLoading ? true : false} 
               >
-                Unsave Emails
+                {saveLoading ?  'Unsaving Emails...' : 'UnSave Emails'}
               </button>
             </>
           ) : (<></>)}
