@@ -89,9 +89,11 @@ const TableUnsavedInfo = ({
   };
 
   const handleSelectItem = (e, counter) => {
+    console.log("test", unSavedEmails);
     if (counter !== 0) {
       const { id, checked } = e.target;
       setSelectedUnsavedItems([...selectedUnsavedItems, id]);
+      // console.log("selected", selectedUnsavedItems);
       if (!checked) {
         setSelectedUnsavedItems(
           selectedUnsavedItems.filter((item) => item !== id)
@@ -159,6 +161,7 @@ const TableUnsavedInfo = ({
     let temp = [...enabledArrays];
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
+    getUnSavedEmails();
   };
 
   const handleSaveMainDesc = async (e, id) => {

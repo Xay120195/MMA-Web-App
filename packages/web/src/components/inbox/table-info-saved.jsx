@@ -403,8 +403,8 @@ const TableSavedInfo = ({
                   dangerouslySetInnerHTML={{ __html: item.description }}
                 ></p>
                 {item.attachments.items.map((item_attach, index) => (
-                  <React.Fragment key={item_attach.id}>
-                    <div className="flex items-start mt-1">
+                  <React.Fragment key={item_attach.id} >
+                    <div className="flex items-start mt-2">
                       <p
                         className="
                         cursor-pointer mr-1 text-opacity-90 1
@@ -440,13 +440,14 @@ const TableSavedInfo = ({
                 ))}
               </td>
               <td className="p-2 align-top">
-                <div className="relative">
+                <div>
                   {item.labels &&
                     item.labels.items &&
                     item.labels.items.map((i, index) => (
+                      i.name ? 
                       <button
                         key={i.id}
-                        className=" mb-1
+                        className=" mb-1 h-6
                           text-opacity-90 1
                           textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
                         id="headlessui-popover-button-87"
@@ -455,26 +456,39 @@ const TableSavedInfo = ({
                       >
                         {i.name}
                       </button>
+                      :
+                      <div className=" mb-1 w-full h-9
+                      text-opacity-90 1
+                      textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-white inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"> 
+                      </div>
+                      
                     ))}
-
+                  </div>
+                  <div>
                   {item.attachments &&
                     item.attachments.items.map(
                       (attach, index) =>
-                        attach.labels &&
-                        attach.labels.items &&
-                        attach.labels.items.map((lbl, index) => (
-                          <button
-                            key={lbl.id}
-                            className=" mb-1
-                  text-opacity-90 1
-                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                            id="headlessui-popover-button-87"
-                            type="button"
-                            aria-expanded="false"
-                          >
-                            {lbl.name} 
-                          </button>
-                        ))
+                        attach.labels.items.length > 0 ?
+                          attach.labels.items.map((lbl, index) => (
+                            <button
+                              key={lbl.id}
+                              className=" mb-1
+                              text-opacity-90 1 h-9
+                              textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                              id="headlessui-popover-button-87"
+                              type="button"
+                              aria-expanded="false"
+                            >
+                              {lbl.name} 
+                            </button>
+                          ))
+                        : <div className=" mb-1 w-full h-9
+                        text-opacity-90 1
+                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-white inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"> 
+                          </div>
+
+
+                    
                     )}
                 </div>
               </td>
