@@ -1492,13 +1492,14 @@ const TableInfo = ({
                               style={{width:"100%", height:"90vh"}}
                             >
                               <AutoSizer>
-                                {({ width, height }) => (
+                                {({ width, height, scrollTop }) => (
                                   <List
                                   width={width}
                                   height={height}
                                   rowHeight={cache.current.rowHeight}
                                   deferredMeasurementCache={cache.current}
                                   rowCount={background.length}
+                                  scrollTop={scrollTop}
                                   rowRenderer={({ key, index, style, parent }) => {
                                     const item = background[index];
                                     return (
@@ -1507,13 +1508,14 @@ const TableInfo = ({
                                       cache={cache.current} 
                                       parent={parent} 
                                       rowIndex={index} 
-                                      columnIndex={0} 
+                                      columnIndex={0}
                                       >
                                         <div 
                                         style={{
                                           ...style,
                                           width: "100%",
                                           height: "100%",
+                                          border: '1px solid #f0f0f0', 
                                         }}
                                         >
                                           <Draggable
@@ -1588,7 +1590,7 @@ const TableInfo = ({
                                                   >
                                                     <div>
                                                       <DatePicker
-                                                        className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-20"
+                                                        className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-50"
                                                         selected={
                                                           item.date !== null &&
                                                           item.date !== "null" &&
