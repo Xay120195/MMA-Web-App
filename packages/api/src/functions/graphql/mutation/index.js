@@ -2064,8 +2064,6 @@ async function createGmailMessage(data) {
       isDeleted: false,
       isSaved: false,
       createdAt: toUTC(new Date()),
-      dateReceived: rawParams.receivedAt.toString(),
-      filters: `${rawParams.connectedEmail}#${rawParams.subject}#${rawParams.snippet}`,
     };
 
     const companyGmailMessageCommand = new PutItemCommand({
@@ -3150,7 +3148,8 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run mutation >>", ctx.info.fieldName, ctx.arguments);
+  console.log("~aqs.watch:: run mutation >>", ctx.info.fieldName);
+  console.log("~aqs.watch:: arguments >>", ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];

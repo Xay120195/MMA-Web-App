@@ -7,7 +7,7 @@ import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
-import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
+import { List, AutoSizer, CellMeasurer, CellMeasurerCache } from "react-virtualized";
 
 import {
   BsFillTrashFill,
@@ -1095,8 +1095,7 @@ const TableInfo = ({
   
         console.log("new filess", newFilesResult);
         setBackground(updateArrFiles);
-        //cache.current.recomputeRowHeights();
-        //window.location.reload();
+        window.location.reload();
         // }
       }, 3000);
 
@@ -1490,15 +1489,11 @@ const TableInfo = ({
                               ref={provider.innerRef}
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
-                              style={{width:"100%", height:"100vh"}}
+                              style={{width:"100%", height:"90vh"}}
                             >
-                              <WindowScroller>
-                              {({ height, scrollTop }) => (
-                                <AutoSizer disableHeight>
-                                {({ width }) => (
+                              <AutoSizer>
+                                {({ width, height }) => (
                                   <List
-                                  autoHeight
-                                  scrollTop={scrollTop}
                                   width={width}
                                   height={height}
                                   rowHeight={cache.current.rowHeight}
@@ -1512,14 +1507,13 @@ const TableInfo = ({
                                       cache={cache.current} 
                                       parent={parent} 
                                       rowIndex={index} 
-                                      columnIndex={0}
+                                      columnIndex={0} 
                                       >
                                         <div 
                                         style={{
                                           ...style,
                                           width: "100%",
                                           height: "100%",
-                                          border: '1px solid #f0f0f0', 
                                         }}
                                         >
                                           <Draggable
@@ -1594,7 +1588,7 @@ const TableInfo = ({
                                                   >
                                                     <div>
                                                       <DatePicker
-                                                        className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-50"
+                                                        className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-20"
                                                         selected={
                                                           item.date !== null &&
                                                           item.date !== "null" &&
@@ -1917,8 +1911,6 @@ const TableInfo = ({
                                 />
                                 )}
                               </AutoSizer>
-                              )}
-                              </WindowScroller>
                               {provider.placeholder}
                             </tbody>
                           )}
