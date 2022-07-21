@@ -377,6 +377,7 @@ export default function Contacts() {
                               (contact, index) =>
                                 contact.name.charAt(0) == letter && (
                                   <tr
+                                    ref={contact.isNewlyAdded ? rows : null}
                                     key={contact.id}
                                     className={
                                       contact.isNewlyAdded
