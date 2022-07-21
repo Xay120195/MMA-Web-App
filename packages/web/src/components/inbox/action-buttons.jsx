@@ -3,6 +3,7 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
+//import { useWorker, WORKER_STATUS } from "@koale/useworker";
 
 var moment = require("moment");
 
@@ -142,6 +143,13 @@ const ActionButtons = ({
       }
   `;
 
+  /*const [
+    sortWorker,
+    { status: sortWorkerStatus, kill: killWorker }
+  ] = useWorker();*/
+
+  //console.log("WORKER:", sortWorkerStatus);
+
   const handleEmails = async (status) => {
     // Soon will change this to bulk mutation 
     if(status) {
@@ -186,8 +194,10 @@ const ActionButtons = ({
 
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
 
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
-
+          setTimeout(() => {
+            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
+          }, 0);
+          
           item.attachments.items.map(attachment => {
             const request = API.graphql({
               query: mSaveAttachmentEmailsToMatter,
@@ -209,55 +219,51 @@ const ActionButtons = ({
           });
         });
 
-        const request = API.graphql({
+        API.graphql({
           query: mSaveUnsavedEmails,
           variables: {
             companyId: companyId,
             id: obj,
             isSaved: status
           },
+        }).then((result)=> {
+          setResultMessage("Successfully saved an email.");
+          setShowToast(true);
+          setSelectedUnsavedItems([]);
+          setSaveLoading(false);
         });
       });
 
-        setResultMessage("Successfully saved an email.");
-        setShowToast(true);
-        setTimeout(() => {
-          setSelectedUnsavedItems([]);
-          setSaveLoading(false);
-        }, 1000);
-      
     } else {
       setSaveLoading(true);
 
       selectedSavedItems.map((obj) => {
-        const request = API.graphql({
+        API.graphql({
           query: mSaveUnsavedEmails,
           variables: {
             companyId: companyId,
             id: obj,
             isSaved: status
           },
+        }).then((result)=> {
+          setResultMessage("Successfully saved an email.");
+          setShowToast(true);
+          setSelectedUnsavedItems([]);
+          setSaveLoading(false);
+
+          // Add to unsaved Emails
+          let  arrSavedEmails = savedEmails.filter(function(item){
+            return selectedSavedItems.indexOf(item.id) !== -1;
+          });
+          setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
+
+          // Remove from saved Emails
+          let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
+            return selectedSavedItems.indexOf(item.id) === -1;
+          });
+          setSavedEmails(arrRemoveUnSavedEmails);
         });
       });
-
-      // Add to unsaved Emails
-      let  arrSavedEmails = savedEmails.filter(function(item){
-        return selectedSavedItems.indexOf(item.id) !== -1;
-      });
-      setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
-
-      // Remove from saved Emails
-      let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
-        return selectedSavedItems.indexOf(item.id) === -1;
-      });
-      setSavedEmails(arrRemoveUnSavedEmails);
-
-      setResultMessage("Successfully saved an email.");
-      setShowToast(true);
-      setTimeout(() => {
-        setSelectedUnsavedItems([]);
-        setSaveLoading(false);
-      }, 1000);
     }
   };
 
