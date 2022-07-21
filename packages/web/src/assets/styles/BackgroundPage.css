@@ -2,21 +2,20 @@
   .contentDiv {
     margin: 0 0 0 65px;
   }
-  .showColumn {
-    margin-left: 13.2rem;
-    top:auto;
-    right:auto;
-    width: 13rem;
-  }
 }
 @media (max-width: 640px) { 
+  .line-clamp-6 {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;  
+    overflow: clip;
+  }
   .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;  
     overflow: clip;
   }
-
   .contentDiv {
     margin: 0 0 0 0px;
   }
@@ -27,7 +26,7 @@
     width: 13rem;
   }
 
-  .scrollButtonBrief {
+  .scrollButtonBG {
     display:block;
     right: 40px;
     bottom: 40px;
@@ -44,7 +43,7 @@
     border-radius: 50%;
     -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
-  .scrollButtonBrief:hover {
+  .scrollButtonBG:hover {
     background-color:rgb(28,193,233);
   }
 }
