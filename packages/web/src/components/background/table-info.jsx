@@ -1061,23 +1061,18 @@ const TableInfo = ({
     //insert in matter file list
     bulkCreateMatterFile(addOrder);
 
-    // for(var i=0; i<addOrder.length; i++){
-    //     delete addOrder[i].oderSelected;
-    //     setTimeout(()=>{
-    //       createMatterFile(addOrder[i]);
-    //     }, 5000)
-    // }
       //set background content
-      setTimeout(async () => {
+      setTimeout( async () => {
         const backgroundFilesOptReq = await API.graphql({
           query: qlistBackgroundFiles,
           variables: {
             id: selectedRowId,
           },
         });
+
+        console.log("THIS", backgroundFilesOptReq);
   
-        // if (backgroundFilesOptReq.data.background.files !== null) {
-        const newFilesResult =
+        var newFilesResult =
           backgroundFilesOptReq.data.background.files.items.map(
             ({ id, name, description }) => ({
               id: id,
@@ -1086,7 +1081,7 @@ const TableInfo = ({
             })
           );
   
-        const updateArrFiles = background.map((obj) => {
+        var updateArrFiles = background.map((obj) => {
           if (obj.id === selectedRowId) {
             return { ...obj, files: { items: newFilesResult } };
           }
@@ -1095,9 +1090,6 @@ const TableInfo = ({
   
         console.log("new filess", newFilesResult);
         setBackground(updateArrFiles);
-        //cache.current.recomputeRowHeights();
-        //window.location.reload();
-        // }
       }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
