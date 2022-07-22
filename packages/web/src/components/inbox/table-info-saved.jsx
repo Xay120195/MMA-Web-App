@@ -388,8 +388,11 @@ const TableSavedInfo = ({
 
                 <div className="flex items-start mt-2">
                   <p className="w-24 group py-1 px-2  rounded textColor bg-white inline-flex items-center"></p>
-                  <div className="p-2 w-1/2 h-full font-poppins rounded-sm float-right">
-                    {item.description}
+                  <div className="p-2 w-1/2 h-full font-poppins rounded-sm float-right"
+                  dangerouslySetInnerHTML={{
+                    __html: item.description,
+                  }}
+                  >
                   </div>
                   <div className="ml-12 mt-1 w-80 inline-flex ">
                   {item.labels.items.map((i, index) => (
