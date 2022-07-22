@@ -2,15 +2,18 @@ import '../../assets/styles/AccountSettings.css';
 import './contacts.css';
 
 import { CgChevronLeft, CgSortAz, CgSortZa, CgTrash } from 'react-icons/cg';
-import { FaEdit, FaUsers } from 'react-icons/fa';
-import React, { useEffect, useState } from 'react';
+import { FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
+import { Link, useHistory } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { API } from 'aws-amplify';
 import AddContactModal from './add-contact-revamp-modal';
+import DeleteModal from './delete-modal';
+import ToastNotification from '../toast-notification';
 import User from './user';
 import { alphabetArray } from './alphabet';
+import anime from 'animejs';
 import dummy from './dummy.json';
-import { useHistory } from 'react-router-dom';
 
 export default function Contacts() {
   const [showAddContactModal, setshowAddContactModal] = useState(false);
@@ -18,14 +21,16 @@ export default function Contacts() {
     setshowAddContactModal(false);
   };
 
+  const rows = useRef(null);
   const [shortcutSelected, setShortcutSelected] = useState('');
 
+  const [ShowDeleteModal, setShowDeleteModal] = useState(false);
   const [contacts, setContacts] = useState(null);
   const [ActiveMenu, setActiveMenu] = useState('Contacts');
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState('');
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
-
+  const [isToDelete, setisToDelete] = useState('');
   const [ContactList, setContactList] = useState();
   // const hideToast = () => {
   //   setShowToast(false);
@@ -49,6 +54,15 @@ export default function Contacts() {
     }
   `;
 
+  useEffect((e) => {
+    anime({
+      targets: rows.current,
+      opacity: [0, 1],
+      duration: 600,
+      easing: 'linear',
+    });
+  }, []);
+
   useEffect(() => {
     if (contacts === null) {
       getContacts();
@@ -68,7 +82,6 @@ export default function Contacts() {
       setContacts(companyUsers.data.company.users.items);
     });
   };
-
   const handleAddContact = (returnedUser) => {
     console.log(returnedUser);
     getContacts();
@@ -91,6 +104,10 @@ export default function Contacts() {
     );
   };
 
+  const handleDeleteModal = (id) => {
+    setisToDelete(id);
+    setShowDeleteModal(true);
+  };
   let history = useHistory();
 
   const handleSort = (sortedReverse, sortBy) => {
@@ -147,6 +164,7 @@ export default function Contacts() {
 
   const scrollToView = (target) => {
     const el = document.getElementById(target);
+
     setShortcutSelected(target);
     el && el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -218,11 +236,11 @@ export default function Contacts() {
               >
                 Contacts{' '}
                 <span className="text-sm rounded-full flex items-center justify-center font-semibold">
-                  {dummy?.length}
+                  {ContactList && ContactList.length}
                 </span>
               </p>
               <p
-                className={`py-5 px-2 border-b-2 flex items-center gap-x-3 border-transparent cursor-pointer font-medium ${
+                className={`py-5 border-b-2 flex items-center gap-x-3 border-transparent cursor-pointer font-medium ${
                   false && 'border-gray-700 '
                 }`}
               >
@@ -253,9 +271,9 @@ export default function Contacts() {
             <div className="sticky top-20 flex flex-col gap-y-1 pt-5">
               {alphabetArray.map((letter) => {
                 // check if letter is in dummy array
-                const isLetter = dummy.some((user) =>
-                  user.name.startsWith(letter)
-                );
+                const isLetter =
+                  ContactList &&
+                  ContactList.some((user) => user.name.startsWith(letter));
                 if (isLetter) {
                   return (
                     <p
@@ -310,78 +328,103 @@ export default function Contacts() {
               <tbody className="relative">
                 {alphabetArray.map((letter) => (
                   <>
-                    {dummy.some((user) => user.name.startsWith(letter)) && (
-                      <>
-                        <tr id={letter} key={letter} className="">
-                          <td className="pt-4 px-2">
-                            <div className="flex items-center gap-x-2">
-                              <p
-                                className={`${
-                                  shortcutSelected == letter
-                                    ? 'text-blue-600 font-bold'
-                                    : 'text-gray-700 font-semibold'
-                                }  text-lg `}
-                              >
-                                {letter}
-                              </p>
-                            </div>
-                          </td>
-                        </tr>
-                        {dummy.map(
-                          (contact, index) =>
-                            contact.name.charAt(0) == letter && (
-                              <tr key={contact?.name} className=" ">
-                                <td className="p-2">
-                                  <div className="flex items-center gap-x-2 ">
-                                    <span>
-                                      <img
-                                        className="rounded-full w-8 h-8"
-                                        src={`https://i.pravatar.cc/70?img=${index}`}
-                                      />
-                                    </span>
-                                    <p className="font-semibold">
-                                      {contact?.name}
-                                    </p>
-                                  </div>
-                                </td>
-                                <td className="p-2">{contact?.email}</td>
-                                <td className="p-2">{contact?.team}</td>
-                                <td className="p-2 w-64 ">
-                                  <div className="flex items-center gap-x-2 ">
-                                    <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
-                                      {contact?.type}
-                                    </p>
-                                  </div>
-                                </td>
-                                <td className="p-2">{contact?.company}</td>
+                    {ContactList &&
+                      ContactList.some((user) =>
+                        user.name.startsWith(letter)
+                      ) && (
+                        <>
+                          <tr id={letter} key={letter} className="">
+                            <td className="pt-4 px-2">
+                              <div className="flex items-center gap-x-2">
+                                <p
+                                  className={`${
+                                    shortcutSelected == letter
+                                      ? 'text-blue-600 font-bold'
+                                      : 'text-gray-700 font-semibold'
+                                  }  text-lg `}
+                                >
+                                  {letter}
+                                </p>
+                              </div>
+                            </td>
+                          </tr>
+                          {ContactList &&
+                            ContactList.map(
+                              (contact, index) =>
+                                contact.name.charAt(0) == letter && (
+                                  <tr
+                                    ref={contact.isNewlyAdded ? rows : null}
+                                    key={contact.id}
+                                    className={
+                                      contact.isNewlyAdded
+                                        ? 'opacity-100 bg-cyan-100'
+                                        : 'opacity-100'
+                                    }
+                                  >
+                                    <td className="p-2">
+                                      <div className="flex items-center gap-x-2 ">
+                                        <span>
+                                          <img
+                                            className="rounded-full w-8 h-8"
+                                            src={`https://i.pravatar.cc/70?img=${index}`}
+                                          />
+                                        </span>
+                                        <p className="font-semibold">
+                                          {contact.name}
+                                        </p>
+                                      </div>
+                                    </td>
+                                    <td className="p-2">{contact.email}</td>
+                                    <td className="p-2">{contact.team}</td>
+                                    <td className="p-2 w-64 ">
+                                      <div className="flex items-center gap-x-2 ">
+                                        <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
+                                          {contact.type}
+                                        </p>
+                                      </div>
+                                    </td>
+                                    <td className="p-2">{contact.company}</td>
 
-                                <td className="p-2">
-                                  <div className="flex items-center gap-x-2">
-                                    <button className="p-3 rounded w-max font-semibold text-gray-500">
-                                      <FaEdit />
-                                    </button>
-                                    <button className="p-3 text-red-400 rounded w-max font-semibold ">
-                                      <CgTrash />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            )
-                        )}
-                      </>
-                    )}
+                                    <td className="p-2">
+                                      <div className="flex items-center gap-x-2">
+                                        <button className="p-3 rounded w-max font-semibold text-gray-500">
+                                          <FaEdit />
+                                        </button>
+                                        <button className="p-3 text-red-400 rounded w-max font-semibold ">
+                                          <CgTrash
+                                            onClick={() =>
+                                              handleDeleteModal(contact.id)
+                                            }
+                                          />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )
+                            )}
+                        </>
+                      )}
                   </>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
+        {ShowDeleteModal && (
+          <DeleteModal
+            close={() => setShowDeleteModal(false)}
+            toDeleteid={isToDelete}
+            setContactList={setContactList}
+            ContactList={ContactList}
+          />
+        )}
       </main>
 
       {showAddContactModal && (
         <AddContactModal
           close={() => setshowAddContactModal(false)}
-          handleModalClose={handleModalClose}
+          setContactList={setContactList}
+          ContactList={ContactList}
         />
       )}
     </>

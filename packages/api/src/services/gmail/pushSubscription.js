@@ -69,7 +69,7 @@ const getParsedGmailMessage = async (data) => {
         .replace(/\.[^/.]+$/, "")
         .toLowerCase();
       if (trimName.length > 40) trimName = trimName.slice(trimName.length - 40);
-      
+
       const fid = messageId + trimName,
         fileName = `${messageId}/${filename}`;
 
@@ -324,6 +324,8 @@ const checkGmailMessages = async (
               recipient: Item.recipient,
               subject: Item.lower_subject,
               snippet: Item.lower_snippet,
+              from: Item.from,
+              to: Item.to,
             };
           });
 
@@ -369,7 +371,7 @@ const checkGmailMessages = async (
                             isSaved: false,
                             createdAt: toUTC(new Date()),
                             dateReceived: i.dateReceived.toString(),
-                            filters: `${email}#${i.subject}#${i.snippet}`,
+                            filters: `${email}#${i.from}#${i.to}#${i.subject}#${i.snippet}`,
                           },
                         },
                       })
@@ -381,9 +383,9 @@ const checkGmailMessages = async (
               //   "Save to CompanyGmailMessageTable:",
               //   saveCompanyEmails
               // );
-              console.log("Save to CompanyGmailMessageTable:");
+              console.log("Save to CompanyGmailMessage Table:");
             } catch ({ message }) {
-              console.log("Error in Saving CompanyGmailMessageTable", message);
+              console.log("Error in Saving CompanyGmailMessage Table", message);
             }
           }
         }
