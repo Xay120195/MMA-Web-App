@@ -198,9 +198,9 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
     await getOldMessages(email, companyId, rangeFilter, nextPageToken);
 };
 
-export function extractEmails(text) {
+const extractEmails = (text) => {
   return text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
-}
+};
 
 exports.addToken = async (ctx) => {
   let responseBody = "";
