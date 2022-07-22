@@ -1062,34 +1062,34 @@ const TableInfo = ({
     bulkCreateMatterFile(addOrder);
 
       //set background content
-      setTimeout( async () => {
-        const backgroundFilesOptReq = await API.graphql({
+      setTimeout(() => {
+        const backgroundFilesOptReq = API.graphql({
           query: qlistBackgroundFiles,
           variables: {
             id: selectedRowId,
           },
+        }).then((result) => {
+          console.log("THIS", result);
+  
+          var newFilesResult =
+          result.data.background.files.items.map(
+              ({ id, name, description }) => ({
+                id: id,
+                name: name,
+                description: description,
+              })
+            );
+    
+          var updateArrFiles = background.map((obj) => {
+            if (obj.id === selectedRowId) {
+              return { ...obj, files: { items: newFilesResult } };
+            }
+            return obj;
+          });
+    
+          console.log("new filess", newFilesResult);
+          setBackground(updateArrFiles);
         });
-
-        console.log("THIS", backgroundFilesOptReq);
-  
-        var newFilesResult =
-          backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description }) => ({
-              id: id,
-              name: name,
-              description: description,
-            })
-          );
-  
-        var updateArrFiles = background.map((obj) => {
-          if (obj.id === selectedRowId) {
-            return { ...obj, files: { items: newFilesResult } };
-          }
-          return obj;
-        });
-  
-        console.log("new filess", newFilesResult);
-        setBackground(updateArrFiles);
       }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
