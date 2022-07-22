@@ -183,7 +183,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
                   isSaved: false,
                   createdAt: toUTC(new Date()),
                   dateReceived: i.dateReceived.toString(),
-                  filters: `${i.recipient}#${i.from}#${i.to}#${i.subject}#${i.snippet}`,
+                  filters: `${i.recipient}#${extractEmails(i.from).join(',')}#${extractEmails(i.to).join(',')}#${i.subject}#${i.snippet}`,
                 },
               },
             })),
@@ -197,6 +197,10 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
   if (nextPageToken)
     await getOldMessages(email, companyId, rangeFilter, nextPageToken);
 };
+
+export function extractEmails(text) {
+  return text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
+}
 
 exports.addToken = async (ctx) => {
   let responseBody = "";
