@@ -429,24 +429,6 @@ const TableSavedInfo = ({
                         onBlur={(e) => handleSaveDesc(e, item_attach.id)}
                         contentEditable={true}
                       ></div>
-                      <div className="ml-12 mt-1 w-80">
-                        {
-                          item_attach.labels.items.map((i, index) => (
-                            <button
-                              key={i.id}
-                              className=" mb-1 h-6
-                                text-opacity-90 1
-                                textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                              id="headlessui-popover-button-87"
-                              type="button"
-                              aria-expanded="false"
-                            >
-                              {i.name}
-                            </button>
-
-                          ))
-                        }
-                      </div>
                     </div>
                   </React.Fragment>
                 ))}

@@ -163,11 +163,7 @@ const TableUnsavedInfo = ({
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
 
-    if (
-      emailFilters &&
-      emailFilters.startDate === null &&
-      emailFilters.endDate === null
-    ) {
+    if (emailFilters.startDate === null && emailFilters.endDate === null) {
       getUnSavedEmails(emailFilters);
     } else {
       getUnSavedEmails();
