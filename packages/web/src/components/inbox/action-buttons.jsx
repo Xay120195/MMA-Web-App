@@ -196,11 +196,11 @@ const ActionButtons = ({
           console.log("PAYLOAD:", payload);
 
           setTimeout(() => {
-            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
+            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
           }, 0);
           
           item.attachments.items.map(attachment => {
-            const request = API.graphql({
+            API.graphql({
               query: mSaveAttachmentEmailsToMatter,
               variables: {
                 matterId: clientMatterId,
@@ -215,8 +215,18 @@ const ActionButtons = ({
                 details: attachment.details,
                 date: new Date(item.date).toISOString(),
               },
+            }).then((result)=>{
+              // console.log("requestattachment", result.data.matterFileCreate.id);
+              // console.log("attachmentlabels", attachment.labels.items);
+
+              const tagAttachment = API.graphql({
+                query: mTagFile,
+                variables: {
+                  fileId: result.data.matterFileCreate.id,
+                  labels: attachment.labels.items,
+                },
+              })
             });
-            
           });
         });
 
@@ -276,7 +286,15 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent) => {
+  const mTagFile= `mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
+    fileLabelTag(file: {id: $fileId}, label: $labels) {
+        file {
+          id
+        }
+      }
+    }`;
+
+  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent, labels) => {
     var opt = {
       margin:       [30, 30, 30, 30],
       filename:     fileName,
@@ -331,7 +349,16 @@ const ActionButtons = ({
             };
         
             API.graphql(params).then((result) => {
-              console.log(result);
+              console.log("res arrray",result.data.matterFileCreate.id);
+              console.log("labels",labels);
+
+              const request1 = API.graphql({
+                query: mTagFile,
+                variables: {
+                  fileId: result.data.matterFileCreate.id,
+                  labels: labels.items,
+                },
+              });
             });
 
           })
