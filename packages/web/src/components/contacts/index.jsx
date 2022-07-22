@@ -31,10 +31,11 @@ export default function Contacts() {
   const [ActiveLetter, setActiveLetter] = useState("a");
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [isToDelete, setisToDelete] = useState("");
-  const [ContactList, setContactList] = useState();
+  const [ContactList, setContactList] = useState(null);
   const hideToast = () => {
     setShowToast(false);
   };
+
 
   const qGetContacts = `
   query companyUsers($companyId: String) {
@@ -54,20 +55,20 @@ export default function Contacts() {
   }
   `;
 
-  useEffect((e) => {
-    anime({
-      targets: rows.current,
-      opacity: [0, 1],
-      duration: 600,
-      easing: "linear",
-    });
-  }, []);
+  // useEffect((e) => {
+  //   anime({
+  //     targets: rows.current,
+  //     opacity: [0, 1],
+  //     duration: 600,
+  //     easing: "linear",
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    if (contacts === null) {
-      getContacts();
-    }
-  }, [contacts]);
+  // useEffect(() => {
+  //   if (ContactList === null) {
+  //     getContacts();
+  //   }
+  // });
 
   let getContacts = async () => {
     const params = {
@@ -78,41 +79,37 @@ export default function Contacts() {
     };
 
     await API.graphql(params).then((companyUsers) => {
-      console.log(companyUsers);
-      setContacts(companyUsers.data.company.users.items);
+      console.log("usersssss",companyUsers);
+      var temp = companyUsers.data.company.users.items
+      temp.sort((a, b) =>  a.firstName.localeCompare(b.firstName));
+      //setContactList(temp);
+      // ContactList.sort((a, b) =>  a.firstName.localeCompare(b.firstName));
+      setContactList(temp);
     });
   };
 
-  const contentDiv = {
-    margin: "0 0 0 65px",
-  };
 
-  const mainGrid = {
-    display: "grid",
-    gridtemplatecolumn: "1fr auto",
-  };
+  // const handleAddContact = (returnedUser) => {
+  //   console.log(returnedUser);
+  //   getContacts();
+  //   handleModalClose();
+  // };
 
-  const handleAddContact = (returnedUser) => {
-    console.log(returnedUser);
-    getContacts();
-    handleModalClose();
-  };
-
-  const RenderGroup = ({ cl, letterNow }) => {
-    return (
-      <>
-        {cl.map((user) => (
-          <tr className="stripe text-left" key={user.id}>
-            <User
-              user={user}
-              setContactList={setContactList}
-              ContactList={ContactList}
-            />
-          </tr>
-        ))}
-      </>
-    );
-  };
+  // const RenderGroup = ({ cl, letterNow }) => {
+  //   return (
+  //     <>
+  //       {cl.map((user) => (
+  //         <tr className="stripe text-left" key={user.id}>
+  //           <User
+  //             user={user}
+  //             setContactList={setContactList}
+  //             ContactList={ContactList}
+  //           />
+  //         </tr>
+  //       ))}
+  //     </>
+  //   );
+  // };
 
   const handleDeleteModal = (id) => {
     setisToDelete(id);
@@ -122,29 +119,31 @@ export default function Contacts() {
 
   const handleSort = (sortedReverse, sortBy) => {
     if (sortedReverse) {
-      if (sortBy === "name") {
-        dummy.sort((a, b) => a.name.localeCompare(b.name));
+      if (sortBy === "firstName") {
+        ContactList.sort((a, b) => a.firstName.localeCompare(b.firstName));
         alphabetArray.sort();
-      } else if (sortBy === "type") {
-        dummy.sort((a, b) => a.type.localeCompare(b.type));
+      } else if (sortBy === "userType") {
+        ContactList.sort((a, b) => a.userType.localeCompare(b.userType));
         alphabetArray.sort();
-      } else if (sortBy === "company") {
-        dummy.sort((a, b) => a.company.localeCompare(b.company));
-        alphabetArray.sort();
-      }
+      } 
+      // else if (sortBy === "company") {
+      //   dummy.sort((a, b) => a.company.localeCompare(b.company));
+      //   alphabetArray.sort();
+      // }
     } else {
-      if (sortBy === "name") {
-        dummy.sort((a, b) => a.name.localeCompare(b.name)).reverse();
+      if (sortBy === "firstName") {
+        ContactList.sort((a, b) => a.firstName.localeCompare(b.firstName)).reverse();
         alphabetArray.sort().reverse();
-      } else if (sortBy === "type") {
-        dummy.sort((a, b) => a.type.localeCompare(b.type)).reverse();
+      } else if (sortBy === "userType") {
+        ContactList.sort((a, b) => a.userType.localeCompare(b.userType)).reverse();
         alphabetArray.sort().reverse();
-      } else if (sortBy === "company") {
-        dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
-        alphabetArray.sort().reverse();
-      } else {
-        dummy.sort().reverse();
-      }
+      } 
+      // else if (sortBy === "company") {
+      //   dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
+      //   alphabetArray.sort().reverse();
+      // } else {
+      //   dummy.sort().reverse();
+      // }
     }
   };
 
@@ -172,33 +171,35 @@ export default function Contacts() {
     );
   };
 
-  const useOnIntersect = (ref) => {
-    const [isIntersecting, setIsIntersecting] = useState(false);
-    const observer = new IntersectionObserver(([entry]) => {
-      setIsIntersecting(entry.isIntersecting);
-    });
-    useEffect(() => {
-      observer.observe(ref.current);
-      return () => observer.unobserve(ref.current);
-    }, [ref]);
+  // const useOnIntersect = (ref) => {
+  //   const [isIntersecting, setIsIntersecting] = useState(false);
+  //   const observer = new IntersectionObserver(([entry]) => {
+  //     setIsIntersecting(entry.isIntersecting);
+  //   });
+  //   useEffect(() => {
+  //     observer.observe(ref.current);
+  //     return () => observer.unobserve(ref.current);
+  //   }, [ref]);
 
-    return isIntersecting;
-  };
+  //   return isIntersecting;
+  // };
 
   const scrollToView = (target) => {
     const el = document.getElementById(target);
     el && el.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
-  const handleScroll = (event) => {
-    console.log("scrollTop: ", event.currentTarget.scrollTop);
-    console.log("offsetHeight: ", event.currentTarget.offsetHeight);
-  };
+  // const handleScroll = (event) => {
+  //   console.log("scrollTop: ", event.currentTarget.scrollTop);
+  //   console.log("offsetHeight: ", event.currentTarget.offsetHeight);
+  // };
 
   useEffect(() => {
+    if (ContactList === null) {
+      getContacts();
+    }
     //Filter Name Alphabetically
-    dummy.sort((a, b) => a.name.localeCompare(b.name));
-    setContactList(dummy);
+    
 
     // observe the scroll event and set the active letter
     window.addEventListener(
@@ -297,7 +298,7 @@ export default function Contacts() {
                 // check if letter is in dummy array
                 const isLetter =
                   ContactList &&
-                  ContactList.some((user) => user.name.startsWith(letter));
+                  ContactList.some((user) => user.firstName.startsWith(letter));
                 if (isLetter) {
                   return (
                     <p
@@ -354,7 +355,7 @@ export default function Contacts() {
                   <>
                     {ContactList &&
                       ContactList.some((user) =>
-                        user.name.startsWith(letter)
+                        user.firstName.startsWith(letter)
                       ) && (
                         <>
                           <tr id={letter} key={letter} className="">
@@ -375,7 +376,7 @@ export default function Contacts() {
                           {ContactList &&
                             ContactList.map(
                               (contact, index) =>
-                                contact.name.charAt(0) == letter && (
+                                contact.firstName.charAt(0) == letter && (
                                   <tr
                                     ref={contact.isNewlyAdded ? rows : null}
                                     key={contact.id}
@@ -394,20 +395,20 @@ export default function Contacts() {
                                           />
                                         </span>
                                         <p className="font-semibold">
-                                          {contact.name}
+                                          {contact.firstName} {contact.lastName}
                                         </p>
                                       </div>
                                     </td>
                                     <td className="p-2">{contact.email}</td>
-                                    <td className="p-2">{contact.team}</td>
+                                    <td className="p-2"> </td>
                                     <td className="p-2 w-64 ">
                                       <div className="flex items-center gap-x-2 ">
                                         <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
-                                          {contact.type}
+                                          {contact.userType}
                                         </p>
                                       </div>
                                     </td>
-                                    <td className="p-2">{contact.company}</td>
+                                    <td className="p-2">{localStorage.getItem("companyId")}</td>
 
                                     <td className="p-2">
                                       <div className="flex items-center gap-x-2">
