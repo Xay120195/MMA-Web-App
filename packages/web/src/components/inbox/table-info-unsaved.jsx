@@ -360,7 +360,7 @@ const TableUnsavedInfo = ({
       cmid = '';
     }
 
-    if(labelsList.length>0){
+    if(labelsList.length>0 || labelsList !== null){
       for(var i=0; i<labelsList.length; i++){
         // console.log("optionscheck",labelsList[i]);
 
