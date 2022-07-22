@@ -82,8 +82,6 @@ export default function Contacts() {
       console.log("usersssss",companyUsers);
       var temp = companyUsers.data.company.users.items
       temp.sort((a, b) =>  a.firstName.localeCompare(b.firstName));
-      //setContactList(temp);
-      // ContactList.sort((a, b) =>  a.firstName.localeCompare(b.firstName));
       setContactList(temp);
     });
   };
@@ -198,9 +196,14 @@ export default function Contacts() {
     if (ContactList === null) {
       getContacts();
     }
-    //Filter Name Alphabetically
     
-
+    anime({
+      targets: rows.current,
+      opacity: [0, 1],
+      duration: 600,
+      easing: "linear",
+    });
+    
     // observe the scroll event and set the active letter
     window.addEventListener(
       "scroll",
