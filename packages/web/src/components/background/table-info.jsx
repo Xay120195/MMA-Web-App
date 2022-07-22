@@ -7,7 +7,7 @@ import ToastNotification from "../toast-notification";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaPaste, FaSync, FaSort, FaPlus, FaChevronDown } from "react-icons/fa";
 import Loading from "../loading/loading";
-import { List, AutoSizer, CellMeasurer, CellMeasurerCache } from "react-virtualized";
+import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
 
 import {
   BsFillTrashFill,
@@ -1061,42 +1061,35 @@ const TableInfo = ({
     //insert in matter file list
     bulkCreateMatterFile(addOrder);
 
-    // for(var i=0; i<addOrder.length; i++){
-    //     delete addOrder[i].oderSelected;
-    //     setTimeout(()=>{
-    //       createMatterFile(addOrder[i]);
-    //     }, 5000)
-    // }
       //set background content
-      setTimeout(async () => {
-        const backgroundFilesOptReq = await API.graphql({
+      setTimeout(() => {
+        const backgroundFilesOptReq = API.graphql({
           query: qlistBackgroundFiles,
           variables: {
             id: selectedRowId,
           },
+        }).then((result) => {
+          console.log("THIS", result);
+  
+          var newFilesResult =
+          result.data.background.files.items.map(
+              ({ id, name, description }) => ({
+                id: id,
+                name: name,
+                description: description,
+              })
+            );
+    
+          var updateArrFiles = background.map((obj) => {
+            if (obj.id === selectedRowId) {
+              return { ...obj, files: { items: newFilesResult } };
+            }
+            return obj;
+          });
+    
+          console.log("new filess", newFilesResult);
+          setBackground(updateArrFiles);
         });
-  
-        // if (backgroundFilesOptReq.data.background.files !== null) {
-        const newFilesResult =
-          backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description }) => ({
-              id: id,
-              name: name,
-              description: description,
-            })
-          );
-  
-        const updateArrFiles = background.map((obj) => {
-          if (obj.id === selectedRowId) {
-            return { ...obj, files: { items: newFilesResult } };
-          }
-          return obj;
-        });
-  
-        console.log("new filess", newFilesResult);
-        setBackground(updateArrFiles);
-        window.location.reload();
-        // }
       }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
@@ -1489,11 +1482,15 @@ const TableInfo = ({
                               ref={provider.innerRef}
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
-                              style={{width:"100%", height:"90vh"}}
+                              style={{width:"100%", height:"100vh"}}
                             >
-                              <AutoSizer>
-                                {({ width, height }) => (
+                              <WindowScroller>
+                              {({ height, scrollTop }) => (
+                                <AutoSizer disableHeight>
+                                {({ width }) => (
                                   <List
+                                  autoHeight
+                                  scrollTop={scrollTop}
                                   width={width}
                                   height={height}
                                   rowHeight={cache.current.rowHeight}
@@ -1507,13 +1504,14 @@ const TableInfo = ({
                                       cache={cache.current} 
                                       parent={parent} 
                                       rowIndex={index} 
-                                      columnIndex={0} 
+                                      columnIndex={0}
                                       >
                                         <div 
                                         style={{
                                           ...style,
                                           width: "100%",
                                           height: "100%",
+                                          border: '1px solid #f0f0f0', 
                                         }}
                                         >
                                           <Draggable
@@ -1588,7 +1586,7 @@ const TableInfo = ({
                                                   >
                                                     <div>
                                                       <DatePicker
-                                                        className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-20"
+                                                        className="border w-28 rounded text-xs py-2 px-1 border-gray-300 mb-5 z-50"
                                                         selected={
                                                           item.date !== null &&
                                                           item.date !== "null" &&
@@ -1621,8 +1619,10 @@ const TableInfo = ({
                                                         outlineColor:
                                                           "rgb(204, 204, 204, 0.5)",
                                                         outlineWidth: "thin",
-                                                        height: cache.current.rowHeight,
-
+                                                        minHeight: "300px",
+                                                        maxHeight: "350px",
+                                                        overflow: "auto",
+                                                        marginBottom: "70px",
                                                       }}
                                                       suppressContentEditableWarning
                                                       onClick={(event) =>
@@ -1764,12 +1764,14 @@ const TableInfo = ({
                                                           </span>
                                                           <br />
                                                           <br />
-                                                          {/* {files
-                                                          .filter(
-                                                            (x) =>
-                                                              x.backgroundId === item.id
-                                                          )
-                                                          .map((items, index) => ( */}
+                                                          
+                                                          <div
+                                                            style={{
+                                                              minHeight: "150px",
+                                                              maxHeight: "250px",
+                                                              overflow: "auto"
+                                                            }}
+                                                          >
                                                           {item.files.items.map(
                                                             (items, index) =>
                                                               items &&
@@ -1879,6 +1881,7 @@ const TableInfo = ({
                                                                 </span>
                                                               )
                                                           )}
+                                                          </div>
                                                         </div>
                                                       </>
                                                     )}
@@ -1911,6 +1914,8 @@ const TableInfo = ({
                                 />
                                 )}
                               </AutoSizer>
+                              )}
+                              </WindowScroller>
                               {provider.placeholder}
                             </tbody>
                           )}

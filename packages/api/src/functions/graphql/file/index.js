@@ -169,7 +169,8 @@ const resolvers = {
     downloadURL: async (ctx) => {
       return generatePresignedUrl(
         ctx.source.s3ObjectKey,
-        ctx.source
+        ctx.source,
+        "file-bucket"
       );
     },
     labels: async (ctx) => {
@@ -182,8 +183,7 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run file >>", ctx.info.fieldName);
-  console.log("~aqs.watch:: arguments >>", ctx.arguments);
+  console.log("~aqs.watch:: run file >>", ctx.info.fieldName, ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];

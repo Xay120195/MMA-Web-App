@@ -4,7 +4,7 @@ const {
   BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
-
+const { generatePresignedUrl } = require("../../../services/MatterService");
 async function listGmailAttachmentLabels(ctx) {
   
   const { id } = ctx.source;
@@ -78,6 +78,13 @@ async function listGmailAttachmentLabels(ctx) {
 
 const resolvers = {
   GmailMessageAttachment: {
+    downloadURL: async (ctx) => {
+      return generatePresignedUrl(
+        ctx.source.s3ObjectKey,
+        ctx.source,
+        "gmail-api"
+      );
+    },
     labels: async (ctx) => {
       return listGmailAttachmentLabels(ctx);
     },
@@ -85,8 +92,7 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run gmailAttachment >>", ctx.info.fieldName);
-  console.log("~aqs.watch:: arguments >>", ctx.arguments);
+  console.log("~aqs.watch:: run gmailAttachment >>", ctx.info.fieldName, ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];

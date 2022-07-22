@@ -699,6 +699,28 @@ async function getGmailMessage(data) {
   return resp;
 }
 
+async function getAttachment(data) {
+  let resp = {};
+  try {
+    const param = {
+      TableName: "GmailMessageAttachment",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function listGmailMessages() {
   try {
     const param = {
@@ -775,7 +797,6 @@ const resolvers = {
     companyAccessType: async (ctx) => {
       return getCompanyAccessType(ctx.arguments);
     },
-
     file: async (ctx) => {
       return getFile(ctx.arguments);
     },
@@ -824,12 +845,14 @@ const resolvers = {
     gmailMessages: async () => {
       return listGmailMessages();
     },
+    gmailAttachment: async (ctx) => {
+      return getAttachment(ctx.arguments);
+    },
   },
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run query >>", ctx.info.fieldName);
-  console.log("~aqs.watch:: arguments >>", ctx.arguments);
+  console.log("~aqs.watch:: run query >>", ctx.info.fieldName, ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];
