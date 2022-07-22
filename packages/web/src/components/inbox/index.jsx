@@ -200,7 +200,6 @@ const Inbox = () => {
       params.variables["userTimeZone"] = userTimeZone;
 
       delete params.variables["limit"];
-      delete params.variables["nextToken"];
     }
 
     console.log("params:", params);
@@ -225,7 +224,7 @@ const Inbox = () => {
   };
 
   const handleLoadMoreUnSavedEmails = async () => {
-    console.log("handleLoadMoreUnSavedEmails()");
+    console.log("handleLoadMoreUnSavedEmails()", unsavedNextToken);
     if (unsavedNextToken !== null) {
       const params = {
         query: qGmailMessagesbyCompany,
@@ -246,7 +245,6 @@ const Inbox = () => {
         setUnsavedEmails([...new Set(arrConcat)]);
       });
     } else {
-      console.log("unsavedNextToken", unsavedNextToken);
       setMaxLoadingUnSavedEmail(true);
     }
   };
@@ -280,7 +278,6 @@ const Inbox = () => {
 
       params.variables["userTimeZone"] = userTimeZone;
       delete params.variables["limit"];
-      delete params.variables["nextToken"];
     }
 
     console.log("params:", params);
@@ -292,7 +289,7 @@ const Inbox = () => {
   };
 
   const handleLoadMoreSavedEmails = async () => {
-    console.log("handleLoadMoreSavedEmails()");
+    console.log("handleLoadMoreSavedEmails()", savedNextToken);
     if (savedNextToken !== null) {
       const params = {
         query: qGmailMessagesbyCompany,
@@ -313,7 +310,6 @@ const Inbox = () => {
         setSavedEmails([...new Set(arrConcat)]);
       });
     } else {
-      console.log("savedNextToken", savedNextToken);
       setMaxLoadingSavedEmail(true);
     }
   };
@@ -372,25 +368,13 @@ const Inbox = () => {
   };
 
   const handleOnAction = (event) => {
-    // Do not call load more if filter is applied
-    console.group("handleOnAction");
-    console.log(emailFilters);
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      console.log(
-        "call handleLoadMoreUnSavedEmails(); handleLoadMoreSavedEmails()"
-      );
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
-    }
-    console.groupEnd();
+    handleLoadMoreUnSavedEmails(emailFilters);
+    handleLoadMoreSavedEmails(emailFilters);
   };
 
   const handleOnIdle = (event) => {
-    // Do not call load more if filter is applied
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
-    }
+    handleLoadMoreUnSavedEmails(emailFilters);
+    handleLoadMoreSavedEmails(emailFilters);
   };
 
   const handleExecuteFilter = async (filters) => {
