@@ -371,7 +371,11 @@ const checkGmailMessages = async (
                             isSaved: false,
                             createdAt: toUTC(new Date()),
                             dateReceived: i.dateReceived.toString(),
-                            filters: `${email}#${i.from}#${i.to}#${i.subject}#${i.snippet}`,
+                            filters: `${email}#${extractEmails(i.from).join(
+                              ","
+                            )}#${extractEmails(i.to).join(",")}#${i.subject}#${
+                              i.snippet
+                            }`,
                           },
                         },
                       })
@@ -407,6 +411,10 @@ const checkGmailMessages = async (
 
   if (nextPageToken)
     await checkGmailMessages(email, startHistoryId, companyId, nextPageToken);
+};
+
+const extractEmails = (text) => {
+  return text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
 };
 
 const pushSubscriptionHandler = async (event) => {

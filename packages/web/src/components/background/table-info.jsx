@@ -1061,43 +1061,35 @@ const TableInfo = ({
     //insert in matter file list
     bulkCreateMatterFile(addOrder);
 
-    // for(var i=0; i<addOrder.length; i++){
-    //     delete addOrder[i].oderSelected;
-    //     setTimeout(()=>{
-    //       createMatterFile(addOrder[i]);
-    //     }, 5000)
-    // }
       //set background content
-      setTimeout(async () => {
-        const backgroundFilesOptReq = await API.graphql({
+      setTimeout(() => {
+        const backgroundFilesOptReq = API.graphql({
           query: qlistBackgroundFiles,
           variables: {
             id: selectedRowId,
           },
+        }).then((result) => {
+          console.log("THIS", result);
+  
+          var newFilesResult =
+          result.data.background.files.items.map(
+              ({ id, name, description }) => ({
+                id: id,
+                name: name,
+                description: description,
+              })
+            );
+    
+          var updateArrFiles = background.map((obj) => {
+            if (obj.id === selectedRowId) {
+              return { ...obj, files: { items: newFilesResult } };
+            }
+            return obj;
+          });
+    
+          console.log("new filess", newFilesResult);
+          setBackground(updateArrFiles);
         });
-  
-        // if (backgroundFilesOptReq.data.background.files !== null) {
-        const newFilesResult =
-          backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description }) => ({
-              id: id,
-              name: name,
-              description: description,
-            })
-          );
-  
-        const updateArrFiles = background.map((obj) => {
-          if (obj.id === selectedRowId) {
-            return { ...obj, files: { items: newFilesResult } };
-          }
-          return obj;
-        });
-  
-        console.log("new filess", newFilesResult);
-        setBackground(updateArrFiles);
-        //cache.current.recomputeRowHeights();
-        //window.location.reload();
-        // }
       }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
@@ -1627,8 +1619,10 @@ const TableInfo = ({
                                                         outlineColor:
                                                           "rgb(204, 204, 204, 0.5)",
                                                         outlineWidth: "thin",
-                                                        height: cache.current.rowHeight,
-
+                                                        minHeight: "300px",
+                                                        maxHeight: "350px",
+                                                        overflow: "auto",
+                                                        marginBottom: "70px",
                                                       }}
                                                       suppressContentEditableWarning
                                                       onClick={(event) =>
@@ -1770,12 +1764,14 @@ const TableInfo = ({
                                                           </span>
                                                           <br />
                                                           <br />
-                                                          {/* {files
-                                                          .filter(
-                                                            (x) =>
-                                                              x.backgroundId === item.id
-                                                          )
-                                                          .map((items, index) => ( */}
+                                                          
+                                                          <div
+                                                            style={{
+                                                              minHeight: "150px",
+                                                              maxHeight: "250px",
+                                                              overflow: "auto"
+                                                            }}
+                                                          >
                                                           {item.files.items.map(
                                                             (items, index) =>
                                                               items &&
@@ -1885,6 +1881,7 @@ const TableInfo = ({
                                                                 </span>
                                                               )
                                                           )}
+                                                          </div>
                                                         </div>
                                                       </>
                                                     )}
