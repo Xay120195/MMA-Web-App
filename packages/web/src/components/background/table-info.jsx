@@ -1627,8 +1627,10 @@ const TableInfo = ({
                                                         outlineColor:
                                                           "rgb(204, 204, 204, 0.5)",
                                                         outlineWidth: "thin",
-                                                        height: cache.current.rowHeight,
-
+                                                        minHeight: "300px",
+                                                        maxHeight: "350px",
+                                                        overflow: "auto",
+                                                        marginBottom: "70px",
                                                       }}
                                                       suppressContentEditableWarning
                                                       onClick={(event) =>
@@ -1770,12 +1772,14 @@ const TableInfo = ({
                                                           </span>
                                                           <br />
                                                           <br />
-                                                          {/* {files
-                                                          .filter(
-                                                            (x) =>
-                                                              x.backgroundId === item.id
-                                                          )
-                                                          .map((items, index) => ( */}
+                                                          
+                                                          <div
+                                                            style={{
+                                                              minHeight: "150px",
+                                                              maxHeight: "250px",
+                                                              overflow: "auto"
+                                                            }}
+                                                          >
                                                           {item.files.items.map(
                                                             (items, index) =>
                                                               items &&
@@ -1885,6 +1889,7 @@ const TableInfo = ({
                                                                 </span>
                                                               )
                                                           )}
+                                                          </div>
                                                         </div>
                                                       </>
                                                     )}
