@@ -41,7 +41,7 @@ export default function AddContactModal({ close }) {
       complete: () => {
         anime({
           targets: modalContent.current,
-          scale: [0.9, 1],
+          translateY: [20, 0],
           opacity: [0, 1],
           duration: 200,
           easing: 'easeInOutQuad',
