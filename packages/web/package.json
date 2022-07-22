@@ -10,6 +10,9 @@
     "@fortawesome/react-fontawesome": "^0.1.16",
     "@headlessui/react": "^1.4.1",
     "@popperjs/core": "^2.10.2",
+    "@remirror/pm": "^1.0.22",
+    "@remirror/react": "^1.0.43",
+    "@remirror/react-editors": "^0.1.89",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -38,8 +41,10 @@
     "react-scroll-to-top": "^1.0.8",
     "react-select": "^5.2.1",
     "react-tooltip": "^4.2.21",
+    "remirror": "^1.0.89",
     "semantic-ui-react": "^2.0.4",
-    "web-vitals": "^1.0.1"
+    "web-vitals": "^1.0.1",
+    "y-websocket": "^1.4.3"
   },
   "scripts": {
     "start": "npm run watch:css && react-scripts start",

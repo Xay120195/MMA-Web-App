@@ -30,6 +30,10 @@ import UploadLinkModal from "../file-bucket/file-upload-modal";
 import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
 import { check } from "prettier";
+import {
+  ThemeProvider,
+} from '@remirror/react';
+import RFIEditor from './rfi-editor';
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -100,6 +104,7 @@ const TableInfo = ({
   checkedRows,
   setCheckedRows
 }) => {
+  console.log('briefId: ', briefId);
   let temp = selectedRowsBG;
   let tempFiles = selectedRowsBGFiles;
   const [showToast, setShowToast] = useState(false);
@@ -1397,8 +1402,9 @@ const TableInfo = ({
     
     return currRow;
   }
+
   return (
-    <>
+    <ThemeProvider>
       <div className="px-7">
         <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -1601,7 +1607,8 @@ const TableInfo = ({
                                             {...provider.dragHandleProps}
                                             className="px-2 py-3 align-top place-items-center relative w-4/6"
                                           >
-                                            <div
+                                            <RFIEditor item={item}/>
+                                           {/* <div
                                               className="p-2 w-full h-full font-poppins"
                                               style={{
                                                 cursor: "auto",
@@ -1632,7 +1639,7 @@ const TableInfo = ({
                                                 )
                                               }
                                               contentEditable={true}
-                                            ></div>
+                                            ></div> */}
                                             <span className="text-red-400 filename-validation">
                                               {item.id === descId && descAlert}
                                             </span>
@@ -1993,7 +2000,7 @@ const TableInfo = ({
           <ToastNotification title={alertMessage} hideToast={hideToast} />
         </div>
       )}
-    </>
+    </ThemeProvider>
   );
 };
 
