@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect, useRef } from "react";
+import anime from "animejs";
 export default function DeleteModal({
   close,
   toDeleteid,
@@ -9,6 +9,26 @@ export default function DeleteModal({
   function StopPropagate(e) {
     e.stopPropagation();
   }
+
+  const modalContainer = useRef(null);
+  const modalContent = useRef(null);
+  useEffect((e) => {
+    anime({
+      targets: modalContainer.current,
+      opacity: [0, 1],
+      duration: 100,
+      easing: "easeInOutQuad",
+      complete: () => {
+        anime({
+          targets: modalContent.current,
+          scale: [0.9, 1],
+          opacity: [0, 1],
+          duration: 100,
+          easing: "easeInOutQuad",
+        });
+      },
+    });
+  }, []);
 
   const TrashIcon = () => {
     return (
@@ -58,6 +78,7 @@ export default function DeleteModal({
   const handleDelete = () => {
     if (toDeleteid) {
       setContactList(ContactList.filter((o) => o.id !== toDeleteid));
+      close();
     }
   };
 
@@ -93,11 +114,13 @@ export default function DeleteModal({
   return (
     <>
       <div
+        ref={modalContainer}
         onClick={() => close()}
-        className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
+        className="opacity-0 flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none bg-black bg-opacity-60"
       >
         <div
-          className="px-8 pt-6 pb-8 flex flex-col bg-white rounded-2xl items-center justify-center"
+          ref={modalContent}
+          className="px-8 pt-6 pb-8 flex flex-col bg-white rounded-2xl items-center justify-center opacity-0 scale-90"
           onClick={StopPropagate}
         >
           <TrashIcon />

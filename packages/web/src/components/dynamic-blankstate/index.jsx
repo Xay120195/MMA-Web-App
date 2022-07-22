@@ -6,7 +6,7 @@ const BlankState = (props) => {
   return (
     <>
     {props.iconDisplay ?
-      <div className="BlankState">
+      <div className="BlankState m-auto">
         <div className="dynamic-main-content">
           <div className="img-content  content-center">
             <img src={props.iconDisplay} alt="" className="text-center content-center"/>
