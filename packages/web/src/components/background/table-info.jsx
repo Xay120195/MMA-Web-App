@@ -136,7 +136,7 @@ const TableInfo = ({
 
   const cache = useRef(new CellMeasurerCache({
     fixedWidth: true,
-    defaultHeight: 20,
+    defaultHeight: 100,
   }));
 
   var moment = require("moment");
@@ -1095,9 +1095,9 @@ const TableInfo = ({
   
         console.log("new filess", newFilesResult);
         setBackground(updateArrFiles);
-
-        const newRowsIndex = background.map((val, index) => index);
-        newRowsIndex.forEach(index => cache.current.clear(index));
+        //cache.current.recomputeRowHeights();
+        //window.location.reload();
+        // }
       }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
@@ -1490,7 +1490,7 @@ const TableInfo = ({
                               ref={provider.innerRef}
                               {...provider.droppableProps}
                               className="bg-white divide-y divide-gray-200"
-                              style={{width:"100%", height:"auto"}}
+                              style={{width:"100%", height:"100vh"}}
                             >
                               <WindowScroller>
                               {({ height, scrollTop }) => (
@@ -1514,16 +1514,13 @@ const TableInfo = ({
                                       rowIndex={index} 
                                       columnIndex={0}
                                       >
-                                      {({ registerChild }) => (
                                         <div 
                                         style={{
                                           ...style,
                                           width: "100%",
                                           height: "100%",
                                           border: '1px solid #f0f0f0', 
-                                          display: 'flex',
                                         }}
-                                        ref={registerChild}
                                         >
                                           <Draggable
                                             key={item.id + "-" + index}
@@ -1630,8 +1627,10 @@ const TableInfo = ({
                                                         outlineColor:
                                                           "rgb(204, 204, 204, 0.5)",
                                                         outlineWidth: "thin",
-                                                        height: cache.current.rowHeight,
-
+                                                        minHeight: "300px",
+                                                        maxHeight: "350px",
+                                                        overflow: "auto",
+                                                        marginBottom: "70px",
                                                       }}
                                                       suppressContentEditableWarning
                                                       onClick={(event) =>
@@ -1773,12 +1772,14 @@ const TableInfo = ({
                                                           </span>
                                                           <br />
                                                           <br />
-                                                          {/* {files
-                                                          .filter(
-                                                            (x) =>
-                                                              x.backgroundId === item.id
-                                                          )
-                                                          .map((items, index) => ( */}
+                                                          
+                                                          <div
+                                                            style={{
+                                                              minHeight: "150px",
+                                                              maxHeight: "250px",
+                                                              overflow: "auto"
+                                                            }}
+                                                          >
                                                           {item.files.items.map(
                                                             (items, index) =>
                                                               items &&
@@ -1888,6 +1889,7 @@ const TableInfo = ({
                                                                 </span>
                                                               )
                                                           )}
+                                                          </div>
                                                         </div>
                                                       </>
                                                     )}
@@ -1914,7 +1916,6 @@ const TableInfo = ({
                                             </tr>
                                           )}
                                         </div>
-                                        )}
                                       </CellMeasurer>
                                     );
                                   }}
