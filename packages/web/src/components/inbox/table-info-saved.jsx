@@ -384,30 +384,15 @@ const TableSavedInfo = ({
                   </span>
                 </div>
               </td>
-              <td className="p-2 align-top" colSpan={2}>
+              <td className="p-2 align-top">
 
                 <div className="flex items-start mt-2">
                   <p className="w-24 group py-1 px-2  rounded textColor bg-white inline-flex items-center"></p>
-                  <div className="p-2 w-1/2 h-full font-poppins rounded-sm float-right"
+                  <div className="p-2 w-full h-full font-poppins rounded-sm float-right"
                   dangerouslySetInnerHTML={{
                     __html: item.description,
                   }}
                   >
-                  </div>
-                  <div className="ml-12 mt-1 w-80 inline-flex ">
-                  {item.labels.items.map((i, index) => (
-                    <button
-                      key={i.id}
-                      className=" mb-1 h-6
-                        text-opacity-90 1
-                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                      id="headlessui-popover-button-87"
-                      type="button"
-                      aria-expanded="false"
-                    >
-                      {i.name}
-                    </button>
-                    ))}
                   </div>
                 </div>
                 
@@ -430,7 +415,7 @@ const TableSavedInfo = ({
                         {item_attach.name.length >= 20 ? "..." : ""}
                       </p>
                       <div
-                        className="p-2 w-1/2 h-full font-poppins rounded-sm float-right"
+                        className="p-2 w-full h-full font-poppins rounded-sm float-right"
                         style={{
                           border: "solid 1px #c4c4c4",
                           cursor: "auto",
@@ -444,27 +429,26 @@ const TableSavedInfo = ({
                         onBlur={(e) => handleSaveDesc(e, item_attach.id)}
                         contentEditable={true}
                       ></div>
-                      <div className="ml-12 mt-1 w-80">
-                        {
-                          item_attach.labels.items.map((i, index) => (
-                            <button
-                              key={i.id}
-                              className=" mb-1 h-6
-                                text-opacity-90 1
-                                textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                              id="headlessui-popover-button-87"
-                              type="button"
-                              aria-expanded="false"
-                            >
-                              {i.name}
-                            </button>
-
-                          ))
-                        }
-                      </div>
                     </div>
                   </React.Fragment>
                 ))}
+              </td>
+              <td  className="p-2 align-top" >
+                <div className="ml-12 mt-1 w-80 inline-flex ">
+                  {item.labels.items.map((i, index) => (
+                    <button
+                      key={i.id}
+                      className=" mb-1 h-6
+                        text-opacity-90 1
+                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                      id="headlessui-popover-button-87"
+                      type="button"
+                      aria-expanded="false"
+                    >
+                      {i.name}
+                    </button>
+                    ))}
+                  </div>
               </td>
               <td className="p-2 align-top">
                 <>
