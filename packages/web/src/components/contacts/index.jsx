@@ -13,6 +13,7 @@ import ToastNotification from "../toast-notification";
 import User from "./user";
 import { alphabetArray } from "./alphabet";
 import dummy from "./dummy.json";
+import ContactInformationModal from "./contact-information-modal";
 
 export default function Contacts() {
   const [showAddContactModal, setshowAddContactModal] = useState(false);
@@ -29,9 +30,13 @@ export default function Contacts() {
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [ActiveLetter, setActiveLetter] = useState("a");
+  const [isToEdit, setisToEdit] = useState("");
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [isToDelete, setisToDelete] = useState("");
   const [ContactList, setContactList] = useState();
+  const [ShowEditModal, setShowEditModal] = useState(false);
+  const [CurrentUser, setCurrentUser] = useState({});
+  const [toEditid, settoEditid] = useState("");
   const hideToast = () => {
     setShowToast(false);
   };
@@ -112,6 +117,11 @@ export default function Contacts() {
         ))}
       </>
     );
+  };
+
+  const handleEditModal = (user) => {
+    setCurrentUser(user);
+    setShowEditModal(true);
   };
 
   const handleDeleteModal = (id) => {
@@ -412,7 +422,11 @@ export default function Contacts() {
                                     <td className="p-2">
                                       <div className="flex items-center gap-x-2">
                                         <button className="p-3 rounded w-max font-semibold text-gray-500">
-                                          <FaEdit />
+                                          <FaEdit
+                                            onClick={() =>
+                                              handleEditModal(contact)
+                                            }
+                                          />
                                         </button>
                                         <button className="p-3 text-red-400 rounded w-max font-semibold ">
                                           <CgTrash
@@ -440,6 +454,14 @@ export default function Contacts() {
             toDeleteid={isToDelete}
             setContactList={setContactList}
             ContactList={ContactList}
+          />
+        )}
+        {ShowEditModal && (
+          <ContactInformationModal
+            ContactList={ContactList}
+            setContactList={setContactList}
+            close={() => setShowEditModal(false)}
+            user={CurrentUser}
           />
         )}
       </main>
