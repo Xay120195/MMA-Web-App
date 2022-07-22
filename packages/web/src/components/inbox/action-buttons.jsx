@@ -143,12 +143,6 @@ const ActionButtons = ({
       }
   `;
 
-  /*const [
-    sortWorker,
-    { status: sortWorkerStatus, kill: killWorker }
-  ] = useWorker();*/
-
-  //console.log("WORKER:", sortWorkerStatus);
 
   const handleEmails = async (status) => {
     // Soon will change this to bulk mutation 
