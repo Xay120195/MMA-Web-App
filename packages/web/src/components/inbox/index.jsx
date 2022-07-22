@@ -171,6 +171,7 @@ const Inbox = () => {
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
 
   const getUnSavedEmails = async (filters) => {
+    console.log("getUnSavedEmails()");
     const params = {
       query: qGmailMessagesbyCompany,
       variables: {
@@ -199,9 +200,9 @@ const Inbox = () => {
       params.variables["userTimeZone"] = userTimeZone;
 
       delete params.variables["limit"];
-      delete params.variables["nextToken"];
     }
 
+    console.log("params:", params);
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
       const gmailToken = result.data.company.gmailToken;
@@ -223,6 +224,7 @@ const Inbox = () => {
   };
 
   const handleLoadMoreUnSavedEmails = async () => {
+    console.log("handleLoadMoreUnSavedEmails()", unsavedNextToken);
     if (unsavedNextToken !== null) {
       const params = {
         query: qGmailMessagesbyCompany,
@@ -248,6 +250,7 @@ const Inbox = () => {
   };
 
   const getSavedEmails = async (filters) => {
+    console.log("getSavedEmails()");
     const params = {
       query: qGmailMessagesbyCompany,
       variables: {
@@ -275,9 +278,9 @@ const Inbox = () => {
 
       params.variables["userTimeZone"] = userTimeZone;
       delete params.variables["limit"];
-      delete params.variables["nextToken"];
     }
 
+    console.log("params:", params);
     await API.graphql(params).then((result) => {
       const emailList = result.data.company.gmailMessages.items;
       setSavedVnextToken(result.data.company.gmailMessages.nextToken);
@@ -286,6 +289,7 @@ const Inbox = () => {
   };
 
   const handleLoadMoreSavedEmails = async () => {
+    console.log("handleLoadMoreSavedEmails()", savedNextToken);
     if (savedNextToken !== null) {
       const params = {
         query: qGmailMessagesbyCompany,
@@ -364,23 +368,13 @@ const Inbox = () => {
   };
 
   const handleOnAction = (event) => {
-    // Do not call load more if filter is applied
-    console.group("handleOnAction");
-    console.log(emailFilters);    
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      console.log("call handleLoadMoreUnSavedEmails(); handleLoadMoreSavedEmails()");
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
-    }
-    console.groupEnd();
+    handleLoadMoreUnSavedEmails(emailFilters);
+    handleLoadMoreSavedEmails(emailFilters);
   };
 
   const handleOnIdle = (event) => {
-    // Do not call load more if filter is applied
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
-    }
+    handleLoadMoreUnSavedEmails(emailFilters);
+    handleLoadMoreSavedEmails(emailFilters);
   };
 
   const handleExecuteFilter = async (filters) => {
@@ -399,12 +393,13 @@ const Inbox = () => {
       getSavedEmails(filters);
     } else {
       // Reset / Clear Filters
-      getUnSavedEmails();
-      getSavedEmails();
+
       setEmailFilters({
         startDate: null,
         endDate: null,
       });
+      getUnSavedEmails();
+      getSavedEmails();
     }
 
     setshowFiltersModal(false);
