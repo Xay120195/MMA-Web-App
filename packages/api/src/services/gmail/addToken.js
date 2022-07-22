@@ -29,11 +29,10 @@ const getEmailStartDate = async (email, inputTZ) => {
 
     Limit: 1,
   };
-  
+
   const gmailCmd = new QueryCommand(gmailParam);
   const gmailResult = await ddbClient.send(gmailCmd);
   const parseGmailResponse = gmailResult.Items.map((data) => unmarshall(data));
-  
 
   let input;
   if (parseGmailResponse.length != 0) {
@@ -142,6 +141,8 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
         recipient: Item.recipient,
         subject: Item.lower_subject,
         snippet: Item.lower_snippet,
+        from: Item.from,
+        to: Item.to,
       };
     });
 
@@ -182,7 +183,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
                   isSaved: false,
                   createdAt: toUTC(new Date()),
                   dateReceived: i.dateReceived.toString(),
-                  filters: `${i.recipient}#${i.subject}#${i.snippet}`,
+                  filters: `${i.recipient}#${i.from}#${i.to}#${i.subject}#${i.snippet}`,
                 },
               },
             })),
@@ -190,7 +191,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
         })
         .promise();
 
-      // console.log("Save to CompanyGmailMessageTable:", saveCompanyEmails);
+      // console.log("Save to CompanyGmailMessage Table:", saveCompanyEmails);
     }
   }
   if (nextPageToken)
