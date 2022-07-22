@@ -89,9 +89,11 @@ const TableUnsavedInfo = ({
   };
 
   const handleSelectItem = (e, counter) => {
+    console.log("test", unSavedEmails);
     if (counter !== 0) {
       const { id, checked } = e.target;
       setSelectedUnsavedItems([...selectedUnsavedItems, id]);
+      // console.log("selected", selectedUnsavedItems);
       if (!checked) {
         setSelectedUnsavedItems(
           selectedUnsavedItems.filter((item) => item !== id)
@@ -159,6 +161,7 @@ const TableUnsavedInfo = ({
     let temp = [...enabledArrays];
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
+    getUnSavedEmails();
   };
 
   const handleSaveMainDesc = async (e, id) => {
@@ -357,7 +360,7 @@ const TableUnsavedInfo = ({
       cmid = '';
     }
 
-    if(labelsList.length>0){
+    if(labelsList.length>0 || labelsList !== null){
       for(var i=0; i<labelsList.length; i++){
         // console.log("optionscheck",labelsList[i]);
 
@@ -479,11 +482,12 @@ const TableUnsavedInfo = ({
                               .split('data":"')
                               .pop()
                               .split('"}')[0]
-                          ),
+                          ).replace("body{color:", ""),
                         }}
                       ></p>
                     </div>
                   )}
+                  
                 </span>
                 <button
                   className="hidden no-underline hover:underline text-xs text-blue-400"
@@ -584,7 +588,7 @@ const TableUnsavedInfo = ({
                   >
                     {item.labelIds}
                   </button>
-                  {/* <CreatableSelect
+                  <CreatableSelect
                     defaultValue={() =>
                       defaultLabels(
                         item.labels.items
@@ -603,9 +607,9 @@ const TableUnsavedInfo = ({
                     }
                     placeholder="Labels"
                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                  /> */}
+                  />
                 </div>
-                {/* {item.attachments.items.map((item_attach, index) => (
+                {item.attachments.items.map((item_attach, index) => (
                   <CreatableSelect
                     defaultValue={() =>
                       defaultLabels(
@@ -625,7 +629,7 @@ const TableUnsavedInfo = ({
                     placeholder="Labels"
                     className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                   />
-                ))} */}
+                ))}
               </td>
               <td className="p-2 align-top">
                 <React.Fragment key={item.id}>

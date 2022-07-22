@@ -3,6 +3,7 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
+//import { useWorker, WORKER_STATUS } from "@koale/useworker";
 
 var moment = require("moment");
 
@@ -142,6 +143,7 @@ const ActionButtons = ({
       }
   `;
 
+
   const handleEmails = async (status) => {
     // Soon will change this to bulk mutation 
     if(status) {
@@ -185,11 +187,14 @@ const ActionButtons = ({
           });
 
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
+          console.log("PAYLOAD:", payload);
 
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload);
-
+          setTimeout(() => {
+            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
+          }, 0);
+          
           item.attachments.items.map(attachment => {
-            const request = API.graphql({
+            API.graphql({
               query: mSaveAttachmentEmailsToMatter,
               variables: {
                 matterId: clientMatterId,
@@ -204,60 +209,66 @@ const ActionButtons = ({
                 details: attachment.details,
                 date: new Date(item.date).toISOString(),
               },
+            }).then((result)=>{
+              // console.log("requestattachment", result.data.matterFileCreate.id);
+              // console.log("attachmentlabels", attachment.labels.items);
+
+              const tagAttachment = API.graphql({
+                query: mTagFile,
+                variables: {
+                  fileId: result.data.matterFileCreate.id,
+                  labels: attachment.labels.items,
+                },
+              })
             });
-            
           });
         });
 
-        const request = API.graphql({
+        API.graphql({
           query: mSaveUnsavedEmails,
           variables: {
             companyId: companyId,
             id: obj,
             isSaved: status
           },
+        }).then((result)=> {
+          setResultMessage("Successfully saved an email.");
+          setShowToast(true);
+          setSelectedUnsavedItems([]);
+          setSaveLoading(false);
         });
       });
 
-        setResultMessage("Successfully saved an email.");
-        setShowToast(true);
-        setTimeout(() => {
-          setSelectedUnsavedItems([]);
-          setSaveLoading(false);
-        }, 1000);
-      
     } else {
       setSaveLoading(true);
 
       selectedSavedItems.map((obj) => {
-        const request = API.graphql({
+        API.graphql({
           query: mSaveUnsavedEmails,
           variables: {
             companyId: companyId,
             id: obj,
             isSaved: status
           },
+        }).then((result)=> {
+          setResultMessage("Successfully saved an email.");
+          setShowToast(true);
+          setSelectedUnsavedItems([]);
+          setSaveLoading(false);
+
+          // Add to unsaved Emails
+          let  arrSavedEmails = savedEmails.filter(function(item){
+            return selectedSavedItems.indexOf(item.id) !== -1;
+          });
+          setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
+
+          // Remove from saved Emails
+          let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
+            return selectedSavedItems.indexOf(item.id) === -1;
+          });
+          setSavedEmails(arrRemoveUnSavedEmails);
         });
       });
-
-      // Add to unsaved Emails
-      let  arrSavedEmails = savedEmails.filter(function(item){
-        return selectedSavedItems.indexOf(item.id) !== -1;
-      });
-      setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
-
-      // Remove from saved Emails
-      let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
-        return selectedSavedItems.indexOf(item.id) === -1;
-      });
-      setSavedEmails(arrRemoveUnSavedEmails);
-
-      setResultMessage("Successfully saved an email.");
-      setShowToast(true);
-      setTimeout(() => {
-        setSelectedUnsavedItems([]);
-        setSaveLoading(false);
-      }, 1000);
     }
   };
 
@@ -269,7 +280,15 @@ const ActionButtons = ({
     }
   };
 
-  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent) => {
+  const mTagFile= `mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
+    fileLabelTag(file: {id: $fileId}, label: $labels) {
+        file {
+          id
+        }
+      }
+    }`;
+
+  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent, labels) => {
     var opt = {
       margin:       [30, 30, 30, 30],
       filename:     fileName,
@@ -279,7 +298,7 @@ const ActionButtons = ({
       pagebreak: { before: '.page-break', avoid: 'img' }
     };
     var content = document.getElementById("preview_"+gmailMessageId);
-    content.innerHTML += Base64.decode(htmlContent);
+    content.innerHTML += Base64.decode(htmlContent).replace("body{color:", "");
 
     await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
@@ -324,7 +343,16 @@ const ActionButtons = ({
             };
         
             API.graphql(params).then((result) => {
-              console.log(result);
+              console.log("res arrray",result.data.matterFileCreate.id);
+              console.log("labels",labels);
+
+              const request1 = API.graphql({
+                query: mTagFile,
+                variables: {
+                  fileId: result.data.matterFileCreate.id,
+                  labels: labels.items,
+                },
+              });
             });
 
           })

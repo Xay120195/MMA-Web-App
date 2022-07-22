@@ -10,7 +10,7 @@ const EmptyRow = ({ search }) => {
 
       <div className="flex-none w-full h-full">
         <p style={{ marginTop: "4rem", fontWeight: "bold", fontSize: "3rem" }}>
-          {!search ? "You havent added anything yet" : "Not found"}
+          {!search ? "You haven't added anything yet" : "Not found"}
         </p>
         <p>
           {!search ? (

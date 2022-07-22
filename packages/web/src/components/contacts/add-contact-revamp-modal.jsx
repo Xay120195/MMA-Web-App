@@ -1,104 +1,153 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import Select from "react-select";
 
-const options = [{ value: "No Selected", label: "No Selected" }];
+import anime from "animejs";
 
-export default function AddContactModal({ close }) {
+const options = [
+  { value: "No Selected", label: "No Selected" },
+  { value: "Test Random", label: "Test Random" },
+];
+
+function uuidv4() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (
+      c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+    ).toString(16)
+  );
+}
+
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function (txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
+
+export default function AddContactModal({
+  close,
+  setContactList,
+  ContactList,
+}) {
+  const modalContainer = useRef(null);
+  const modalContent = useRef(null);
+  const [isDisabled, setisDisabled] = useState(false);
+
   function StopPropagate(e) {
     e.stopPropagation();
   }
 
-  const [InputData, setInputData] = useState([]);
-  const [InputListLength, setInputListLength] = useState(1);
-  const [DummyArray, setDummyArray] = useState([]);
-  useEffect(() => {
-    setDummyArray(new Array(InputListLength).fill(0));
-  }, [InputListLength]);
+  useEffect((e) => {
+    anime({
+      targets: modalContainer.current,
+      opacity: [0, 1],
+      duration: 100,
+      easing: "easeInOutQuad",
+      complete: () => {
+        anime({
+          targets: modalContent.current,
+          scale: [0.9, 1],
+          opacity: [0, 1],
+          duration: 100,
+          easing: "easeInOutQuad",
+        });
+      },
+    });
+  }, []);
 
-  const handleOnChange = (i, property, value) => {
-    const data = InputData[i] || {};
-    data[property] = value;
-
-    const old = InputData;
-    old[i] = data;
-    console.log(old);
-    setInputData(old);
+  const [InputData, setInputData] = useState([
+    {
+      firstname: "",
+      lastname: "",
+      clientname: "",
+      company: "",
+      email: "",
+      mattername: "",
+      team: "",
+      usertype: "",
+    },
+  ]);
+  const validate = (obj) => {
+    if (
+      obj.firstname &&
+      obj.clientname &&
+      obj.company &&
+      obj.email &&
+      obj.firstname &&
+      obj.lastname &&
+      obj.mattername &&
+      obj.team &&
+      obj.usertype
+    ) {
+      return true;
+    } else return false;
   };
 
   useEffect(() => {
-    console.log("INPUT", InputData);
+    const validations = InputData.map((input) => validate(input));
+    setisDisabled(validations.includes(false));
   }, [InputData]);
 
-  const Input = ({ label, i }) => {
-    const flabel = label.replace(" ", "").toLowerCase();
-
-    return (
-      <div className="flex flex-col p-1">
-        <div className="text-sm font-medium text-gray-400">{label}</div>
-        <input
-          name={flabel}
-          key={i}
-          type="text"
-          value={InputData[i] && InputData[i][flabel]}
-          className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-          onChange={(e) => handleOnChange(i, flabel, e.target.value)}
-        />
-      </div>
-    );
+  const handleOnChange = (e, i, property) => {
+    const { value } = e.target;
+    const list = [...InputData];
+    list[i][property] = typeof value === "object" ? value.value : value;
+    setInputData(list);
   };
 
-  const InputSelect = ({ label, i }) => {
-    return (
-      <div className="flex flex-col p-1">
-        <div className="text-sm font-medium text-gray-400">{label}</div>
-        <Select
-          value={{ value: "No Selected", label: "No Selected" }}
-          options={options}
-          type="text"
-          className="rounded-md w-56 focus:border-gray-100 text-gray-400"
-        />
-      </div>
-    );
+  const handleSelectChange = (e, val, i, property) => {
+    const list = [...InputData];
+    list[i][property] = e.value;
+    setInputData(list);
   };
 
-  const SetOfInput = ({ i }) => {
-    return (
-      <>
-        <div className="py-4 flex flex-col">
-          <div className="flex flex-row">
-            <Input label={`First Name`} i={i} />
-            <Input label={`Last Name`} i={i} />
-            <Input label={`Email`} i={i} />
-            <InputSelect label={`Team`} i={i} />
-          </div>
-          <div className="flex flex-row">
-            <InputSelect label={`User Type`} i={i} />
-            <Input label={`Company`} i={i} />
-            <InputSelect label={`Client Name`} i={i} />
-            <InputSelect label={`Matter Name`} i={i} />
-          </div>
-        </div>
-      </>
+  const generateFinalObj = (obj, state) => {
+    return {
+      id: uuidv4(),
+      name: toTitleCase(obj.firstname + " " + obj.lastname),
+      email: obj.email,
+      team: obj.team,
+      type: obj.usertype,
+      company: obj.company,
+      isNewlyAdded: state,
+    };
+  };
+
+  const generateFinal = () => {
+    setContactList(
+      ContactList.concat(
+        InputData.map((input) => generateFinalObj(input, true))
+      )
     );
+    setTimeout(() => {
+      setContactList(
+        ContactList.concat(
+          InputData.map((input) => generateFinalObj(input, false))
+        )
+      );
+    }, 3000);
   };
 
   return (
     <>
       <div
+        ref={modalContainer}
         onClick={() => close()}
-        className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
+        className="opacity-0 flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none bg-black bg-opacity-60"
       >
         <div
-          className="p-10 flex flex-col bg-white rounded-lg"
-          onClick={StopPropagate}
+          ref={modalContent}
+          className="p-10 flex flex-col bg-white rounded-lg opacity-0 scale-90 max-h-screen overflow-y-scroll"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-row">
             <div className="font-semibold text-gray-900 text-lg pb-2">
               Add Contact
             </div>
             <button
-              onClick={() => close()}
+              onClick={() => {
+                close();
+              }}
               className="ml-auto h-8 w-8 cursor-pointer rounded-full bg-gray-100 flex flex-row justify-center items-center hover:bg-gray-300"
             >
               <svg
@@ -115,17 +164,160 @@ export default function AddContactModal({ close }) {
               </svg>
             </button>
           </div>
-
           <div className="text-gray-900 pb-2">
             Contacts with access to the portal will automatically receive
             invitation via email.
           </div>
-          {DummyArray.map((i, idx) => (
-            <SetOfInput i={idx} key={i} />
+          {InputData.map((x, i) => (
+            <div className="py-4 flex flex-col">
+              <div className="flex flex-row">
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`First Name`}
+                  </div>
+                  <input
+                    name={`firstname`}
+                    type="text"
+                    value={x.firstname}
+                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
+                    onChange={(e) => handleOnChange(e, i, `firstname`)}
+                  />
+                </div>
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Last Name`}
+                  </div>
+                  <input
+                    name={`lastname`}
+                    type="text"
+                    value={x.lastname}
+                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
+                    onChange={(e) => handleOnChange(e, i, `lastname`)}
+                  />
+                </div>
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Email`}
+                  </div>
+                  <input
+                    name={`email`}
+                    type="text"
+                    value={x.email}
+                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
+                    onChange={(e) => handleOnChange(e, i, `email`)}
+                  />
+                </div>
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Team`}
+                  </div>
+                  <Select
+                    name={`team`}
+                    options={options}
+                    type="text"
+                    value={{
+                      value: x.team,
+                      label: x.team,
+                    }}
+                    onChange={(e, val) => handleSelectChange(e, val, i, `team`)}
+                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-row">
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`User Type`}
+                  </div>
+                  <Select
+                    name={`usertype`}
+                    options={options}
+                    type="text"
+                    value={{
+                      value: x.usertype,
+                      label: x.usertype,
+                    }}
+                    onChange={(e, val) =>
+                      handleSelectChange(e, val, i, `usertype`)
+                    }
+                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+                  />
+                </div>
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Company`}
+                  </div>
+                  <input
+                    name={`company`}
+                    type="text"
+                    value={x.company}
+                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
+                    onChange={(e) => handleOnChange(e, i, `company`)}
+                  />
+                </div>
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Client Name`}
+                  </div>
+                  <Select
+                    name={`clientname`}
+                    options={options}
+                    type="text"
+                    value={{
+                      value: x.clientname,
+                      label: x.clientname,
+                    }}
+                    onChange={(e, val) =>
+                      handleSelectChange(e, val, i, `clientname`)
+                    }
+                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+                  />
+                </div>
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Matter Name`}
+                  </div>
+                  <Select
+                    name={`mattername`}
+                    options={options}
+                    type="text"
+                    value={{
+                      value: x.mattername,
+                      label: x.mattername,
+                    }}
+                    onChange={(e, val) =>
+                      handleSelectChange(e, val, i, `mattername`)
+                    }
+                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+                  />
+                </div>
+              </div>
+            </div>
           ))}
+
           <button
-            onClick={() => setInputListLength(InputListLength + 1)}
-            className="m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-start items-start text-md text-cyan-500 hover:text-cyan-300 cursor-pointer"
+            disabled={isDisabled}
+            onClick={() => {
+              setisDisabled(true);
+              setInputData([
+                ...InputData,
+                {
+                  firstname: "",
+                  lastname: "",
+                  clientname: "",
+                  company: "",
+                  email: "",
+                  mattername: "",
+                  team: "",
+                  usertype: "",
+                },
+              ]);
+            }}
+            className={
+              isDisabled
+                ? "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-200 hover:text-cyan-200 cursor-default"
+                : "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-500 hover:text-cyan-300 cursor-pointer"
+            }
           >
             Add More
             <svg
@@ -137,16 +329,21 @@ export default function AddContactModal({ close }) {
             >
               <path
                 d="M8 0C3.5625 0 0 3.59375 0 8C0 12.4375 3.5625 16 8 16C12.4062 16 16 12.4375 16 8C16 3.59375 12.4062 0 8 0ZM11 8.75H8.75V11C8.75 11.4375 8.40625 11.75 8 11.75C7.5625 11.75 7.25 11.4375 7.25 11V8.75H5C4.5625 8.75 4.25 8.4375 4.25 8C4.25 7.59375 4.5625 7.25 5 7.25H7.25V5C7.25 4.59375 7.5625 4.25 8 4.25C8.40625 4.25 8.75 4.59375 8.75 5V7.25H11C11.4062 7.25 11.75 7.59375 11.75 8C11.75 8.4375 11.4062 8.75 11 8.75Z"
-                fill="#1CC1E9"
+                fill={isDisabled ? "#ABF4FC" : "#1CC1E9"}
               />
             </svg>
           </button>
           <button
+            disabled={isDisabled}
             onClick={() => {
-              console.log("Submitted", InputData);
+              generateFinal();
               close();
             }}
-            className="p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-500 text-white font-medium gap-1 flex flex-row justify-start items-start text-md hover:bg-green-400 cursor-pointer focus:ring"
+            className={
+              isDisabled
+                ? "p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-200 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-200 cursor-default focus:ring"
+                : "p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-500 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-400 cursor-pointer focus:ring"
+            }
           >
             Add Contact
             <svg
