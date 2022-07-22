@@ -365,10 +365,14 @@ const Inbox = () => {
 
   const handleOnAction = (event) => {
     // Do not call load more if filter is applied
+    console.group("handleOnAction");
+    console.log(emailFilters);    
     if (emailFilters.startDate === null && emailFilters.endDate === null) {
+      console.log("call handleLoadMoreUnSavedEmails(); handleLoadMoreSavedEmails()");
       handleLoadMoreUnSavedEmails();
       handleLoadMoreSavedEmails();
     }
+    console.groupEnd();
   };
 
   const handleOnIdle = (event) => {
