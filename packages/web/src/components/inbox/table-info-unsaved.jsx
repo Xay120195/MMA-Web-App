@@ -49,6 +49,7 @@ const TableUnsavedInfo = ({
   matterList,
   maxLoadingUnSavedEmail,
   getUnSavedEmails,
+  emailFilters,
   labelsList,
 }) => {
   const ref = useRef([]);
@@ -161,7 +162,16 @@ const TableUnsavedInfo = ({
     let temp = [...enabledArrays];
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
-    getUnSavedEmails();
+
+    if (
+      emailFilters &&
+      emailFilters.startDate === null &&
+      emailFilters.endDate === null
+    ) {
+      getUnSavedEmails(emailFilters);
+    } else {
+      getUnSavedEmails();
+    }
   };
 
   const handleSaveMainDesc = async (e, id) => {
@@ -228,10 +238,9 @@ const TableUnsavedInfo = ({
   }
 
   function checkEnable(id) {
-    const arr = enabledArrays.find(element => element === id);
+    const arr = enabledArrays.find((element) => element === id);
     return arr;
   }
-
 
   const mAddEmailLabel = `
   mutation saveGmailMessageLabel($gmailMessageId: String, $labelId: [ID]) {
@@ -256,11 +265,10 @@ const TableUnsavedInfo = ({
     }
   }`;
 
-
   const handleAddLabel = async (e, gmid) => {
     var selectedLabels = [];
 
-    for(var i=0; i<e.length; i++){
+    for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
     }
 
@@ -273,7 +281,7 @@ const TableUnsavedInfo = ({
           gmailMessageId: gmid,
         },
       });
-    }else{
+    } else {
       const result = await API.graphql({
         query: mAddEmailLabel,
         variables: {
@@ -291,9 +299,9 @@ const TableUnsavedInfo = ({
 
     console.log("arrr", unSavedEmails);
 
-    for(var i=0; i<e.length; i++){
+    for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
-      taggedLabels = [...taggedLabels, {id: e[i].value, name: e[i].label}];
+      taggedLabels = [...taggedLabels, { id: e[i].value, name: e[i].label }];
     }
 
     if (e.length > 0) {
@@ -314,7 +322,7 @@ const TableUnsavedInfo = ({
       // });
 
       // console.log("tagging", result1);
-    }else{
+    } else {
       const result = await API.graphql({
         query: mAddEmailAttachmentLabel,
         variables: {
@@ -335,7 +343,6 @@ const TableUnsavedInfo = ({
     }
 
     console.log("MainArray", unSavedEmails);
-
   };
 
   const defaultLabels = (items) => {
@@ -354,29 +361,31 @@ const TableUnsavedInfo = ({
     var mainLabels = labelsList;
     var cmid;
 
-    if(cmidarr.length > 0){
-      cmid = cmidarr[0].client.id
-    }else{
-      cmid = '';
+    if (cmidarr.length > 0) {
+      cmid = cmidarr[0].client.id;
+    } else {
+      cmid = "";
     }
 
-    if(labelsList.length>0 || labelsList !== null){
-      for(var i=0; i<labelsList.length; i++){
+    if (labelsList.length > 0 || labelsList !== null) {
+      for (var i = 0; i < labelsList.length; i++) {
         // console.log("optionscheck",labelsList[i]);
 
-        if(mainLabels[i].labelsExtracted.length === 0){
+        if (mainLabels[i].labelsExtracted.length === 0) {
           return null;
-        }else{
-          if(mainLabels[i].cmid === cmid){
-            const newOptions = mainLabels[i].labelsExtracted.map(({ id: value, name: label }) => ({
+        } else {
+          if (mainLabels[i].cmid === cmid) {
+            const newOptions = mainLabels[i].labelsExtracted.map(
+              ({ id: value, name: label }) => ({
                 value,
                 label,
-              }));
+              })
+            );
             return newOptions;
           }
         }
       }
-    }else{
+    } else {
       return null;
     }
   };
@@ -487,7 +496,6 @@ const TableUnsavedInfo = ({
                       ></p>
                     </div>
                   )}
-                  
                 </span>
                 <button
                   className="hidden no-underline hover:underline text-xs text-blue-400"
@@ -540,19 +548,14 @@ const TableUnsavedInfo = ({
                 ></p>
                 {item.attachments.items.map((item_attach, index) => (
                   <React.Fragment key={item_attach.id}>
-                    <div className="flex items-start mt-2" 
-                    >
+                    <div className="flex items-start mt-2">
                       <p
                         className="
                         cursor-pointer mr-1 text-opacity-90 1 
                         textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                         id={item_attach.id}
                         title={item_attach.name}
-                        onClick={() =>
-                          previewAndDownloadFile(
-                            item_attach.id
-                          )
-                        }
+                        onClick={() => previewAndDownloadFile(item_attach.id)}
                       >
                         {item_attach.name.substring(0, 20)}
                         {item_attach.name.length >= 20 ? "..." : ""}
@@ -589,42 +592,38 @@ const TableUnsavedInfo = ({
                     {item.labelIds}
                   </button>
                   <CreatableSelect
-                    defaultValue={() =>
-                      defaultLabels(
-                        item.labels.items
-                      )
-                    }
+                    defaultValue={() => defaultLabels(item.labels.items)}
                     isMulti
                     isClearable
                     options={getOptions(item.clientMatters.items)}
                     isSearchable
                     openMenuOnClick={true}
                     isDisabled={
-                      checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
+                      checkArrLength(item.clientMatters.items.length) ||
+                      checkEnable(item.id)
+                        ? false
+                        : true
                     }
-                    onChange={
-                      (e) => handleAddLabel(e, item.id)
-                    }
+                    onChange={(e) => handleAddLabel(e, item.id)}
                     placeholder="Labels"
                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                   />
                 </div>
                 {item.attachments.items.map((item_attach, index) => (
                   <CreatableSelect
-                    defaultValue={() =>
-                      defaultLabels(
-                        item_attach.labels.items
-                      )
-                    }
+                    defaultValue={() => defaultLabels(item_attach.labels.items)}
                     isMulti
                     isClearable
                     options={getOptions(item.clientMatters.items)}
                     openMenuOnClick={true}
                     isDisabled={
-                      checkArrLength(item.clientMatters.items.length) || checkEnable(item.id) ? false : true
+                      checkArrLength(item.clientMatters.items.length) ||
+                      checkEnable(item.id)
+                        ? false
+                        : true
                     }
-                    onChange={
-                      (e) => handleAddEmailAttachmentLabel(e, item_attach.id)
+                    onChange={(e) =>
+                      handleAddEmailAttachmentLabel(e, item_attach.id)
                     }
                     placeholder="Labels"
                     className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
