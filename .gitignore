@@ -6,3 +6,5 @@ packages/web/.env
 packages/web/package-lock.json
 packages/api/package-lock.json
 .pnpm-debug.log
+
+credentials.txt

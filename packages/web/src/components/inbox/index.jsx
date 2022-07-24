@@ -567,6 +567,7 @@ const Inbox = () => {
                     unSavedEmails={unSavedEmails}
                     matterList={matterList}
                     maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
+                    emailFilters={emailFilters}
                     getUnSavedEmails={getUnSavedEmails}
                     labelsList={labelsList}
                   />
