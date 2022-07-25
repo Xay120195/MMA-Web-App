@@ -125,6 +125,16 @@ const TableUnsavedInfo = ({
     const success = await updateAttachmentDesc(data);
     if (success) {
 
+      const newArrDescription = unSavedEmails.map(emails => {
+        emails.map(items => {
+          if (items.id === id) {
+            return {...items, details: e.target.innerHTML};
+          }
+          return emails;
+        });
+      });
+      console.log(newArrDescription);
+
       setResultMessage("Successfully updated.");
       setShowToast(true);
     }
