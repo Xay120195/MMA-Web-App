@@ -277,7 +277,7 @@ const TableSavedInfo = ({
               Attachments and Description
             </th>
             <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/6">
-              Labels
+              <p className="-ml-12 font-medium">Labels</p>
             </th>
             <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/6">
               Client Matter
@@ -385,28 +385,22 @@ const TableSavedInfo = ({
                 </div>
               </td>
               <td className="p-2 align-top">
-                <p
-                  className="hidden p-2 w-full h-full font-poppins rounded-sm"
-                  style={{
-                    border: "solid 1px #c4c4c4",
-                    cursor: "auto",
-                    outlineColor: "rgb(204, 204, 204, 0.5)",
-                    outlineWidth: "thin",
+
+                <div className="flex items-start mt-2">
+                  <p className="w-24 group py-1 px-2  rounded textColor bg-white inline-flex items-center"></p>
+                  <div className="p-2 w-full h-full font-poppins rounded-sm float-right"
+                  dangerouslySetInnerHTML={{
+                    __html: item.description,
                   }}
-                  suppressContentEditableWarning
-                  dangerouslySetInnerHTML={{ __html: item.description }}
-                  onBlur={(e) => handleSaveMainDesc(e, item.id)}
-                  contentEditable={true}
-                ></p>
-                <p
-                  className="p-2 w-full h-full font-poppins rounded-sm"
-                  dangerouslySetInnerHTML={{ __html: item.description }}
-                ></p>
+                  >
+                  </div>
+                </div>
+                
                 {item.attachments.items.map((item_attach, index) => (
                   <React.Fragment key={item_attach.id} >
                     <div className="flex items-start mt-2">
                       <p
-                        className="
+                        className=" w-24
                         cursor-pointer mr-1 text-opacity-90 1
                         textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                         id={item_attach.id}
@@ -439,67 +433,29 @@ const TableSavedInfo = ({
                   </React.Fragment>
                 ))}
               </td>
-              <td className="p-2 align-top">
-                <div>
-                  {item.labels &&
-                    item.labels.items &&
-                    item.labels.items.map((i, index) => (
-                      i.name ? 
-                      <button
-                        key={i.id}
-                        className=" mb-1 h-6
-                          text-opacity-90 1
-                          textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                        id="headlessui-popover-button-87"
-                        type="button"
-                        aria-expanded="false"
-                      >
-                        {i.name}
-                      </button>
-                      :
-                      <div className=" mb-1 w-full h-9
-                      text-opacity-90 1
-                      textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-white inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"> 
-                      </div>
-                      
+              <td  className="p-2 align-top" >
+                <div className="ml-12 mt-1 w-80 inline-flex ">
+                  {item.labels.items.map((i, index) => (
+                    <button
+                      key={i.id}
+                      className=" mb-1 h-6
+                        text-opacity-90 1
+                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                      id="headlessui-popover-button-87"
+                      type="button"
+                      aria-expanded="false"
+                    >
+                      {i.name}
+                    </button>
                     ))}
                   </div>
-                  <div>
-                  {item.attachments &&
-                    item.attachments.items.map(
-                      (attach, index) =>
-                        attach.labels.items.length > 0 ?
-                          attach.labels.items.map((lbl, index) => (
-                            <button
-                              key={lbl.id}
-                              className=" mb-1
-                              text-opacity-90 1 h-9
-                              textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                              id="headlessui-popover-button-87"
-                              type="button"
-                              aria-expanded="false"
-                            >
-                              {lbl.name} 
-                            </button>
-                          ))
-                        : <div className=" mb-1 w-full h-9
-                        text-opacity-90 1
-                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-white inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"> 
-                          </div>
-
-
-                    
-                    )}
-                </div>
               </td>
               <td className="p-2 align-top">
                 <>
-                  
                   {item.clientMatters.items.map((item_clientMatter, index) => (
                     <>
-                      <span
-                        className="text-sm cursor-pointer mr-1 text-opacity-90 1
-                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                      <span className="text-sm cursor-pointer mr-1 text-opacity-90 1 mt-2
+                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
                       >
                         {item_clientMatter.client.name +
                           "/" +
