@@ -3219,7 +3219,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                     <p 
                                       id={data.id+".desc"} 
                                       className={'mt-1 text-red-200 absolute invisible opacity-0 pointer-events-none break-words'}
-                                      style={{zIndex:-1000}}
+                                      style={{top:-10000, zIndex:-1000, wordBreak:"break-word"}}
                                       dangerouslySetInnerHTML={{__html: data.details}}
                                         > 
                                     </p>
@@ -3227,6 +3227,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       className={(
                                         isReadMoreExpandedOuter(data.id) && data.details ? (!isReadMoreExpandedDesc(data.id)?' line-clamp-5 ':' ') 
                                         : ' hidden ') + ' mt-1 break-words'}
+                                      style={{wordBreak:"break-word"}}
                                       dangerouslySetInnerHTML={{__html: data.details}}
                                         > 
                                     </p>

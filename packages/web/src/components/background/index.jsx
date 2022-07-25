@@ -1275,7 +1275,7 @@ const Background = () => {
                       <p 
                         id={item.id+".desc"}
                         className="absolute text-red-200 invisible pointer-events-none opacity-0" 
-                        style={{zIndex:-1000, marginRight:'20px'}}
+                        style={{top:-10000, zIndex:-1000, marginRight:'20px'}}
                         dangerouslySetInnerHTML={{__html:item.description}}
                         >
                       </p>
@@ -1291,7 +1291,7 @@ const Background = () => {
                         <p 
                           id={item.id+".files"} 
                           className="absolute text-red-200 invisible pointer-events-none opacity-0 break-words" 
-                          style={{zIndex:-1000, marginRight:'20px',lineHeight:"30px"}}>
+                          style={{top:-10000, zIndex:-1000, marginRight:'20px',lineHeight:"30px", wordBreak:"break-word"}}>
                           {item.files.items.map((file) => (
                             <button 
                               key={file.id} 
@@ -1304,7 +1304,9 @@ const Background = () => {
                             </button>
                           ))}
                         </p>
-                        <p className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1") + " break-words"} style={{lineHeight:"30px"}}>
+                        <p 
+                          className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1") + " break-words"} 
+                          style={{lineHeight:"30px", wordBreak:"break-word"}}>
                           {item.files.items.map((file) => (
                             <button 
                               key={file.id} 
