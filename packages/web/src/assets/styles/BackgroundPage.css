@@ -6,12 +6,14 @@
 @media (max-width: 640px) { 
   .line-clamp-6 {
     display: -webkit-box;
+    line-clamp: 6;
     -webkit-line-clamp: 6;
     -webkit-box-orient: vertical;  
     overflow: clip;
   }
   .line-clamp-1 {
     display: -webkit-box;
+    line-clamp: 1;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;  
     overflow: clip;
