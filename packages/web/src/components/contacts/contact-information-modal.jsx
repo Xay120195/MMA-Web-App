@@ -80,8 +80,8 @@ export default function ContactInformationModal({
         onClick={() => setSelectedTab(tab)}
         className={
           SelectedTab === tab
-            ? "font-medium text-gray-900 border-b-2 border-cyan-500 cursor-pointer"
-            : "font-medium text-gray-400 border-b-2 border-gray-200 hover:text-black hover:border-cyan-500  cursor-pointer"
+            ? "font-medium text-gray-900  cursor-pointer"
+            : "font-medium text-gray-400  hover:text-black hover:border-cyan-500  cursor-pointer"
         }
       >
         {tab}
@@ -163,10 +163,35 @@ export default function ContactInformationModal({
           </div>
 
           {/*MiniNav */}
-          <div className="flex flex-row gap-5 py-3">
-            <MiniNav />
+          <div className="flex flex-col">
+            <div className="flex flex-row gap-5 py-3">
+              <MiniNav />
+            </div>
+            <div className="flex flex-row mb-4 w-full h-0.5">
+              <div
+                className={
+                  SelectedTab === "About"
+                    ? "bg-cyan-500 w-28"
+                    : "bg-gray-300 w-28"
+                }
+              ></div>
+              <div
+                className={
+                  SelectedTab === "Teams"
+                    ? "bg-cyan-500  w-32"
+                    : "bg-gray-300  w-32"
+                }
+              ></div>
+              <div
+                className={
+                  SelectedTab === "Client/Matter involved"
+                    ? "bg-cyan-500  w-80"
+                    : "bg-gray-300  w-80"
+                }
+              ></div>
+              <div className="bg-gray-300 w-full"></div>
+            </div>
           </div>
-
           {/*Input FIelds About */}
           {SelectedTab === "About" ? (
             <About

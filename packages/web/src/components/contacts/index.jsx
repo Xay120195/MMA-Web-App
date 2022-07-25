@@ -22,21 +22,23 @@ export default function Contacts() {
   };
 
   const rows = useRef(null);
+  const refLetters = useRef([]);
   const [shortcutSelected, setShortcutSelected] = useState("");
 
   const [ShowDeleteModal, setShowDeleteModal] = useState(false);
+
   const [contacts, setContacts] = useState(null);
+
   const [ActiveMenu, setActiveMenu] = useState("Contacts");
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
-  const [ActiveLetter, setActiveLetter] = useState("a");
-  const [isToEdit, setisToEdit] = useState("");
+
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [isToDelete, setisToDelete] = useState("");
   const [ContactList, setContactList] = useState();
   const [ShowEditModal, setShowEditModal] = useState(false);
   const [CurrentUser, setCurrentUser] = useState({});
-  const [toEditid, settoEditid] = useState("");
+
   const hideToast = () => {
     setShowToast(false);
   };
@@ -59,14 +61,19 @@ export default function Contacts() {
   }
   `;
 
-  useEffect((e) => {
-    anime({
-      targets: rows.current,
-      opacity: [0, 1],
-      duration: 1000,
-      easing: "linear",
-    });
-  }, []);
+  useEffect(
+    (e) => {
+      anime({
+        targets: rows.current,
+        opacity: [0.4, 1],
+        duration: 1500,
+        easing: "cubicBezier(.5, .05, .1, .3)",
+      });
+
+      refLetters.current = refLetters.current.slice(0, alphabetArray.length);
+    },
+    [ContactList]
+  );
 
   useEffect(() => {
     if (contacts === null) {
@@ -133,27 +140,35 @@ export default function Contacts() {
   const handleSort = (sortedReverse, sortBy) => {
     if (sortedReverse) {
       if (sortBy === "name") {
-        dummy.sort((a, b) => a.name.localeCompare(b.name));
+        setContactList(dummy.sort((a, b) => a.name.localeCompare(b.name)));
         alphabetArray.sort();
       } else if (sortBy === "type") {
-        dummy.sort((a, b) => a.type.localeCompare(b.type));
+        setContactList(dummy.sort((a, b) => a.type.localeCompare(b.type)));
         alphabetArray.sort();
       } else if (sortBy === "company") {
-        dummy.sort((a, b) => a.company.localeCompare(b.company));
+        setContactList(
+          dummy.sort((a, b) => a.company.localeCompare(b.company))
+        );
         alphabetArray.sort();
       }
     } else {
       if (sortBy === "name") {
-        dummy.sort((a, b) => a.name.localeCompare(b.name)).reverse();
+        setContactList(
+          dummy.sort((a, b) => a.name.localeCompare(b.name)).reverse()
+        );
         alphabetArray.sort().reverse();
       } else if (sortBy === "type") {
-        dummy.sort((a, b) => a.type.localeCompare(b.type)).reverse();
+        setContactList(
+          dummy.sort((a, b) => a.type.localeCompare(b.type)).reverse()
+        );
         alphabetArray.sort().reverse();
       } else if (sortBy === "company") {
-        dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
+        setContactList(
+          dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse()
+        );
         alphabetArray.sort().reverse();
       } else {
-        dummy.sort().reverse();
+        setContactList(dummy.sort().reverse());
       }
     }
   };
@@ -197,12 +212,9 @@ export default function Contacts() {
 
   const scrollToView = (target) => {
     const el = document.getElementById(target);
-    el && el.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
 
-  const handleScroll = (event) => {
-    console.log("scrollTop: ", event.currentTarget.scrollTop);
-    console.log("offsetHeight: ", event.currentTarget.offsetHeight);
+    //el && el.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -211,24 +223,32 @@ export default function Contacts() {
     setContactList(dummy);
 
     // observe the scroll event and set the active letter
+
     window.addEventListener(
       "scroll",
       () => {
-        const maxScrollHeight = document.body.scrollHeight;
         const currentScrollPos = window.pageYOffset;
         // get the current scroll position
-        const currentScrollPosInPercent = currentScrollPos / maxScrollHeight;
-        // get the letter based on the current scroll position in percent
-        const currentLetter = Math.floor(
-          alphabetArray.length * (currentScrollPosInPercent - 0.05)
-        );
 
-        // set the active letter
-        setShortcutSelected(
-          alphabetArray[
-            Math.max(0, Math.min(currentLetter, alphabetArray.length - 1))
-          ]
-        );
+        refLetters.current.forEach((ref, i) => {
+          let top = ref.offsetTop + 100;
+          let bottom =
+            alphabetArray.length - 1 == i
+              ? refLetters.current[0].offsetTop + 100
+              : refLetters.current[i + 1].offsetTop + 100;
+
+          //get height of list of contacts with specific letter
+
+          //if it matches within the range get it
+
+          if (currentScrollPos >= top && currentScrollPos <= bottom) {
+            console.log("SELECTED", ref.id);
+
+            setShortcutSelected(String(ref.id));
+
+            //set ACtive Letter
+          }
+        });
       },
       { passive: true }
     );
@@ -303,32 +323,38 @@ export default function Contacts() {
           {/* alphabet array */}
           <div className="px-3 py-2 ">
             <div className="sticky top-20 flex flex-col gap-y-1 pt-5">
-              {alphabetArray.map((letter) => {
+              {alphabetArray.map((letter, idx) => {
                 // check if letter is in dummy array
                 const isLetter =
                   ContactList &&
                   ContactList.some((user) => user.name.startsWith(letter));
-                if (isLetter) {
-                  return (
-                    <p
-                      key={letter}
-                      onClick={(e) => {
+
+                return (
+                  <p
+                    key={letter}
+                    onClick={(e) => {
+                      //if at bottom
+                      if (
+                        window.innerHeight + window.scrollY >=
+                        document.body.offsetHeight
+                      ) {
+                        //set letter when user is bottom of the page
                         setShortcutSelected(letter);
-                        scrollToView(letter);
-                      }}
-                      style={{
-                        transform: `translateX(${
-                          letter === shortcutSelected ? "10px" : "0px"
-                        })`,
-                      }}
-                      className={`text-center text-gray-400 cursor-pointer transition-all font-bold  hover:scale-110 hover:text-blue-600 ${
-                        shortcutSelected === letter && "text-blue-600"
-                      }`}
-                    >
-                      {letter}
-                    </p>
-                  );
-                }
+                      }
+                      scrollToView(letter);
+                    }}
+                    style={{
+                      transform: `translateX(${
+                        letter === shortcutSelected ? "10px" : "0px"
+                      })`,
+                    }}
+                    className={`text-center text-gray-400 cursor-pointer transition-all font-bold  hover:scale-110 hover:text-blue-600 ${
+                      shortcutSelected === letter && "text-cyan-500"
+                    }`}
+                  >
+                    {letter}
+                  </p>
+                );
               })}
             </div>
           </div>
@@ -352,7 +378,7 @@ export default function Contacts() {
                   </th>
                   <th className="p-2">
                     <div className="flex items-center gap-x-2">
-                      Company {<RenderSort type="company" />}
+                      Company {<RenderSort sortBy="company" />}
                     </div>
                   </th>
                   <th className="p-2 w-20 " />
@@ -360,88 +386,90 @@ export default function Contacts() {
               </thead>
               {/* content */}
               <tbody className="relative">
-                {alphabetArray.map((letter) => (
+                {alphabetArray.map((letter, idx) => (
                   <>
-                    {ContactList &&
-                      ContactList.some((user) =>
-                        user.name.startsWith(letter)
-                      ) && (
-                        <>
-                          <tr id={letter} key={letter} className="">
-                            <td className="pt-4 px-2">
-                              <div className="flex items-center gap-x-2">
-                                <p
-                                  className={`${
-                                    shortcutSelected == letter
-                                      ? "text-blue-600 font-bold"
-                                      : "text-gray-700 font-semibold"
-                                  }  text-lg `}
+                    {ContactList && (
+                      <>
+                        <tr
+                          ref={(el) => (refLetters.current[idx] = el)}
+                          id={letter}
+                          key={letter}
+                          className=""
+                        >
+                          <td className="pt-4 px-2">
+                            <div className="flex items-center gap-x-2">
+                              <p
+                                className={`${
+                                  shortcutSelected === letter
+                                    ? "text-cyan-500 font-bold"
+                                    : "text-gray-700 font-semibold"
+                                }  text-lg `}
+                              >
+                                {letter}
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                        {ContactList &&
+                          ContactList.map(
+                            (contact, index) =>
+                              contact.name.charAt(0) == letter && (
+                                <tr
+                                  ref={contact.isNewlyAdded ? rows : null}
+                                  key={contact.id}
+                                  className={
+                                    contact.isNewlyAdded
+                                      ? "opacity-100 bg-cyan-100"
+                                      : "stripe opacity-100"
+                                  }
                                 >
-                                  {letter}
-                                </p>
-                              </div>
-                            </td>
-                          </tr>
-                          {ContactList &&
-                            ContactList.map(
-                              (contact, index) =>
-                                contact.name.charAt(0) == letter && (
-                                  <tr
-                                    ref={contact.isNewlyAdded ? rows : null}
-                                    key={contact.id}
-                                    className={
-                                      contact.isNewlyAdded
-                                        ? "opacity-100 bg-cyan-100"
-                                        : "opacity-100"
-                                    }
-                                  >
-                                    <td className="p-2">
-                                      <div className="flex items-center gap-x-2 ">
-                                        <span>
-                                          <img
-                                            className="rounded-full w-8 h-8"
-                                            src={`https://i.pravatar.cc/70?img=${index}`}
-                                          />
-                                        </span>
-                                        <p className="font-semibold">
-                                          {contact.name}
-                                        </p>
-                                      </div>
-                                    </td>
-                                    <td className="p-2">{contact.email}</td>
-                                    <td className="p-2">{contact.team}</td>
-                                    <td className="p-2 w-64 ">
-                                      <div className="flex items-center gap-x-2 ">
-                                        <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
-                                          {contact.type}
-                                        </p>
-                                      </div>
-                                    </td>
-                                    <td className="p-2">{contact.company}</td>
+                                  <td className="p-2">
+                                    <div className="flex items-center gap-x-2 ">
+                                      <span>
+                                        <img
+                                          className="rounded-full w-8 h-8"
+                                          src={`https://i.pravatar.cc/70?img=${index}`}
+                                        />
+                                      </span>
+                                      <p className="font-semibold">
+                                        {contact.name}
+                                      </p>
+                                    </div>
+                                  </td>
+                                  <td className="p-2">{contact.email}</td>
+                                  <td className="p-2">{contact.team}</td>
+                                  <td className="p-2 w-64 ">
+                                    <div className="flex items-center gap-x-2 ">
+                                      <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
+                                        {contact.type}
+                                      </p>
+                                    </div>
+                                  </td>
+                                  <td className="p-2">{contact.company}</td>
 
-                                    <td className="p-2">
-                                      <div className="flex items-center gap-x-2">
-                                        <button className="p-3 rounded w-max font-semibold text-gray-500">
-                                          <FaEdit
-                                            onClick={() =>
-                                              handleEditModal(contact)
-                                            }
-                                          />
-                                        </button>
-                                        <button className="p-3 text-red-400 rounded w-max font-semibold ">
-                                          <CgTrash
-                                            onClick={() =>
-                                              handleDeleteModal(contact.id)
-                                            }
-                                          />
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                )
-                            )}
-                        </>
-                      )}
+                                  <td className="p-2">
+                                    <div className="flex items-center gap-x-2">
+                                      <button className="p-3 w-max font-semibold text-gray-500 rounded-full hover:bg-gray-200">
+                                        <FaEdit
+                                          onClick={() =>
+                                            handleEditModal(contact)
+                                          }
+                                        />
+                                      </button>
+                                      <button className="p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200">
+                                        <CgTrash
+                                          onClick={() =>
+                                            handleDeleteModal(contact.id)
+                                          }
+                                        />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )
+                          )}
+                      </>
+                    )}
                   </>
                 ))}
               </tbody>
