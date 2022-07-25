@@ -31,6 +31,8 @@ import UploadLinkModal from "../file-bucket/file-upload-modal";
 import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
 import { check } from "prettier";
+import RFIEditor from './rfi-editor';
+import { ThemeProvider } from '@remirror/react';
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -1061,42 +1063,35 @@ const TableInfo = ({
     //insert in matter file list
     bulkCreateMatterFile(addOrder);
 
-    // for(var i=0; i<addOrder.length; i++){
-    //     delete addOrder[i].oderSelected;
-    //     setTimeout(()=>{
-    //       createMatterFile(addOrder[i]);
-    //     }, 5000)
-    // }
       //set background content
-      setTimeout(async () => {
-        const backgroundFilesOptReq = await API.graphql({
+      setTimeout(() => {
+        const backgroundFilesOptReq = API.graphql({
           query: qlistBackgroundFiles,
           variables: {
             id: selectedRowId,
           },
+        }).then((result) => {
+          console.log("THIS", result);
+  
+          var newFilesResult =
+          result.data.background.files.items.map(
+              ({ id, name, description }) => ({
+                id: id,
+                name: name,
+                description: description,
+              })
+            );
+    
+          var updateArrFiles = background.map((obj) => {
+            if (obj.id === selectedRowId) {
+              return { ...obj, files: { items: newFilesResult } };
+            }
+            return obj;
+          });
+    
+          console.log("new filess", newFilesResult);
+          setBackground(updateArrFiles);
         });
-  
-        // if (backgroundFilesOptReq.data.background.files !== null) {
-        const newFilesResult =
-          backgroundFilesOptReq.data.background.files.items.map(
-            ({ id, name, description }) => ({
-              id: id,
-              name: name,
-              description: description,
-            })
-          );
-  
-        const updateArrFiles = background.map((obj) => {
-          if (obj.id === selectedRowId) {
-            return { ...obj, files: { items: newFilesResult } };
-          }
-          return obj;
-        });
-  
-        console.log("new filess", newFilesResult);
-        setBackground(updateArrFiles);
-        window.location.reload();
-        // }
       }, 3000);
 
     setalertMessage(`File has been added! Go to File bucket`);
@@ -1403,7 +1398,7 @@ const TableInfo = ({
   }
 
   return (
-    <>
+    <ThemeProvider>
       <div className="px-7">
         <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -1614,6 +1609,7 @@ const TableInfo = ({
                                                     {...provider.dragHandleProps}
                                                     className="px-2 py-3 align-top place-items-center relative w-4/6 max-w-xs"
                                                   >
+                                                    {/* <RFIEditor item={item} /> */}
                                                     <div
                                                       className="p-2 w-full h-full font-poppins"
                                                       style={{
@@ -1621,8 +1617,10 @@ const TableInfo = ({
                                                         outlineColor:
                                                           "rgb(204, 204, 204, 0.5)",
                                                         outlineWidth: "thin",
-                                                        height: cache.current.rowHeight,
-
+                                                        minHeight: "300px",
+                                                        maxHeight: "350px",
+                                                        overflow: "auto",
+                                                        marginBottom: "70px",
                                                       }}
                                                       suppressContentEditableWarning
                                                       onClick={(event) =>
@@ -1764,12 +1762,14 @@ const TableInfo = ({
                                                           </span>
                                                           <br />
                                                           <br />
-                                                          {/* {files
-                                                          .filter(
-                                                            (x) =>
-                                                              x.backgroundId === item.id
-                                                          )
-                                                          .map((items, index) => ( */}
+                                                          
+                                                          <div
+                                                            style={{
+                                                              minHeight: "150px",
+                                                              maxHeight: "250px",
+                                                              overflow: "auto"
+                                                            }}
+                                                          >
                                                           {item.files.items.map(
                                                             (items, index) =>
                                                               items &&
@@ -1879,6 +1879,7 @@ const TableInfo = ({
                                                                 </span>
                                                               )
                                                           )}
+                                                          </div>
                                                         </div>
                                                       </>
                                                     )}
@@ -2015,7 +2016,7 @@ const TableInfo = ({
           <ToastNotification title={alertMessage} hideToast={hideToast} />
         </div>
       )}
-    </>
+    </ThemeProvider>
   );
 };
 

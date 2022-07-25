@@ -763,88 +763,55 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     top: 0,
   };
 
-  const handleLabelChanged = async (options, id, e, existingLabels) => {
+  const handleLabelChanged = async (id, e, existingLabels) => {
+    //console.log("event", e);
 
-    if(e.action === 'create-option'){ //create new
-      const createLabel = await API.graphql({
-        query: mCreateLabel,
-        variables: {
-          clientMatterId: matter_id,
-          name: e.option.value,
-        },
-      });
+    var labelsList = [];
 
-      let updateLabel = labels;
-      updateLabel.push({
-        value: createLabel.data.labelCreate.id,
-        label: createLabel.data.labelCreate.name,
-      });
-
-      setLabels(updateLabel);
-
-      var updatedLabel = [...existingLabels, {id: createLabel.data.labelCreate.id, name: createLabel.data.labelCreate.name}]
-
-      const request = await API.graphql({
-          query: mTagFileLabel,
+    for(var i=0; i<e.length; i++){
+      if(e[i].__isNew__){
+        const createLabel = await API.graphql({
+          query: mCreateLabel,
           variables: {
-            fileId: id
+            clientMatterId: matter_id,
+            name: e[i].label,
           },
-      });
-                
-      console.log("success", request);
+        });
+
+        //console.log(createLabel);
+        let updateLabel = labels;
+        updateLabel.push({
+          value: createLabel.data.labelCreate.id,
+          label: createLabel.data.labelCreate.name,
+        });
+  
+        setLabels(updateLabel);
+
+        labelsList = [...labelsList, {id: createLabel.data.labelCreate.id, 
+                                      name: createLabel.data.labelCreate.name}];
+      }else{
+        labelsList = [...labelsList, {id: e[i].value, name: e[i].label}];
+      }
+    }
+
+    //console.log("collectedlabels", labelsList);
+
+    const request = await API.graphql({
+      query: mTagFileLabel,
+      variables: {
+        fileId: id,
+        labels: labelsList
+      },
+    });
+
+    if (request) {
       setResultMessage("Updating labels");
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
         getMatterFiles(1);
-      }, 1000);
-      
-    }else if(e.action === 'select-option'){ //select existing
-      var updatedLabel = [...existingLabels, {id: e.option.value, name: e.option.label}]
-
-      const request = await API.graphql({
-          query: mTagFileLabel,
-            variables: {
-            fileId: id,
-            labels: updatedLabel,
-          },
-      });
-              
-      console.log("success", request);
-      if (request) {
-        setResultMessage("Updating labels");
-        setShowToast(true);
-        setTimeout(() => {
-          setShowToast(false);
-          getMatterFiles(1);
-        }, 1000);
-      }
-    }else{ //removevalue
-      var updatedLabel = existingLabels;
-      var saveNewLabels = [];
-      var index;
-
-      updatedLabel.map((x)=>x.name === e.removedValue.label ? index = updatedLabel.indexOf(x) : x)
-      updatedLabel.splice(index, 1);
-
-      const request = await API.graphql({
-        query: mTagFileLabel,
-          variables: {
-          fileId: id,
-          labels: saveNewLabels,
-        },
-      });
-              
-      console.log("success", request);
-      if (request) {
-        setResultMessage("Updating labels");
-        setShowToast(true);
-        setTimeout(() => {
-          setShowToast(false);
-          getMatterFiles(1);
-        }, 1000);
-      }
-    }  
+      }, 2000);
+    }
   };
 
   const convertArrayToObject = (array) => {
@@ -2299,11 +2266,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         if(descTag!== null) {
           var lines = countLines(descTag);
           var descButtonTag = document.getElementById(data.id+".descButton");
-          if(lines >= 5) {
+          if(lines > 5) {
             let bool = (!isReadMoreExpandedDesc(data.id) &&
             (isReadMoreExpandedOuter(data.id) || (data.backgrounds.items=== null|| data.backgrounds.items.length===0)));
             descButtonTag.style.display = bool ? "inline-block": "none";
-            descButtonTag.innerHTML = bool ? "read more...": "read less...";
           } else {
             descButtonTag.style.display = 'none';
           }
@@ -3067,9 +3033,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 isClearable
                                                 isSearchable
                                                 openMenuOnClick={true}
-                                                onChange={(options, e) =>
+                                                onChange={(e) =>
                                                   handleLabelChanged(
-                                                    options,
                                                     data.id, e,
                                                     data.labels.items
                                                   )
@@ -3107,13 +3072,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         onClick={(event) =>  handleRedirectLink(event,background.id)}
                                                       >
                                                         <b>
-                                                        {((background.order) + ". " + background.briefs.items[0].name) }
-                                                          
+                                                          {((background.order) + ". " + background.briefs.items[0].name) }
                                                         </b>
-                                                      
                                                       </div>
-                                                    
-                                                    
                                                   ))}
                                               </div>
                                             </td>
@@ -3194,7 +3155,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   backgroundPosition: "center center"}}>
                                 </div>
                               </div>
-                              <div className="ml-2 flex flex-col flex-auto">
+                              <div className="ml-2 flex flex-col flex-auto relative">
                                 <div className="w-full">
                                   <p className="font-medium text-cyan-400">
                                     {data.date!== null | data.date!==undefined ? dateFormat(
@@ -3204,7 +3165,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   </p>
                                   <div className="flex flex-row">
                                     <div className="flex-auto">
-                                      <p className={(!isReadMoreExpandedOuter(data.id)?"line-clamp-2":"")}> {data.name} </p>
+                                      <p className={(!isReadMoreExpandedOuter(data.id)?"line-clamp-2":"") +" break-words"}> {data.name} </p>
                                     </div>
                                     <AiOutlineDownload
                                       className="ml-1 flex-none text-cyan-400 text-base cursor-pointer"
@@ -3215,10 +3176,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       }
                                     />
                                   </div>
-                                    <p id={data.id+".desc"} className={(
-                                      isReadMoreExpandedOuter(data.id) && data.details ? (!isReadMoreExpandedDesc(data.id)?' line-clamp-5 ':' ') 
-                                      : ' hidden ') + ' mt-1'}> 
-                                      {data.details}&nbsp;
+                                    <p 
+                                      id={data.id+".desc"} 
+                                      className={'mt-1 text-red-200 absolute invisible opacity-0 pointer-events-none break-words'}
+                                      style={{top:-10000, zIndex:-1000, wordBreak:"break-word"}}
+                                      dangerouslySetInnerHTML={{__html: data.details}}
+                                        > 
+                                    </p>
+                                    <p 
+                                      className={(
+                                        isReadMoreExpandedOuter(data.id) && data.details ? (!isReadMoreExpandedDesc(data.id)?' line-clamp-5 ':' ') 
+                                        : ' hidden ') + ' mt-1 break-words'}
+                                      style={{wordBreak:"break-word"}}
+                                      dangerouslySetInnerHTML={{__html: data.details}}
+                                        > 
                                     </p>
                                     <button id={data.id+'.descButton'} className="text-cyan-400" 
                                     onClick={()=>handleReadMoreStateDesc(data.id)} >
@@ -3266,11 +3237,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       </p>
                                     </div>
                                   </div>
-                                  <p className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}>
-                                        {background.description}
-                                      </p>
-                                  </>
-                                  
+                                  <p 
+                                    className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}
+                                    dangerouslySetInnerHTML={{__html: background.description}}>
+                                  </p>
+                                </>
                                 ))}
                                 {(isReadMoreExpandedDesc(data.id) | isReadMoreExpandedOuter(data.id)) && ((data.details!== "" & data.details!== undefined & data.details!== null) | (data.backgrounds.items!== null & data.backgrounds.items.length > 0))? (
                                   <button className="h-5 block relative mt-1 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>

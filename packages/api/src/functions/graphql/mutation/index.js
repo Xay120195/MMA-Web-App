@@ -2064,6 +2064,8 @@ async function createGmailMessage(data) {
       isDeleted: false,
       isSaved: false,
       createdAt: toUTC(new Date()),
+      dateReceived: rawParams.receivedAt.toString(),
+      filters: `${rawParams.connectedEmail}#${rawParams.from}#${rawParams.to}#${rawParams.subject}#${rawParams.snippet}`,
     };
 
     const companyGmailMessageCommand = new PutItemCommand({
@@ -2136,6 +2138,86 @@ async function saveGmailMessage(id, companyId, data) {
       id,
       ...data,
     };
+
+    if (!data.isSaved) {
+      // unsave
+      const gmailClientMattersParam = {
+        TableName: "GmailMessageClientMatterTable",
+        IndexName: "byGmailMessage",
+        KeyConditionExpression: "gmailMessageId = :gmailMessageId",
+        ExpressionAttributeValues: marshall({
+          ":gmailMessageId": id,
+        }),
+        ProjectionExpression: "clientMatterId",
+      };
+
+      const gmailClientMattersCmd = new QueryCommand(gmailClientMattersParam);
+      const gmailClientMattersResult = await ddbClient.send(
+        gmailClientMattersCmd
+      );
+
+      if (gmailClientMattersResult) {
+        const { clientMatterId } = unmarshall(
+          gmailClientMattersResult.Items[0]
+        );
+
+        const matterFileParam = {
+          TableName: "MatterFileTable",
+          IndexName: "byMatter",
+          KeyConditionExpression: "matterId = :matterId",
+          FilterExpression: "gmailMessageId = :gmailMessageId",
+          ExpressionAttributeValues: marshall({
+            ":matterId": clientMatterId,
+            ":gmailMessageId": id,
+          }),
+          ProjectionExpression: "id",
+        };
+
+        const matterFileCmd = new QueryCommand(matterFileParam);
+        const matterFileResult = await ddbClient.send(matterFileCmd);
+
+        const matterFileResponse = matterFileResult.Items.map((i) => {
+          return {
+            DeleteRequest: {
+              Key: i,
+            },
+          };
+        });
+
+        let batches = [],
+          current_batch = [],
+          item_count = 0;
+
+        matterFileResponse.forEach((data) => {
+          item_count++;
+          current_batch.push(data);
+
+          // Chunk items to 25
+          if (item_count % 25 == 0) {
+            batches.push(current_batch);
+            current_batch = [];
+          }
+        });
+
+        // Add the last batch if it has records and is not equal to 25
+        if (current_batch.length > 0 && current_batch.length != 25) {
+          batches.push(current_batch);
+        }
+
+        batches.forEach(async (data) => {
+          const removeAttachmentsParams = {
+            RequestItems: {
+              MatterFileTable: data,
+            },
+          };
+
+          const removeAttachmentsCmd = new BatchWriteItemCommand(
+            removeAttachmentsParams
+          );
+          await ddbClient.send(removeAttachmentsCmd);
+        });
+      }
+    }
 
     const gmParam = {
       TableName: "CompanyGmailMessageTable",
@@ -2767,15 +2849,13 @@ async function updateGmailMessageDescription(id, data) {
 async function disconnectGmail(id) {
   let resp = {};
   try {
-    console.log(marshall({ id }));
     const cmd = new DeleteItemCommand({
       TableName: "GmailTokenTable",
       Key: marshall({ id }),
     });
 
-    console.log(cmd);
     const request = await ddbClient.send(cmd);
-    console.log(request);
+
     resp = request ? { id } : {};
   } catch (e) {
     resp = {
@@ -3111,7 +3191,7 @@ const resolvers = {
         userId,
         companyId,
         refreshToken: token.tokens.refresh_token,
-        userTimeZone
+        userTimeZone,
       };
 
       return addToken(data);
@@ -3148,8 +3228,11 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run mutation >>", ctx.info.fieldName);
-  console.log("~aqs.watch:: arguments >>", ctx.arguments);
+  console.log(
+    "~aqs.watch:: run mutation >>",
+    ctx.info.fieldName,
+    ctx.arguments
+  );
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];
