@@ -3205,7 +3205,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   </p>
                                   <div className="flex flex-row">
                                     <div className="flex-auto">
-                                      <p className={(!isReadMoreExpandedOuter(data.id)?"line-clamp-2":"")}> {data.name} </p>
+                                      <p className={(!isReadMoreExpandedOuter(data.id)?"line-clamp-2":"") +" break-words"}> {data.name} </p>
                                     </div>
                                     <AiOutlineDownload
                                       className="ml-1 flex-none text-cyan-400 text-base cursor-pointer"
@@ -3218,15 +3218,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   </div>
                                     <p 
                                       id={data.id+".desc"} 
-                                      className={'mt-1 text-red-200 absolute invisible pointer-events-none'}
-                                      style={{top:-5000, zIndex:-1000}}
+                                      className={'mt-1 text-red-200 absolute invisible opacity-0 pointer-events-none break-words'}
+                                      style={{zIndex:-1000}}
                                       dangerouslySetInnerHTML={{__html: data.details}}
                                         > 
                                     </p>
                                     <p 
                                       className={(
                                         isReadMoreExpandedOuter(data.id) && data.details ? (!isReadMoreExpandedDesc(data.id)?' line-clamp-5 ':' ') 
-                                        : ' hidden ') + ' mt-1'}
+                                        : ' hidden ') + ' mt-1 break-words'}
                                       dangerouslySetInnerHTML={{__html: data.details}}
                                         > 
                                     </p>
