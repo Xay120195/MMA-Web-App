@@ -130,8 +130,8 @@ const TableUnsavedInfo = ({
           if (items.id === id) {
             return {...items, details: e.target.innerHTML};
           }
-          return emails;
         });
+        return emails;
       });
       console.log(newArrDescription);
 
