@@ -1272,40 +1272,49 @@ const Background = () => {
                         {item.date !== null && item.date !== "" ? dateFormat(item.date,"dd mmmm yyyy") : "No date"}
                       </p>
                       {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
-                      <p id={item.id+".desc"}className="absolute invisible" style={{top:-1000,marginRight:'20px'}}>
-                        {item.description}
+                      <p 
+                        id={item.id+".desc"}
+                        className="absolute text-red-200 invisible pointer-events-none opacity-0" 
+                        style={{top:-10000, zIndex:-1000, marginRight:'20px'}}
+                        dangerouslySetInnerHTML={{__html:item.description}}
+                        >
                       </p>
-                      <p className={(isReadMoreExpanded(item.id)? "" : "line-clamp-6")}>
-                        {item.description}
+                      <p 
+                        className={(isReadMoreExpanded(item.id)? "" : "line-clamp-6")}
+                        dangerouslySetInnerHTML={{__html:item.description}}
+                        >
                       </p>
                       <button id={item.id+".descButton"} className="text-cyan-400 mb-2" onClick={()=>handleReadMoreState(item.id)}>
                       {(isReadMoreExpanded(item.id) ? "read less...": "read more...")}
                       </button>
                         {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
-                        <p id={item.id+".files"} className="absolute invisible" style={{top:-1000,marginRight:'20px',lineHeight:"30px"}}>
+                        <p 
+                          id={item.id+".files"} 
+                          className="absolute text-red-200 invisible pointer-events-none opacity-0 break-words" 
+                          style={{top:-10000, zIndex:-1000, marginRight:'20px',lineHeight:"30px", wordBreak:"break-word"}}>
                           {item.files.items.map((file) => (
-                            <button key={file.id} className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1">
-                              {file.name}&nbsp;<AiOutlineDownload
+                            <button 
+                              key={file.id} 
+                              className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1"
+                              onClick={() =>previewAndDownloadFile(file.id)}>
+                              {file.name}&nbsp;
+                              <AiOutlineDownload
                                 className="text-gray-400 text-sm cursor-pointer inline-block"
-                                onClick={() =>
-                                  previewAndDownloadFile(
-                                    file.id
-                                  )
-                                }
                               />
                             </button>
                           ))}
                         </p>
-                        <p className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1")} style={{lineHeight:"30px"}}>
+                        <p 
+                          className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1") + " break-words"} 
+                          style={{lineHeight:"30px", wordBreak:"break-word"}}>
                           {item.files.items.map((file) => (
-                            <button key={file.id} className="font-extralight text-sm text-gray-400 border rounded-lg px-2 mr-2 my-1">
-                              {file.name}&nbsp;<AiOutlineDownload
-                                className="text-gray-400 text-sm cursor-pointer inline-block"
-                                onClick={() =>
-                                  previewAndDownloadFile(
-                                    file.id
-                                  )
-                                }
+                            <button 
+                              key={file.id} 
+                              className="font-extralight text-sm focus:text-cyan-400 focus:border-cyan-400 text-gray-400 border rounded-lg px-2 mr-2 my-1" 
+                              onClick={() => previewAndDownloadFile(file.id)}>
+                              {file.name}&nbsp;
+                              <AiOutlineDownload
+                                className="text-sm cursor-pointer inline-block"
                               />
                             </button>
                           ))}
@@ -1318,15 +1327,11 @@ const Background = () => {
             </div>
           </div>
         )}
-
         </>
         )}
-
-
         {showToast && (
           <ToastNotification title={alertMessage} hideToast={hideToast} />
         )}
-
         {showSessionTimeout && <SessionTimeout />}
       </div>
     </>

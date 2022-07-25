@@ -2266,11 +2266,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         if(descTag!== null) {
           var lines = countLines(descTag);
           var descButtonTag = document.getElementById(data.id+".descButton");
-          if(lines >= 5) {
+          if(lines > 5) {
             let bool = (!isReadMoreExpandedDesc(data.id) &&
             (isReadMoreExpandedOuter(data.id) || (data.backgrounds.items=== null|| data.backgrounds.items.length===0)));
             descButtonTag.style.display = bool ? "inline-block": "none";
-            descButtonTag.innerHTML = bool ? "read more...": "read less...";
           } else {
             descButtonTag.style.display = 'none';
           }
@@ -3113,13 +3112,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         onClick={(event) =>  handleRedirectLink(event,background.id)}
                                                       >
                                                         <b>
-                                                        {((background.order) + ". " + background.briefs.items[0].name) }
-                                                          
+                                                          {((background.order) + ". " + background.briefs.items[0].name) }
                                                         </b>
-                                                      
                                                       </div>
-                                                    
-                                                    
                                                   ))}
                                               </div>
                                             </td>
@@ -3200,7 +3195,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   backgroundPosition: "center center"}}>
                                 </div>
                               </div>
-                              <div className="ml-2 flex flex-col flex-auto">
+                              <div className="ml-2 flex flex-col flex-auto relative">
                                 <div className="w-full">
                                   <p className="font-medium text-cyan-400">
                                     {data.date!== null | data.date!==undefined ? dateFormat(
@@ -3210,7 +3205,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   </p>
                                   <div className="flex flex-row">
                                     <div className="flex-auto">
-                                      <p className={(!isReadMoreExpandedOuter(data.id)?"line-clamp-2":"")}> {data.name} </p>
+                                      <p className={(!isReadMoreExpandedOuter(data.id)?"line-clamp-2":"") +" break-words"}> {data.name} </p>
                                     </div>
                                     <AiOutlineDownload
                                       className="ml-1 flex-none text-cyan-400 text-base cursor-pointer"
@@ -3221,10 +3216,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       }
                                     />
                                   </div>
-                                    <p id={data.id+".desc"} className={(
-                                      isReadMoreExpandedOuter(data.id) && data.details ? (!isReadMoreExpandedDesc(data.id)?' line-clamp-5 ':' ') 
-                                      : ' hidden ') + ' mt-1'}> 
-                                      {data.details}&nbsp;
+                                    <p 
+                                      id={data.id+".desc"} 
+                                      className={'mt-1 text-red-200 absolute invisible opacity-0 pointer-events-none break-words'}
+                                      style={{top:-10000, zIndex:-1000, wordBreak:"break-word"}}
+                                      dangerouslySetInnerHTML={{__html: data.details}}
+                                        > 
+                                    </p>
+                                    <p 
+                                      className={(
+                                        isReadMoreExpandedOuter(data.id) && data.details ? (!isReadMoreExpandedDesc(data.id)?' line-clamp-5 ':' ') 
+                                        : ' hidden ') + ' mt-1 break-words'}
+                                      style={{wordBreak:"break-word"}}
+                                      dangerouslySetInnerHTML={{__html: data.details}}
+                                        > 
                                     </p>
                                     <button id={data.id+'.descButton'} className="text-cyan-400" 
                                     onClick={()=>handleReadMoreStateDesc(data.id)} >
@@ -3272,11 +3277,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       </p>
                                     </div>
                                   </div>
-                                  <p className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}>
-                                        {background.description}
-                                      </p>
-                                  </>
-                                  
+                                  <p 
+                                    className={(isReadMoreExpandedInner(data.id, background.id)?'block':'hidden')}
+                                    dangerouslySetInnerHTML={{__html: background.description}}>
+                                  </p>
+                                </>
                                 ))}
                                 {(isReadMoreExpandedDesc(data.id) | isReadMoreExpandedOuter(data.id)) && ((data.details!== "" & data.details!== undefined & data.details!== null) | (data.backgrounds.items!== null & data.backgrounds.items.length > 0))? (
                                   <button className="h-5 block relative mt-1 text-cyan-400 text-xs self-start" onClick={()=>handleCollapseAll(data.id)}>
