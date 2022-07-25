@@ -32,6 +32,8 @@ export default function Contacts() {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [isToDelete, setisToDelete] = useState("");
   const [ContactList, setContactList] = useState(null);
+
+  const [defaultCompany, setDefaultCompany] = useState("");
   const hideToast = () => {
     setShowToast(false);
   };
@@ -82,6 +84,7 @@ export default function Contacts() {
       console.log("usersssss",companyUsers);
       var temp = companyUsers.data.company.users.items
       temp.sort((a, b) =>  a.firstName.localeCompare(b.firstName));
+      setDefaultCompany(companyUsers.data.company.name);
       setContactList(temp);
     });
   };
@@ -196,6 +199,7 @@ export default function Contacts() {
     if (ContactList === null) {
       getContacts();
     }
+
     
     anime({
       targets: rows.current,
@@ -244,7 +248,7 @@ export default function Contacts() {
               <span className="text-lg font-bold">Contacts</span>{" "}
               <span className="text-lg font-light">
                 {" "}
-                of {`Matthew Douglas`}
+                of {localStorage.getItem("firstName")} {localStorage.getItem("lastName")}
               </span>
             </p>
             <div className="flex items-center gap-3 text-gray-500">
@@ -411,7 +415,7 @@ export default function Contacts() {
                                         </p>
                                       </div>
                                     </td>
-                                    <td className="p-2">{localStorage.getItem("companyId")}</td>
+                                    <td className="p-2">{defaultCompany}</td>
 
                                     <td className="p-2">
                                       <div className="flex items-center gap-x-2">
