@@ -126,7 +126,7 @@ const TableUnsavedInfo = ({
     if (success) {
 
       const newArrDescription = unSavedEmails.map(emails => {
-        emails.map(items => {
+        emails.attachments.items.map(items => {
           if (items.id === id) {
             return {...items, details: e.target.innerHTML};
           }
