@@ -31,6 +31,8 @@ import UploadLinkModal from "../file-bucket/file-upload-modal";
 import NoResultState from "../no-result-state";
 import ReactTooltip from "react-tooltip";
 import { check } from "prettier";
+import RFIEditor from './rfi-editor';
+import { ThemeProvider } from '@remirror/react';
 
 export let selectedRowsBGPass = [],
   selectedRowsBGFilesPass = [];
@@ -1396,7 +1398,7 @@ const TableInfo = ({
   }
 
   return (
-    <>
+    <ThemeProvider>
       <div className="px-7">
         <div className="-my-2 sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -1612,6 +1614,7 @@ const TableInfo = ({
                                                     {...provider.dragHandleProps}
                                                     className="px-2 py-3 align-top place-items-center relative w-4/6 max-w-xs"
                                                   >
+                                                    {/* <RFIEditor item={item} /> */}
                                                     <div
                                                       className="p-2 w-full h-full font-poppins"
                                                       style={{
@@ -2020,7 +2023,7 @@ const TableInfo = ({
           <ToastNotification title={alertMessage} hideToast={hideToast} />
         </div>
       )}
-    </>
+    </ThemeProvider>
   );
 };
 
