@@ -49,6 +49,7 @@ const TableSavedInfo = ({
   savedEmails,
   matterList,
   maxLoadingSavedEmail,
+  waitSaved,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -294,6 +295,11 @@ const TableSavedInfo = ({
           className="bg-white divide-y divide-gray-200"
           style={{width:"100%", height:"100vh"}}
         >
+        {waitSaved ? (
+          <tr>
+            <td colSpan={5} ><Loading /></td>
+          </tr>
+        ) : (
         <WindowScroller
           key={1}
         >
@@ -526,6 +532,7 @@ const TableSavedInfo = ({
               </AutoSizer>
               )}
           </WindowScroller>
+        )}
         </tbody>
       </table>
       {/* {maxLoadingSavedEmail ? (
