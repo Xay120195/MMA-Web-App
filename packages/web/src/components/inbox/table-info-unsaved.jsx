@@ -134,7 +134,7 @@ const TableUnsavedInfo = ({
         });
       });
       console.log(newArrDescription);
-
+      setUnsavedEmails(newArrDescription);
       setResultMessage("Successfully updated.");
       setShowToast(true);
     }
