@@ -47,6 +47,7 @@ const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
   unSavedEmails,
+  setUnsavedEmails,
   matterList,
   maxLoadingUnSavedEmail,
   getUnSavedEmails,
@@ -123,6 +124,7 @@ const TableUnsavedInfo = ({
     };
     const success = await updateAttachmentDesc(data);
     if (success) {
+
       setResultMessage("Successfully updated.");
       setShowToast(true);
     }
@@ -184,6 +186,14 @@ const TableUnsavedInfo = ({
     };
     const success = await updateRowDesc(data);
     if (success) {
+      const newArrDescription = unSavedEmails.map(emails => {
+        if (emails.id === id) {
+          return {...emails, description: e.target.innerHTML};
+        }
+      
+        return emails;
+      });
+      setUnsavedEmails(newArrDescription);
       setResultMessage("Successfully updated.");
       setShowToast(true);
     }
