@@ -568,6 +568,7 @@ const Inbox = () => {
                     selectedUnsavedItems={selectedUnsavedItems}
                     setSelectedUnsavedItems={setSelectedUnsavedItems}
                     unSavedEmails={unSavedEmails}
+                    setUnsavedEmails={setUnsavedEmails}
                     matterList={matterList}
                     maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
                     emailFilters={emailFilters}
