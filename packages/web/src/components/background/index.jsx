@@ -1288,7 +1288,7 @@ const Background = () => {
                       {(isReadMoreExpanded(item.id) ? "read less...": "read more...")}
                       </button>
                         {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
-                        <p id={item.id+".files"} className="absolute invisible pointer-events-none" style={{top:-1000, zIndex:-1000, marginRight:'20px',lineHeight:"30px"}}>
+                        <p id={item.id+".files"} className="absolute invisible pointer-events-none opacity-0" style={{top:-1000, zIndex:-1000, marginRight:'20px',lineHeight:"30px"}}>
                           {item.files.items.map((file) => (
                             <button key={file.id} className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1">
                               {file.name}&nbsp;<AiOutlineDownload
