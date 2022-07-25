@@ -619,6 +619,9 @@ type Mutation {
     isGmailPDF: Boolean
     gmailMessageId: String
     date: AWSDateTime
+    isGmailAttachment: Boolean
+    isGmailPDF: Boolean
+    gmailMessageId: String
   ): File
 
   matterFileSoftDelete(id: ID): File
