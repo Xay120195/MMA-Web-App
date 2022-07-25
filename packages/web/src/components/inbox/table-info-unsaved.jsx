@@ -171,9 +171,9 @@ const TableUnsavedInfo = ({
     setEnabledArrays(temp);
 
     if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      getUnSavedEmails(emailFilters);
+      //getUnSavedEmails(emailFilters);
     } else {
-      getUnSavedEmails();
+      //getUnSavedEmails();
     }
   };
 
