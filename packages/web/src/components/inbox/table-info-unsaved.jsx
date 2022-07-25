@@ -9,6 +9,7 @@ import { FaEye } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
+import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
 
 var moment = require("moment");
 
@@ -51,6 +52,7 @@ const TableUnsavedInfo = ({
   getUnSavedEmails,
   emailFilters,
   labelsList,
+  waitUnSaved,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -67,6 +69,11 @@ const TableUnsavedInfo = ({
   const [enabledArrays, setEnabledArrays] = useState([]);
 
   const [options, setOptions] = useState(null);
+
+  const cache = useRef(new CellMeasurerCache({
+    fixedWidth: true,
+    defaultHeight: 100,
+  }));
 
   const handleSnippet = (e) => {
     setSnippetId(e.target.id);
@@ -425,236 +432,295 @@ const TableUnsavedInfo = ({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {unSavedEmails.map((item, index) => (
-            <tr key={item.id + "-" + index}>
-              <td className="p-2 align-top">
-                <input
-                  key={item.id}
-                  className="cursor-pointer mr-1"
-                  onChange={(e) =>
-                    handleSelectItem(e, item.clientMatters.items.length)
-                  }
-                  type="checkbox"
-                  value={item.id}
-                  id={item.id}
-                  checked={selectedUnsavedItems.includes(item.id)}
-                />
-              </td>
-              <td className="p-2 align-top">
-                <p className="text-sm font-medium">{item.subject}</p>
-                <p className="text-xs">
-                  {item.from} at{" "}
-                  {moment(item.date).format("DD MMM YYYY, hh:mm A")}
-                </p>
-                <span>
-                  <div className="relative">
-                    <button
-                      className="p-1 text-blue-600
-                text-opacity-90
-                text-[12px] font-normal inline-flex items-center gap-x-2 rounded primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 text-xs "
-                      type="button"
-                      aria-expanded="false"
-                      id={item.id}
-                      onClick={handleSnippet}
-                    >
-                      read more
-                      <FaEye />
-                    </button>
-                  </div>
-                  {show && snippetId === item.id && (
-                    <div
-                      ref={(el) => (ref.current[index] = el)}
-                      className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
-                      id={item.id}
-                    >
-                      <p>From : {item.from}</p>
-                      <p>
-                        Date :{" "}
-                        {moment(item.date).format("DD MMM YYYY, hh:mm A")}
-                      </p>
-                      <p>Subject : {item.subject}</p>
-                      <p>To : {item.to}</p>
-                      <p>CC: {item.cc}</p>
-
-                      <p
-                        className="mt-8 p-2"
-                        dangerouslySetInnerHTML={{
-                          __html: Base64.decode(
-                            item.payload
-                              .map((email) => email.content)
-                              .join("")
-                              .split('data":"')
-                              .pop()
-                              .split('"}')[0]
-                          ).replace("body{color:", ""),
-                        }}
-                      ></p>
-                    </div>
-                  )}
-                </span>
-                <button
-                  className="hidden no-underline hover:underline text-xs text-blue-400"
-                  onClick={(e) =>
-                    handleDownload(
-                      item.id,
-                      item.subject,
-                      item.payload
-                        .map((email) => email.content)
-                        .join("")
-                        .split('data":"')
-                        .pop()
-                        .split('"}')[0]
-                    )
-                  }
-                >
-                  Preview Email PDF
-                </button>
-                <div className="hidden">
-                  <span id={"preview_" + item.id}>
-                    <img src={googleLogin} alt="" />
-                    <hr></hr>
-                    <h2>
-                      <b>{item.subject}</b>
-                    </h2>
-                    <hr></hr>
-                    <br />
-                    <p>From : {item.from}</p>
-                    <p>
-                      Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}
-                    </p>
-                    <p>To : {item.to}</p>
-                    <p>CC: {item.cc}</p>
-                  </span>
-                </div>
-              </td>
-              <td className="p-2 align-top">
-                <p
-                  className="p-2 w-full h-full font-poppins rounded-sm"
-                  style={{
-                    border: "solid 1px #c4c4c4",
-                    cursor: "auto",
-                    outlineColor: "rgb(204, 204, 204, 0.5)",
-                    outlineWidth: "thin",
-                  }}
-                  suppressContentEditableWarning
-                  dangerouslySetInnerHTML={{ __html: item.description }}
-                  onBlur={(e) => handleSaveMainDesc(e, item.id)}
-                  contentEditable={true}
-                ></p>
-                {item.attachments.items.map((item_attach, index) => (
-                  <React.Fragment key={item_attach.id}>
-                    <div className="flex items-start mt-2">
-                      <p
-                        className="
-                        cursor-pointer mr-1 text-opacity-90 1 
-                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
-                        id={item_attach.id}
-                        title={item_attach.name}
-                        onClick={() => previewAndDownloadFile(item_attach.id)}
-                      >
-                        {item_attach.name.substring(0, 20)}
-                        {item_attach.name.length >= 20 ? "..." : ""}
-                      </p>
-                      <div
-                        className="p-2 w-full h-full font-poppins rounded-sm float-right"
-                        style={{
-                          border: "solid 1px #c4c4c4",
-                          cursor: "auto",
-                          outlineColor: "rgb(204, 204, 204, 0.5)",
-                          outlineWidth: "thin",
-                        }}
-                        suppressContentEditableWarning
-                        dangerouslySetInnerHTML={{
-                          __html: item_attach.details,
-                        }}
-                        onBlur={(e) => handleSaveDesc(e, item_attach.id)}
-                        contentEditable={true}
-                      ></div>
-                    </div>
-                  </React.Fragment>
-                ))}
-              </td>
-              <td className="p-2 align-top">
-                <div className="relative" disabled={true}>
-                  <button
-                    className="
-                  text-opacity-90 1
-                  textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                    id="headlessui-popover-button-87"
-                    type="button"
-                    aria-expanded="false"
-                  >
-                    {item.labelIds}
-                  </button>
-                  <CreatableSelect
-                    defaultValue={() => defaultLabels(item.labels.items)}
-                    isMulti
-                    isClearable
-                    options={getOptions(item.clientMatters.items)}
-                    isSearchable
-                    openMenuOnClick={true}
-                    isDisabled={
-                      checkArrLength(item.clientMatters.items.length) ||
-                      checkEnable(item.id)
-                        ? false
-                        : true
-                    }
-                    onChange={(e) => handleAddLabel(e, item.id)}
-                    placeholder="Labels"
-                    className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                  />
-                </div>
-                {item.attachments.items.map((item_attach, index) => (
-                  <CreatableSelect
-                    defaultValue={() => defaultLabels(item_attach.labels.items)}
-                    isMulti
-                    isClearable
-                    options={getOptions(item.clientMatters.items)}
-                    openMenuOnClick={true}
-                    isDisabled={
-                      checkArrLength(item.clientMatters.items.length) ||
-                      checkEnable(item.id)
-                        ? false
-                        : true
-                    }
-                    onChange={(e) =>
-                      handleAddEmailAttachmentLabel(e, item_attach.id)
-                    }
-                    placeholder="Labels"
-                    className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                  />
-                ))}
-              </td>
-              <td className="p-2 align-top">
-                <React.Fragment key={item.id}>
-                  <CreatableSelect
-                    defaultValue={item.clientMatters.items.map(
-                      (item_clientMatter, index) => ({
-                        value: item_clientMatter.id,
-                        label:
-                          item_clientMatter.client.name +
-                          "/" +
-                          item_clientMatter.matter.name,
-                      })
-                    )}
-                    options={matterList}
-                    isSearchable
-                    onChange={(options, e) =>
-                      handleClientMatter(options, item.id)
-                    }
-                    noOptionsMessage={() => "No result found"}
-                    isValidNewOption={() => false}
-                    placeholder="Client/Matter"
-                    className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                  />
-                </React.Fragment>
-              </td>
+        <tbody 
+          className="bg-white divide-y divide-gray-200"
+          style={{width:"100%", height:"100vh"}}
+        >
+          {waitUnSaved ? (
+            <tr>
+              <td colSpan={5} ><Loading /></td>
             </tr>
-          ))}
+          ) : (
+          <WindowScroller
+          key={0}
+          >
+            {({ height, scrollTop }) => (
+              <AutoSizer disableHeight>
+              {({ width }) => (
+                <List
+                autoHeight
+                scrollTop={scrollTop}
+                width={width}
+                height={height}
+                rowHeight={cache.current.rowHeight}
+                deferredMeasurementCache={cache.current}
+                rowCount={unSavedEmails.length}
+                rowRenderer={({ key, index, style, parent }) => {
+                  const item = unSavedEmails[index];
+                  return (
+                    <CellMeasurer 
+                      key={item.id + "-" + index} 
+                      cache={cache.current} 
+                      parent={parent} 
+                      rowIndex={index} 
+                      columnIndex={0}
+                    >
+                      {/* <div 
+                      style={{
+                        ...style,
+                        width: "100%",
+                        height: "100%",
+                        border: '1px solid #f0f0f0', 
+                      }}
+                      > */}
+                      {/* {({ registerChild }) => ( */}
+                        <tr 
+                          style={{
+                            ...style,
+                            width: "100%",
+                            height: "100%",
+                            border: '1px solid #f0f0f0', 
+                          }}
+                          //ref={registerChild}
+                          key={key}
+                        >
+                          <td className="p-2 align-top w-10">
+                            <input
+                              key={item.id}
+                              className="cursor-pointer mr-1"
+                              onChange={(e) =>
+                                handleSelectItem(e, item.clientMatters.items.length)
+                              }
+                              type="checkbox"
+                              value={item.id}
+                              id={item.id}
+                              checked={selectedUnsavedItems.includes(item.id)}
+                            />
+                          </td>
+                          <td className="p-2 align-top w-1/4">
+                            <p className="text-sm font-medium">{item.subject}</p>
+                            <p className="text-xs">
+                              {item.from} at{" "}
+                              {moment(item.date).format("DD MMM YYYY, hh:mm A")}
+                            </p>
+                            <span>
+                              <div className="relative">
+                                <button
+                                  className="p-1 text-blue-600
+                            text-opacity-90
+                            text-[12px] font-normal inline-flex items-center gap-x-2 rounded primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 text-xs "
+                                  type="button"
+                                  aria-expanded="false"
+                                  id={item.id}
+                                  onClick={handleSnippet}
+                                >
+                                  read more
+                                  <FaEye />
+                                </button>
+                              </div>
+                              {show && snippetId === item.id && (
+                                <div
+                                  ref={(el) => (ref.current[index] = el)}
+                                  className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                  id={item.id}
+                                >
+                                  <p>From : {item.from}</p>
+                                  <p>
+                                    Date :{" "}
+                                    {moment(item.date).format("DD MMM YYYY, hh:mm A")}
+                                  </p>
+                                  <p>Subject : {item.subject}</p>
+                                  <p>To : {item.to}</p>
+                                  <p>CC: {item.cc}</p>
+
+                                  <p
+                                    className="mt-8 p-2"
+                                    dangerouslySetInnerHTML={{
+                                      __html: Base64.decode(
+                                        item.payload
+                                          .map((email) => email.content)
+                                          .join("")
+                                          .split('data":"')
+                                          .pop()
+                                          .split('"}')[0]
+                                      ).replace("body{color:", ""),
+                                    }}
+                                  ></p>
+                                </div>
+                              )}
+                            </span>
+                            <button
+                              className="hidden no-underline hover:underline text-xs text-blue-400"
+                              onClick={(e) =>
+                                handleDownload(
+                                  item.id,
+                                  item.subject,
+                                  item.payload
+                                    .map((email) => email.content)
+                                    .join("")
+                                    .split('data":"')
+                                    .pop()
+                                    .split('"}')[0]
+                                )
+                              }
+                            >
+                              Preview Email PDF
+                            </button>
+                            <div className="hidden">
+                              <span id={"preview_" + item.id}>
+                                <img src={googleLogin} alt="" />
+                                <hr></hr>
+                                <h2>
+                                  <b>{item.subject}</b>
+                                </h2>
+                                <hr></hr>
+                                <br />
+                                <p>From : {item.from}</p>
+                                <p>
+                                  Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}
+                                </p>
+                                <p>To : {item.to}</p>
+                                <p>CC: {item.cc}</p>
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-2 align-top w-2/8">
+                            <p
+                              className="p-2 w-full h-full font-poppins rounded-sm"
+                              style={{
+                                border: "solid 1px #c4c4c4",
+                                cursor: "auto",
+                                outlineColor: "rgb(204, 204, 204, 0.5)",
+                                outlineWidth: "thin",
+                              }}
+                              suppressContentEditableWarning
+                              dangerouslySetInnerHTML={{ __html: item.description }}
+                              onBlur={(e) => handleSaveMainDesc(e, item.id)}
+                              contentEditable={true}
+                            ></p>
+                            {item.attachments.items.map((item_attach, index) => (
+                              <React.Fragment key={item_attach.id}>
+                                <div className="flex items-start mt-2">
+                                  <p
+                                    className="
+                                    cursor-pointer mr-1 text-opacity-90 1 
+                                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
+                                    id={item_attach.id}
+                                    title={item_attach.name}
+                                    onClick={() => previewAndDownloadFile(item_attach.id)}
+                                  >
+                                    {item_attach.name.substring(0, 20)}
+                                    {item_attach.name.length >= 20 ? "..." : ""}
+                                  </p>
+                                  <div
+                                    className="p-2 w-full h-full font-poppins rounded-sm float-right"
+                                    style={{
+                                      border: "solid 1px #c4c4c4",
+                                      cursor: "auto",
+                                      outlineColor: "rgb(204, 204, 204, 0.5)",
+                                      outlineWidth: "thin",
+                                    }}
+                                    suppressContentEditableWarning
+                                    dangerouslySetInnerHTML={{
+                                      __html: item_attach.details,
+                                    }}
+                                    onBlur={(e) => handleSaveDesc(e, item_attach.id)}
+                                    contentEditable={true}
+                                  ></div>
+                                </div>
+                              </React.Fragment>
+                            ))}
+                          </td>
+                          <td className="p-2 align-top w-1/6">
+                            <div className="relative" disabled={true}>
+                              <button
+                                className="
+                              text-opacity-90 1
+                              textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                                id="headlessui-popover-button-87"
+                                type="button"
+                                aria-expanded="false"
+                              >
+                                {item.labelIds}
+                              </button>
+                              <CreatableSelect
+                                defaultValue={() => defaultLabels(item.labels.items)}
+                                isMulti
+                                isClearable
+                                options={getOptions(item.clientMatters.items)}
+                                isSearchable
+                                openMenuOnClick={true}
+                                isDisabled={
+                                  checkArrLength(item.clientMatters.items.length) ||
+                                  checkEnable(item.id)
+                                    ? false
+                                    : true
+                                }
+                                onChange={(e) => handleAddLabel(e, item.id)}
+                                placeholder="Labels"
+                                className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                              />
+                            </div>
+                            {item.attachments.items.map((item_attach, index) => (
+                              <CreatableSelect
+                                defaultValue={() => defaultLabels(item_attach.labels.items)}
+                                isMulti
+                                isClearable
+                                options={getOptions(item.clientMatters.items)}
+                                openMenuOnClick={true}
+                                isDisabled={
+                                  checkArrLength(item.clientMatters.items.length) ||
+                                  checkEnable(item.id)
+                                    ? false
+                                    : true
+                                }
+                                onChange={(e) =>
+                                  handleAddEmailAttachmentLabel(e, item_attach.id)
+                                }
+                                placeholder="Labels"
+                                className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                              />
+                            ))}
+                          </td>
+                          <td className="p-2 align-top w-1/6">
+                            <React.Fragment key={item.id}>
+                              <CreatableSelect
+                                defaultValue={item.clientMatters.items.map(
+                                  (item_clientMatter, index) => ({
+                                    value: item_clientMatter.id,
+                                    label:
+                                      item_clientMatter.client.name +
+                                      "/" +
+                                      item_clientMatter.matter.name,
+                                  })
+                                )}
+                                options={matterList}
+                                isSearchable
+                                onChange={(options, e) =>
+                                  handleClientMatter(options, item.id)
+                                }
+                                noOptionsMessage={() => "No result found"}
+                                isValidNewOption={() => false}
+                                placeholder="Client/Matter"
+                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                              />
+                            </React.Fragment>
+                          </td>
+                        </tr>
+                      {/* )} */}
+                      {/* </div> */}
+                    </CellMeasurer>
+                  );
+                }}
+                />
+                )}
+              </AutoSizer>
+              )}
+              </WindowScroller>
+            )}
         </tbody>
       </table>
-      {maxLoadingUnSavedEmail ? (
+      {/*{maxLoadingUnSavedEmail ? (
         <>
           <div className="flex justify-center items-center mt-5">
             All Data has been loaded
@@ -666,12 +732,12 @@ const TableUnsavedInfo = ({
             <img src={imgLoading} alt="" width={50} height={100} />
           </div>
         </>
-      )}
+      )}*/}
 
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
-    </>
+      </>
   );
 };
 

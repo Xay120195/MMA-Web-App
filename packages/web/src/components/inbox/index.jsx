@@ -161,6 +161,8 @@ const Inbox = () => {
   const hideToast = () => {
     setShowToast(false);
   };
+  const [waitUnSaved, setWaitUnSaved] = useState(false);
+  const [waitSaved, setWaitSaved] = useState(false);
 
   useEffect(() => {
     getUnSavedEmails();
@@ -171,15 +173,15 @@ const Inbox = () => {
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
 
   const getUnSavedEmails = async (filters) => {
-    console.log("getUnSavedEmails()");
+    setWaitUnSaved(true);
     const params = {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
         isSaved: false,
         recipient: emailIntegration,
-        limit: 50,
-        nextToken: null,
+        //limit: 50,
+        //nextToken: null,
       },
     };
 
@@ -204,6 +206,7 @@ const Inbox = () => {
 
     console.log("params:", params);
     await API.graphql(params).then((result) => {
+      setWaitUnSaved(false);
       const emailList = result.data.company.gmailMessages.items;
       const gmailToken = result.data.company.gmailToken;
       const gmailTokenEmail = result.data.company.gmailToken.id;
@@ -212,7 +215,6 @@ const Inbox = () => {
       setRefreshToken(gmailRefreshToken);
       setTokenEmail(gmailTokenEmail);
       setUnsavedEmails(emailList);
-
       if (
         gmailRefreshToken !== null &&
         localStorage.getItem("emailAddressIntegration") === null
@@ -250,15 +252,15 @@ const Inbox = () => {
   };
 
   const getSavedEmails = async (filters) => {
-    console.log("getSavedEmails()");
+    setWaitSaved(true);
     const params = {
       query: qGmailMessagesbyCompany,
       variables: {
         id: companyId,
         isSaved: true,
         recipient: emailIntegration,
-        limit: 50,
-        nextToken: null,
+        //limit: 50,
+        //nextToken: null,
       },
     };
 
@@ -282,6 +284,7 @@ const Inbox = () => {
 
     console.log("params:", params);
     await API.graphql(params).then((result) => {
+      setWaitSaved(false);
       const emailList = result.data.company.gmailMessages.items;
       setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);
@@ -370,16 +373,16 @@ const Inbox = () => {
   const handleOnAction = (event) => {
     if (emailFilters.startDate === null && emailFilters.endDate === null) {
       console.log("Filters not used.");
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
+      //handleLoadMoreUnSavedEmails();
+      //handleLoadMoreSavedEmails();
     }
   };
 
   const handleOnIdle = (event) => {
     if (emailFilters.startDate === null && emailFilters.endDate === null) {
       console.log("Filters not used.");
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
+      //handleLoadMoreUnSavedEmails();
+      //handleLoadMoreSavedEmails();
     }
   };
 
@@ -570,6 +573,7 @@ const Inbox = () => {
                     emailFilters={emailFilters}
                     getUnSavedEmails={getUnSavedEmails}
                     labelsList={labelsList}
+                    waitUnSaved={waitUnSaved}
                   />
                 </div>
                 <div className={openTab === 2 ? "block" : "hidden"} id="link2">
@@ -579,6 +583,7 @@ const Inbox = () => {
                     savedEmails={savedEmails}
                     matterList={matterList}
                     maxLoadingSavedEmail={maxLoadingSavedEmail}
+                    waitSaved={waitSaved}
                   />
                 </div>
               </div>
