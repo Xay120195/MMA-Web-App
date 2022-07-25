@@ -230,10 +230,10 @@ const ActionButtons = ({
             isSaved: status
           },
         }).then((result)=> {
+          setSaveLoading(false);
           setResultMessage("Successfully saved an email.");
           setShowToast(true);
           setSelectedUnsavedItems([]);
-          setSaveLoading(false);
         });
       });
 
@@ -249,10 +249,10 @@ const ActionButtons = ({
             isSaved: status
           },
         }).then((result)=> {
+          setSaveLoading(false);
           setResultMessage("Successfully saved an email.");
           setShowToast(true);
           setSelectedUnsavedItems([]);
-          setSaveLoading(false);
 
           // Add to unsaved Emails
           let  arrSavedEmails = savedEmails.filter(function(item){

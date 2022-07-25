@@ -52,6 +52,7 @@ const TableUnsavedInfo = ({
   getUnSavedEmails,
   emailFilters,
   labelsList,
+  waitUnSaved,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -435,6 +436,11 @@ const TableUnsavedInfo = ({
           className="bg-white divide-y divide-gray-200"
           style={{width:"100%", height:"100vh"}}
         >
+          {waitUnSaved ? (
+            <tr>
+              <td colSpan={5} ><Loading /></td>
+            </tr>
+          ) : (
           <WindowScroller
           key={0}
           >
@@ -711,6 +717,7 @@ const TableUnsavedInfo = ({
               </AutoSizer>
               )}
               </WindowScroller>
+            )}
         </tbody>
       </table>
       {/*{maxLoadingUnSavedEmail ? (
