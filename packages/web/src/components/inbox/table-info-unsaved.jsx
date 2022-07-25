@@ -117,7 +117,7 @@ const TableUnsavedInfo = ({
     setShowToast(false);
   };
 
-  const handleSaveDesc = async (e, id) => {
+  const handleSaveDesc = async (e, id, rowId) => {
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -126,13 +126,16 @@ const TableUnsavedInfo = ({
     if (success) {
 
       const newArrDescription = unSavedEmails.map(emails => {
-        emails.attachments.items.map(items => {
-          if (items.id === id) {
-            return {...items, details: e.target.innerHTML};
-          }
-        });
+        if (emails.id === rowId) {
+          emails.attachments.items.map(items => {
+            if (items.id === id) {
+              return {...items, details: e.target.innerHTML};
+            }
+          });
+        }
         return emails;
       });
+
       console.log(newArrDescription);
       setUnsavedEmails(newArrDescription);
       setResultMessage("Successfully updated.");
@@ -648,7 +651,7 @@ const TableUnsavedInfo = ({
                                     dangerouslySetInnerHTML={{
                                       __html: item_attach.details,
                                     }}
-                                    onBlur={(e) => handleSaveDesc(e, item_attach.id)}
+                                    onBlur={(e) => handleSaveDesc(e, item_attach.id, item.id)}
                                     contentEditable={true}
                                   ></div>
                                 </div>
