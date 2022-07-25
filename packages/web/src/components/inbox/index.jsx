@@ -563,6 +563,7 @@ const Inbox = () => {
           <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6">
             <div className="flex-auto">
               <div className="tab-content tab-space">
+                {openTab === 1 ? 
                 <div className={openTab === 1 ? "block" : "hidden"} id="link1">
                   <TableUnsavedInfo
                     selectedUnsavedItems={selectedUnsavedItems}
@@ -577,6 +578,7 @@ const Inbox = () => {
                     waitUnSaved={waitUnSaved}
                   />
                 </div>
+                :
                 <div className={openTab === 2 ? "block" : "hidden"} id="link2">
                   <TableSavedInfo
                     selectedSavedItems={selectedSavedItems}
@@ -587,6 +589,7 @@ const Inbox = () => {
                     waitSaved={waitSaved}
                   />
                 </div>
+                }
               </div>
             </div>
           </div>

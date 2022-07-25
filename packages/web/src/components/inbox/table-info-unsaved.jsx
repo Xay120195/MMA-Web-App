@@ -125,19 +125,20 @@ const TableUnsavedInfo = ({
     const success = await updateAttachmentDesc(data);
     if (success) {
 
-      const newArrDescription = unSavedEmails.map(emails => {
-        if (emails.id === rowId) {
-          emails.attachments.items.map(items => {
-            if (items.id === id) {
-              return {...items, details: e.target.innerHTML};
-            }
-          });
+      var objIndex = unSavedEmails.findIndex(
+        (obj) => obj.id === rowId
+      );
+
+      const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(x => (x.id === id ? { ...x, details: e.target.innerHTML } : x));
+      
+      var updateArrAttachment = unSavedEmails.map((obj) => {
+        if (obj.id === rowId) {
+          return { ...obj, attachments: { items: itemsAttachments } };
         }
-        return emails;
+        return obj;
       });
 
-      console.log(newArrDescription);
-      setUnsavedEmails(newArrDescription);
+      setUnsavedEmails(updateArrAttachment);
       setResultMessage("Successfully updated.");
       setShowToast(true);
     }
@@ -175,8 +176,8 @@ const TableUnsavedInfo = ({
       unSavedEmails[objIndex].clientMatters.items = [
         {
           id: e.value,
-          client: { id: "", name: "" },
-          matter: { id: "", name: "" },
+          client: { id: "", name: e.label.split("/")[0] },
+          matter: { id: "", name: e.label.split("/")[1] },
         },
       ];
     }
@@ -613,12 +614,15 @@ const TableUnsavedInfo = ({
                           </td>
                           <td className="p-2 align-top w-2/8">
                             <p
-                              className="p-2 w-full h-full font-poppins rounded-sm"
+                              className="p-2 w-full font-poppins rounded-sm"
                               style={{
                                 border: "solid 1px #c4c4c4",
                                 cursor: "auto",
                                 outlineColor: "rgb(204, 204, 204, 0.5)",
                                 outlineWidth: "thin",
+                                minHeight: "35px",
+                                maxHeight: "35px",
+                                overflow: "auto",
                               }}
                               suppressContentEditableWarning
                               dangerouslySetInnerHTML={{ __html: item.description }}
@@ -636,8 +640,8 @@ const TableUnsavedInfo = ({
                                     title={item_attach.name}
                                     onClick={() => previewAndDownloadFile(item_attach.id)}
                                   >
-                                    {item_attach.name.substring(0, 20)}
-                                    {item_attach.name.length >= 20 ? "..." : ""}
+                                    {item_attach.name.substring(0, 10)}
+                                    {item_attach.name.length >= 10 ? "..." : ""}
                                   </p>
                                   <div
                                     className="p-2 w-full h-full font-poppins rounded-sm float-right"
@@ -646,6 +650,10 @@ const TableUnsavedInfo = ({
                                       cursor: "auto",
                                       outlineColor: "rgb(204, 204, 204, 0.5)",
                                       outlineWidth: "thin",
+                                      minHeight: "35px",
+                                      maxHeight: "35px",
+                                      overflow: "auto",
+                                      
                                     }}
                                     suppressContentEditableWarning
                                     dangerouslySetInnerHTML={{
