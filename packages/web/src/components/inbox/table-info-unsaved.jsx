@@ -378,13 +378,17 @@ const TableUnsavedInfo = ({
           return null;
         } else {
           if (mainLabels[i].cmid === cmid) {
-            const newOptions = mainLabels[i].labelsExtracted.map(
-              ({ id: value, name: label }) => ({
-                value,
-                label,
-              })
-            );
-            return newOptions;
+            if(mainLabels[i].labelsExtracted.length === 0){
+              return null;
+            }else{
+              const newOptions = mainLabels[i].labelsExtracted.map(
+                ({ id: value, name: label }) => ({
+                  value,
+                  label,
+                })
+              );
+              return newOptions;
+            }
           }
         }
       }
