@@ -137,7 +137,7 @@ const TableUnsavedInfo = ({
         }
         return obj;
       });
-      
+
       setUnsavedEmails(updateArrAttachment);
       setResultMessage("Successfully updated.");
       setShowToast(true);
@@ -614,12 +614,15 @@ const TableUnsavedInfo = ({
                           </td>
                           <td className="p-2 align-top w-2/8">
                             <p
-                              className="p-2 w-full h-full font-poppins rounded-sm"
+                              className="p-2 w-full font-poppins rounded-sm"
                               style={{
                                 border: "solid 1px #c4c4c4",
                                 cursor: "auto",
                                 outlineColor: "rgb(204, 204, 204, 0.5)",
                                 outlineWidth: "thin",
+                                minHeight: "35px",
+                                maxHeight: "35px",
+                                overflow: "auto",
                               }}
                               suppressContentEditableWarning
                               dangerouslySetInnerHTML={{ __html: item.description }}
@@ -637,8 +640,8 @@ const TableUnsavedInfo = ({
                                     title={item_attach.name}
                                     onClick={() => previewAndDownloadFile(item_attach.id)}
                                   >
-                                    {item_attach.name.substring(0, 20)}
-                                    {item_attach.name.length >= 20 ? "..." : ""}
+                                    {item_attach.name.substring(0, 10)}
+                                    {item_attach.name.length >= 10 ? "..." : ""}
                                   </p>
                                   <div
                                     className="p-2 w-full h-full font-poppins rounded-sm float-right"
@@ -647,6 +650,10 @@ const TableUnsavedInfo = ({
                                       cursor: "auto",
                                       outlineColor: "rgb(204, 204, 204, 0.5)",
                                       outlineWidth: "thin",
+                                      minHeight: "35px",
+                                      maxHeight: "35px",
+                                      overflow: "auto",
+                                      
                                     }}
                                     suppressContentEditableWarning
                                     dangerouslySetInnerHTML={{
