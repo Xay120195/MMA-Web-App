@@ -125,19 +125,20 @@ const TableUnsavedInfo = ({
     const success = await updateAttachmentDesc(data);
     if (success) {
 
-      const newArrDescription = unSavedEmails.map(emails => {
-        if (emails.id === rowId) {
-          emails.attachments.items.map(items => {
-            if (items.id === id) {
-              return {...items, details: e.target.innerHTML};
-            }
-          });
-        }
-        return emails;
-      });
+      var objIndex = unSavedEmails.findIndex(
+        (obj) => obj.id === rowId
+      );
 
-      console.log(newArrDescription);
-      setUnsavedEmails(newArrDescription);
+      const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(x => (x.id === id ? { ...x, details: e.target.innerHTML } : x));
+      
+      var updateArrAttachment = unSavedEmails.map((obj) => {
+        if (obj.id === rowId) {
+          return { ...obj, attachments: { items: itemsAttachments } };
+        }
+        return obj;
+      });
+      
+      setUnsavedEmails(updateArrAttachment);
       setResultMessage("Successfully updated.");
       setShowToast(true);
     }
@@ -175,8 +176,8 @@ const TableUnsavedInfo = ({
       unSavedEmails[objIndex].clientMatters.items = [
         {
           id: e.value,
-          client: { id: "", name: "" },
-          matter: { id: "", name: "" },
+          client: { id: "", name: e.label.split("/")[0] },
+          matter: { id: "", name: e.label.split("/")[1] },
         },
       ];
     }
