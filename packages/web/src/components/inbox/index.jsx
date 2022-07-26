@@ -164,14 +164,14 @@ const Inbox = () => {
   const [waitSaved, setWaitSaved] = useState(false);
 
   useEffect(() => {
-    getUnSavedEmails();
-    getSavedEmails();
+    getUnSavedEmails(emailFilters);
+    getSavedEmails(emailFilters);
     getMatterList();
   }, []);
 
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
 
-  const getUnSavedEmails = async () => {
+  const getUnSavedEmails = async (filters) => {
     setWaitUnSaved(true);
     const params = {
       query: qGmailMessagesbyCompany,
@@ -183,14 +183,14 @@ const Inbox = () => {
         // nextToken: null,
         userTimeZone: userTimeZone,
         startDate:
-          emailFilters.startDate != null
-            ? momentTZ(emailFilters.startDate, userTimeZone).format(
+        filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format(
                 "YYYY-MM-DD"
               )
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
         endDate:
-          emailFilters.endDate != null
-            ? momentTZ(emailFilters.endDate, userTimeZone).format("YYYY-MM-DD")
+        filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
@@ -254,14 +254,14 @@ const Inbox = () => {
         //nextToken: null,
         userTimeZone: userTimeZone,
         startDate:
-          emailFilters.startDate != null
-            ? momentTZ(emailFilters.startDate, userTimeZone).format(
+        filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format(
                 "YYYY-MM-DD"
               )
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
         endDate:
-          emailFilters.endDate != null
-            ? momentTZ(emailFilters.endDate, userTimeZone).format("YYYY-MM-DD")
+        filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
@@ -373,20 +373,20 @@ const Inbox = () => {
 
       setUnsavedEmails([]);
       setUnsavedVnextToken(null);
-      getUnSavedEmails();
+      getUnSavedEmails(filters);
 
       setSavedEmails([]);
       setSavedVnextToken(null);
-      getSavedEmails();
+      getSavedEmails(filters);
     } else {
       // Reset / Clear Filters
-
-      setEmailFilters({
+      const defaultFilter = {
         startDate: new Date(),
         endDate: new Date(),
-      });
-      getUnSavedEmails();
-      getSavedEmails();
+      };
+      setEmailFilters(defaultFilter);
+      getUnSavedEmails(defaultFilter);
+      getSavedEmails(defaultFilter);
     }
 
     setshowFiltersModal(false);
