@@ -23,7 +23,8 @@ const ActionButtons = ({
   setSavedEmails,
   setUnsavedEmails,
   setSaveLoading,
-  saveLoading
+  saveLoading,
+  sortByDate,
 }) => {
 
   Storage.configure({
@@ -169,13 +170,15 @@ const ActionButtons = ({
       let  arrSavedEmails = unSavedEmails.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) !== -1;
       });
-      setSavedEmails(savedEmails.concat(arrSavedEmails));
+      var arrByDates = sortByDate(savedEmails.concat(arrSavedEmails));
+      console.log(arrByDates);
+      setSavedEmails(arrByDates);
 
       // Remove from Unsaved Emails
       let  arrRemoveUnSavedEmails = unSavedEmails.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) === -1;
       });
-      setUnsavedEmails(arrRemoveUnSavedEmails);
+      setUnsavedEmails(sortByDate(arrRemoveUnSavedEmails));
 
       selectedUnsavedItems.map((obj) => {
         const filteredUnsavedArr = unSavedEmails.filter(item => item.id === obj);
@@ -258,13 +261,14 @@ const ActionButtons = ({
           let  arrSavedEmails = savedEmails.filter(function(item){
             return selectedSavedItems.indexOf(item.id) !== -1;
           });
-          setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
+          var arrByDates = sortByDate(unSavedEmails.concat(arrSavedEmails));
+          setUnsavedEmails(arrByDates);
 
           // Remove from saved Emails
           let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
             return selectedSavedItems.indexOf(item.id) === -1;
           });
-          setSavedEmails(arrRemoveUnSavedEmails);
+          setSavedEmails(sortByDate(arrRemoveUnSavedEmails));
         });
       });
     }
