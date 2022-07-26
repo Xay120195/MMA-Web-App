@@ -600,6 +600,7 @@ export default function Contacts() {
           close={() => setshowAddContactModal(false)}
           setContactList={setContactList}
           ContactList={ContactList}
+          getContacts={getContacts}
         />
       )}
     </>
