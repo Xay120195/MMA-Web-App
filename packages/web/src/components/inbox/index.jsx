@@ -81,6 +81,7 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
             }
           }
         }
+        receivedAt
       }
       nextToken
     }
@@ -415,6 +416,19 @@ const Inbox = () => {
   //   debounce: 1000,
   // });
 
+  function sortByDate(arr) {
+    let sort;
+    if (arr) {
+      sort = arr.sort((a, b) =>
+        b.receivedAt - a.receivedAt
+      );
+    } else {
+      sort = arr;
+    }
+
+    return sort;
+  }
+
   return (
     <>
       {!loginData ? (
@@ -539,6 +553,7 @@ const Inbox = () => {
               emailIntegration={emailIntegration}
               saveLoading={saveLoading}
               setSaveLoading={setSaveLoading}
+              sortByDate={sortByDate}
             />
           </div>
 
@@ -569,6 +584,7 @@ const Inbox = () => {
                       getUnSavedEmails={getUnSavedEmails}
                       labelsList={labelsList}
                       waitUnSaved={waitUnSaved}
+                      sortByDate={sortByDate}
                     />
                   </div>
                 ) : (
@@ -583,6 +599,7 @@ const Inbox = () => {
                       matterList={matterList}
                       maxLoadingSavedEmail={maxLoadingSavedEmail}
                       waitSaved={waitSaved}
+                      sortByDate={sortByDate}
                     />
                   </div>
                 )}

@@ -200,7 +200,7 @@ const TableUnsavedInfo = ({
     if (success) {
       setResultMessage("Successfully updated.");
       setShowToast(true);
-      
+
       const newArrDescription = unSavedEmails.map(emails => {
         if (emails.id === id) {
           return {...emails, description: e.target.innerHTML};
