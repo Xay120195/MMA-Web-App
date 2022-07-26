@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 
 import anime from "animejs";
-
+import { CgTrash } from "react-icons/cg";
 const options = [
   { value: "No Selected", label: "No Selected" },
   { value: "Test Random", label: "Test Random" },
@@ -32,6 +32,7 @@ export default function AddContactModal({
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isDisabled, setisDisabled] = useState(false);
+  const [IsHovering, setIsHovering] = useState(false);
 
   function StopPropagate(e) {
     e.stopPropagation();
@@ -126,6 +127,10 @@ export default function AddContactModal({
         )
       );
     }, 3000);
+  };
+
+  const handleDelete = (index) => {
+    setInputData(InputData.filter((_, idx) => idx !== index));
   };
 
   return (
@@ -223,6 +228,14 @@ export default function AddContactModal({
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
                 </div>
+                <div className="flex flex-col p-1">
+                  <div className="opacity-0">a</div>
+                  <CgTrash
+                    className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
+                    color={`lightcoral`}
+                    onClick={() => handleDelete(i)}
+                  />
+                </div>
               </div>
               <div className="flex flex-row">
                 <div className="flex flex-col p-1">
@@ -296,7 +309,8 @@ export default function AddContactModal({
           ))}
 
           <button
-            disabled={isDisabled}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
             onClick={() => {
               setisDisabled(true);
               setInputData([
@@ -314,9 +328,7 @@ export default function AddContactModal({
               ]);
             }}
             className={
-              isDisabled
-                ? "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-200 hover:text-cyan-200 cursor-default"
-                : "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-500 hover:text-cyan-300 cursor-pointer"
+              "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-500 hover:text-cyan-300 cursor-pointer"
             }
           >
             Add More
@@ -329,7 +341,7 @@ export default function AddContactModal({
             >
               <path
                 d="M8 0C3.5625 0 0 3.59375 0 8C0 12.4375 3.5625 16 8 16C12.4062 16 16 12.4375 16 8C16 3.59375 12.4062 0 8 0ZM11 8.75H8.75V11C8.75 11.4375 8.40625 11.75 8 11.75C7.5625 11.75 7.25 11.4375 7.25 11V8.75H5C4.5625 8.75 4.25 8.4375 4.25 8C4.25 7.59375 4.5625 7.25 5 7.25H7.25V5C7.25 4.59375 7.5625 4.25 8 4.25C8.40625 4.25 8.75 4.59375 8.75 5V7.25H11C11.4062 7.25 11.75 7.59375 11.75 8C11.75 8.4375 11.4062 8.75 11 8.75Z"
-                fill={isDisabled ? "#ABF4FC" : "#1CC1E9"}
+                fill={IsHovering ? "rgb(152,241,255)" : "#1CC1E9"}
               />
             </svg>
           </button>
