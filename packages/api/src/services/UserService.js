@@ -9,7 +9,7 @@ import ddbClient from "../lib/dynamodb-client";
 import identityClient from "../lib/cognito-identity-provider-client";
 import randomString from "../shared/randomString";
 import { v4 } from "uuid";
-const { toUTC, toLocalTime } = require("../shared/toUTC");
+const { toUTC } = require("../shared/toUTC");
 
 export async function getUser(data) {
   let resp = {};
@@ -88,7 +88,7 @@ export async function createUser(data) {
       Item: marshall(compUserParam),
     });
 
-    const putCompUserCmdReq = await ddbClient.send(putCompUserCmd);
+    await ddbClient.send(putCompUserCmd);
 
     resp = request ? unmarshall(param) : {};
   } catch (e) {
@@ -100,11 +100,61 @@ export async function createUser(data) {
   return resp;
 }
 
+export async function deleteUser(userId, companyId) {
+  let resp = {};
+
+  console.log(userId, companyId);
+  // try {
+  //   const companyClientMatterParams = {
+  //     TableName: "CompanyClientMatterTable",
+  //     IndexName: "byClientMatter",
+  //     KeyConditionExpression: "clientMatterId = :clientMatterId",
+  //     ExpressionAttributeValues: marshall({
+  //       ":clientMatterId": id,
+  //     }),
+  //     ProjectionExpression: "id",
+  //   };
+
+  //   const companyClientMatterCmd = new QueryCommand(companyClientMatterParams);
+  //   const companyClientMatterResult = await ddbClient.send(
+  //     companyClientMatterCmd
+  //   );
+
+  //   const companyClientMatterId = companyClientMatterResult.Items[0];
+
+  //   const deleteCompanyClientMatterCommand = new DeleteItemCommand({
+  //     TableName: "CompanyClientMatterTable",
+  //     Key: companyClientMatterId,
+  //   });
+
+  //   const deleteCompanyClientMatterResult = await ddbClient.send(
+  //     deleteCompanyClientMatterCommand
+  //   );
+
+  //   if (deleteCompanyClientMatterResult) {
+  //     const cmd = new DeleteItemCommand({
+  //       TableName: "ClientMatterTable",
+  //       Key: marshall({ id }),
+  //     });
+  //     const request = await ddbClient.send(cmd);
+
+  //     resp = request ? { id: id } : {};
+  //   }
+  // } catch (e) {
+  //   resp = {
+  //     error: e.message,
+  //     errorStack: e.stack,
+  //   };
+  //   console.log(resp);
+  // }
+
+  // return resp;
+}
+
 export async function inviteUser(data) {
-  // console.log(process.env);
   const user = await createCognitoUser({
     UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
-    Username: data.email,
+    Username: v4(),
     DesiredDeliveryMediums: ["EMAIL"],
     TemporaryPassword: randomString(),
     UserAttributes: [

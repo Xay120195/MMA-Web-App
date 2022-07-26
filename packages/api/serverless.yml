@@ -152,6 +152,11 @@ custom:
         field: userInvite
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userDelete
+        request: false
+        response: false
       - dataSource: LambdaUserDS
         type: User
         field: clientMatters
