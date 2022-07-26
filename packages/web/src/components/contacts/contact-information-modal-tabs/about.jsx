@@ -63,6 +63,8 @@ export default function About({
     return (
       <button
         onClick={() => {
+
+          let foundIndex = ContactList.findIndex((x) => x.id == user.id);
           let item = {
             id: user.id,
             name: Firstname + " " + Lastname,
@@ -70,10 +72,11 @@ export default function About({
             company: Company,
             address: Address,
             mobile: Mobile,
+            team: ContactList[foundIndex].team,
             type: UserType.value,
           };
 
-          let foundIndex = ContactList.findIndex((x) => x.id == item.id);
+          
           ContactList[foundIndex] = item;
           setContactList(ContactList);
           close();

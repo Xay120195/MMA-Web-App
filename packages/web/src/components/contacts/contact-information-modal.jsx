@@ -7,10 +7,9 @@ import React, {
   useRef,
 } from "react";
 import About from "./contact-information-modal-tabs/about";
-import { MdSave } from "react-icons/md";
-import Select from "react-select";
-import { FiEdit } from "react-icons/fi";
 
+import { FiEdit } from "react-icons/fi";
+import clientmatter from "./clientmatter.json";
 import anime from "animejs";
 import TeamTab from "./contact-information-modal-tabs/team";
 import ClientMatterTab from "./contact-information-modal-tabs/clientmatter";
@@ -111,17 +110,6 @@ export default function ContactInformationModal({
     );
   };
 
-  const SaveButton = () => {
-    return (
-      <button
-        onClick={() => console.log("SAVED!")}
-        className="border border-gray-200 ml-auto rounded-md bg-green-400 text-white flex flex-row justify-center items-center gap-2font-normal px-6 py-1.5 mt-2 hover:bg-green-200 gap-2"
-      >
-        Save <MdSave color={`white`} />
-      </button>
-    );
-  };
-
   return (
     <>
       <div
@@ -131,7 +119,7 @@ export default function ContactInformationModal({
       >
         <div
           ref={modalContent}
-          className="p-10 flex flex-col bg-white rounded-lg opacity-0 scale-90 max-h-screen"
+          className="p-10 flex flex-col bg-white rounded-lg opacity-0 scale-90 max-h-screen overflow-y-scroll"
           onClick={(e) => e.stopPropagation()}
         >
           {/*Header*/}
@@ -192,7 +180,7 @@ export default function ContactInformationModal({
               <div className="bg-gray-300 w-full"></div>
             </div>
           </div>
-          {/*Input FIelds About */}
+          {/*Tabs */}
           {SelectedTab === "About" ? (
             <About
               close={close}
@@ -202,9 +190,19 @@ export default function ContactInformationModal({
               setContactList={setContactList}
             />
           ) : SelectedTab === "Teams" ? (
-            <TeamTab user={user} isEditing={isEditing} />
+            <TeamTab
+              close={close}
+              user={user}
+              isEditing={isEditing}
+              ContactList={ContactList}
+              setContactList={setContactList}
+            />
           ) : (
-            <ClientMatterTab isEditing={isEditing} />
+            <ClientMatterTab
+              close={close}
+              isEditing={isEditing}
+              clientmatter={clientmatter}
+            />
           )}
         </div>
       </div>
