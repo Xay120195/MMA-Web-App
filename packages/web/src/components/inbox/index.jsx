@@ -178,8 +178,8 @@ const Inbox = () => {
         id: companyId,
         isSaved: false,
         recipient: emailIntegration,
-        limit: 50,
-        nextToken: null,
+        //limit: 50,
+        //nextToken: null,
       },
     };
 
@@ -257,8 +257,8 @@ const Inbox = () => {
         id: companyId,
         isSaved: true,
         recipient: emailIntegration,
-        limit: 50,
-        nextToken: null,
+        //limit: 50,
+        //nextToken: null,
       },
     };
 
@@ -370,16 +370,16 @@ const Inbox = () => {
   const handleOnAction = (event) => {
     if (emailFilters.startDate === null && emailFilters.endDate === null) {
       console.log("Filters not used.");
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
+      //handleLoadMoreUnSavedEmails();
+      //handleLoadMoreSavedEmails();
     }
   };
 
   const handleOnIdle = (event) => {
     if (emailFilters.startDate === null && emailFilters.endDate === null) {
       console.log("Filters not used.");
-      handleLoadMoreUnSavedEmails();
-      handleLoadMoreSavedEmails();
+      //handleLoadMoreUnSavedEmails();
+      //handleLoadMoreSavedEmails();
     }
   };
 
