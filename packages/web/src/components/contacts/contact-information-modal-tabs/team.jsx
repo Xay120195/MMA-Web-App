@@ -49,7 +49,6 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
         onClick={() => {
           let foundIndex = ContactList.findIndex((x) => x.id === user.id);
 
-          console.log("INpudata type", InputData[0].type);
           let item = {
             id: ContactList[foundIndex].id,
             name: ContactList[foundIndex].name,
@@ -128,6 +127,7 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
         onMouseLeave={() => setIsHovering(false)}
         onClick={() => {
           setisDisabled(true);
+          setIsHovering(false);
           setInputData([
             ...InputData,
             {

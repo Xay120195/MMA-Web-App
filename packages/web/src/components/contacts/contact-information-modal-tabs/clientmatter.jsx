@@ -117,8 +117,11 @@ export default function ClientMatterTab({
   const AddMore = (id) => {
     return (
       <button
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
         onClick={() => {
           setisDisabled(true);
+          setIsHovering(false);
           setInputData([
             ...InputData,
             {
