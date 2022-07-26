@@ -27,11 +27,11 @@ const getParsedGmailMessage = async (data) => {
   const { id: messageId, payload } = message;
 
   // console.log("getParsedGmailMessage()", message);
-  console.log("getParsedGmailMessage()");
+  // console.log("getParsedGmailMessage()");
 
   const getParsedMessageParts = async (messagePart) => {
     // console.log("getParsedMessageParts()", messagePart);
-    console.log("getParsedMessageParts()");
+    // console.log("getParsedMessageParts()");
     const { partId, mimeType, filename, body, parts: subParts } = messagePart;
     // console.log("subParts", subParts);
 
