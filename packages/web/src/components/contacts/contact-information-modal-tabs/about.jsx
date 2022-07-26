@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-import Select from "react-select";
+import Select, { components } from "react-select";
+import { IoCaretDown } from "react-icons/io5";
 import { MdSave } from "react-icons/md";
 
 function uuidv4() {
@@ -29,23 +30,34 @@ export default function About({
   });
   const [Mobile, setMobile] = useState(user.mobile);
   const [Company, setCompany] = useState(user.company);
-  const [isDisabled, setisDisabled] = useState(false);
+  const [isDisabled, setisDisabled] = useState(true);
 
-  const validate = (obj) => {
+  const ChangesHaveMade = (obj) => {
     if (
-      obj.firstname &&
-      obj.clientname &&
-      obj.company &&
-      obj.email &&
-      obj.firstname &&
-      obj.lastname &&
-      obj.mattername &&
-      obj.team &&
-      obj.usertype
+      obj.name !== Firstname + " " + Lastname ||
+      obj.company !== Company ||
+      obj.email !== Email ||
+      obj.type !== UserType.value ||
+      obj.address !== Address ||
+      obj.mobile !== Mobile
     ) {
-      return true;
-    } else return false;
+      return false;
+    } else return true;
   };
+
+  useEffect(() => {
+    setisDisabled(ChangesHaveMade(user));
+  }, [
+    Firstname,
+    Lastname,
+    Company,
+    Email,
+    Lastname,
+    UserType,
+    Address,
+    Mobile,
+    user,
+  ]);
 
   const SaveButton = () => {
     return (
@@ -75,6 +87,16 @@ export default function About({
       >
         Save <MdSave color={`white`} />
       </button>
+    );
+  };
+
+  const DropdownIndicator = (props) => {
+    return (
+      components.DropdownIndicator && (
+        <components.DropdownIndicator {...props}>
+          <IoCaretDown className="text-sm" />
+        </components.DropdownIndicator>
+      )
     );
   };
 
@@ -150,6 +172,10 @@ export default function About({
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`User Type`}</div>
             <Select
+              components={{
+                IndicatorSeparator: () => null,
+                DropdownIndicator: DropdownIndicator,
+              }}
               name={`usertype`}
               type="text"
               value={UserType}

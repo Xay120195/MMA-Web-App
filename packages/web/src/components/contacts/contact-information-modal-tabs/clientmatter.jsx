@@ -2,11 +2,20 @@ import React, { useState, useEffect } from "react";
 import clientmatter from "../clientmatter.json";
 import loading from "./loading-ani.gif";
 import { MdSave } from "react-icons/md";
-import Select from "react-select";
+import Select, { components } from "react-select";
+
+import { IoIosSearch } from "react-icons/io";
 import { CgTrash } from "react-icons/cg";
-const options = [
+import SingleSelect from "./customSelect";
+import { IoCaretDown } from "react-icons/io5";
+import User from "../user";
+export const options = [
   { value: "No Selected", label: "No Selected" },
   { value: "Test Random", label: "Test Random" },
+  { value: "Testing lang e", label: "Testing lang e" },
+  { value: "zxcasd", label: "zxcasd" },
+  { value: "asdaszxc", label: "asdaszxc" },
+  { value: "ryery", label: "ryery" },
 ];
 
 export default function ClientMatterTab({
@@ -20,8 +29,19 @@ export default function ClientMatterTab({
 
   const [InputData, setInputData] = useState(clientmatter);
 
-  const validate = (obj) => {
-    if (obj.header && obj.subheader && obj.type) {
+  const validate = (obj, clientmatter) => {
+    console.log("obj", obj);
+    console.log("CLIENTMATTER", clientmatter);
+    console.log(
+      obj.header !== clientmatter.header ||
+        obj.subheader !== clientmatter.subheader ||
+        obj.type !== clientmatter.type
+    );
+    if (
+      obj.header !== clientmatter.header ||
+      obj.subheader !== clientmatter.subheader ||
+      obj.type !== clientmatter.type
+    ) {
       return true;
     } else return false;
   };
@@ -49,8 +69,11 @@ export default function ClientMatterTab({
   }, []);
 
   useEffect(() => {
-    const validations = InputData.map((input) => validate(input));
-    setisDisabled(validations.includes(false));
+    const validations = InputData.map((input, idx) => {
+      console.log("INPUT at INPUTDATA", input);
+      validate(InputData[idx], clientmatter[idx]);
+    });
+    setisDisabled(!validations.includes(true));
   }, [InputData]);
 
   const handleSelectChange = (e, val, i, property) => {
@@ -69,7 +92,7 @@ export default function ClientMatterTab({
 
   const Loading = () => {
     return (
-      <div className="flex justify-center items-center h-56">
+      <div className="flex justify-center items-center h-60">
         <img src={loading} width="80" height="80"></img>
       </div>
     );
@@ -112,6 +135,17 @@ export default function ClientMatterTab({
       </button>
     );
   };
+
+  const DropdownIndicator = (props) => {
+    return (
+      components.DropdownIndicator && (
+        <components.DropdownIndicator {...props}>
+          <IoCaretDown className="text-sm" />
+        </components.DropdownIndicator>
+      )
+    );
+  };
+
   return (
     <>
       {isLoading ? (
@@ -123,8 +157,14 @@ export default function ClientMatterTab({
               {InputData.map((x, i) => (
                 <div className="flex flex-row py-1" key={i}>
                   <div className="flex flex-col p-1">
-                    <div className="text-sm font-medium text-gray-400">{`Client Name`}</div>
+                    <div className="text-2xs font-medium text-gray-400">{`Client Name`}</div>
+
                     <Select
+                      components={{
+                        IndicatorSeparator: () => null,
+                        DropdownIndicator: DropdownIndicator,
+                      }}
+                      placeholder={`Search`}
                       name={`header`}
                       options={options}
                       type="text"
@@ -141,24 +181,25 @@ export default function ClientMatterTab({
                   </div>
                   <div className="flex flex-col p-1">
                     <div className="text-sm font-medium text-gray-400">{`Matter Name`}</div>
-                    <Select
+                    <SingleSelect
+                      handleSelectChange={handleSelectChange}
+                      isEditing={isEditing}
                       name={`subheader`}
                       options={options}
-                      type="text"
                       value={{
                         value: x.subheader,
                         label: x.subheader,
                       }}
-                      isDisabled={!isEditing}
-                      onChange={(e, val) =>
-                        handleSelectChange(e, val, i, `subheader`)
-                      }
-                      className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+                      i={i}
                     />
                   </div>
                   <div className="flex flex-col p-1">
                     <div className="text-sm font-medium text-gray-400">{`User Type`}</div>
                     <Select
+                      components={{
+                        IndicatorSeparator: () => null,
+                        DropdownIndicator: DropdownIndicator,
+                      }}
                       name={`type`}
                       options={options}
                       type="text"
