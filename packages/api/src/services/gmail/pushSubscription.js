@@ -58,7 +58,7 @@ const getParsedGmailMessage = async (data) => {
         data: { data },
       } = await gmailAxios
         .get(getAttachmentByMessage)
-        .catch(({ message }) =>
+        .catch(( message ) =>
           console.log("getAttachmentByMessage Error:", message)
         );
 
@@ -388,7 +388,7 @@ const checkGmailMessages = async (
               //   saveCompanyEmails
               // );
               console.log("Save to CompanyGmailMessage Table:");
-            } catch ({ message }) {
+            } catch ( message ) {
               console.log("Error in Saving CompanyGmailMessage Table", message);
             }
           }
