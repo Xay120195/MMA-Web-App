@@ -179,29 +179,21 @@ const Inbox = () => {
         id: companyId,
         isSaved: false,
         recipient: emailIntegration,
-        //limit: 50,
-        //nextToken: null,
+        // limit: 50,
+        // nextToken: null,
+        userTimeZone: userTimeZone,
+        startDate:
+          emailFilters.startDate != null
+            ? momentTZ(emailFilters.startDate, userTimeZone).format(
+                "YYYY-MM-DD"
+              )
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+        endDate:
+          emailFilters.endDate != null
+            ? momentTZ(emailFilters.endDate, userTimeZone).format("YYYY-MM-DD")
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
-
-    if (emailFilters) {
-      if (emailFilters.startDate != null) {
-        params.variables["startDate"] = momentTZ(
-          emailFilters.startDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-      if (emailFilters.endDate != null) {
-        params.variables["endDate"] = momentTZ(
-          emailFilters.endDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-
-      params.variables["userTimeZone"] = userTimeZone;
-
-      delete params.variables["limit"];
-    }
 
     console.log("Get Messages by Company params:", params);
     await API.graphql(params).then((result) => {
@@ -260,26 +252,19 @@ const Inbox = () => {
         recipient: emailIntegration,
         //limit: 50,
         //nextToken: null,
+        userTimeZone: userTimeZone,
+        startDate:
+          emailFilters.startDate != null
+            ? momentTZ(emailFilters.startDate, userTimeZone).format(
+                "YYYY-MM-DD"
+              )
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+        endDate:
+          emailFilters.endDate != null
+            ? momentTZ(emailFilters.endDate, userTimeZone).format("YYYY-MM-DD")
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
-
-    if (filters) {
-      if (filters.startDate != null) {
-        params.variables["startDate"] = momentTZ(
-          filters.startDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-      if (filters.endDate != null) {
-        params.variables["endDate"] = momentTZ(
-          filters.endDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-
-      params.variables["userTimeZone"] = userTimeZone;
-      // delete params.variables["limit"];
-    }
 
     console.log("params:", params);
     await API.graphql(params).then((result) => {
