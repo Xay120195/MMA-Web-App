@@ -5,12 +5,12 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { IoCaretDown } from "react-icons/io5";
 
 import { MdSave } from "react-icons/md";
 
 import { CgTrash } from "react-icons/cg";
-import Select from "react-select";
-
+import Select, { components } from "react-select";
 const options = [
   { value: "No Selected", label: "No Selected" },
   { value: "Test Random", label: "Test Random" },
@@ -41,7 +41,11 @@ export default function TeamTab({
   ]);
 
   const validate = (obj) => {
-    if (obj.team && obj.usertype) {
+    if (
+      obj.team &&
+      obj.usertype &&
+      (obj.team !== user.team || obj.usertype !== user.type)
+    ) {
       return true;
     } else return false;
   };
@@ -65,7 +69,7 @@ export default function TeamTab({
   useEffect(() => {
     const validations = InputData.map((input) => validate(input));
     setisDisabled(validations.includes(false));
-  }, [InputData]);
+  }, [InputData, user]);
 
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
@@ -80,6 +84,28 @@ export default function TeamTab({
   const handleDelete = (index) => {
     setInputData(InputData.filter((_, idx) => idx !== index));
   };
+
+  const customStyles = {
+    control: (styles, { isDisabled }) => {
+      return {
+        ...styles,
+        cursor: isDisabled ? "not-allowed" : "default",
+        backgroundColor: "white",
+        color: "black",
+      };
+    },
+  };
+
+  const DropdownIndicator = (props) => {
+    return (
+      components.DropdownIndicator && (
+        <components.DropdownIndicator {...props}>
+          <IoCaretDown className="text-sm" />
+        </components.DropdownIndicator>
+      )
+    );
+  };
+
   const AddMore = (id) => {
     return (
       <button
@@ -123,6 +149,10 @@ export default function TeamTab({
           <div className="flex flex-col p-1">
             <div className="text-sm font-medium text-gray-400">{`Team Name`}</div>
             <Select
+              components={{
+                IndicatorSeparator: () => null,
+                DropdownIndicator: DropdownIndicator,
+              }}
               name={`team`}
               options={options}
               type="text"
@@ -130,6 +160,7 @@ export default function TeamTab({
                 value: x.team,
                 label: x.team,
               }}
+              styles={customStyles}
               isDisabled={!isEditing}
               onChange={(e, val) => handleSelectChange(e, val, i, `team`)}
               className="rounded-md w-56 focus:border-gray-100 text-gray-400"
@@ -138,6 +169,11 @@ export default function TeamTab({
           <div className="flex flex-col p-1">
             <div className="text-sm font-medium text-gray-400">{`User Type`}</div>
             <Select
+              styles={customStyles}
+              components={{
+                IndicatorSeparator: () => null,
+                DropdownIndicator: DropdownIndicator,
+              }}
               name={`usertype`}
               options={options}
               type="text"
@@ -147,7 +183,7 @@ export default function TeamTab({
                 label: x.usertype,
               }}
               onChange={(e, val) => handleSelectChange(e, val, i, `usertype`)}
-              className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+              className="rounded-md w-56 focus:border-gray-100 text-gray-400 bg-white"
             />
           </div>
           <div className="flex flex-col p-1">
