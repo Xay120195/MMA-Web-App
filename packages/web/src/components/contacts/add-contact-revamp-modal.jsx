@@ -145,27 +145,18 @@ export default function AddContactModal({
   `;
 
   async function inviteUser(data) {
-    // return new Promise((resolve, reject) => {
-    //   try {
         const request = API.graphql({
           query: mInviteUser,
           variables: {
             email: data.email,
             firstName: data.firstName,
-            lastName: data.LastName,
+            lastName: data.lastName,
             userType: data.userType,
-            company: data.company
+            company: data.company //{id: companyID, name: companyName}
           },
         });
 
         console.log("successful", request);
-
-    //     resolve(request);
-    //   } catch (e) {
-    //     setError(e.errors[0].message);
-    //     reject(e.errors[0].message);
-    //   }
-    // });
   }
 
   const handleSubmit = () => {
