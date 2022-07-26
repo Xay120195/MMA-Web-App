@@ -9,6 +9,8 @@ import TabsRender from "./tabs";
 // import { useIdleTimer } from "react-idle-timer";
 import ToastNotification from "../toast-notification";
 import FiltersModal from "./filters-modal";
+import { gapi } from "gapi-script";
+
 var momentTZ = require("moment-timezone");
 const userTimeZone = momentTZ.tz.guess();
 const qGmailMessagesbyCompany = `
@@ -162,6 +164,16 @@ const Inbox = () => {
   };
   const [waitUnSaved, setWaitUnSaved] = useState(false);
   const [waitSaved, setWaitSaved] = useState(false);
+
+  useEffect(() => {
+    function start() {
+      gapi.client.init({
+        clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        scope: 'email',
+      });
+    }
+    gapi.load('client:auth2', start);
+  }, []);
 
   useEffect(() => {
     getUnSavedEmails(emailFilters);
