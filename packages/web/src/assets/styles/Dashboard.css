@@ -2,12 +2,11 @@
     display: block;
 }
 
-.dropdown:hover .dropDownBg{
-  display: block;
-}
-
-
 @media (max-width: 640px) { 
+  .dropdown:hover .dropDownBg{
+    display: block;
+  }
+
   .dropDownButton:hover .hovered{
     color:white;
   }

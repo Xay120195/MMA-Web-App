@@ -396,9 +396,7 @@ mutation addMatter($companyId: String, $name: String) {
   
   useEffect(() => {
     if (userInfo) {
-      console.log("CONTENT HEIGHT", contentHeight);
       var headerTag = document.getElementById('headerTag');
-      console.log(headerTag);
       setContentHeight(height-40-headerTag.offsetHeight);
     }
   }, [height, width, userInfo]);
