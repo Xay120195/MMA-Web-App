@@ -185,12 +185,6 @@ const TableUnsavedInfo = ({
     let temp = [...enabledArrays];
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
-
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      //getUnSavedEmails(emailFilters);
-    } else {
-      //getUnSavedEmails();
-    }
   };
 
   const handleSaveMainDesc = async (e, id) => {

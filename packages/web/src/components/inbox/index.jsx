@@ -4,10 +4,9 @@ import ActionButtons from "./action-buttons";
 import TableSavedInfo from "./table-info-saved";
 import TableUnsavedInfo from "./table-info-unsaved";
 import GmailIntegration from "../authentication/email-integration-authentication";
-import { gapi } from "gapi-script";
 import googleLogin from "../../assets/images/google-login.png";
 import TabsRender from "./tabs";
-import { useIdleTimer } from "react-idle-timer";
+// import { useIdleTimer } from "react-idle-timer";
 import ToastNotification from "../toast-notification";
 import FiltersModal from "./filters-modal";
 var momentTZ = require("moment-timezone");
@@ -155,8 +154,8 @@ const Inbox = () => {
   const [labelsList, setLabelsList] = useState([]);
   const [showFiltersModal, setshowFiltersModal] = useState(false);
   const [emailFilters, setEmailFilters] = useState({
-    startDate: null,
-    endDate: null,
+    startDate: new Date(),
+    endDate: new Date(),
   });
   const hideToast = () => {
     setShowToast(false);
@@ -165,8 +164,8 @@ const Inbox = () => {
   const [waitSaved, setWaitSaved] = useState(false);
 
   useEffect(() => {
-    getUnSavedEmails();
-    getSavedEmails();
+    getUnSavedEmails(emailFilters);
+    getSavedEmails(emailFilters);
     getMatterList();
   }, []);
 
@@ -180,31 +179,23 @@ const Inbox = () => {
         id: companyId,
         isSaved: false,
         recipient: emailIntegration,
-        //limit: 50,
-        //nextToken: null,
+        // limit: 50,
+        // nextToken: null,
+        userTimeZone: userTimeZone,
+        startDate:
+        filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format(
+                "YYYY-MM-DD"
+              )
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+        endDate:
+        filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
 
-    if (filters) {
-      if (filters.startDate != null) {
-        params.variables["startDate"] = momentTZ(
-          filters.startDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-      if (filters.endDate != null) {
-        params.variables["endDate"] = momentTZ(
-          filters.endDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-
-      params.variables["userTimeZone"] = userTimeZone;
-
-      delete params.variables["limit"];
-    }
-
-    console.log("params:", params);
+    console.log("Get Messages by Company params:", params);
     await API.graphql(params).then((result) => {
       setWaitUnSaved(false);
       const emailList = result.data.company.gmailMessages.items;
@@ -261,26 +252,19 @@ const Inbox = () => {
         recipient: emailIntegration,
         //limit: 50,
         //nextToken: null,
+        userTimeZone: userTimeZone,
+        startDate:
+        filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format(
+                "YYYY-MM-DD"
+              )
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+        endDate:
+        filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
-
-    if (filters) {
-      if (filters.startDate != null) {
-        params.variables["startDate"] = momentTZ(
-          filters.startDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-      if (filters.endDate != null) {
-        params.variables["endDate"] = momentTZ(
-          filters.endDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-
-      params.variables["userTimeZone"] = userTimeZone;
-      delete params.variables["limit"];
-    }
 
     console.log("params:", params);
     await API.graphql(params).then((result) => {
@@ -370,21 +354,15 @@ const Inbox = () => {
     }
   };
 
-  const handleOnAction = (event) => {
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      console.log("Filters not used.");
-      //handleLoadMoreUnSavedEmails();
-      //handleLoadMoreSavedEmails();
-    }
-  };
+  // const handleOnAction = (event) => {
+  //     handleLoadMoreUnSavedEmails();
+  //     handleLoadMoreSavedEmails();
+  // };
 
-  const handleOnIdle = (event) => {
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      console.log("Filters not used.");
-      //handleLoadMoreUnSavedEmails();
-      //handleLoadMoreSavedEmails();
-    }
-  };
+  // const handleOnIdle = (event) => {
+  //   handleLoadMoreUnSavedEmails();
+  //   handleLoadMoreSavedEmails();
+  // };
 
   const handleExecuteFilter = async (filters) => {
     if (filters) {
@@ -402,13 +380,13 @@ const Inbox = () => {
       getSavedEmails(filters);
     } else {
       // Reset / Clear Filters
-
-      setEmailFilters({
-        startDate: null,
-        endDate: null,
-      });
-      getUnSavedEmails();
-      getSavedEmails();
+      const defaultFilter = {
+        startDate: new Date(),
+        endDate: new Date(),
+      };
+      setEmailFilters(defaultFilter);
+      getUnSavedEmails(defaultFilter);
+      getSavedEmails(defaultFilter);
     }
 
     setshowFiltersModal(false);
@@ -418,12 +396,12 @@ const Inbox = () => {
     setshowFiltersModal(false);
   };
 
-  useIdleTimer({
-    timeout: 60 * 40,
-    onAction: handleOnAction,
-    onIdle: handleOnIdle,
-    debounce: 1000,
-  });
+  // useIdleTimer({
+  //   timeout: 60 * 40,
+  //   onAction: handleOnAction,
+  //   onIdle: handleOnIdle,
+  //   debounce: 1000,
+  // });
 
   return (
     <>
@@ -563,33 +541,39 @@ const Inbox = () => {
           <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6">
             <div className="flex-auto">
               <div className="tab-content tab-space">
-                {openTab === 1 ? 
-                <div className={openTab === 1 ? "block" : "hidden"} id="link1">
-                  <TableUnsavedInfo
-                    selectedUnsavedItems={selectedUnsavedItems}
-                    setSelectedUnsavedItems={setSelectedUnsavedItems}
-                    unSavedEmails={unSavedEmails}
-                    setUnsavedEmails={setUnsavedEmails}
-                    matterList={matterList}
-                    maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
-                    emailFilters={emailFilters}
-                    getUnSavedEmails={getUnSavedEmails}
-                    labelsList={labelsList}
-                    waitUnSaved={waitUnSaved}
-                  />
-                </div>
-                :
-                <div className={openTab === 2 ? "block" : "hidden"} id="link2">
-                  <TableSavedInfo
-                    selectedSavedItems={selectedSavedItems}
-                    setSelectedSavedItems={setSelectedSavedItems}
-                    savedEmails={savedEmails}
-                    matterList={matterList}
-                    maxLoadingSavedEmail={maxLoadingSavedEmail}
-                    waitSaved={waitSaved}
-                  />
-                </div>
-                }
+                {openTab === 1 ? (
+                  <div
+                    className={openTab === 1 ? "block" : "hidden"}
+                    id="link1"
+                  >
+                    <TableUnsavedInfo
+                      selectedUnsavedItems={selectedUnsavedItems}
+                      setSelectedUnsavedItems={setSelectedUnsavedItems}
+                      unSavedEmails={unSavedEmails}
+                      setUnsavedEmails={setUnsavedEmails}
+                      matterList={matterList}
+                      maxLoadingUnSavedEmail={maxLoadingUnSavedEmail}
+                      emailFilters={emailFilters}
+                      getUnSavedEmails={getUnSavedEmails}
+                      labelsList={labelsList}
+                      waitUnSaved={waitUnSaved}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className={openTab === 2 ? "block" : "hidden"}
+                    id="link2"
+                  >
+                    <TableSavedInfo
+                      selectedSavedItems={selectedSavedItems}
+                      setSelectedSavedItems={setSelectedSavedItems}
+                      savedEmails={savedEmails}
+                      matterList={matterList}
+                      maxLoadingSavedEmail={maxLoadingSavedEmail}
+                      waitSaved={waitSaved}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
