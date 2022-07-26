@@ -470,10 +470,11 @@ const TableUnsavedInfo = ({
               <AutoSizer disableHeight>
               {({ width }) => (
                 <List
+
                 autoHeight
                 scrollTop={scrollTop}
                 width={width}
-                height={height}
+                height={Infinity}
                 rowHeight={cache.current.rowHeight}
                 deferredMeasurementCache={cache.current}
                 rowCount={unSavedEmails.length}

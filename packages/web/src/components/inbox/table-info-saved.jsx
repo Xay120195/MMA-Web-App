@@ -440,7 +440,7 @@ const TableSavedInfo = ({
                               </span>
                             </div>
                           </td>
-                          <td className="p-2 align-top w-2/8">
+                          <td className="p-2 align-top w-11/12">
 
                             <div className="flex items-start mt-2">
                               <p className="w-24 group py-1 px-2  rounded textColor bg-white inline-flex items-center"></p>
