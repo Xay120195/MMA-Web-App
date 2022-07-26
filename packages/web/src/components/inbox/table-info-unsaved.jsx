@@ -157,11 +157,12 @@ const TableUnsavedInfo = ({
       var objIndex = unSavedEmails.findIndex(
         (obj) => obj.id === gmailMessageId
       );
+      var clientMatter = e.label.split("/");
       unSavedEmails[objIndex].clientMatters.items = [
         {
           id: e.value,
-          client: { id: "", name: "" },
-          matter: { id: "", name: "" },
+          client: { id: "", name: clientMatter[1] },
+          matter: { id: "", name: clientMatter[0] },
         },
       ];
     }
@@ -175,6 +176,8 @@ const TableUnsavedInfo = ({
     } else {
       //getUnSavedEmails();
     }
+
+    console.log("maindata", unSavedEmails)
   };
 
   const handleSaveMainDesc = async (e, id) => {
