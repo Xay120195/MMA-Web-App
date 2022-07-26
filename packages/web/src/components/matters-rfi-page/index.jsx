@@ -280,7 +280,7 @@ export default function MattersRFI() {
         }
       >
         <div className="relative sm:p-0 sm:flex-grow sm:flex-1">
-          <div className="sticky top-0 py-4 flex items-center gap-2 bg-white z-10">
+          <div className="sticky pl-16 sm:pl-0 top-0 py-4 flex items-center gap-2 bg-white z-10">
             <div
               onClick={() => history.replace('/dashboard')}
               className="w-8 py-5 cursor-pointer"
@@ -297,12 +297,17 @@ export default function MattersRFI() {
                 </span>
               </p>
               <div className="flex items-center gap-3 text-gray-500 mt-2">
-                <FaTachometerAlt />
                 <Link to="/dashboard">
-                  <p className="font-semibold">Dashboard</p>
+                  <div className="flex gap-3">
+                    <FaTachometerAlt />
+                    <p className="font-semibold hidden sm:block">Dashboard</p>
+                  </div>
                 </Link>
                 <span>/</span>
-                <p className="font-semibold">Request for Information</p>
+                <p className="font-semibold sm:hidden">RFI</p>
+                <p className="font-semibold hidden sm:block">
+                  Request for Information
+                </p>
                 <span>/</span>
                 <p className="font-semibold">{matter_name}</p>
               </div>
