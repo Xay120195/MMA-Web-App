@@ -23,6 +23,7 @@ provider:
             - "dynamodb:BatchGetItem"
             - "dynamodb:BatchWriteItem"
             - "cognito-idp:AdminCreateUser"
+            - "cognito-idp:AdminDeleteUser"
             - "cognito-idp:AdminAddUserToGroup"
             - "cognito-idp:AdminRemoveUserFromGroup"
             - "cognito-idp:AdminUpdateUserAttributes"

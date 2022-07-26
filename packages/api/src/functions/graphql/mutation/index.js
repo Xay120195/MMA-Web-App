@@ -2880,10 +2880,9 @@ const resolvers = {
       return await inviteUser(ctx.arguments);
     },
     userDelete: async (ctx) => {
-      const { id } = ctx.arguments;
-      return await deleteUser(id);
+      const { id, companyId, email } = ctx.arguments;
+      return await deleteUser(id, companyId, email);
     },
-
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);
     },

@@ -2,8 +2,13 @@ const {
   PutItemCommand,
   GetItemCommand,
   ScanCommand,
+  QueryCommand,
+  DeleteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
-import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider";
+import {
+  AdminCreateUserCommand,
+  AdminDeleteUserCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import ddbClient from "../lib/dynamodb-client";
 import identityClient from "../lib/cognito-identity-provider-client";
@@ -100,61 +105,77 @@ export async function createUser(data) {
   return resp;
 }
 
-export async function deleteUser(userId, companyId) {
+export async function deleteUser(userId, companyId, email) {
   let resp = {};
 
-  console.log(userId, companyId);
-  // try {
-  //   const companyClientMatterParams = {
-  //     TableName: "CompanyClientMatterTable",
-  //     IndexName: "byClientMatter",
-  //     KeyConditionExpression: "clientMatterId = :clientMatterId",
-  //     ExpressionAttributeValues: marshall({
-  //       ":clientMatterId": id,
-  //     }),
-  //     ProjectionExpression: "id",
-  //   };
+  try {
+    const compUsersParam = {
+      TableName: "CompanyUserTable",
+      IndexName: "byUser",
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: marshall({
+        ":userId": userId,
+      }),
+    };
 
-  //   const companyClientMatterCmd = new QueryCommand(companyClientMatterParams);
-  //   const companyClientMatterResult = await ddbClient.send(
-  //     companyClientMatterCmd
-  //   );
+    const compUsersCmd = new QueryCommand(compUsersParam);
+    const compUsersResult = await ddbClient.send(compUsersCmd);
 
-  //   const companyClientMatterId = companyClientMatterResult.Items[0];
+    const compUsersItems = compUsersResult.Items.map((i) => unmarshall(i));
 
-  //   const deleteCompanyClientMatterCommand = new DeleteItemCommand({
-  //     TableName: "CompanyClientMatterTable",
-  //     Key: companyClientMatterId,
-  //   });
+    const compUsersItemsCnt = compUsersResult.Count;
 
-  //   const deleteCompanyClientMatterResult = await ddbClient.send(
-  //     deleteCompanyClientMatterCommand
-  //   );
+    if (compUsersItemsCnt == 1) {
+      // delete from cognito users
+      // delete from users table
 
-  //   if (deleteCompanyClientMatterResult) {
-  //     const cmd = new DeleteItemCommand({
-  //       TableName: "ClientMatterTable",
-  //       Key: marshall({ id }),
-  //     });
-  //     const request = await ddbClient.send(cmd);
+      const cognitoUserDelete = await deleteCognitoUser({
+        UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+        Username: email,
+      });
 
-  //     resp = request ? { id: id } : {};
-  //   }
-  // } catch (e) {
-  //   resp = {
-  //     error: e.message,
-  //     errorStack: e.stack,
-  //   };
-  //   console.log(resp);
-  // }
+      console.log(cognitoUserDelete);
 
-  // return resp;
+      const cmd = new DeleteItemCommand({
+        TableName: "UserTable",
+        Key: marshall({ id: userId }),
+      });
+      const req = await ddbClient.send(cmd);
+      console.log(req);
+    }
+
+    const filterByCompanyId = compUsersItems.filter(
+      (u) => u.companyId === companyId
+    );
+
+    if (filterByCompanyId.length != 0) {
+      const companyUserId = {
+        id: filterByCompanyId[0].id,
+      };
+
+      const companyUserCmd = new DeleteItemCommand({
+        TableName: "CompanyUserTable",
+        Key: marshall(companyUserId),
+      });
+      await ddbClient.send(companyUserCmd);
+    }
+
+    resp = { id: userId };
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
 }
 
 export async function inviteUser(data) {
   const user = await createCognitoUser({
     UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
-    Username: v4(),
+    Username: data.email,
     DesiredDeliveryMediums: ["EMAIL"],
     TemporaryPassword: randomString(),
     UserAttributes: [
@@ -179,5 +200,11 @@ async function createCognitoUser(input) {
   const id = resp.User.Attributes.filter((attrib) => attrib.Name === "sub")[0]
     .Value;
   resp.id = id;
+  return resp;
+}
+
+async function deleteCognitoUser(input) {
+  const cmd = new AdminDeleteUserCommand(input);
+  const resp = await identityClient.send(cmd);
   return resp;
 }
