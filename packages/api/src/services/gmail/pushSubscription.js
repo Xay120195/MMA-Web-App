@@ -49,18 +49,18 @@ const getParsedGmailMessage = async (data) => {
       );
     }
 
-    if (filename) {
-      console.log("Has Attachment:", filename);
+    if (filename && body.attachmentId) {
+      console.log("Has Attachment:", filename, "ID:", body.attachmentId);
       _parsedMessagePart["filename"] = filename;
-
       const getAttachmentByMessage = `/gmail/v1/users/me/messages/${messageId}/attachments/${body.attachmentId}`;
       const {
         data: { data },
-      } = await gmailAxios
-        .get(getAttachmentByMessage)
-        .catch(({ message }) =>
-          console.log("getAttachmentByMessage Error:", message)
+      } = await gmailAxios.get(getAttachmentByMessage).catch((message) => {
+        console.log(
+          "getAttachmentByMessage Error:",
+          message.response.data.error
         );
+      });
 
       let trimName = filename;
       trimName = trimName
@@ -388,7 +388,7 @@ const checkGmailMessages = async (
               //   saveCompanyEmails
               // );
               console.log("Save to CompanyGmailMessage Table:");
-            } catch ({ message }) {
+            } catch (message) {
               console.log("Error in Saving CompanyGmailMessage Table", message);
             }
           }

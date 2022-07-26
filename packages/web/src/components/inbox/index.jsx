@@ -9,6 +9,8 @@ import TabsRender from "./tabs";
 // import { useIdleTimer } from "react-idle-timer";
 import ToastNotification from "../toast-notification";
 import FiltersModal from "./filters-modal";
+import { gapi } from "gapi-script";
+
 var momentTZ = require("moment-timezone");
 const userTimeZone = momentTZ.tz.guess();
 const qGmailMessagesbyCompany = `
@@ -164,14 +166,24 @@ const Inbox = () => {
   const [waitSaved, setWaitSaved] = useState(false);
 
   useEffect(() => {
-    getUnSavedEmails();
-    getSavedEmails();
+    function start() {
+      gapi.client.init({
+        clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        scope: 'email',
+      });
+    }
+    gapi.load('client:auth2', start);
+  }, []);
+
+  useEffect(() => {
+    getUnSavedEmails(emailFilters);
+    getSavedEmails(emailFilters);
     getMatterList();
   }, []);
 
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
 
-  const getUnSavedEmails = async () => {
+  const getUnSavedEmails = async (filters) => {
     setWaitUnSaved(true);
     const params = {
       query: qGmailMessagesbyCompany,
@@ -179,29 +191,21 @@ const Inbox = () => {
         id: companyId,
         isSaved: false,
         recipient: emailIntegration,
-        //limit: 50,
-        //nextToken: null,
+        // limit: 50,
+        // nextToken: null,
+        userTimeZone: userTimeZone,
+        startDate:
+        filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format(
+                "YYYY-MM-DD"
+              )
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+        endDate:
+        filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
-
-    if (emailFilters) {
-      if (emailFilters.startDate != null) {
-        params.variables["startDate"] = momentTZ(
-          emailFilters.startDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-      if (emailFilters.endDate != null) {
-        params.variables["endDate"] = momentTZ(
-          emailFilters.endDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-
-      params.variables["userTimeZone"] = userTimeZone;
-
-      delete params.variables["limit"];
-    }
 
     console.log("Get Messages by Company params:", params);
     await API.graphql(params).then((result) => {
@@ -260,26 +264,19 @@ const Inbox = () => {
         recipient: emailIntegration,
         //limit: 50,
         //nextToken: null,
+        userTimeZone: userTimeZone,
+        startDate:
+        filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format(
+                "YYYY-MM-DD"
+              )
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+        endDate:
+        filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
+            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
     };
-
-    if (filters) {
-      if (filters.startDate != null) {
-        params.variables["startDate"] = momentTZ(
-          filters.startDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-      if (filters.endDate != null) {
-        params.variables["endDate"] = momentTZ(
-          filters.endDate,
-          userTimeZone
-        ).format("YYYY-MM-DD");
-      }
-
-      params.variables["userTimeZone"] = userTimeZone;
-      // delete params.variables["limit"];
-    }
 
     console.log("params:", params);
     await API.graphql(params).then((result) => {
@@ -388,20 +385,20 @@ const Inbox = () => {
 
       setUnsavedEmails([]);
       setUnsavedVnextToken(null);
-      getUnSavedEmails();
+      getUnSavedEmails(filters);
 
       setSavedEmails([]);
       setSavedVnextToken(null);
-      getSavedEmails();
+      getSavedEmails(filters);
     } else {
       // Reset / Clear Filters
-
-      setEmailFilters({
+      const defaultFilter = {
         startDate: new Date(),
         endDate: new Date(),
-      });
-      getUnSavedEmails();
-      getSavedEmails();
+      };
+      setEmailFilters(defaultFilter);
+      getUnSavedEmails(defaultFilter);
+      getSavedEmails(defaultFilter);
     }
 
     setshowFiltersModal(false);

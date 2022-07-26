@@ -169,30 +169,26 @@ const TableUnsavedInfo = ({
           clientMatterId: e.value,
           gmailMessageId: gmailMessageId,
         },
+      }).then(function (result) {
+        var objIndex = unSavedEmails.findIndex(
+          (obj) => obj.id === gmailMessageId
+        );
+        unSavedEmails[objIndex].clientMatters.items = [
+          {
+            id: e.value,
+            client: { id: "", name: e.label.split("/")[0] },
+            matter: { id: "", name: e.label.split("/")[1] },
+          },
+        ];
+
+        setResultMessage("Successfully updated.");
+        setShowToast(true);
       });
-      var objIndex = unSavedEmails.findIndex(
-        (obj) => obj.id === gmailMessageId
-      );
-      unSavedEmails[objIndex].clientMatters.items = [
-        {
-          id: e.value,
-          client: { id: "", name: e.label.split("/")[0] },
-          matter: { id: "", name: e.label.split("/")[1] },
-        },
-      ];
     }
 
     let temp = [...enabledArrays];
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
-
-    if (emailFilters.startDate === null && emailFilters.endDate === null) {
-      //getUnSavedEmails(emailFilters);
-    } else {
-      //getUnSavedEmails();
-    }
-
-    console.log("maindata", unSavedEmails)
   };
 
   const handleSaveMainDesc = async (e, id) => {
@@ -202,6 +198,9 @@ const TableUnsavedInfo = ({
     };
     const success = await updateRowDesc(data);
     if (success) {
+      setResultMessage("Successfully updated.");
+      setShowToast(true);
+      
       const newArrDescription = unSavedEmails.map(emails => {
         if (emails.id === id) {
           return {...emails, description: e.target.innerHTML};
@@ -210,8 +209,6 @@ const TableUnsavedInfo = ({
         return emails;
       });
       setUnsavedEmails(newArrDescription);
-      setResultMessage("Successfully updated.");
-      setShowToast(true);
     }
   };
 
@@ -478,10 +475,11 @@ const TableUnsavedInfo = ({
               <AutoSizer disableHeight>
               {({ width }) => (
                 <List
+
                 autoHeight
                 scrollTop={scrollTop}
                 width={width}
-                height={height}
+                height={Infinity}
                 rowHeight={cache.current.rowHeight}
                 deferredMeasurementCache={cache.current}
                 rowCount={unSavedEmails.length}
