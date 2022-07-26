@@ -47,7 +47,9 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
     return (
       <button
         onClick={() => {
-          let foundIndex = ContactList.findIndex((x) => x.id == user.id);
+          let foundIndex = ContactList.findIndex((x) => x.id === user.id);
+
+          console.log("INpudata type", InputData[0].type);
           let item = {
             id: ContactList[foundIndex].id,
             name: ContactList[foundIndex].name,
@@ -57,9 +59,9 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
             mobile: ContactList[foundIndex].mobile,
             team: InputData[0].team
               ? InputData[0].team
-              : ContactList[foundIndex].type,
-            type: InputData[0].type
-              ? InputData[0].type
+              : ContactList[foundIndex].team,
+            type: InputData[0].usertype
+              ? InputData[0].usertype
               : ContactList[foundIndex].type,
           };
 
