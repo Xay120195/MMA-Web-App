@@ -9,7 +9,8 @@ async function listUserClientMatter(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  let indexName, isAscending = true;
+  let indexName,
+    isAscending = true;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -40,7 +41,9 @@ async function listUserClientMatter(ctx) {
     }
 
     const userClientMatterCommand = new QueryCommand(userClientMatterParams);
-    const userClientMatterResult = await ddbClient.send(userClientMatterCommand);
+    const userClientMatterResult = await ddbClient.send(
+      userClientMatterCommand
+    );
 
     const clientMatterIds = userClientMatterResult.Items.map((i) =>
       unmarshall(i)
