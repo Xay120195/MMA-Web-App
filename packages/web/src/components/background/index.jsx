@@ -13,6 +13,7 @@ import * as IoIcons from "react-icons/io";
 import { BiArrowToTop } from "react-icons/bi";
 import { BitlyClient } from "bitly-react";
 import "../../assets/styles/BackgroundPage.css";
+import "../../assets/styles/Mobile.css";
 import { API } from "aws-amplify";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
@@ -21,7 +22,8 @@ import useWindowDimensions from "../../shared/windowDimensions";
 import {FiChevronDown, FiChevronUp} from "react-icons/fi";
 import dateFormat from "dateformat";
 import "../../assets/styles/BlankState.css";
-import BlankStateMobile from "../blank-state-mobile";
+import BlankStateMobile from "../mobile-blank-state";
+import MobileHeader from "../mobile-header";
 import Illustration from "../../assets/images/no-data.svg";
 
 // const contentDiv = {
@@ -805,12 +807,11 @@ const Background = () => {
   const style = {
     paddingLeft: "0rem",
   };
+
   function utf8_to_b64(str) {
     return window.btoa(unescape(encodeURIComponent(str)));
   }
   {/* MOBILE CONST */}
-  const [headerReadMore, setHeaderReadMore] = useState(false);
-  const [headerLines, setHeaderLines] = useState();
   const [contentHeight, setContentHeight] = useState();
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] = useState(true);
@@ -823,15 +824,6 @@ const Background = () => {
     var lines = Math.round(divHeight / lineHeight);
     return lines;
   }
-  useEffect(() => {
-    var headerTag = document.getElementById('headerTag');
-    setHeaderLines(countLines(headerTag));
-    if(headerReadMore) {
-      setContentHeight(height-94-headerTag.offsetHeight);
-    } else {
-      setContentHeight(height-94-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
-    }
-  }, [height, width, headerReadMore]);
 
   useEffect(()=> {
     if(background!=null) {
@@ -963,42 +955,13 @@ const Background = () => {
           </div>
           <div className="pt-3 sm:hidden">
             {/* MOBILE VIEW OF HEADER */}
-            <div className="sm:hidden flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto", marginRight:"20px"}}>
-              <p id="headerTag" className="sm:hidden font-bold pl-14" 
-                style={{lineHeight:"24px"}}>
-                <span className="font-semibold text-base">
-                  {checkFormat(client_name)}
-                </span>
-                &nbsp;
-                <span className="font-light text-base text-gray-500">
-                  {checkFormat(matter_name)}
-                </span>
-              </p>
-              <button 
-                  className="shrink-0 invisible font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
-                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
-              </button>
-            </div>
-            {/* IF HEADER LINES IS LONG, THEN OVERLAY WITH READMORE */}
-            {headerLines > 1 ? (
-            <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
-              <p className={'flex-auto pl-14 sm:hidden ' + (headerReadMore?'':'truncate')}>
-                <span className="font-semibold text-base">
-                    {checkFormat(client_name)}
-                  </span>
-                  &nbsp;
-                  <span className="font-light text-base text-gray-500">
-                    {checkFormat(matter_name)}
-                    {/*headerReadMore ? checkFormat(matter_name) : ellipsis(checkFormat(matter_name),30)*/}
-                </span>
-              </p>
-              <button 
-                onClick={()=>setHeaderReadMore(!headerReadMore)}
-                className="shrink-0 hover:bg-gray-100 text-gray-500 font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
-                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
-              </button>
-            </div>
-            ) : (<></>)}
+            <MobileHeader
+              height = {height}
+              width = {width}
+              matter_name = {matter_name}
+              client_name = {client_name}
+              setContentHeight = {setContentHeight}
+            />
             <div className="sm:px-0">
               <nav aria-label="Breadcrumb" style={style} className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4">
                 <ol
@@ -1255,7 +1218,7 @@ const Background = () => {
           <div className="bg-white rounded-lg py-5 flex" style={{height:contentHeight}}>
             <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="relative flex flex-col overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
               {showScrollButton ? (<>
-                <div className="scrollButtonBG flex" onClick={() => handleScrollToTop()}>
+                <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
                   <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
                 </div>
                 </>) : (<></>)}
@@ -1272,40 +1235,49 @@ const Background = () => {
                         {item.date !== null && item.date !== "" ? dateFormat(item.date,"dd mmmm yyyy") : "No date"}
                       </p>
                       {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
-                      <p id={item.id+".desc"}className="absolute invisible" style={{top:-1000,marginRight:'20px'}}>
-                        {item.description}
+                      <p 
+                        id={item.id+".desc"}
+                        className="absolute text-red-200 invisible pointer-events-none opacity-0" 
+                        style={{top:-10000, zIndex:-1000, marginRight:'20px'}}
+                        dangerouslySetInnerHTML={{__html:item.description}}
+                        >
                       </p>
-                      <p className={(isReadMoreExpanded(item.id)? "" : "line-clamp-6")}>
-                        {item.description}
+                      <p 
+                        className={(isReadMoreExpanded(item.id)? "" : "line-clamp-6")}
+                        dangerouslySetInnerHTML={{__html:item.description}}
+                        >
                       </p>
                       <button id={item.id+".descButton"} className="text-cyan-400 mb-2" onClick={()=>handleReadMoreState(item.id)}>
                       {(isReadMoreExpanded(item.id) ? "read less...": "read more...")}
                       </button>
                         {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
-                        <p id={item.id+".files"} className="absolute invisible" style={{top:-1000,marginRight:'20px',lineHeight:"30px"}}>
+                        <p 
+                          id={item.id+".files"} 
+                          className="absolute text-red-200 invisible pointer-events-none opacity-0 break-words" 
+                          style={{top:-10000, zIndex:-1000, marginRight:'20px',lineHeight:"30px", wordBreak:"break-word"}}>
                           {item.files.items.map((file) => (
-                            <button key={file.id} className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1">
-                              {file.name}&nbsp;<AiOutlineDownload
+                            <button 
+                              key={file.id} 
+                              className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1"
+                              onClick={() =>previewAndDownloadFile(file.id)}>
+                              {file.name}&nbsp;
+                              <AiOutlineDownload
                                 className="text-gray-400 text-sm cursor-pointer inline-block"
-                                onClick={() =>
-                                  previewAndDownloadFile(
-                                    file.id
-                                  )
-                                }
                               />
                             </button>
                           ))}
                         </p>
-                        <p className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1")} style={{lineHeight:"30px"}}>
+                        <p 
+                          className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1") + " break-words"} 
+                          style={{lineHeight:"30px", wordBreak:"break-word"}}>
                           {item.files.items.map((file) => (
-                            <button key={file.id} className="font-extralight text-sm text-gray-400 border rounded-lg px-2 mr-2 my-1">
-                              {file.name}&nbsp;<AiOutlineDownload
-                                className="text-gray-400 text-sm cursor-pointer inline-block"
-                                onClick={() =>
-                                  previewAndDownloadFile(
-                                    file.id
-                                  )
-                                }
+                            <button 
+                              key={file.id} 
+                              className="font-extralight text-sm focus:text-cyan-400 focus:border-cyan-400 text-gray-400 border rounded-lg px-2 mr-2 my-1" 
+                              onClick={() => previewAndDownloadFile(file.id)}>
+                              {file.name}&nbsp;
+                              <AiOutlineDownload
+                                className="text-sm cursor-pointer inline-block"
                               />
                             </button>
                           ))}
@@ -1318,15 +1290,11 @@ const Background = () => {
             </div>
           </div>
         )}
-
         </>
         )}
-
-
         {showToast && (
           <ToastNotification title={alertMessage} hideToast={hideToast} />
         )}
-
         {showSessionTimeout && <SessionTimeout />}
       </div>
     </>

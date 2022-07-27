@@ -97,7 +97,6 @@ async function listGmailMessageClientMatters(ctx) {
 }
 
 async function listGmailMessageLabels(ctx) {
-  console.log("listGmailMessageLabels()");
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
   try {
@@ -249,7 +248,8 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run gmailMessage >>", ctx.info.fieldName, ctx.arguments);
+  console.log("~aqs.watch:: run gmailMessage >>", ctx.info.fieldName);
+  console.log("~aqs.watch:: arguments >>", ctx.arguments);
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];

@@ -23,7 +23,8 @@ const ActionButtons = ({
   setSavedEmails,
   setUnsavedEmails,
   setSaveLoading,
-  saveLoading
+  saveLoading,
+  sortByDate,
 }) => {
 
   Storage.configure({
@@ -151,7 +152,7 @@ const ActionButtons = ({
       var emailList = "";
       setSaveLoading(true);
 
-      const params = {
+      /*const params = {
         query: qGmailMessagesbyCompany,
         variables: {
           id: companyId,
@@ -163,22 +164,24 @@ const ActionButtons = ({
   
       await API.graphql(params).then((result) => {
         emailList = result.data.company.gmailMessages.items;
-      });
+      });*/
 
       // Add to Saved Emails
-      let  arrSavedEmails = emailList.filter(function(item){
+      let  arrSavedEmails = unSavedEmails.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) !== -1;
       });
-      setSavedEmails(savedEmails.concat(arrSavedEmails));
+      var arrByDates = sortByDate(savedEmails.concat(arrSavedEmails));
+      console.log(arrByDates);
+      setSavedEmails(arrByDates);
 
       // Remove from Unsaved Emails
-      let  arrRemoveUnSavedEmails = emailList.filter(function(item){
+      let  arrRemoveUnSavedEmails = unSavedEmails.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) === -1;
       });
-      setUnsavedEmails(arrRemoveUnSavedEmails);
+      setUnsavedEmails(sortByDate(arrRemoveUnSavedEmails));
 
       selectedUnsavedItems.map((obj) => {
-        const filteredUnsavedArr = emailList.filter(item => item.id === obj);
+        const filteredUnsavedArr = unSavedEmails.filter(item => item.id === obj);
 
         filteredUnsavedArr.map((item) => {
 
@@ -230,10 +233,10 @@ const ActionButtons = ({
             isSaved: status
           },
         }).then((result)=> {
+          setSaveLoading(false);
           setResultMessage("Successfully saved an email.");
           setShowToast(true);
           setSelectedUnsavedItems([]);
-          setSaveLoading(false);
         });
       });
 
@@ -249,22 +252,23 @@ const ActionButtons = ({
             isSaved: status
           },
         }).then((result)=> {
+          setSaveLoading(false);
           setResultMessage("Successfully saved an email.");
           setShowToast(true);
           setSelectedUnsavedItems([]);
-          setSaveLoading(false);
 
           // Add to unsaved Emails
           let  arrSavedEmails = savedEmails.filter(function(item){
             return selectedSavedItems.indexOf(item.id) !== -1;
           });
-          setUnsavedEmails(unSavedEmails.concat(arrSavedEmails));
+          var arrByDates = sortByDate(unSavedEmails.concat(arrSavedEmails));
+          setUnsavedEmails(arrByDates);
 
           // Remove from saved Emails
           let  arrRemoveUnSavedEmails = savedEmails.filter(function(item){
             return selectedSavedItems.indexOf(item.id) === -1;
           });
-          setSavedEmails(arrRemoveUnSavedEmails);
+          setSavedEmails(sortByDate(arrRemoveUnSavedEmails));
         });
       });
     }

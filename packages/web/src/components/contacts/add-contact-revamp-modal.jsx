@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 
 import Select from "react-select";
+import { API, input } from "aws-amplify";
 
 import anime from "animejs";
-import { CgTrash } from "react-icons/cg";
+
 const options = [
-  { value: "No Selected", label: "No Selected" },
-  { value: "Test Random", label: "Test Random" },
+  { value: "OWNER", label: "Owner" },
+  { value: "LEGALADMIN", label: "Legal Admin" },
+  { value: "BARRISTER", label: "Barrister" },
+  { value: "EXPERT", label: "Expert" },
+  { value: "CLIENT", label: "Client" },
+  { value: "WITNESS", label: "Witness" }
 ];
 
 function uuidv4() {
@@ -28,11 +33,11 @@ export default function AddContactModal({
   close,
   setContactList,
   ContactList,
+  getContacts
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isDisabled, setisDisabled] = useState(false);
-  const [IsHovering, setIsHovering] = useState(false);
 
   function StopPropagate(e) {
     e.stopPropagation();
@@ -47,7 +52,7 @@ export default function AddContactModal({
       complete: () => {
         anime({
           targets: modalContent.current,
-          translateY: [20, 0],
+          scale: [0.9, 1],
           opacity: [0, 1],
           duration: 100,
           easing: "easeInOutQuad",
@@ -58,27 +63,20 @@ export default function AddContactModal({
 
   const [InputData, setInputData] = useState([
     {
-      firstname: "",
-      lastname: "",
-      clientname: "",
-      company: "",
+      firstName: "",
+      lastName: "",
+      company: {id: localStorage.getItem("companyId"), name: localStorage.getItem("company")},
       email: "",
-      mattername: "",
-      team: "",
-      usertype: "",
+      userType: "",
     },
   ]);
+
   const validate = (obj) => {
     if (
-      obj.firstname &&
-      obj.clientname &&
-      obj.company &&
+      obj.firstName &&
+      obj.lastName &&
       obj.email &&
-      obj.firstname &&
-      obj.lastname &&
-      obj.mattername &&
-      obj.team &&
-      obj.usertype
+      obj.userType
     ) {
       return true;
     } else return false;
@@ -102,36 +100,77 @@ export default function AddContactModal({
     setInputData(list);
   };
 
-  const generateFinalObj = (obj, state) => {
-    return {
-      id: uuidv4(),
-      name: toTitleCase(obj.firstname + " " + obj.lastname),
-      email: obj.email,
-      team: obj.team,
-      type: obj.usertype,
-      company: obj.company,
-      isNewlyAdded: state,
-    };
-  };
+  // const generateFinalObj = (obj, state) => {
+  //   return {
+  //     id: uuidv4(),
+  //     name: toTitleCase(obj.firstname + " " + obj.lastname),
+  //     email: obj.email,
+  //     team: obj.team,
+  //     type: obj.usertype,
+  //     company: obj.company,
+  //     isNewlyAdded: state,
+  //   };
+  // };
 
-  const generateFinal = () => {
-    setContactList(
-      ContactList.concat(
-        InputData.map((input) => generateFinalObj(input, true))
-      )
+  // const generateFinal = () => {
+  //   setContactList(
+  //     ContactList.concat(
+  //       InputData.map((input) => generateFinalObj(input, true))
+  //     )
+  //   );
+  //   setTimeout(() => {
+  //     setContactList(
+  //       ContactList.concat(
+  //         InputData.map((input) => generateFinalObj(input, false))
+  //       )
+  //     );
+  //   }, 3000);
+  // };
+  const mInviteUser = `
+      mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
+        userInvite(
+          email: $email
+          firstName: $firstName
+          lastName: $lastName
+          userType: $userType
+          company: $company
+        ) {
+          id
+          firstName
+          lastName
+          email
+          userType
+        }
+      }
+  `;
+
+  async function inviteUser(data) {
+        const request = API.graphql({
+          query: mInviteUser,
+          variables: {
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            userType: data.userType,
+            company: data.company //{id: companyID, name: companyName}
+          },
+        });
+
+        console.log("successful", request);
+  }
+
+  const handleSubmit = () => {
+    console.log("savedata", InputData);
+
+    InputData.map((x)=>
+      inviteUser(x)
     );
-    setTimeout(() => {
-      setContactList(
-        ContactList.concat(
-          InputData.map((input) => generateFinalObj(input, false))
-        )
-      );
-    }, 3000);
-  };
 
-  const handleDelete = (index) => {
-    setInputData(InputData.filter((_, idx) => idx !== index));
-  };
+    
+    setTimeout(() => {
+      getContacts()
+    }, 2000);
+  }
 
   return (
     <>
@@ -181,11 +220,11 @@ export default function AddContactModal({
                     {`First Name`}
                   </div>
                   <input
-                    name={`firstname`}
+                    name={`firstName`}
                     type="text"
-                    value={x.firstname}
+                    value={x.firstName}
                     className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-                    onChange={(e) => handleOnChange(e, i, `firstname`)}
+                    onChange={(e) => handleOnChange(e, i, `firstName`)}
                   />
                 </div>
                 <div className="flex flex-col p-1">
@@ -193,11 +232,11 @@ export default function AddContactModal({
                     {`Last Name`}
                   </div>
                   <input
-                    name={`lastname`}
+                    name={`lastName`}
                     type="text"
-                    value={x.lastname}
+                    value={x.lastName}
                     className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-                    onChange={(e) => handleOnChange(e, i, `lastname`)}
+                    onChange={(e) => handleOnChange(e, i, `lastName`)}
                   />
                 </div>
                 <div className="flex flex-col p-1">
@@ -212,7 +251,7 @@ export default function AddContactModal({
                     onChange={(e) => handleOnChange(e, i, `email`)}
                   />
                 </div>
-                <div className="flex flex-col p-1">
+                {/* <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`Team`}
                   </div>
@@ -227,15 +266,7 @@ export default function AddContactModal({
                     onChange={(e, val) => handleSelectChange(e, val, i, `team`)}
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
-                </div>
-                <div className="flex flex-col p-1">
-                  <div className="opacity-0">a</div>
-                  <CgTrash
-                    className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
-                    color={`lightcoral`}
-                    onClick={() => handleDelete(i)}
-                  />
-                </div>
+                </div> */}
               </div>
               <div className="flex flex-row">
                 <div className="flex flex-col p-1">
@@ -243,15 +274,15 @@ export default function AddContactModal({
                     {`User Type`}
                   </div>
                   <Select
-                    name={`usertype`}
+                    name={`userType`}
                     options={options}
                     type="text"
                     value={{
-                      value: x.usertype,
-                      label: x.usertype,
+                      value: x.userType,
+                      label: x.userType,
                     }}
                     onChange={(e, val) =>
-                      handleSelectChange(e, val, i, `usertype`)
+                      handleSelectChange(e, val, i, `userType`)
                     }
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
@@ -261,14 +292,15 @@ export default function AddContactModal({
                     {`Company`}
                   </div>
                   <input
-                    name={`company`}
                     type="text"
-                    value={x.company}
+                    value={localStorage.getItem("company")}
                     className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-                    onChange={(e) => handleOnChange(e, i, `company`)}
-                  />
+                    disabled={true}
+                  /> 
+                 
+
                 </div>
-                <div className="flex flex-col p-1">
+                {/* <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`Client Name`}
                   </div>
@@ -285,8 +317,8 @@ export default function AddContactModal({
                     }
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
-                </div>
-                <div className="flex flex-col p-1">
+                </div> */}
+                {/* <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`Matter Name`}
                   </div>
@@ -303,32 +335,30 @@ export default function AddContactModal({
                     }
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           ))}
 
           <button
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
+            disabled={isDisabled}
             onClick={() => {
               setisDisabled(true);
               setInputData([
                 ...InputData,
                 {
-                  firstname: "",
-                  lastname: "",
-                  clientname: "",
-                  company: "",
+                  firstName: "",
+                  lastName: "",
+                  company: {id: localStorage.getItem("companyId"), name: localStorage.getItem("company")},
                   email: "",
-                  mattername: "",
-                  team: "",
                   usertype: "",
                 },
               ]);
             }}
             className={
-              "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-500 hover:text-cyan-300 cursor-pointer"
+              isDisabled
+                ? "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-200 hover:text-cyan-200 cursor-default"
+                : "m-2 my-3 font-medium gap-1 mr-auto flex flex-row justify-center items-center text-md text-cyan-500 hover:text-cyan-300 cursor-pointer"
             }
           >
             Add More
@@ -341,14 +371,15 @@ export default function AddContactModal({
             >
               <path
                 d="M8 0C3.5625 0 0 3.59375 0 8C0 12.4375 3.5625 16 8 16C12.4062 16 16 12.4375 16 8C16 3.59375 12.4062 0 8 0ZM11 8.75H8.75V11C8.75 11.4375 8.40625 11.75 8 11.75C7.5625 11.75 7.25 11.4375 7.25 11V8.75H5C4.5625 8.75 4.25 8.4375 4.25 8C4.25 7.59375 4.5625 7.25 5 7.25H7.25V5C7.25 4.59375 7.5625 4.25 8 4.25C8.40625 4.25 8.75 4.59375 8.75 5V7.25H11C11.4062 7.25 11.75 7.59375 11.75 8C11.75 8.4375 11.4062 8.75 11 8.75Z"
-                fill={IsHovering ? "rgb(152,241,255)" : "#1CC1E9"}
+                fill={isDisabled ? "#ABF4FC" : "#1CC1E9"}
               />
             </svg>
           </button>
           <button
             disabled={isDisabled}
             onClick={() => {
-              generateFinal();
+              //generateFinal();
+              handleSubmit();
               close();
             }}
             className={
