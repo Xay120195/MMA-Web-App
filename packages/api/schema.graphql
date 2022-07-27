@@ -675,7 +675,7 @@ type Mutation {
     userType: UserType
     company: CompanyInput
   ): User
-
+  userDelete(id: ID, companyId: ID, email: AWSEmail): User
   gmailMessageCreate(
     companyId: ID
     messageId: String

@@ -97,7 +97,6 @@ async function listGmailMessageClientMatters(ctx) {
 }
 
 async function listGmailMessageLabels(ctx) {
-  console.log("listGmailMessageLabels()");
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
   try {

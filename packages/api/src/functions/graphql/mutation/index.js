@@ -9,7 +9,7 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
-const { inviteUser, createUser } = require("../../../services/UserService");
+const { inviteUser, createUser, deleteUser } = require("../../../services/UserService");
 const { toUTC, toLocalTime } = require("../../../shared/toUTC");
 const {
   createMatterFile,
@@ -2878,6 +2878,10 @@ const resolvers = {
     },
     userInvite: async (ctx) => {
       return await inviteUser(ctx.arguments);
+    },
+    userDelete: async (ctx) => {
+      const { id, companyId, email } = ctx.arguments;
+      return await deleteUser(id, companyId, email);
     },
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);

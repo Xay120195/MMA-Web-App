@@ -440,7 +440,7 @@ const TableSavedInfo = ({
                               </span>
                             </div>
                           </td>
-                          <td className="p-2 align-top w-2/8">
+                          <td className="p-2 align-top w-11/12">
 
                             <div className="flex items-start mt-2">
                               <p className="w-24 group py-1 px-2  rounded textColor bg-white inline-flex items-center"></p>
@@ -467,23 +467,14 @@ const TableSavedInfo = ({
                                       )
                                     }
                                   >
-                                    {item_attach.name.substring(0, 20)}
-                                    {item_attach.name.length >= 20 ? "..." : ""}
+                                    {item_attach.name.substring(0, 10)}
+                                    {item_attach.name.length >= 10 ? "..." : ""}
                                   </p>
                                   <div
-                                    className="p-2 w-full h-full font-poppins rounded-sm float-right"
-                                    style={{
-                                      border: "solid 1px #c4c4c4",
-                                      cursor: "auto",
-                                      outlineColor: "rgb(204, 204, 204, 0.5)",
-                                      outlineWidth: "thin",
-                                    }}
-                                    suppressContentEditableWarning
+                                    className="p-2 w-full h-full font-poppins rounded-sm"
                                     dangerouslySetInnerHTML={{
                                       __html: item_attach.details,
                                     }}
-                                    onBlur={(e) => handleSaveDesc(e, item_attach.id)}
-                                    contentEditable={true}
                                   ></div>
                                 </div>
                               </React.Fragment>

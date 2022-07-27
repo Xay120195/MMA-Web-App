@@ -23,6 +23,7 @@ provider:
             - "dynamodb:BatchGetItem"
             - "dynamodb:BatchWriteItem"
             - "cognito-idp:AdminCreateUser"
+            - "cognito-idp:AdminDeleteUser"
             - "cognito-idp:AdminAddUserToGroup"
             - "cognito-idp:AdminRemoveUserFromGroup"
             - "cognito-idp:AdminUpdateUserAttributes"
@@ -150,6 +151,11 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: userInvite
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userDelete
         request: false
         response: false
       - dataSource: LambdaUserDS
