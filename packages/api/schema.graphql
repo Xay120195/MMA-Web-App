@@ -100,7 +100,6 @@ type Company {
     recipient: String
     startDate: String
     endDate: String
-    userTimeZone: String
   ): CompanyGmailMessagesConn
   gmailToken: GmailToken
   phone: String
