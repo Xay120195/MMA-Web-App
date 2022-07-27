@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 import BlankState from "../dynamic-blankstate";
-import BlankStateMobile from "../mobile-blank-state";
-import MobileHeader from "../mobile-header";
+import BlankStateMobile from "../blank-state-mobile";
 import { HiOutlinePlusCircle } from "react-icons/hi";
 import { MdArrowForwardIos, MdDownload, MdEdit, MdDelete } from "react-icons/md";
 import Illustration from "../../assets/images/no-data.svg";
@@ -27,7 +26,7 @@ import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 import RemoveBriefModal from "../briefs/remove-brief-modal";
 import "../../assets/styles/Briefs.css";
-import "../../assets/styles/Mobile.css";
+import ScrollToTop from "react-scroll-to-top";
 import { BiArrowToTop } from "react-icons/bi";
 import useWindowDimensions from "../../shared/windowDimensions";
 
@@ -494,7 +493,8 @@ export default function Briefs() {
   };
 
   {/* MOBILE CONST */}
-
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
   const [contentHeight, setContentHeight] = useState();
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] = useState(true);
@@ -506,6 +506,15 @@ export default function Briefs() {
     var lines = Math.round(divHeight / lineHeight);
     return lines;
   }
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-94-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-94-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+  }, [height, width, headerReadMore]);
 
   function handleScrollEvent(e) {
     const top = e.target.scrollTop > 20;
@@ -552,13 +561,43 @@ export default function Briefs() {
                 </button>
               </Link>
             </div>
-            <MobileHeader
-              height = {height}
-              width = {width}
-              matter_name = {matter_name}
-              client_name = {client_name}
-              setContentHeight = {setContentHeight}
-            />
+            {/* MOBILE VIEW OF HEADER */}
+            <div className="flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto"}}>
+              <p id="headerTag" className="sm:hidden font-bold pl-14" 
+                style={{lineHeight:"24px"}}>
+                <span className="font-semibold text-base">
+                  {checkFormat(client_name)}
+                </span>
+                &nbsp;
+                <span className="font-light text-base text-gray-500">
+                  {checkFormat(matter_name)}
+                </span>
+              </p>
+              <button 
+                  className="shrink-0 invisible font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+            {/* IF HEADER LINES IS LONG, THEN OVERLAY WITH READMORE */}
+            {headerLines > 1 ? (
+            <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
+              <p className={'flex-auto pl-14 sm:hidden ' + (headerReadMore?'':'truncate')}>
+                <span className="font-semibold text-base">
+                    {checkFormat(client_name)}
+                  </span>
+                  &nbsp;
+                  <span className="font-light text-base text-gray-500">
+                    {checkFormat(matter_name)}
+                    {/*headerReadMore ? checkFormat(matter_name) : ellipsis(checkFormat(matter_name),30)*/}
+                </span>
+              </p>
+              <button 
+                onClick={()=>setHeaderReadMore(!headerReadMore)}
+                className="shrink-0 hover:bg-gray-100 text-gray-500 font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+          ) : (<></>)}
           </div>
           <div className="sm:px-0">
             <nav aria-label="Breadcrumb" style={style} className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4">
@@ -620,6 +659,7 @@ export default function Briefs() {
               </ol>
             </nav>
           </div>
+
           <div className="hidden sm:block mt-4 sm:mt-7">
             <div className="flex sm:block">
               <button
@@ -728,7 +768,7 @@ export default function Briefs() {
             </div>
             <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="px-5 sm:px-0 overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
               {showScrollButton ? (<>
-              <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
+              <div className="scrollButtonBrief flex" onClick={() => handleScrollToTop()}>
                 <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
               </div>
               </>) : (<></>)}

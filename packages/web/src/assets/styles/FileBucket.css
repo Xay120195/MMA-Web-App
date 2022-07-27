@@ -2,3 +2,51 @@
   position: "sticky";
   top: 0;
 }
+
+@media (max-width: 640px) { 
+  .contentDiv {
+    margin: "0 0 0 0px";
+  }
+  .scrollButtonsFileBucket {
+    display:block;
+    right: 40px;
+    bottom: 40px;
+    position: fixed;
+    z-index: 2;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    transition: opacity 1s ease-in-out;
+    box-shadow: 0 9px 25px 0 rgb(132 128 177 / 28%);
+    border: none;
+    outline: none;
+    background-color:#d4d4d4;
+    border-radius: 50%;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+  }
+  
+  .scrollButtonsFileBucket:hover {
+    background-color:rgb(28,193,233);
+  }
+
+  .line-clamp-5 {
+    display: -webkit-box;
+    line-clamp: 5;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;  
+    overflow: clip;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: clip;
+  }
+}
+
+@media (min-width: 640px) {
+  .contentDiv {
+    margin: "0 0 0 65px";
+  }
+}

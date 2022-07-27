@@ -17,7 +17,6 @@ import { useIdleTimer } from "react-idle-timer";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
 import "../../assets/styles/Matters-rfi-page.css";
-import "../../assets/styles/Mobile.css";
 import ScrollToTop from "react-scroll-to-top";
 import { BiArrowToTop } from "react-icons/bi";
 
