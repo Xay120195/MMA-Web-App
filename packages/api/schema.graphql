@@ -684,10 +684,10 @@ type Mutation {
   ): User
   userDelete(id: ID, companyId: ID, email: AWSEmail): User
   userUpdate(
-    id: ID
+    id: ID!
     firstName: String
     lastName: String
-    email: AWSEmail
+    email: AWSEmail!
     contactNumber: String
     company: CompanyInput
     userType: UserType
