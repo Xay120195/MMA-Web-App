@@ -13,7 +13,6 @@ import * as IoIcons from "react-icons/io";
 import { BiArrowToTop } from "react-icons/bi";
 import { BitlyClient } from "bitly-react";
 import "../../assets/styles/BackgroundPage.css";
-import "../../assets/styles/Mobile.css";
 import { API } from "aws-amplify";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
@@ -22,8 +21,7 @@ import useWindowDimensions from "../../shared/windowDimensions";
 import {FiChevronDown, FiChevronUp} from "react-icons/fi";
 import dateFormat from "dateformat";
 import "../../assets/styles/BlankState.css";
-import BlankStateMobile from "../mobile-blank-state";
-import MobileHeader from "../mobile-header";
+import BlankStateMobile from "../blank-state-mobile";
 import Illustration from "../../assets/images/no-data.svg";
 
 // const contentDiv = {
@@ -807,11 +805,12 @@ const Background = () => {
   const style = {
     paddingLeft: "0rem",
   };
-
   function utf8_to_b64(str) {
     return window.btoa(unescape(encodeURIComponent(str)));
   }
   {/* MOBILE CONST */}
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
   const [contentHeight, setContentHeight] = useState();
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] = useState(true);
@@ -824,6 +823,15 @@ const Background = () => {
     var lines = Math.round(divHeight / lineHeight);
     return lines;
   }
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-94-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-94-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+  }, [height, width, headerReadMore]);
 
   useEffect(()=> {
     if(background!=null) {
@@ -955,13 +963,42 @@ const Background = () => {
           </div>
           <div className="pt-3 sm:hidden">
             {/* MOBILE VIEW OF HEADER */}
-            <MobileHeader
-              height = {height}
-              width = {width}
-              matter_name = {matter_name}
-              client_name = {client_name}
-              setContentHeight = {setContentHeight}
-            />
+            <div className="sm:hidden flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto", marginRight:"20px"}}>
+              <p id="headerTag" className="sm:hidden font-bold pl-14" 
+                style={{lineHeight:"24px"}}>
+                <span className="font-semibold text-base">
+                  {checkFormat(client_name)}
+                </span>
+                &nbsp;
+                <span className="font-light text-base text-gray-500">
+                  {checkFormat(matter_name)}
+                </span>
+              </p>
+              <button 
+                  className="shrink-0 invisible font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+            {/* IF HEADER LINES IS LONG, THEN OVERLAY WITH READMORE */}
+            {headerLines > 1 ? (
+            <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
+              <p className={'flex-auto pl-14 sm:hidden ' + (headerReadMore?'':'truncate')}>
+                <span className="font-semibold text-base">
+                    {checkFormat(client_name)}
+                  </span>
+                  &nbsp;
+                  <span className="font-light text-base text-gray-500">
+                    {checkFormat(matter_name)}
+                    {/*headerReadMore ? checkFormat(matter_name) : ellipsis(checkFormat(matter_name),30)*/}
+                </span>
+              </p>
+              <button 
+                onClick={()=>setHeaderReadMore(!headerReadMore)}
+                className="shrink-0 hover:bg-gray-100 text-gray-500 font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+                {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+            ) : (<></>)}
             <div className="sm:px-0">
               <nav aria-label="Breadcrumb" style={style} className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4">
                 <ol
@@ -1218,7 +1255,7 @@ const Background = () => {
           <div className="bg-white rounded-lg py-5 flex" style={{height:contentHeight}}>
             <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="relative flex flex-col overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
               {showScrollButton ? (<>
-                <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
+                <div className="scrollButtonBG flex" onClick={() => handleScrollToTop()}>
                   <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
                 </div>
                 </>) : (<></>)}

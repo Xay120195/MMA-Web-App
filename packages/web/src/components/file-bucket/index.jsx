@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import ToastNotification from "../toast-notification";
 import { API } from "aws-amplify";
 import BlankState from "../blank-state";
-import BlankStateMobile from "../mobile-blank-state";
-import MobileHeader from "../mobile-header";
+import BlankStateMobile from "../blank-state-mobile";
 import { Redirect, useHistory } from "react-router-dom";
 import NoResultState from "../no-result-state";
 import { AppRoutes } from "../../constants/AppRoutes";
@@ -13,7 +12,6 @@ import DatePicker from "react-datepicker";
 import dateFormat from "dateformat";
 import ellipsis from "../../shared/ellipsis";
 import "../../assets/styles/BlankState.css";
-import "../../assets/styles/Mobile.css";
 import "../../assets/styles/custom-styles.css";
 import UploadLinkModal from "./file-upload-modal";
 import FilterLabels from "./filter-labels-modal";
@@ -2141,6 +2139,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   //Mobile functions
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
   const [contentHeight, setContentHeight] = useState();
   const [readMoreStateOuter, setReadMoreStateOuter] = useState([]);
   const [readMoreStateInner, setReadMoreStateInner] = useState([]); 
@@ -2279,6 +2279,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     
   }, [matterFiles, readMoreStateDesc, readMoreStateOuter, width])
 
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-93-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-93-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+  }, [height, width, headerReadMore]);
+  
   return (
     <>
       <div
@@ -2327,13 +2337,43 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             </span>
           </p>
           {/* MOBILE VIEW OF HEADER */}
-          <MobileHeader
-            height = {height}
-            width = {width}
-            matter_name = {matter_name}
-            client_name = {client_name}
-            setContentHeight = {setContentHeight}
-          />
+          <div className="flex flex-auto" style={{position:headerLines > 1 ? "absolute" : "static", zIndex:headerLines > 1 ? "-50" : "auto"}}>
+            <p id="headerTag" className="sm:hidden font-bold pl-14" 
+              style={{lineHeight:"24px"}}>
+              <span className="font-semibold text-base">
+                {checkFormat(client_name)}
+              </span>
+              &nbsp;
+              <span className="font-light text-base text-gray-500">
+                {checkFormat(matter_name)}
+              </span>
+            </p>
+            <button 
+                className="shrink-0 invisible font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+               {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+            </button>
+          </div>
+          {/* IF HEADER LINES IS LONG, THEN OVERLAY WITH READMORE */}
+          {headerLines > 1 ? (
+            <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
+              <p className={'flex-auto pl-14 sm:hidden ' + (headerReadMore?'':'truncate')}>
+                <span className="font-semibold text-base">
+                    {checkFormat(client_name)}
+                  </span>
+                  &nbsp;
+                  <span className="font-light text-base text-gray-500">
+                    {checkFormat(matter_name)}
+                    {/*headerReadMore ? checkFormat(matter_name) : ellipsis(checkFormat(matter_name),30)*/}
+                </span>
+              </p>
+              <button 
+                onClick={()=>setHeaderReadMore(!headerReadMore)}
+                className="shrink-0 hover:bg-gray-100 text-gray-500 font-semibold rounded inline-flex items-center border-0 w-5 h-5 rounded-full outline-none focus:outline-none active:bg-current">
+               {!headerReadMore ? <FiChevronDown/> : <FiChevronUp/>}
+              </button>
+            </div>
+          ) : (<></>)}
+          
         </div>
 
         <div
@@ -3131,7 +3171,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       </div>
                       <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="px-5 overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
                         {showScrollButton ? (<>
-                        <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
+                        <div className="scrollButtonsFileBucket flex" onClick={() => handleScrollToTop()}>
                           <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
                         </div>
                         </>) : (<></>)}

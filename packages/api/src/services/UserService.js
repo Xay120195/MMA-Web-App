@@ -4,10 +4,12 @@ const {
   ScanCommand,
   QueryCommand,
   DeleteItemCommand,
+  UpdateItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import {
   AdminCreateUserCommand,
   AdminDeleteUserCommand,
+  AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import ddbClient from "../lib/dynamodb-client";
@@ -129,19 +131,16 @@ export async function deleteUser(userId, companyId, email) {
       // delete from cognito users
       // delete from users table
 
-      const cognitoUserDelete = await deleteCognitoUser({
+      await deleteCognitoUser({
         UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
         Username: email,
       });
-
-      console.log(cognitoUserDelete);
 
       const cmd = new DeleteItemCommand({
         TableName: "UserTable",
         Key: marshall({ id: userId }),
       });
-      const req = await ddbClient.send(cmd);
-      console.log(req);
+      await ddbClient.send(cmd);
     }
 
     const filterByCompanyId = compUsersItems.filter(
@@ -169,6 +168,56 @@ export async function deleteUser(userId, companyId, email) {
     console.log(resp);
   }
 
+  return resp;
+}
+
+export async function updateUser(id, data) {
+  let resp = {};
+
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "UserTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    await ddbClient.send(cmd);
+
+    // await updateCognitoUser({
+    //   UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+    //   Username: email,
+    //   UserAttributes: [
+    //     {
+    //       Name: "gi",
+    //       Value: data.email,
+    //     },
+    //     {
+    //       Name: "email_verified",
+    //       Value: "true",
+    //     },
+    //   ],
+
+    // });
+    resp = param;
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
   return resp;
 }
 
@@ -207,4 +256,29 @@ async function deleteCognitoUser(input) {
   const cmd = new AdminDeleteUserCommand(input);
   const resp = await identityClient.send(cmd);
   return resp;
+}
+
+async function updateCognitoUser(input) {
+  const cmd = new AdminUpdateUserAttributesCommand(input);
+  const resp = await identityClient.send(cmd);
+  return resp;
+}
+
+export function getUpdateExpressions(data) {
+  const values = {};
+  const names = {};
+  let updateExp = "set ";
+  const dataFlatkeys = Object.keys(data);
+  for (let i = 0; i < dataFlatkeys.length; i++) {
+    names[`#${dataFlatkeys[i]}`] = dataFlatkeys[i];
+    values[`:${dataFlatkeys[i]}Val`] = data[dataFlatkeys[i]];
+
+    let separator = i == dataFlatkeys.length - 1 ? "" : ", ";
+    updateExp += `#${dataFlatkeys[i]} = :${dataFlatkeys[i]}Val${separator}`;
+  }
+  return {
+    UpdateExpression: updateExp,
+    ExpressionAttributeNames: names,
+    ExpressionAttributeValues: marshall(values),
+  };
 }
