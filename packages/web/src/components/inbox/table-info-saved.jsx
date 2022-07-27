@@ -355,6 +355,7 @@ const TableSavedInfo = ({
                             />
                           </td>
                           <td className="p-2 align-top w-1/4">
+                            <div className="w-96">
                             <p className="text-sm font-medium">{item.subject}</p>
                             <p className="text-xs">
                               {item.from} at{" "}
@@ -439,22 +440,39 @@ const TableSavedInfo = ({
                                 <p>CC: {item.cc}</p>
                               </span>
                             </div>
+                            </div>
                           </td>
                           <td className="p-2 align-top w-11/12">
-
+                          <div class="flex inline-flex h-full">
                             <div className="flex items-start mt-2">
                               <p className="w-24 group py-1 px-2  rounded textColor bg-white inline-flex items-center"></p>
-                              <div className="p-2 w-full h-full font-poppins rounded-sm float-right"
+                              <div className="p-2 w-96 h-7 font-poppins rounded-sm float-right border"
                               dangerouslySetInnerHTML={{
                                 __html: item.description,
                               }}
                               >
                               </div>
                             </div>
-                            
+
+                            <div className="ml-12 mt-3  w-64 inline-flex flex-wrap ">
+                              {item.labels.items.map((i, index) => (
+                                <button
+                                  key={i.id}
+                                  className=" relative mb-1 h-6 mr-1
+                                    text-opacity-90 1
+                                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                                  id="headlessui-popover-button-87"
+                                  type="button"
+                                  aria-expanded="false"
+                                >
+                                  {i.name}
+                                </button>
+                                ))}
+                            </div>
+                          </div>
                             {item.attachments.items.map((item_attach, index) => (
                               <React.Fragment key={item_attach.id} >
-                                <div className="flex items-start mt-2">
+                                <div className="flex mr-10 items-start mt-2 h-full ">
                                   <p
                                     className=" w-24
                                     cursor-pointer mr-1 text-opacity-90 1
@@ -471,16 +489,34 @@ const TableSavedInfo = ({
                                     {item_attach.name.length >= 10 ? "..." : ""}
                                   </p>
                                   <div
-                                    className="p-2 w-full h-full font-poppins rounded-sm"
+                                    className="p-2 h-7 font-poppins rounded-sm w-96 border"
                                     dangerouslySetInnerHTML={{
                                       __html: item_attach.details,
                                     }}
                                   ></div>
+                                  <div className="flex-wrap inline-flex ml-12 w-80 h-full">
+                                    {
+                                      item_attach.labels.items.map(
+                                        (x) =>
+                                        <button
+                                          key={x.id}
+                                          className=" mb-1 h-6
+                                            text-opacity-90 1
+                                            textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                                          id="headlessui-popover-button-87"
+                                          type="button"
+                                          aria-expanded="false"
+                                        >
+                                          {x.name}
+                                        </button>
+                                      )
+                                    }
+                                  </div>
                                 </div>
                               </React.Fragment>
                             ))}
                           </td>
-                          <td  className="p-2 align-top w-1/6" >
+                          {/* <td  className="p-2 align-top w-1/6" >
                             <div className="ml-12 mt-1 w-80 inline-flex ">
                               {item.labels.items.map((i, index) => (
                                 <button
@@ -496,9 +532,9 @@ const TableSavedInfo = ({
                                 </button>
                                 ))}
                               </div>
-                          </td>
+                          </td> */}
                           <td className="p-2 align-top w-1/6">
-                            <>
+                            <div className="w-48">
                               {item.clientMatters.items.map((item_clientMatter, index) => (
                                 <>
                                   <span className="text-sm cursor-pointer mr-1 text-opacity-90 1 mt-2
@@ -510,7 +546,7 @@ const TableSavedInfo = ({
                                   </span>
                                 </>
                               ))}
-                            </>
+                            </div>
                           </td>
                         </tr>
                       {/* )} */}

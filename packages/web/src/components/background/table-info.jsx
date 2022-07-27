@@ -1622,10 +1622,9 @@ const TableInfo = ({
                                                         outlineColor:
                                                           "rgb(204, 204, 204, 0.5)",
                                                         outlineWidth: "thin",
-                                                        minHeight: "300px",
-                                                        maxHeight: "350px",
+                                                        minHeight: "150px",
+                                                        maxHeight: "200px",
                                                         overflow: "auto",
-                                                        marginBottom: "70px",
                                                       }}
                                                       suppressContentEditableWarning
                                                       onClick={(event) =>
@@ -1770,8 +1769,8 @@ const TableInfo = ({
                                                           
                                                           <div
                                                             style={{
-                                                              minHeight: "150px",
-                                                              maxHeight: "250px",
+                                                              minHeight: "130px",
+                                                              maxHeight: "130px",
                                                               overflow: "auto"
                                                             }}
                                                           >

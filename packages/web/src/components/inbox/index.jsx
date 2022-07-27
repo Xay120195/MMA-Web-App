@@ -185,6 +185,7 @@ const Inbox = () => {
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
 
   const getUnSavedEmails = async (filters) => {
+    console.log(filters);
     setWaitUnSaved(true);
     const params = {
       query: qGmailMessagesbyCompany,
@@ -585,6 +586,10 @@ const Inbox = () => {
                       labelsList={labelsList}
                       waitUnSaved={waitUnSaved}
                       sortByDate={sortByDate}
+                      emailIntegration={emailIntegration}
+                      userTimeZone={userTimeZone}
+                      momentTZ={momentTZ}
+                      qGmailMessagesbyCompany={qGmailMessagesbyCompany}
                     />
                   </div>
                 ) : (

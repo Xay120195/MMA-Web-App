@@ -57,21 +57,6 @@ export default function Contacts() {
   }
   `;
 
-  // useEffect((e) => {
-  //   anime({
-  //     targets: rows.current,
-  //     opacity: [0, 1],
-  //     duration: 600,
-  //     easing: "linear",
-  //   });
-  // }, []);
-
-  // useEffect(() => {
-  //   if (ContactList === null) {
-  //     getContacts();
-  //   }
-  // });
-
   let getContacts = async () => {
     const params = {
       query: qGetContacts,
@@ -83,34 +68,12 @@ export default function Contacts() {
     await API.graphql(params).then((companyUsers) => {
       console.log("usersssss",companyUsers);
       var temp = companyUsers.data.company.users.items
-      temp.sort((a, b) =>  a.firstName.localeCompare(b.firstName));
+      temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
+      temp.map(x=> x.firstName = x.firstName.charAt(0).toUpperCase() + x.firstName.slice(1).toLowerCase());
       setDefaultCompany(companyUsers.data.company.name);
       setContactList(temp);
     });
   };
-
-
-  // const handleAddContact = (returnedUser) => {
-  //   console.log(returnedUser);
-  //   getContacts();
-  //   handleModalClose();
-  // };
-
-  // const RenderGroup = ({ cl, letterNow }) => {
-  //   return (
-  //     <>
-  //       {cl.map((user) => (
-  //         <tr className="stripe text-left" key={user.id}>
-  //           <User
-  //             user={user}
-  //             setContactList={setContactList}
-  //             ContactList={ContactList}
-  //           />
-  //         </tr>
-  //       ))}
-  //     </>
-  //   );
-  // };
 
   const handleDeleteModal = (id) => {
     setisToDelete(id);
@@ -127,10 +90,6 @@ export default function Contacts() {
         ContactList.sort((a, b) => a.userType.localeCompare(b.userType));
         alphabetArray.sort();
       } 
-      // else if (sortBy === "company") {
-      //   dummy.sort((a, b) => a.company.localeCompare(b.company));
-      //   alphabetArray.sort();
-      // }
     } else {
       if (sortBy === "firstName") {
         ContactList.sort((a, b) => a.firstName.localeCompare(b.firstName)).reverse();
@@ -138,13 +97,7 @@ export default function Contacts() {
       } else if (sortBy === "userType") {
         ContactList.sort((a, b) => a.userType.localeCompare(b.userType)).reverse();
         alphabetArray.sort().reverse();
-      } 
-      // else if (sortBy === "company") {
-      //   dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
-      //   alphabetArray.sort().reverse();
-      // } else {
-      //   dummy.sort().reverse();
-      // }
+      }
     }
   };
 
