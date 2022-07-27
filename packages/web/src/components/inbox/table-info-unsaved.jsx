@@ -398,11 +398,11 @@ const TableUnsavedInfo = ({
         // console.log("optionscheck",labelsList[i]);
 
         if (mainLabels[i].labelsExtracted.length === 0) {
-          return null;
+          return [];
         } else {
           if (mainLabels[i].cmid === cmid) {
             if(mainLabels[i].labelsExtracted.length === 0){
-              return null;
+              return [];
             }else{
               const newOptions = mainLabels[i].labelsExtracted.map(
                 ({ id: value, name: label }) => ({
@@ -416,7 +416,7 @@ const TableUnsavedInfo = ({
         }
       }
     } else {
-      return null;
+      return [];
     }
   };
 
