@@ -59,7 +59,6 @@ export function ClientMatters() {
   const [isActive, setIsActive] = useState([]);
   
   function handleActiveState (item, bool) {
-    console.log("CHANGING STATE TO " + bool);
     if(bool) {
       if(isActive.find((temp)=>{
         return temp === item;
@@ -74,7 +73,6 @@ export function ClientMatters() {
   }
 
   function checkIsActive(item) {
-    console.log("IS ACTIVE: " + item);
     return isActive.find((temp)=>{
       return temp === item;
     }) !== undefined;

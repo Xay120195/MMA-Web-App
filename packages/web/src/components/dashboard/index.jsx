@@ -528,6 +528,9 @@ mutation addMatter($companyId: String, $name: String) {
         </div>
 
         <div
+          id="mobileContent"
+          onScroll={(e) => handleScrollEvent(e)}
+          style={{scrollBehavior:"smooth"}}
           className={
             "overflow-y-auto px-5 sm:px-0 " + 
             //Made every view to tile view in dashboard
@@ -536,6 +539,11 @@ mutation addMatter($companyId: String, $name: String) {
               : "grid grid-flow-row auto-rows-max gap-y-6")
           }
         >
+          {showScrollButton && width < 640 ? (<>
+          <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
+            <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
+          </div>
+          </>) : (<></>)}
           <MatterContext.Provider
             value={{
               clientMatter: listmatters,
