@@ -9,7 +9,12 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
-const { inviteUser, createUser, deleteUser } = require("../../../services/UserService");
+const {
+  inviteUser,
+  createUser,
+  deleteUser,
+  updateUser,
+} = require("../../../services/UserService");
 const { toUTC, toLocalTime } = require("../../../shared/toUTC");
 const {
   createMatterFile,
@@ -2882,6 +2887,37 @@ const resolvers = {
     userDelete: async (ctx) => {
       const { id, companyId, email } = ctx.arguments;
       return await deleteUser(id, companyId, email);
+    },
+    userUpdate: async (ctx) => {
+      const {
+        id,
+        firstName,
+        lastName,
+        email,
+        contactNumber,
+        userType,
+        profilePicture,
+        company,
+      } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (firstName !== undefined) data.firstName = firstName;
+
+      if (lastName !== undefined) data.lastName = lastName;
+
+      if (email !== undefined) data.email = email;
+
+      if (contactNumber !== undefined) data.contactNumber = contactNumber;
+
+      if (userType !== undefined) data.userType = userType;
+
+      if (profilePicture !== undefined) data.profilePicture = profilePicture;
+
+      if (company !== undefined) data.company = company;
+
+      return await updateUser(id, data);
     },
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);
