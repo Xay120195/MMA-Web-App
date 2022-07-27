@@ -486,7 +486,7 @@ const TableUnsavedInfo = ({
       }));
       return newOptions;
     } else {
-      return null;
+      return [];
     }
   };
 
@@ -633,6 +633,7 @@ const TableUnsavedInfo = ({
                             />
                           </td>
                           <td className="p-2 align-top w-1/4">
+                            <div className="w-96">
                             <p className="text-sm font-medium">{item.subject}</p>
                             <p className="text-xs">
                               {item.from} at{" "}
@@ -717,6 +718,7 @@ const TableUnsavedInfo = ({
                                 <p>To : {item.to}</p>
                                 <p>CC: {item.cc}</p>
                               </span>
+                            </div>
                             </div>
                           </td>
                           <td className="p-2 align-top w-2/8">
