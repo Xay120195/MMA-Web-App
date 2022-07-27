@@ -13,6 +13,81 @@ import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from
 
 var moment = require("moment");
 
+/*const qGmailMessagesbyCompany = `
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String, $startDate: String, $endDate: String, $userTimeZone: String) {
+  company(id: $id) {
+    gmailToken {
+      refreshToken
+      id
+      userId
+      companyId
+      updatedAt
+    }
+    gmailMessages(
+      isDeleted: $isDeleted
+      isSaved: $isSaved
+      limit: $limit
+      nextToken: $nextToken
+      recipient: $recipient
+      startDate: $startDate
+      endDate: $endDate
+      userTimeZone: $userTimeZone
+    ) {
+      items {
+        id
+        from
+        to
+        cc
+        bcc
+        subject
+        date
+        snippet
+        payload {
+          content
+        }
+        labels {
+          items {
+            id
+            name
+          }
+        }
+        description
+        clientMatters {
+          items {
+            id
+            client {
+              id
+              name
+            }
+            matter {
+              id
+              name
+            }
+          }
+        }
+        attachments {
+          items {
+            id
+            details
+            name
+            s3ObjectKey
+            size
+            type
+            labels {
+              items {
+                id
+                name
+              }
+            }
+          }
+        }
+        receivedAt
+      }
+      nextToken
+    }
+  }
+}`;*/
+
 const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id: ID) {
   gmailMessageAttachmentUpdate(id: $id, details: $details) {
     id
@@ -32,7 +107,7 @@ mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: Strin
     clientMatterId: $clientMatterId
     gmailMessageId: $gmailMessageId
   ) {
-    id
+    id,
   }
 }`;
 
@@ -54,6 +129,10 @@ const TableUnsavedInfo = ({
   emailFilters,
   labelsList,
   waitUnSaved,
+  emailIntegration,
+  userTimeZone,
+  momentTZ,
+  qGmailMessagesbyCompany,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -181,11 +260,39 @@ const TableUnsavedInfo = ({
           },
         ];
 
+        // run updated labels query
+        const params = {
+          query: qGmailMessagesbyCompany,
+          variables: {
+            id: companyId,
+            isSaved: false,
+            recipient: emailIntegration,
+            userTimeZone: userTimeZone,
+            startDate:
+            emailFilters.startDate != null
+                ? momentTZ(emailFilters.startDate, userTimeZone).format(
+                    "YYYY-MM-DD"
+                  )
+                : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+            endDate:
+            emailFilters.endDate != null
+                ? momentTZ(emailFilters.endDate, userTimeZone).format("YYYY-MM-DD")
+                : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+          },
+        };
+    
+        console.log("Get Messages by Company params:", params);
+        API.graphql(params).then((result) => {
+          const emailList = result.data.company.gmailMessages.items;
+          setUnsavedEmails(emailList);
+        });
+
         setResultMessage("Successfully updated.");
         setShowToast(true);
       });
     }
 
+    console.log(enabledArrays);
     let temp = [...enabledArrays];
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
