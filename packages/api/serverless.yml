@@ -158,6 +158,11 @@ custom:
         field: userDelete
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userUpdate
+        request: false
+        response: false
       - dataSource: LambdaUserDS
         type: User
         field: clientMatters

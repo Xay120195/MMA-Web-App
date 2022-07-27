@@ -50,10 +50,15 @@ async function listCompanyUsers(ctx) {
       );
       const objCompUsers = compUsersResult.Items.map((i) => unmarshall(i));
 
-      const response = objCompUsers.map((item) => {
-        const filterUser = objUsers.find((u) => u.id === item.userId);
-        return { ...item, ...filterUser };
-      });
+      const response = objCompUsers
+        .map((item) => {
+          const filterUser = objUsers.find((u) => u.id === item.userId);
+
+          if (filterUser !== undefined) {
+            return { ...item, ...filterUser };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,

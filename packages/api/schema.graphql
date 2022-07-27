@@ -210,8 +210,9 @@ type User {
   contactNumber: String
   company: Company
   userType: UserType
-  clientMatters(limit: Int, nextToken: String): UserClientMatterCon
   profilePicture: String
+  organisations: UserCompanyConn
+  clientMatters(limit: Int, nextToken: String): UserClientMatterCon
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -446,6 +447,11 @@ type CompanyUserConn {
   nextToken: String
 }
 
+type UserCompanyConn {
+  items: [Company]
+  nextToken: String
+}
+
 type FileLabelConn {
   items: [Label]
   nextToken: String
@@ -676,6 +682,16 @@ type Mutation {
     company: CompanyInput
   ): User
   userDelete(id: ID, companyId: ID, email: AWSEmail): User
+  userUpdate(
+    id: ID
+    firstName: String
+    lastName: String
+    email: AWSEmail
+    contactNumber: String
+    company: CompanyInput
+    userType: UserType
+    profilePicture: String
+  ): User
   gmailMessageCreate(
     companyId: ID
     messageId: String
