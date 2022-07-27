@@ -195,21 +195,21 @@ export async function updateUser(id, data) {
     });
     await ddbClient.send(cmd);
 
-    // await updateCognitoUser({
-    //   UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
-    //   Username: email,
-    //   UserAttributes: [
-    //     {
-    //       Name: "gi",
-    //       Value: data.email,
-    //     },
-    //     {
-    //       Name: "email_verified",
-    //       Value: "true",
-    //     },
-    //   ],
+    const cognitoUserUpdate = await updateCognitoUser({
+      UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+      Username: data.email,
+      UserAttributes: [
+        {
+          Name: "given_name",
+          Value: data.firstName,
+        },
+        {
+          Name: "family_name",
+          Value: data.lastName,
+        },
+      ],
+    });
 
-    // });
     resp = param;
   } catch (e) {
     resp = {
