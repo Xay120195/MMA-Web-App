@@ -250,7 +250,7 @@ const Authentication = () => {
       <div className="grid grid-cols-1 gap-4 min-h-screen sm:min-h-none sm:grid-cols-2  bg-gray-100 sm:bg-white">
         <div className="welcome-message">
           <h1>
-            A Software Built for Managing Affidavits and Exchanging RFIs with
+            A Software built for Managing Affidavits and Exchanging RFIs with
             your Clients
           </h1>
         </div>
@@ -268,7 +268,7 @@ const Authentication = () => {
               formFields={AuthFields.login}
               className="sm:w-full test" 
             >
-              <div className="sm:hidden font-medium text-black" slot="header-subtitle">A Software Built for Managing Affidavits and Exchanging RFIs with
+              <div className="sm:hidden font-medium text-black" slot="header-subtitle">A Software built for Managing Affidavits and Exchanging RFIs with
               your Clients</div>
             </AmplifySignIn>
             <AmplifySignUp
