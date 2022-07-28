@@ -3166,6 +3166,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 a.order > b.order ? 1 : -1
                                                               )
                                                               .map((background, i) => (
+                                                              <React.Fragment key={background.id}>
                                                                 <div className="flex mt-3.5">
                                                                   <span
                                                                     className={
@@ -3180,7 +3181,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         'rgb(204, 204, 204, 0.5)',
                                                                       outlineWidth:
                                                                         'thin',
-                                                                      maxHeight: "30px",
+                                                                      maxHeight: "35px",
                                                                       overflow: "auto"
                                                                     }}
                                                                     suppressContentEditableWarning
@@ -3242,6 +3243,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     </p>
                                                                   )}
                                                                 </div>
+                                                              </React.Fragment>
                                                               ))}
                                                           </td>
                                                           <td
