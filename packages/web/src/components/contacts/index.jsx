@@ -12,6 +12,7 @@ import DeleteModal from "./delete-modal";
 import ToastNotification from "../toast-notification";
 import User from "./user";
 import { alphabetArray } from "./alphabet";
+import ContactInformationModal from "./contact-information-modal";
 import dummy from "./dummy.json";
 
 export default function Contacts() {
@@ -21,6 +22,7 @@ export default function Contacts() {
   };
 
   const rows = useRef(null);
+  const refLetters = useRef([]); //added Refletters to fix scrolling
   const [shortcutSelected, setShortcutSelected] = useState("");
 
   const [ShowDeleteModal, setShowDeleteModal] = useState(false);
@@ -33,11 +35,13 @@ export default function Contacts() {
   const [isToDelete, setisToDelete] = useState("");
   const [ContactList, setContactList] = useState(null);
 
+  const [ShowEditModal, setShowEditModal] = useState(false); //added Edit Modal
+  const [CurrentUser, setCurrentUser] = useState({}); //Added current User
+
   const [defaultCompany, setDefaultCompany] = useState("");
   const hideToast = () => {
     setShowToast(false);
   };
-
 
   const qGetContacts = `
   query companyUsers($companyId: String) {
@@ -57,6 +61,21 @@ export default function Contacts() {
   }
   `;
 
+  //Added 3 seconds turning to light blue when adding an entry
+  useEffect(
+    (e) => {
+      anime({
+        targets: rows.current,
+        opacity: [0.4, 1],
+        duration: 1500,
+        easing: "cubicBezier(.5, .05, .1, .3)",
+      });
+
+      refLetters.current = refLetters.current.slice(0, alphabetArray.length);
+    },
+    [ContactList]
+  );
+
   let getContacts = async () => {
     const params = {
       query: qGetContacts,
@@ -66,13 +85,24 @@ export default function Contacts() {
     };
 
     await API.graphql(params).then((companyUsers) => {
-      console.log("usersssss",companyUsers);
-      var temp = companyUsers.data.company.users.items
+      console.log("usersssss", companyUsers);
+      var temp = companyUsers.data.company.users.items;
       temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
-      temp.map(x=> x.firstName = x.firstName.charAt(0).toUpperCase() + x.firstName.slice(1).toLowerCase());
+      temp.map(
+        (x) =>
+          (x.firstName =
+            x.firstName.charAt(0).toUpperCase() +
+            x.firstName.slice(1).toLowerCase())
+      );
       setDefaultCompany(companyUsers.data.company.name);
-      setContactList(temp);
+      setContactList(dummy);
     });
+  };
+
+  const handleEditModal = (user) => {
+    //Added edit modal open
+    setCurrentUser(user);
+    setShowEditModal(true);
   };
 
   const handleDeleteModal = (id) => {
@@ -89,13 +119,17 @@ export default function Contacts() {
       } else if (sortBy === "userType") {
         ContactList.sort((a, b) => a.userType.localeCompare(b.userType));
         alphabetArray.sort();
-      } 
+      }
     } else {
       if (sortBy === "firstName") {
-        ContactList.sort((a, b) => a.firstName.localeCompare(b.firstName)).reverse();
+        ContactList.sort((a, b) =>
+          a.firstName.localeCompare(b.firstName)
+        ).reverse();
         alphabetArray.sort().reverse();
       } else if (sortBy === "userType") {
-        ContactList.sort((a, b) => a.userType.localeCompare(b.userType)).reverse();
+        ContactList.sort((a, b) =>
+          a.userType.localeCompare(b.userType)
+        ).reverse();
         alphabetArray.sort().reverse();
       }
     }
@@ -140,7 +174,8 @@ export default function Contacts() {
 
   const scrollToView = (target) => {
     const el = document.getElementById(target);
-    el && el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el &&
+      window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" }); //added fixed scrolling
   };
 
   // const handleScroll = (event) => {
@@ -152,19 +187,21 @@ export default function Contacts() {
     if (ContactList === null) {
       getContacts();
     }
+    /*
 
-    
     anime({
       targets: rows.current,
       opacity: [0, 1],
       duration: 600,
       easing: "linear",
     });
-    
+    */
+
     // observe the scroll event and set the active letter
     window.addEventListener(
       "scroll",
       () => {
+        /*
         const maxScrollHeight = document.body.scrollHeight;
         const currentScrollPos = window.pageYOffset;
         // get the current scroll position
@@ -180,6 +217,30 @@ export default function Contacts() {
             Math.max(0, Math.min(currentLetter, alphabetArray.length - 1))
           ]
         );
+        */
+        //Fixed Issue Scrolling ang setting active letter
+        const currentScrollPos = window.pageYOffset;
+        // get the current scroll position
+        console.log(refLetters);
+        refLetters.current.forEach((ref, i) => {
+          if (ref) {
+            let top = ref.offsetTop + 100;
+            let bottom =
+              refLetters.current.length - 1 === i
+                ? refLetters.current[0].offsetTop + 100
+                : refLetters.current[i + 1].offsetTop + 100;
+
+            //get height of list of contacts with specific letter
+
+            //if it matches within the range get it
+
+            if (currentScrollPos >= top && currentScrollPos <= bottom) {
+              console.log("SELECTED,", ref.id);
+              setShortcutSelected(String(ref.id));
+              //set Active Letter if in range
+            }
+          }
+        });
       },
       { passive: true }
     );
@@ -201,7 +262,8 @@ export default function Contacts() {
               <span className="text-lg font-bold">Contacts</span>{" "}
               <span className="text-lg font-light">
                 {" "}
-                of {localStorage.getItem("firstName")} {localStorage.getItem("lastName")}
+                of {localStorage.getItem("firstName")}{" "}
+                {localStorage.getItem("lastName")}
               </span>
             </p>
             <div className="flex items-center gap-3 text-gray-500">
@@ -227,6 +289,7 @@ export default function Contacts() {
                 </span>
               </p>
               <p
+                onClick={() => setActiveMenu("Team")} //setActiveMenu to Teams
                 className={`py-5 border-b-2 flex items-center gap-x-3 border-transparent cursor-pointer font-medium ${
                   false && "border-gray-700 "
                 }`}
@@ -256,6 +319,7 @@ export default function Contacts() {
             <div className="sticky top-20 flex flex-col gap-y-1 pt-5">
               {alphabetArray.map((letter) => {
                 // check if letter is in dummy array
+
                 const isLetter =
                   ContactList &&
                   ContactList.some((user) => user.firstName.startsWith(letter));
@@ -264,7 +328,13 @@ export default function Contacts() {
                     <p
                       key={letter}
                       onClick={(e) => {
-                        setShortcutSelected(letter);
+                        //To prevent double setting shortcut selecting only set if user is in bottom of screen
+                        if (
+                          window.innerHeight + window.scrollY >=
+                          document.body.offsetHeight
+                        ) {
+                          setShortcutSelected(letter);
+                        }
                         scrollToView(letter);
                       }}
                       style={{
@@ -273,7 +343,7 @@ export default function Contacts() {
                         })`,
                       }}
                       className={`text-center text-gray-400 cursor-pointer transition-all font-bold  hover:scale-110 hover:text-blue-600 ${
-                        shortcutSelected === letter && "text-blue-600"
+                        shortcutSelected === letter && "text-cyan-500"
                       }`}
                     >
                       {letter}
@@ -311,20 +381,25 @@ export default function Contacts() {
               </thead>
               {/* content */}
               <tbody className="relative">
-                {alphabetArray.map((letter) => (
+                {alphabetArray.map((letter, idx) => (
                   <>
                     {ContactList &&
                       ContactList.some((user) =>
                         user.firstName.startsWith(letter)
                       ) && (
                         <>
-                          <tr id={letter} key={letter} className="">
+                          <tr
+                            ref={(el) => (refLetters.current[idx] = el)} //added div useRef
+                            id={letter}
+                            key={letter}
+                            className=""
+                          >
                             <td className="pt-4 px-2">
                               <div className="flex items-center gap-x-2">
                                 <p
                                   className={`${
                                     shortcutSelected == letter
-                                      ? "text-blue-600 font-bold"
+                                      ? "text-cyan-500 font-bold"
                                       : "text-gray-700 font-semibold"
                                   }  text-lg `}
                                 >
@@ -373,7 +448,11 @@ export default function Contacts() {
                                     <td className="p-2">
                                       <div className="flex items-center gap-x-2">
                                         <button className="p-3 rounded w-max font-semibold text-gray-500">
-                                          <FaEdit />
+                                          <FaEdit
+                                            onClick={() =>
+                                              handleEditModal(contact)
+                                            }
+                                          />
                                         </button>
                                         <button className="p-3 text-red-400 rounded w-max font-semibold ">
                                           <CgTrash
@@ -401,6 +480,14 @@ export default function Contacts() {
             toDeleteid={isToDelete}
             setContactList={setContactList}
             ContactList={ContactList}
+          />
+        )}
+        {ShowEditModal && (
+          <ContactInformationModal
+            ContactList={ContactList}
+            setContactList={setContactList}
+            close={() => setShowEditModal(false)}
+            user={CurrentUser}
           />
         )}
       </main>
