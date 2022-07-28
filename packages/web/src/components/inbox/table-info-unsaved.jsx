@@ -787,7 +787,7 @@ const TableUnsavedInfo = ({
                             ))}
                           </td>
                           <td className="p-2 align-top w-1/6">
-                            <div className="relative" disabled={true}>
+                            <div className="relative mt-5" disabled={true}>
                               {/* <button
                                 className="
                               text-opacity-90 1
