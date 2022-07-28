@@ -20,16 +20,16 @@ export default function About({
   ContactList,
   setContactList,
 }) {
-  const [Firstname, setFirstname] = useState(user.name.split(" ")[0]);
-  const [Lastname, setLastname] = useState(user.name.split(" ")[1]);
-  const [Address, setAddress] = useState(user.address);
+  const [Firstname, setFirstname] = useState(user.firstName);
+  const [Lastname, setLastname] = useState(user.lastName);
+  const [Address, setAddress] = useState(user.address ? user.address : "");
   const [Email, setEmail] = useState(user.email);
   const [UserType, setUserType] = useState({
-    value: user.type,
-    label: user.type,
+    value: user.type ? user.type : "",
+    label: user.type ? user.type : "None",
   });
-  const [Mobile, setMobile] = useState(user.mobile);
-  const [Company, setCompany] = useState(user.company);
+  const [Mobile, setMobile] = useState(user.mobile ? user.mobile : "");
+  const [Company, setCompany] = useState("LOPHILS");
   const [isDisabled, setisDisabled] = useState(true);
 
   const ChangesHaveMade = (obj) => {
@@ -44,6 +44,10 @@ export default function About({
       return false;
     } else return true;
   };
+
+  useEffect(() => {
+    console.log("USER", user);
+  }, []);
 
   useEffect(() => {
     setisDisabled(ChangesHaveMade(user));

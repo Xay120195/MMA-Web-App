@@ -22,8 +22,8 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
   const [IsHovering, setIsHovering] = useState(false);
   const [InputData, setInputData] = useState([
     {
-      team: user.team,
-      usertype: user.type,
+      team: user.team ? user.team : "",
+      usertype: user.type ? user.team : "",
     },
   ]);
 
@@ -177,7 +177,7 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
               styles={customStyles}
               isDisabled={!isEditing}
               onChange={(e, val) => handleSelectChange(e, val, i, `team`)}
-              className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+              className="rounded-md w-80 focus:border-gray-100 text-gray-400"
             />
           </div>
           <div className="flex flex-col p-1">
@@ -197,7 +197,7 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
                 label: x.usertype,
               }}
               onChange={(e, val) => handleSelectChange(e, val, i, `usertype`)}
-              className="rounded-md w-56 focus:border-gray-100 text-gray-400 bg-white"
+              className="rounded-md w-80 focus:border-gray-100 text-gray-400 bg-white"
             />
           </div>
           <div className="flex flex-col p-1">
