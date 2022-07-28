@@ -447,7 +447,7 @@ const TableSavedInfo = ({
                           <div class="flex inline-flex w-full">
                             <div className="flex items-start mt-2 h-full w-full">
                               <p className="w-24 group py-1 px-2 ml-1 rounded textColor bg-white inline-flex items-center"></p>
-                              <div className="p-2 h-full font-poppins w-full rounded-sm border"
+                              <div className="p-2 h-full font-poppins w-full rounded-sm"
                               dangerouslySetInnerHTML={{
                                 __html: item.description,
                               }}
@@ -474,9 +474,9 @@ const TableSavedInfo = ({
 
                           {item.attachments.items.map((item_attach, index) => (
                             <React.Fragment key={item_attach.id} >
-                              <div className="flex items-start mt-2 h-full w-full">
+                              <div className="flex items-start mt-2 h-full w-full border-t">
                                   <p
-                                    className=" w-24 cursor-pointer ml-5 mr-1 text-opacity-90 1
+                                    className="mt-1 w-24 cursor-pointer ml-5 mr-1 text-opacity-90 1
                                     textColor  group text-xs font-semibold py-1 px-2  rounded textColor 
                                     bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none 
                                     focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
@@ -492,7 +492,7 @@ const TableSavedInfo = ({
                                     {item_attach.name.length >= 10 ? "..." : ""}
                                   </p>
                                   <div
-                                    className="p-2 h-full font-poppins w-full rounded-sm border"
+                                    className="mt-1 p-2 h-full font-poppins w-full rounded-sm"
                                     dangerouslySetInnerHTML={{
                                       __html: item_attach.details,
                                     }}
@@ -503,7 +503,7 @@ const TableSavedInfo = ({
                                         (x) =>
                                         <button
                                           key={x.id}
-                                          className=" mb-1 h-6 mr-1 text-opacity-90 1 group text-xs 
+                                          className="mt-1 mb-1 h-6 mr-1 text-opacity-90 1 group text-xs 
                                           font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 
                                           focus:outline-none focus-visible:ring-2 focus-visible:ring-white 
                                           focus-visible:ring-opacity-75"
