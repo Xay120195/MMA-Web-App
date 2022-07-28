@@ -5,6 +5,7 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 var momentTZ = require("moment-timezone");
+
 async function listCompanyUsers(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
@@ -129,10 +130,20 @@ async function listCompanyMatters(ctx) {
       );
       const objCompMatters = compMattersResult.Items.map((i) => unmarshall(i));
 
-      const response = objCompMatters.map((item) => {
-        const filterMatter = objMatters.find((u) => u.id === item.matterId);
-        return { ...item, ...filterMatter };
-      });
+      // const response = objCompMatters.map((item) => {
+      //   const filterMatter = objMatters.find((u) => u.id === item.matterId);
+      //   return { ...item, ...filterMatter };
+      // });
+
+      const response = objCompMatters
+        .map((item) => {
+          const filterMatter = objMatters.find((u) => u.id === item.matterId);
+
+          if (filterMatter !== undefined) {
+            return { ...item, ...filterMatter };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
@@ -203,10 +214,20 @@ async function listCompanyClients(ctx) {
       );
       const objCompClients = compClientsResult.Items.map((i) => unmarshall(i));
 
-      const response = objCompClients.map((item) => {
-        const filterClient = objClients.find((u) => u.id === item.clientId);
-        return { ...item, ...filterClient };
-      });
+      // const response = objCompClients.map((item) => {
+      //   const filterClient = objClients.find((u) => u.id === item.clientId);
+      //   return { ...item, ...filterClient };
+      // });
+
+      const response = objCompClients
+        .map((item) => {
+          const filterClient = objClients.find((u) => u.id === item.clientId);
+
+          if (filterClient !== undefined) {
+            return { ...item, ...filterClient };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
@@ -316,12 +337,24 @@ async function listCompanyClientMatters(ctx) {
 
       const objCompCM = compCMResult.Items.map((i) => unmarshall(i));
 
-      const response = objCompCM.map((item) => {
-        const filterClientMatter = objCM.find(
-          (u) => u.id === item.clientMatterId
-        );
-        return { ...item, ...filterClientMatter };
-      });
+      // const response = objCompCM.map((item) => {
+      //   const filterClientMatter = objCM.find(
+      //     (u) => u.id === item.clientMatterId
+      //   );
+      //   return { ...item, ...filterClientMatter };
+      // });
+
+      const response = objCompCM
+        .map((item) => {
+          const filterClientMatter = objCM.find(
+            (u) => u.id === item.clientMatterId
+          );
+
+          if (filterClientMatter !== undefined) {
+            return { ...item, ...filterClientMatter };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,

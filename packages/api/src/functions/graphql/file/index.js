@@ -34,7 +34,6 @@ async function listFileLabels(ctx) {
     );
 
     if (labelIds.length !== 0) {
-      
       labelIds.filter(function (item, i, ar) {
         return ar.indexOf(item) === i;
       });
@@ -55,10 +54,21 @@ async function listFileLabels(ctx) {
       );
       const objFileLabels = fileLabelsResult.Items.map((i) => unmarshall(i));
 
-      const response = objFileLabels.map((item) => {
-        const filterLabel = objLabels.find((u) => u.id === item.labelId);
-        return { ...item, ...filterLabel };
-      });
+      // const response = objFileLabels.map((item) => {
+      //   const filterLabel = objLabels.find((u) => u.id === item.labelId);
+      //   return { ...item, ...filterLabel };
+      // });
+
+      const response = objFileLabels
+        .map((item) => {
+          const filterLabel = objLabels.find((u) => u.id === item.labelId);
+
+          if (filterLabel !== undefined) {
+            return { ...item, ...filterLabel };
+          }
+        })
+        .filter((a) => a !== undefined);
+
       return {
         items: response,
         nextToken: fileLabelsResult.LastEvaluatedKey
@@ -111,7 +121,6 @@ async function listFileBackgrounds(ctx) {
     ).map((f) => marshall({ id: f.backgroundId }));
 
     if (backgroundIds.length !== 0) {
-
       backgroundIds.filter(function (item, i, ar) {
         return ar.indexOf(item) === i;
       });
@@ -134,12 +143,25 @@ async function listFileBackgrounds(ctx) {
         unmarshall(i)
       );
 
-      const response = objFileBackgrounds.map((item) => {
-        const filterBackground = objBackgrounds.find(
-          (u) => u.id === item.backgroundId
-        );
-        return { ...item, ...filterBackground };
-      });
+      // const response = objFileBackgrounds.map((item) => {
+      //   const filterBackground = objBackgrounds.find(
+      //     (u) => u.id === item.backgroundId
+      //   );
+      //   return { ...item, ...filterBackground };
+      // });
+
+      const response = objFileBackgrounds
+        .map((item) => {
+          const filterBackground = objBackgrounds.find(
+            (u) => u.id === item.backgroundId
+          );
+
+          if (filterBackground !== undefined) {
+            return { ...item, ...filterBackground };
+          }
+        })
+        .filter((a) => a !== undefined);
+
       return {
         items: response,
         nextToken: fileBackgroundsResult.LastEvaluatedKey
