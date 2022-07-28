@@ -3098,7 +3098,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 className={
                                                                   data.id ===
                                                                   descriptionClassId
-                                                                    ? 'w-full p-2 font-poppins h-full mx-2'
+                                                                    ? 'w-96 p-2 font-poppins h-full mx-2'
                                                                     : 'w-96 p-2 font-poppins h-full mx-2 single-line'
                                                                 }
                                                                 style={{
@@ -3106,6 +3106,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                   outlineColor:
                                                                     'rgb(204, 204, 204, 0.5)',
                                                                   outlineWidth: 'thin',
+                                                                  maxHeight: "100px",
+                                                                  overflow: "auto"
                                                                 }}
                                                                 suppressContentEditableWarning={
                                                                   true
@@ -3178,6 +3180,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         'rgb(204, 204, 204, 0.5)',
                                                                       outlineWidth:
                                                                         'thin',
+                                                                      maxHeight: "30px",
+                                                                      overflow: "auto"
                                                                     }}
                                                                     suppressContentEditableWarning
                                                                     onClick={(event) =>
