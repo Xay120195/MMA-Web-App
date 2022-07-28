@@ -1,4 +1,5 @@
 import '../../assets/styles/Briefs.css';
+import "../../assets/styles/Mobile.css";
 
 import {
   FaBook,
@@ -26,7 +27,7 @@ import { Auth } from 'aws-amplify';
 import { BiArrowToTop } from 'react-icons/bi';
 import BlankList from '../../assets/images/RFI_Blank_List.svg';
 import BlankState from '../dynamic-blankstate';
-import BlankStateMobile from '../blank-state-mobile';
+import BlankStateMobile from "../mobile-blank-state";
 import { BsFillTrashFill } from 'react-icons/bs';
 import { CgChevronLeft } from 'react-icons/cg';
 import CreateBriefsModal from './create-brief-modal';
@@ -40,8 +41,7 @@ import ToastNotification from '../toast-notification';
 import { useIdleTimer } from 'react-idle-timer';
 import { useParams } from 'react-router-dom';
 import useWindowDimensions from '../../shared/windowDimensions';
-import BlankStateMobile from "../mobile-blank-state";
-import "../../assets/styles/Mobile.css";
+
 // import { matter_rfi, questions } from "./data-source";
 
 // import CreateRFIModal from "./create-RFI-modal";
@@ -553,13 +553,13 @@ export default function Briefs() {
                 <p className="flex flex-col">
                   <span className="text-lg font-bold">Background Page</span>
                   <span className=" text-grey-600">
-                    {client_name} - {matter_name}
+                    {client_name} - {matter_name} 
                   </span>
                 </p>
                 <div className="flex items-center gap-3 text-gray-500 mt-2">
                   <Link to="/dashboard">
                     <div className="flex items-center gap-3">
-                      <FaTachometerAlt />
+                      <FaTachometerAlt /> 
                       <p className="hidden sm:block font-semibold">Dashboard</p>
                     </div>
                   </Link>

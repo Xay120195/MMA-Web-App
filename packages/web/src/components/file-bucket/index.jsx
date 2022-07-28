@@ -45,7 +45,7 @@ import { AppRoutes } from '../../constants/AppRoutes';
 import { Auth } from 'aws-amplify';
 import { BiArrowToTop } from 'react-icons/bi';
 import BlankState from '../blank-state';
-import BlankStateMobile from '../blank-state-mobile';
+import BlankStateMobile from "../mobile-blank-state";
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
 import FilterLabels from './filter-labels-modal';
@@ -65,7 +65,6 @@ import imgLoading from '../../assets/images/loading-circle.gif';
 import { useIdleTimer } from 'react-idle-timer';
 import { useParams } from 'react-router-dom';
 import useWindowDimensions from '../../shared/windowDimensions';
-import BlankStateMobile from "../mobile-blank-state";
 import "../../assets/styles/Mobile.css";
 
 //import AccessControl from "../../shared/accessControl";
@@ -2166,7 +2165,26 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isExpandAllActive, setIsExpandAllActive] = useState(false);
   const { height, width } = useWindowDimensions();
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
 
+  function countLines(tag) {
+    var divHeight = tag.offsetHeight
+    var lineHeight = parseInt(window.getComputedStyle(tag).getPropertyValue("line-height"));
+    var lines = Math.round(divHeight / lineHeight);
+    return lines;
+  }
+
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-94-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-94-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+  }, [height, width, headerReadMore]);
+  
   function handleReadMoreStateDesc(fileId) {
     if (
       readMoreStateDesc.find((temp) => {
