@@ -284,7 +284,7 @@ const TableSavedInfo = ({
               Attachments and Description
             </th>
             <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/6">
-              <p className="-ml-12 font-medium">Labels</p>
+              Labels
             </th>
             <th className="font-medium px-2 py-4 text-center whitespace-nowrap w-1/6">
               Client Matter
@@ -343,7 +343,7 @@ const TableSavedInfo = ({
                           key={key}
                           //ref={registerChild}
                         >
-                          <td className="p-2 align-top w-10">
+                          <td className="p-2 align-top w-10 ">
                             <input
                               key={item.id}
                               className="cursor-pointer mr-1"
@@ -354,8 +354,8 @@ const TableSavedInfo = ({
                               checked={selectedSavedItems.includes(item.id)}
                             />
                           </td>
-                          <td className="p-2 align-top w-1/4">
-                            <div className="w-96">
+                          <td className="p-2 align-top w-1/4" >
+                            <div>
                             <p className="text-sm font-medium">{item.subject}</p>
                             <p className="text-xs">
                               {item.from} at{" "}
@@ -364,9 +364,10 @@ const TableSavedInfo = ({
                             <p>
                               <div className="relative">
                                 <button
-                                  className="p-1 text-blue-600
-                            text-opacity-90
-                            text-[12px] font-normal inline-flex items-center gap-x-2 rounded primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 text-xs "
+                                  className="p-1 text-blue-600 text-opacity-90
+                                   text-[12px] font-normal inline-flex items-center gap-x-2 rounded 
+                                   primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 
+                                   focus-visible:ring-white focus-visible:ring-opacity-75 text-xs "
                                   type="button"
                                   aria-expanded="false"
                                   id={item.id}
@@ -379,7 +380,7 @@ const TableSavedInfo = ({
                               {show && snippetId === item.id && (
                                 <div
                                   ref={(el) => (ref.current[index] = el)}
-                                  className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                  className=" absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                                   id={item.id}
                                 >
                                   <p>From : {item.from}</p>
@@ -442,25 +443,25 @@ const TableSavedInfo = ({
                             </div>
                             </div>
                           </td>
-                          <td className="p-2 align-top w-11/12">
-                          <div class="flex inline-flex h-full">
-                            <div className="flex items-start mt-2">
-                              <p className="w-24 group py-1 px-2  rounded textColor bg-white inline-flex items-center"></p>
-                              <div className="p-2 w-96 h-7 font-poppins rounded-sm float-right border"
+                          <td className="p-2 align-top w-2/8 h-full" colSpan={2}>
+                          <div class="flex inline-flex w-full">
+                            <div className="flex items-start mt-2 h-full w-full">
+                              <p className="w-24 group py-1 px-2 ml-1 rounded textColor bg-white inline-flex items-center"></p>
+                              <div className="p-2 h-full font-poppins w-full rounded-sm"
                               dangerouslySetInnerHTML={{
                                 __html: item.description,
                               }}
                               >
                               </div>
                             </div>
-
-                            <div className="ml-12 mt-3  w-64 inline-flex flex-wrap ">
+                            <div className="ml-8 mt-2 w-80 inline-flex flex-wrap ">
                               {item.labels.items.map((i, index) => (
                                 <button
                                   key={i.id}
-                                  className=" relative mb-1 h-6 mr-1
-                                    text-opacity-90 1
-                                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                                  className=" relative mb-1 h-6 mr-1 text-opacity-90 1 group text-xs
+                                   font-semibold py-1 px-2 rounded textColor bg-gray-100 hover:text-opacity-100 
+                                   focus:outline-none focus-visible:ring-2 focus-visible:ring-white 
+                                   focus-visible:ring-opacity-75"
                                   id="headlessui-popover-button-87"
                                   type="button"
                                   aria-expanded="false"
@@ -470,13 +471,15 @@ const TableSavedInfo = ({
                                 ))}
                             </div>
                           </div>
-                            {item.attachments.items.map((item_attach, index) => (
-                              <React.Fragment key={item_attach.id} >
-                                <div className="flex mr-10 items-start mt-2 h-full ">
+
+                          {item.attachments.items.map((item_attach, index) => (
+                            <React.Fragment key={item_attach.id} >
+                              <div className="flex items-start mt-2 h-full w-full border-t">
                                   <p
-                                    className=" w-24
-                                    cursor-pointer mr-1 text-opacity-90 1
-                                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
+                                    className="mt-1 w-24 cursor-pointer ml-5 mr-1 text-opacity-90 1
+                                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor 
+                                    bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none 
+                                    focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                                     id={item_attach.id}
                                     title={item_attach.name}
                                     onClick={() =>
@@ -489,20 +492,21 @@ const TableSavedInfo = ({
                                     {item_attach.name.length >= 10 ? "..." : ""}
                                   </p>
                                   <div
-                                    className="p-2 h-7 font-poppins rounded-sm w-96 border"
+                                    className="mt-1 p-2 h-full font-poppins w-full rounded-sm"
                                     dangerouslySetInnerHTML={{
                                       __html: item_attach.details,
                                     }}
                                   ></div>
-                                  <div className="flex-wrap inline-flex ml-12 w-80 h-full">
+                                  <div className="flex-wrap inline-flex ml-8 w-80 h-full">
                                     {
                                       item_attach.labels.items.map(
                                         (x) =>
                                         <button
                                           key={x.id}
-                                          className=" mb-1 h-6
-                                            text-opacity-90 1
-                                            textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                                          className="mt-1 mb-1 h-6 mr-1 text-opacity-90 1 group text-xs 
+                                          font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 
+                                          focus:outline-none focus-visible:ring-2 focus-visible:ring-white 
+                                          focus-visible:ring-opacity-75"
                                           id="headlessui-popover-button-87"
                                           type="button"
                                           aria-expanded="false"
@@ -512,9 +516,9 @@ const TableSavedInfo = ({
                                       )
                                     }
                                   </div>
-                                </div>
-                              </React.Fragment>
-                            ))}
+                              </div>
+                            </React.Fragment>
+                          ))}
                           </td>
                           {/* <td  className="p-2 align-top w-1/6" >
                             <div className="ml-12 mt-1 w-80 inline-flex ">

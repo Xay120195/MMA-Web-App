@@ -250,7 +250,7 @@ const Authentication = () => {
       <div className="grid grid-cols-1 gap-4 min-h-screen sm:min-h-none sm:grid-cols-2  bg-gray-100 sm:bg-white">
         <div className="welcome-message">
           <h1>
-            A Software built for Managing Affidavits and Exchanging RFIs with
+            A Software Built for Managing Affidavits and Exchanging RFIs with
             your Clients
           </h1>
         </div>
@@ -260,42 +260,46 @@ const Authentication = () => {
             <h1 className="sm:hidden font-bold my-4">AFFIDAVITS &amp; RFI </h1>
           </center>
           <center>
-          <AmplifyAuthenticator usernameAlias="email">
-            <AmplifySignIn
-              usernameAlias="email"
-              slot="sign-in"
-              headerText="Welcome Back!"
-              formFields={AuthFields.login}
-              className="sm:w-full test" 
-            >
-              <div className="sm:hidden font-medium text-black" slot="header-subtitle">A Software built for Managing Affidavits and Exchanging RFIs with
-              your Clients</div>
-            </AmplifySignIn>
-            <AmplifySignUp
-              id="amplify-sign-up"
-              usernameAlias="email"
-              slot="sign-up"
-              formFields={signUpFields}
-              headerText="Start Your Free Trial Now"
-              className="sm:w-full"
-            />
-            <AmplifyForgotPassword
-              usernameAlias="email"
-              slot="forgot-password"
-              formFields={AuthFields.forgotpassword}
-              headerText="Forgot Password"
-              className="sm:w-full"
-            />
-            {/* <AmplifyRequireNewPassword
+            <AmplifyAuthenticator usernameAlias="email">
+              <AmplifySignIn
+                usernameAlias="email"
+                slot="sign-in"
+                headerText="Welcome Back!"
+                formFields={AuthFields.login}
+                className="sm:w-full test"
+              >
+                <div
+                  className="sm:hidden font-medium text-black"
+                  slot="header-subtitle"
+                >
+                  A Software Built for Managing Affidavits and Exchanging RFIs
+                  with your Clients
+                </div>
+              </AmplifySignIn>
+              <AmplifySignUp
+                id="amplify-sign-up"
+                usernameAlias="email"
+                slot="sign-up"
+                formFields={signUpFields}
+                headerText="Start Your Free Trial Now"
+                className="sm:w-full"
+              />
+              <AmplifyForgotPassword
+                usernameAlias="email"
+                slot="forgot-password"
+                formFields={AuthFields.forgotpassword}
+                headerText="Forgot Password"
+                className="sm:w-full"
+              />
+              {/* <AmplifyRequireNewPassword
               id="amplify-require-new-password"
               usernameAlias="email"
               slot="require-new-password"
               formFields={requireNewPassword}
               headerText="Password Change Required"
             /> */}
-          </AmplifyAuthenticator>
+            </AmplifyAuthenticator>
           </center>
-          
         </div>
       </div>
     </>

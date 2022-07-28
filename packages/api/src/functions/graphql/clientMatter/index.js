@@ -51,10 +51,20 @@ async function listClientMatterLabels(ctx) {
       );
       const objCMLabels = cmLabelsResult.Items.map((i) => unmarshall(i));
 
-      const response = objCMLabels.map((item) => {
-        const filterLabel = objLabels.find((u) => u.id === item.labelId);
-        return { ...item, ...filterLabel };
-      });
+      // const response = objCMLabels.map((item) => {
+      //   const filterLabel = objLabels.find((u) => u.id === item.labelId);
+      //   return { ...item, ...filterLabel };
+      // });
+
+      const response = objCMLabels
+        .map((item) => {
+          const filterLabel = objLabels.find((u) => u.id === item.labelId);
+
+          if (filterLabel !== undefined) {
+            return { ...item, ...filterLabel };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
@@ -142,12 +152,24 @@ async function listClientMatterBackgrounds(ctx) {
         (i) => unmarshall(i)
       );
 
-      const response = objCMBackgrounds.map((item) => {
-        const filterBackground = objBackgrounds.find(
-          (u) => u.id === item.backgroundId
-        );
-        return { ...item, ...filterBackground };
-      });
+      // const response = objCMBackgrounds.map((item) => {
+      //   const filterBackground = objBackgrounds.find(
+      //     (u) => u.id === item.backgroundId
+      //   );
+      //   return { ...item, ...filterBackground };
+      // });
+
+      const response = objCMBackgrounds
+        .map((item) => {
+          const filterBackground = objBackgrounds.find(
+            (u) => u.id === item.backgroundId
+          );
+
+          if (filterBackground !== undefined) {
+            return { ...item, ...filterBackground };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
@@ -328,10 +350,20 @@ async function listClientMatterRFIs(ctx) {
       const objRFIs = rfisResult.Responses.RFITable.map((i) => unmarshall(i));
       const objCMRFIs = cmRFIsResult.Items.map((i) => unmarshall(i));
 
-      const response = objCMRFIs.map((item) => {
-        const filterRFI = objRFIs.find((u) => u.id === item.rfiId);
-        return { ...item, ...filterRFI };
-      });
+      // const response = objCMRFIs.map((item) => {
+      //   const filterRFI = objRFIs.find((u) => u.id === item.rfiId);
+      //   return { ...item, ...filterRFI };
+      // });
+
+      const response = objCMRFIs
+        .map((item) => {
+          const filterRFI = objRFIs.find((u) => u.id === item.rfiId);
+
+          if (filterRFI !== undefined) {
+            return { ...item, ...filterRFI };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
@@ -375,7 +407,11 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run clientMatter >>", ctx.info.fieldName, ctx.arguments);
+  console.log(
+    "~aqs.watch:: run clientMatter >>",
+    ctx.info.fieldName,
+    ctx.arguments
+  );
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];
