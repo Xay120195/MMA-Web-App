@@ -230,6 +230,22 @@ custom:
         field: featureCreate
         request: false
         response: false
+      # Feature
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: customUserType
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: customUserTypes
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeCreate
+        request: false
+        response: false
       # Matter File
       - dataSource: LambdaQueryDS
         type: Query

@@ -218,6 +218,13 @@ type User {
   updatedAt: AWSDateTime
 }
 
+type CustomUserType {
+  id: ID!
+  name: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
 type UserColumnSettings {
   id: ID
   userId: ID
@@ -543,6 +550,8 @@ type Query {
   user(id: String): User
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
   users: [User]
+  customUserTypes: [CustomUserType]
+  customUserType(id: ID): CustomUserType
   gmailMessage(id: ID): GmailMessage
   gmailMessages(
     email: String
@@ -739,4 +748,6 @@ type Mutation {
   ): GmailMessageAttachment
   gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
   gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
+  customUserTypeCreate(name: String, companyId: ID): CustomUserType
+  
 }

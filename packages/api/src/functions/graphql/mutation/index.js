@@ -126,6 +126,55 @@ async function createFeature(data) {
   return resp;
 }
 
+async function createCustomUserType(data) {
+  let resp = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      createdAt: toUTC(new Date()),
+    };
+
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
+      TableName: "CustomUserTypeTable",
+      Item: param,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    if (request) {
+      const companyClientParams = {
+        id: v4(),
+        customUserTypeId: rawParams.id,
+        companyId: data.companyId,
+        createdAt: toUTC(new Date()),
+      };
+
+      const companyClientCommand = new PutItemCommand({
+        TableName: "CompanyCustomUserTypeTable",
+        Item: marshall(companyClientParams),
+      });
+
+      const companyClientRequest = await ddbClient.send(companyClientCommand);
+      resp = companyClientRequest
+        ? {
+            ...rawParams,
+            companyId: data.companyId,
+          }
+        : {};
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function createUserColumnSettings(data) {
   let resp = {};
   try {
@@ -3100,6 +3149,9 @@ const resolvers = {
     },
     featureCreate: async (ctx) => {
       return await createFeature(ctx.arguments);
+    },
+    customUserTypeCreate: async (ctx) => {
+      return await createCustomUserType(ctx.arguments);
     },
     clientCreate: async (ctx) => {
       return await createClient(ctx.arguments);
