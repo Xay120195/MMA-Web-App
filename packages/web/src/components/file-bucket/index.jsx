@@ -3113,7 +3113,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     'rgb(204, 204, 204, 0.5)',
                                                                   outlineWidth: 'thin',
                                                                   maxHeight: "100px",
-                                                                  overflow: "auto"
+                                                                  overflowY: "auto"
                                                                 }}
                                                                 suppressContentEditableWarning={
                                                                   true
@@ -3188,7 +3188,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       outlineWidth:
                                                                         'thin',
                                                                       maxHeight: "35px",
-                                                                      overflow: "auto"
+                                                                      overflowY: "auto"
                                                                     }}
                                                                     suppressContentEditableWarning
                                                                     onClick={(event) =>
