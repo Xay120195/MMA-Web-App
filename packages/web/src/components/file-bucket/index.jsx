@@ -1884,14 +1884,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setDescriptionClassId(id);
     setDescriptionClass(false);
 
-    const next = itemsRef.current[index];
+    /*const next = itemsRef.current[index];
     if (next) {
       next.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
         inline: 'center',
       });
-    }
+    }*/
   };
 
   const handleChangeDescription = (e, description, id, index) => {
@@ -1899,14 +1899,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setDescriptionClassId(id);
     setDescriptionClass(false);
 
-    const next = itemsRef.current[index];
+    /* const next = itemsRef.current[index];
     if (next) {
       next.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
         inline: 'center',
       });
-    }
+    } */
   };
 
   const handleChangeDesc = (event) => {
@@ -3172,7 +3172,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 a.order > b.order ? 1 : -1
                                                               )
                                                               .map((background, i) => (
-                                                              <React.Fragment key={background.id}>
                                                                 <div className="flex mt-3.5">
                                                                   <span
                                                                     className={
@@ -3249,7 +3248,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     </p>
                                                                   )}
                                                                 </div>
-                                                              </React.Fragment>
                                                               ))}
                                                           </td>
                                                           <td
