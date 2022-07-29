@@ -105,7 +105,7 @@ export function ClientMatters() {
                               <button 
                                 className={"bg-gray-100 p-0.5 sm:p-0 text-gray-400 sm:text-gray-700 font-semibold rounded inline-flex"}
                                 style={{backgroundColor: checkIsActive(item.id)&&width<640?"rgb(31 41 55)":"",
-                                  borderRadius: checkIsActive(item.id)?"50%":"",
+                                  borderRadius: checkIsActive(item.id)&&width<640?"50%":"",
                                   }}
                                 onClick={()=>handleActiveState(item.id,true)}>
                                 <IoIcons.IoEllipsisVertical className={(checkIsActive(item.id)&&width<640?"text-white":"")}/>
@@ -115,7 +115,7 @@ export function ClientMatters() {
                                 <div onMouseDown={()=>handleActiveState(item.id,false)}
                                   className={(checkIsActive(item.id)&&width<640? "block":"hidden") +
                                   (" fixed left-0 top-0 opacity-20 h-screen w-screen bg-black z-40 dropDownBg")}></div>
-                                <ul className={(checkIsActive(item.id)? "block":"hidden")+ 
+                                <ul className={(checkIsActive(item.id)&&width<640? "block":"hidden")+ 
                                   (" sm:absolute text-gray-700 p-4 sm:p-2 font-semibold shadow-md z-50 dropDownCSS")}>
                                   <button className="sm:hidden py-2 flex w-full" onClick={()=>handleActiveState(item.id,false)}>
                                     <div className="bg-gray-400 h-1.5 m-auto rounded-lg" style={{width:"50vw"}}></div>

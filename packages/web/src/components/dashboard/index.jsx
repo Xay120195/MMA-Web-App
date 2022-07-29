@@ -532,7 +532,7 @@ mutation addMatter($companyId: String, $name: String) {
           onScroll={(e) => handleScrollEvent(e)}
           style={{scrollBehavior:"smooth"}}
           className={
-            "overflow-y-auto px-5 sm:px-0 " + 
+            "overflow-y-auto px-5 sm:px-0 w-full sm:w-auto " + 
             //Made every view to tile view in dashboard
             (mattersView === "grid"
               ? "grid grid-flow-row auto-rows-max gap-y-5 sm:grid-cols-4 sm:gap-4"

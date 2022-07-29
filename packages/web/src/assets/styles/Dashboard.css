@@ -3,52 +3,46 @@
 }
 
 @media (max-width: 640px) { 
-.dropdown:hover .dropDownBg{
-  display: block;
-}
+  .dropdown:hover .dropDownBg{
+    display: block;
+  }
 
-.dropDownButton:hover .hovered{
-  color:white;
-}
-.dropDownButton:hover {
-  background-color: rgb(31 41 55);
-  border-radius: 50%;
-}
-.dropDownButton {
-  padding: 3px; 
-  margin:-3px;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
-  outline:none;
-}
+  .dropDownButton:hover .hovered{
+    color:white;
+  }
+  .dropDownButton:hover {
+    background-color: rgb(31 41 55);
+    border-radius: 50%;
+  }
+  .dropDownButton {
+    padding: 3px; 
+    margin:-3px;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline:none;
+  }
 
-.dropDownCSS {
-  border-radius:20px 20px 0 0;
-  position:fixed;
-  left:0;
-  bottom:0;
-  width:100%;
-  background-color: white;
-  outline:none;
-}
-
-.dropDownCSS li:hover {
-  background-color:rgb(31 41 55);
-  color:white;
-}
+  .dropDownCSS {
+    border-radius:20px 20px 0 0;
+    position:fixed;
+    left:0;
+    bottom:0;
+    width:100%;
+    background-color: white;
+    outline:none;
+  }
 
 }
 
 @media (min-width: 640px) { 
-.dropDownButton {
-  outline: medium invert color;
-}
-.dropDownCSS{
-  border-radius:10px 10px 10px 10px;
-  background-color:white;
-  position:absolute;
-  width:auto;
-  left:auto;
-  bottom:auto;
-}
-
+  .dropDownButton {
+    outline: medium invert color;
+  }
+  .dropDownCSS{
+    border-radius:10px 10px 10px 10px;
+    background-color:white;
+    position:absolute;
+    width:auto;
+    left:auto;
+    bottom:auto;
+  }
 }
