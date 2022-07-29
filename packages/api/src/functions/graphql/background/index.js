@@ -52,10 +52,20 @@ async function listBackgroundFiles(ctx) {
         unmarshall(i)
       );
 
-      const response = objBackgroundFiles.map((item) => {
-        const filterFile = objFiles.find((u) => u.id === item.fileId);
-        return { ...item, ...filterFile };
-      });
+      // const response = objBackgroundFiles.map((item) => {
+      //   const filterFile = objFiles.find((u) => u.id === item.fileId);
+      //   return { ...item, ...filterFile };
+      // });
+
+      const response = objBackgroundFiles
+        .map((item) => {
+          const filterFile = objFiles.find((u) => u.id === item.fileId);
+
+          if (filterFile !== undefined) {
+            return { ...item, ...filterFile };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       return {
         items: response,
@@ -186,7 +196,11 @@ const resolvers = {
 };
 
 exports.handler = async (ctx) => {
-  console.log("~aqs.watch:: run background >>", ctx.info.fieldName, ctx.arguments);
+  console.log(
+    "~aqs.watch:: run background >>",
+    ctx.info.fieldName,
+    ctx.arguments
+  );
   const typeHandler = resolvers[ctx.info.parentTypeName];
   if (typeHandler) {
     const resolver = typeHandler[ctx.info.fieldName];
