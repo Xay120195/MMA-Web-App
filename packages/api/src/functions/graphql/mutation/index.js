@@ -175,6 +175,40 @@ async function createCustomUserType(data) {
   return resp;
 }
 
+async function updateCustomUserType(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "CustomUserTypeTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await ddbClient.send(cmd);
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function createUserColumnSettings(data) {
   let resp = {};
   try {
@@ -3152,6 +3186,16 @@ const resolvers = {
     },
     customUserTypeCreate: async (ctx) => {
       return await createCustomUserType(ctx.arguments);
+    },
+    customUserTypeUpdate: async (ctx) => {
+      const { id, name } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (name !== undefined) data.name = name;
+
+      return await updateCustomUserType(id, data);
     },
     clientCreate: async (ctx) => {
       return await createClient(ctx.arguments);

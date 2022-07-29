@@ -84,6 +84,7 @@ type Company {
   users(limit: Int, nextToken: String): CompanyUserConn
   clients(limit: Int, nextToken: String): CompanyClientConn
   matters(limit: Int, nextToken: String): CompanyMatterConn
+  customUserTypes(limit: Int, nextToken: String): CompanyCustomUserTypeConn
   clientMatters(
     limit: Int
     nextToken: String
@@ -455,6 +456,11 @@ type CompanyUserConn {
   nextToken: String
 }
 
+type CompanyCustomUserTypeConn {
+  items: [CustomUserType]
+  nextToken: String
+}
+
 type UserCompanyConn {
   items: [Company]
   nextToken: String
@@ -749,5 +755,5 @@ type Mutation {
   gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
   gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
   customUserTypeCreate(name: String, companyId: ID): CustomUserType
-  
+  customUserTypeUpdate(id: ID, name: String): CustomUserType
 }
