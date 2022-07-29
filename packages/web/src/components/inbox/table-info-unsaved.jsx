@@ -13,6 +13,81 @@ import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from
 
 var moment = require("moment");
 
+/*const qGmailMessagesbyCompany = `
+query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String, $startDate: String, $endDate: String, $userTimeZone: String) {
+  company(id: $id) {
+    gmailToken {
+      refreshToken
+      id
+      userId
+      companyId
+      updatedAt
+    }
+    gmailMessages(
+      isDeleted: $isDeleted
+      isSaved: $isSaved
+      limit: $limit
+      nextToken: $nextToken
+      recipient: $recipient
+      startDate: $startDate
+      endDate: $endDate
+      userTimeZone: $userTimeZone
+    ) {
+      items {
+        id
+        from
+        to
+        cc
+        bcc
+        subject
+        date
+        snippet
+        payload {
+          content
+        }
+        labels {
+          items {
+            id
+            name
+          }
+        }
+        description
+        clientMatters {
+          items {
+            id
+            client {
+              id
+              name
+            }
+            matter {
+              id
+              name
+            }
+          }
+        }
+        attachments {
+          items {
+            id
+            details
+            name
+            s3ObjectKey
+            size
+            type
+            labels {
+              items {
+                id
+                name
+              }
+            }
+          }
+        }
+        receivedAt
+      }
+      nextToken
+    }
+  }
+}`;*/
+
 const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id: ID) {
   gmailMessageAttachmentUpdate(id: $id, details: $details) {
     id
@@ -32,7 +107,7 @@ mutation tagGmailMessageClientMatter($clientMatterId: ID, $gmailMessageId: Strin
     clientMatterId: $clientMatterId
     gmailMessageId: $gmailMessageId
   ) {
-    id
+    id,
   }
 }`;
 
@@ -54,6 +129,10 @@ const TableUnsavedInfo = ({
   emailFilters,
   labelsList,
   waitUnSaved,
+  emailIntegration,
+  userTimeZone,
+  momentTZ,
+  qGmailMessagesbyCompany,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -181,11 +260,39 @@ const TableUnsavedInfo = ({
           },
         ];
 
+        // run updated labels query
+        const params = {
+          query: qGmailMessagesbyCompany,
+          variables: {
+            id: companyId,
+            isSaved: false,
+            recipient: emailIntegration,
+            userTimeZone: userTimeZone,
+            startDate:
+            emailFilters.startDate != null
+                ? momentTZ(emailFilters.startDate, userTimeZone).format(
+                    "YYYY-MM-DD"
+                  )
+                : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+            endDate:
+            emailFilters.endDate != null
+                ? momentTZ(emailFilters.endDate, userTimeZone).format("YYYY-MM-DD")
+                : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+          },
+        };
+    
+        console.log("Get Messages by Company params:", params);
+        API.graphql(params).then((result) => {
+          const emailList = result.data.company.gmailMessages.items;
+          setUnsavedEmails(emailList);
+        });
+
         setResultMessage("Successfully updated.");
         setShowToast(true);
       });
     }
 
+    console.log(enabledArrays);
     let temp = [...enabledArrays];
     temp = [...temp, gmailMessageId];
     setEnabledArrays(temp);
@@ -293,9 +400,11 @@ const TableUnsavedInfo = ({
 
   const handleAddLabel = async (e, gmid) => {
     var selectedLabels = [];
+    var taggedLabels = [];
 
     for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
+      taggedLabels = [...taggedLabels, { id: e[i].value, name: e[i].label }];
     }
 
     console.log("selectedLabels", selectedLabels);
@@ -317,13 +426,23 @@ const TableUnsavedInfo = ({
       });
     }
     console.log("MainArray", unSavedEmails);
+
+    const newArrLabels = unSavedEmails;
+
+    newArrLabels.map(emails => {
+      if (emails.id === gmid) {
+        emails.labels.items = taggedLabels
+      }
+    });
+
+    console.log("updated", newArrLabels);
+    setUnsavedEmails(newArrLabels);
+
   };
 
-  const handleAddEmailAttachmentLabel = async (e, atid) => {
+  const handleAddEmailAttachmentLabel = async (e, atid, rowId) => {
     var selectedLabels = [];
     var taggedLabels = [];
-
-    console.log("arrr", unSavedEmails);
 
     for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
@@ -338,16 +457,6 @@ const TableUnsavedInfo = ({
           attachmentId: atid,
         },
       });
-
-      // const result1 = await API.graphql({
-      //   query: mTagFileLabel,
-      //   variables: {
-      //     labels: taggedLabels,
-      //     fileId: atid,
-      //   },
-      // });
-
-      // console.log("tagging", result1);
     } else {
       const result = await API.graphql({
         query: mAddEmailAttachmentLabel,
@@ -356,19 +465,28 @@ const TableUnsavedInfo = ({
           attachmentId: atid,
         },
       });
-
-      // const result1 = await API.graphql({
-      //   query: mTagFileLabel,
-      //   variables: {
-      //     labels: [],
-      //     fileId: atid,
-      //   },
-      // });
-
-      // console.log("tagging", result1);
     }
 
     console.log("MainArray", unSavedEmails);
+
+    var objIndex = unSavedEmails.findIndex(
+      (obj) => obj.id === rowId
+    );
+
+    const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(x => 
+      (x.id === atid ? { ...x, labels: { items: taggedLabels } } : x));
+
+    const updateArrAttachment = unSavedEmails;
+    updateArrAttachment.map((obj) => {
+      if (obj.id === rowId) {
+        obj.attachments.items = itemsAttachments
+      }
+    });
+
+    console.log("updateArr", updateArrAttachment);
+
+    setUnsavedEmails(updateArrAttachment);
+
   };
 
   const defaultLabels = (items) => {
@@ -379,7 +497,7 @@ const TableUnsavedInfo = ({
       }));
       return newOptions;
     } else {
-      return null;
+      return [];
     }
   };
 
@@ -398,11 +516,11 @@ const TableUnsavedInfo = ({
         // console.log("optionscheck",labelsList[i]);
 
         if (mainLabels[i].labelsExtracted.length === 0) {
-          return null;
+          return [];
         } else {
           if (mainLabels[i].cmid === cmid) {
             if(mainLabels[i].labelsExtracted.length === 0){
-              return null;
+              return [];
             }else{
               const newOptions = mainLabels[i].labelsExtracted.map(
                 ({ id: value, name: label }) => ({
@@ -416,7 +534,7 @@ const TableUnsavedInfo = ({
         }
       }
     } else {
-      return null;
+      return [];
     }
   };
 
@@ -526,6 +644,7 @@ const TableUnsavedInfo = ({
                             />
                           </td>
                           <td className="p-2 align-top w-1/4">
+                            <div className="w-96">
                             <p className="text-sm font-medium">{item.subject}</p>
                             <p className="text-xs">
                               {item.from} at{" "}
@@ -611,6 +730,7 @@ const TableUnsavedInfo = ({
                                 <p>CC: {item.cc}</p>
                               </span>
                             </div>
+                            </div>
                           </td>
                           <td className="p-2 align-top w-2/8">
                             <p
@@ -667,8 +787,8 @@ const TableUnsavedInfo = ({
                             ))}
                           </td>
                           <td className="p-2 align-top w-1/6">
-                            <div className="relative" disabled={true}>
-                              <button
+                            <div className="relative mt-5" disabled={true}>
+                              {/* <button
                                 className="
                               text-opacity-90 1
                               textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
@@ -677,7 +797,7 @@ const TableUnsavedInfo = ({
                                 aria-expanded="false"
                               >
                                 {item.labelIds}
-                              </button>
+                              </button> */}
                               <CreatableSelect
                                 defaultValue={() => defaultLabels(item.labels.items)}
                                 isMulti
@@ -710,7 +830,7 @@ const TableUnsavedInfo = ({
                                     : true
                                 }
                                 onChange={(e) =>
-                                  handleAddEmailAttachmentLabel(e, item_attach.id)
+                                  handleAddEmailAttachmentLabel(e, item_attach.id, item.id)
                                 }
                                 placeholder="Labels"
                                 className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"

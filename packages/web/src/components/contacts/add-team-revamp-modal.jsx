@@ -6,12 +6,8 @@ import { API, input } from "aws-amplify";
 import anime from "animejs";
 
 const options = [
-  { value: "OWNER", label: "Owner" },
-  { value: "LEGALADMIN", label: "Legal Admin" },
-  { value: "BARRISTER", label: "Barrister" },
-  { value: "EXPERT", label: "Expert" },
-  { value: "CLIENT", label: "Client" },
-  { value: "WITNESS", label: "Witness" },
+  { value: "Thomas Edison", label: "Thomas Edison" },
+  { value: "John Doe", label: "John Doe" },
 ];
 
 function uuidv4() {
@@ -29,16 +25,18 @@ function toTitleCase(str) {
   });
 }
 
-export default function AddContactModal({
+export default function AddTeamModal({
   close,
-  setContactList,
-  ContactList,
+  setTeamList,
+  TeamList,
   getContacts,
+  setShowBurst,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isDisabled, setisDisabled] = useState(false);
   const [IsHovering, setIsHovering] = useState(false);
+  const [TeamName, setTeamName] = useState("");
 
   function StopPropagate(e) {
     e.stopPropagation();
@@ -68,19 +66,13 @@ export default function AddContactModal({
 
   const [InputData, setInputData] = useState([
     {
-      firstName: "",
-      lastName: "",
-      company: {
-        id: localStorage.getItem("companyId"),
-        name: localStorage.getItem("company"),
-      },
-      email: "",
+      memberName: "",
       userType: "",
     },
   ]);
 
   const validate = (obj) => {
-    if (obj.firstName && obj.lastName && obj.email && obj.userType) {
+    if (obj.memberName && obj.userType && TeamName) {
       return true;
     } else return false;
   };
@@ -88,7 +80,7 @@ export default function AddContactModal({
   useEffect(() => {
     const validations = InputData.map((input) => validate(input));
     setisDisabled(validations.includes(false));
-  }, [InputData]);
+  }, [InputData, TeamName]);
 
   const handleOnChange = (e, i, property) => {
     const { value } = e.target;
@@ -103,32 +95,23 @@ export default function AddContactModal({
     setInputData(list);
   };
 
-  // const generateFinalObj = (obj, state) => {
-  //   return {
-  //     id: uuidv4(),
-  //     name: toTitleCase(obj.firstname + " " + obj.lastname),
-  //     email: obj.email,
-  //     team: obj.team,
-  //     type: obj.usertype,
-  //     company: obj.company,
-  //     isNewlyAdded: state,
-  //   };
-  // };
+  const generateFinalObj = (state) => {
+    return {
+      id: uuidv4(),
+      teamName: toTitleCase(TeamName),
+      members: InputData.length,
+      isNewlyAdded: state,
+    };
+  };
 
-  // const generateFinal = () => {
-  //   setContactList(
-  //     ContactList.concat(
-  //       InputData.map((input) => generateFinalObj(input, true))
-  //     )
-  //   );
-  //   setTimeout(() => {
-  //     setContactList(
-  //       ContactList.concat(
-  //         InputData.map((input) => generateFinalObj(input, false))
-  //       )
-  //     );
-  //   }, 3000);
-  // };
+  const generateFinal = () => {
+    setTeamList(TeamList.concat(generateFinalObj(true)));
+    setShowBurst(true);
+    setTimeout(() => {
+      setTeamList(TeamList.concat(generateFinalObj(false)));
+      setShowBurst(false);
+    }, 3000);
+  };
   const mInviteUser = `
       mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
         userInvite(
@@ -163,13 +146,7 @@ export default function AddContactModal({
   }
 
   const handleSubmit = () => {
-    console.log("savedata", InputData);
-
-    InputData.map((x) => inviteUser(x));
-
-    setTimeout(() => {
-      getContacts();
-    }, 2000);
+    generateFinal();
   };
 
   return (
@@ -186,7 +163,7 @@ export default function AddContactModal({
         >
           <div className="flex flex-row">
             <div className="font-semibold text-gray-900 text-lg pb-2">
-              Add Contact
+              Add Team
             </div>
             <button
               onClick={() => {
@@ -209,74 +186,45 @@ export default function AddContactModal({
             </button>
           </div>
           <div className="text-gray-900 pb-2">
-            Contacts with access to the portal will automatically receive
-            invitation via email.
+            Get everyone working in one place by adding them to a team.
+          </div>
+          <div>
+            <div className="flex flex-col p-1 w-full">
+              <div className="text-sm font-medium text-gray-400">
+                {`Team Name`}
+              </div>
+              <input
+                name={`teamName`}
+                type="text"
+                value={TeamName}
+                placeholder={`What's your team called?`}
+                className="rounded-md p-2 w-full border border-gray-300 outline-0"
+                onChange={(e) => setTeamName(e.target.value)}
+                required
+              />
+            </div>
           </div>
           {InputData.map((x, i) => (
-            <div className="py-4 flex flex-col">
+            <div className="flex flex-col">
               <div className="flex flex-row">
                 <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
-                    {`First Name`}
-                  </div>
-                  <input
-                    name={`firstName`}
-                    type="text"
-                    value={x.firstName}
-                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-                    onChange={(e) => handleOnChange(e, i, `firstName`)}
-                  />
-                </div>
-                <div className="flex flex-col p-1">
-                  <div className="text-sm font-medium text-gray-400">
-                    {`Last Name`}
-                  </div>
-                  <input
-                    name={`lastName`}
-                    type="text"
-                    value={x.lastName}
-                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-                    onChange={(e) => handleOnChange(e, i, `lastName`)}
-                  />
-                </div>
-                <div className="flex flex-col p-1">
-                  <div className="text-sm font-medium text-gray-400">
-                    {`Email`}
-                  </div>
-                  <input
-                    name={`email`}
-                    type="text"
-                    value={x.email}
-                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-                    onChange={(e) => handleOnChange(e, i, `email`)}
-                  />
-                </div>
-                {/* <div className="flex flex-col p-1">
-                  <div className="text-sm font-medium text-gray-400">
-                    {`Team`}
+                    {`Member`} {i + 1}
                   </div>
                   <Select
-                    name={`team`}
+                    name={`memberName`}
                     options={options}
                     type="text"
                     value={{
-                      value: x.team,
-                      label: x.team,
+                      value: x.memberName,
+                      label: x.memberName,
                     }}
-                    onChange={(e, val) => handleSelectChange(e, val, i, `team`)}
-                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
-                  />
-                </div> */}
-                <div className="flex flex-col p-1">
-                  <div className="opacity-0">a</div>
-                  <CgTrash
-                    className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
-                    color={`lightcoral`}
-                    onClick={() => handleDelete(i)}
+                    onChange={(e, val) =>
+                      handleSelectChange(e, val, i, `memberName`)
+                    }
+                    className="rounded-md  w-80 focus:border-gray-100 text-gray-400"
                   />
                 </div>
-              </div>
-              <div className="flex flex-row">
                 <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`User Type`}
@@ -292,56 +240,18 @@ export default function AddContactModal({
                     onChange={(e, val) =>
                       handleSelectChange(e, val, i, `userType`)
                     }
-                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
+                    className="rounded-md w-80 focus:border-gray-100 text-gray-400"
                   />
                 </div>
+
                 <div className="flex flex-col p-1">
-                  <div className="text-sm font-medium text-gray-400">
-                    {`Company`}
-                  </div>
-                  <input
-                    type="text"
-                    value={localStorage.getItem("company")}
-                    className="rounded-md p-2 w-56 border border-gray-300 outline-0"
-                    disabled={true}
+                  <div className="opacity-0">a</div>
+                  <CgTrash
+                    className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
+                    color={`lightcoral`}
+                    onClick={() => handleDelete(i)}
                   />
                 </div>
-                {/* <div className="flex flex-col p-1">
-                  <div className="text-sm font-medium text-gray-400">
-                    {`Client Name`}
-                  </div>
-                  <Select
-                    name={`clientname`}
-                    options={options}
-                    type="text"
-                    value={{
-                      value: x.clientname,
-                      label: x.clientname,
-                    }}
-                    onChange={(e, val) =>
-                      handleSelectChange(e, val, i, `clientname`)
-                    }
-                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
-                  />
-                </div> */}
-                {/* <div className="flex flex-col p-1">
-                  <div className="text-sm font-medium text-gray-400">
-                    {`Matter Name`}
-                  </div>
-                  <Select
-                    name={`mattername`}
-                    options={options}
-                    type="text"
-                    value={{
-                      value: x.mattername,
-                      label: x.mattername,
-                    }}
-                    onChange={(e, val) =>
-                      handleSelectChange(e, val, i, `mattername`)
-                    }
-                    className="rounded-md w-56 focus:border-gray-100 text-gray-400"
-                  />
-                </div> */}
               </div>
             </div>
           ))}
@@ -354,14 +264,8 @@ export default function AddContactModal({
               setInputData([
                 ...InputData,
                 {
-                  firstName: "",
-                  lastName: "",
-                  company: {
-                    id: localStorage.getItem("companyId"),
-                    name: localStorage.getItem("company"),
-                  },
-                  email: "",
-                  usertype: "",
+                  memberName: "",
+                  userType: "",
                 },
               ]);
             }}
@@ -392,11 +296,11 @@ export default function AddContactModal({
             }}
             className={
               isDisabled
-                ? "p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-200 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-200 cursor-default focus:ring"
-                : "p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-500 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-400 cursor-pointer focus:ring"
+                ? "p-2 pl-5 pr-5 text-md rounded-md ml-auto bg-green-200 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-200 cursor-default focus:ring"
+                : "p-2 pl-5 pr-5 text-md rounded-md ml-auto bg-green-500 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-400 cursor-pointer focus:ring"
             }
           >
-            Add Contact
+            Create Team
             <svg
               width="13"
               height="14"
