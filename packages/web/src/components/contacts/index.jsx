@@ -12,7 +12,12 @@ import DeleteModal from "./delete-modal";
 import ToastNotification from "../toast-notification";
 import User from "./user";
 import { alphabetArray } from "./alphabet";
+import ContactInformationModal from "./contact-information-modal";
 import dummy from "./dummy.json";
+import TeamsTab from "./teams-tab/teams-tab";
+import teamdummy from "./teams-tab/teams.json";
+import AddTeamModal from "./add-team-revamp-modal";
+
 
 export default function Contacts() {
   const [showAddContactModal, setshowAddContactModal] = useState(false);
@@ -21,6 +26,7 @@ export default function Contacts() {
   };
 
   const rows = useRef(null);
+  const refLetters = useRef([]); //added Refletters to fix scrolling
   const [shortcutSelected, setShortcutSelected] = useState("");
 
   const [ShowDeleteModal, setShowDeleteModal] = useState(false);
@@ -33,11 +39,17 @@ export default function Contacts() {
   const [isToDelete, setisToDelete] = useState("");
   const [ContactList, setContactList] = useState(null);
 
+  const [ShowEditModal, setShowEditModal] = useState(false); //added Edit Modal
+  const [CurrentUser, setCurrentUser] = useState({}); //Added current User
+
   const [defaultCompany, setDefaultCompany] = useState("");
+  const [Alphabets, setAlphabets] = useState([]);
+  const [ShowAddTeamModal, setShowAddTeamModal] = useState(false);
+  const [TeamList, setTeamList] = useState(teamdummy);
+  const [ShowBurst, setShowBurst] = useState(false);
   const hideToast = () => {
     setShowToast(false);
   };
-
 
   const qGetContacts = `
   query companyUsers($companyId: String) {
@@ -57,20 +69,24 @@ export default function Contacts() {
   }
   `;
 
-  // useEffect((e) => {
-  //   anime({
-  //     targets: rows.current,
-  //     opacity: [0, 1],
-  //     duration: 600,
-  //     easing: "linear",
-  //   });
-  // }, []);
+  function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+  }
+  //Added 3 seconds turning to light blue when adding an entry
+  //Added fix for scrolling issue
+  useEffect(
+    (e) => {
+      anime({
+        targets: rows.current,
+        opacity: [0.4, 1],
+        duration: 1500,
+        easing: "cubicBezier(.5, .05, .1, .3)",
+      });
 
-  // useEffect(() => {
-  //   if (ContactList === null) {
-  //     getContacts();
-  //   }
-  // });
+      refLetters.current = refLetters.current.slice(0, alphabetArray.length);
+    },
+    [ContactList]
+  );
 
   let getContacts = async () => {
     const params = {
@@ -81,36 +97,32 @@ export default function Contacts() {
     };
 
     await API.graphql(params).then((companyUsers) => {
-      console.log("usersssss",companyUsers);
-      var temp = companyUsers.data.company.users.items
-      temp.sort((a, b) =>  a.firstName.localeCompare(b.firstName));
+      console.log("usersssss", companyUsers);
+      var temp = companyUsers.data.company.users.items;
+      temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
+      temp.map(
+        (x) =>
+          (x.firstName =
+            x.firstName.charAt(0).toUpperCase() +
+            x.firstName.slice(1).toLowerCase())
+      );
       setDefaultCompany(companyUsers.data.company.name);
       setContactList(temp);
+      //Sync the displayed letters only with the existing contacts
+      setAlphabets(
+        temp
+          .map((user) => user.firstName[0]) //get the first letter
+          .filter(onlyUnique)
+          .sort((a, b) => a.localeCompare(b))
+      );
     });
   };
 
-
-  // const handleAddContact = (returnedUser) => {
-  //   console.log(returnedUser);
-  //   getContacts();
-  //   handleModalClose();
-  // };
-
-  // const RenderGroup = ({ cl, letterNow }) => {
-  //   return (
-  //     <>
-  //       {cl.map((user) => (
-  //         <tr className="stripe text-left" key={user.id}>
-  //           <User
-  //             user={user}
-  //             setContactList={setContactList}
-  //             ContactList={ContactList}
-  //           />
-  //         </tr>
-  //       ))}
-  //     </>
-  //   );
-  // };
+  const handleEditModal = (user) => {
+    //Added edit modal open
+    setCurrentUser(user);
+    setShowEditModal(true);
+  };
 
   const handleDeleteModal = (id) => {
     setisToDelete(id);
@@ -126,25 +138,19 @@ export default function Contacts() {
       } else if (sortBy === "userType") {
         ContactList.sort((a, b) => a.userType.localeCompare(b.userType));
         alphabetArray.sort();
-      } 
-      // else if (sortBy === "company") {
-      //   dummy.sort((a, b) => a.company.localeCompare(b.company));
-      //   alphabetArray.sort();
-      // }
+      }
     } else {
       if (sortBy === "firstName") {
-        ContactList.sort((a, b) => a.firstName.localeCompare(b.firstName)).reverse();
+        ContactList.sort((a, b) =>
+          a.firstName.localeCompare(b.firstName)
+        ).reverse();
         alphabetArray.sort().reverse();
       } else if (sortBy === "userType") {
-        ContactList.sort((a, b) => a.userType.localeCompare(b.userType)).reverse();
+        ContactList.sort((a, b) =>
+          a.userType.localeCompare(b.userType)
+        ).reverse();
         alphabetArray.sort().reverse();
-      } 
-      // else if (sortBy === "company") {
-      //   dummy.sort((a, b) => a.company.localeCompare(b.company)).reverse();
-      //   alphabetArray.sort().reverse();
-      // } else {
-      //   dummy.sort().reverse();
-      // }
+      }
     }
   };
 
@@ -187,7 +193,8 @@ export default function Contacts() {
 
   const scrollToView = (target) => {
     const el = document.getElementById(target);
-    el && el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el &&
+      window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" }); //added fixed scrolling
   };
 
   // const handleScroll = (event) => {
@@ -199,19 +206,21 @@ export default function Contacts() {
     if (ContactList === null) {
       getContacts();
     }
+    /*
 
-    
     anime({
       targets: rows.current,
       opacity: [0, 1],
       duration: 600,
       easing: "linear",
     });
-    
+    */
+
     // observe the scroll event and set the active letter
     window.addEventListener(
       "scroll",
       () => {
+        /*
         const maxScrollHeight = document.body.scrollHeight;
         const currentScrollPos = window.pageYOffset;
         // get the current scroll position
@@ -227,6 +236,29 @@ export default function Contacts() {
             Math.max(0, Math.min(currentLetter, alphabetArray.length - 1))
           ]
         );
+        */
+        //Fixed Issue Scrolling ang setting active letter
+        const currentScrollPos = window.pageYOffset;
+        // get the current scroll position
+        console.log(refLetters);
+        refLetters.current.forEach((ref, i) => {
+          if (ref) {
+            let top = ref.offsetTop + 100;
+            let bottom =
+              refLetters.current.length - 1 === i
+                ? refLetters.current[0].offsetTop + 100
+                : refLetters.current[i + 1].offsetTop + 100;
+
+            //get height of list of contacts with specific letter
+
+            //if it matches within the range get it
+
+            if (currentScrollPos >= top && currentScrollPos <= bottom) {
+              setShortcutSelected(String(ref.id));
+              //set Active Letter if in range
+            }
+          }
+        });
       },
       { passive: true }
     );
@@ -248,7 +280,8 @@ export default function Contacts() {
               <span className="text-lg font-bold">Contacts</span>{" "}
               <span className="text-lg font-light">
                 {" "}
-                of {localStorage.getItem("firstName")} {localStorage.getItem("lastName")}
+                of {localStorage.getItem("firstName")}{" "}
+                {localStorage.getItem("lastName")}
               </span>
             </p>
             <div className="flex items-center gap-3 text-gray-500">
@@ -264,8 +297,11 @@ export default function Contacts() {
             {/* tabs */}
             <div className="flex items-center gap-x-8 w-max">
               <p
+                onClick={() => {
+                  setActiveMenu("Contacts");
+                }}
                 className={`py-5 border-b-2 flex items-center gap-x-3 border-transparent cursor-pointer font-medium ${
-                  true && "border-gray-700 "
+                  ActiveMenu === "Contacts" && "border-gray-700 "
                 }`}
               >
                 Contacts{" "}
@@ -274,23 +310,32 @@ export default function Contacts() {
                 </span>
               </p>
               <p
+                onClick={() => {
+                  setActiveMenu("Teams");
+                }} //setActiveMenu to Teams
                 className={`py-5 border-b-2 flex items-center gap-x-3 border-transparent cursor-pointer font-medium ${
-                  false && "border-gray-700 "
+                  ActiveMenu === "Teams" && "border-gray-700"
                 }`}
               >
-                Team{" "}
-                <span className="text-sm rounded-full flex items-center justify-center font-semibold">
-                  0
+                Teams{" "}
+                <span
+                  className={`text-sm rounded-full flex items-center justify-center font-semibold `}
+                >
+                  {teamdummy && teamdummy.length}
                 </span>
               </p>
             </div>
             {/* action buttons */}
             <div className="flex items-center gap-x-5">
               <button
-                onClick={() => setshowAddContactModal(true)}
+                onClick={() => {
+                  ActiveMenu === "Contacts"
+                    ? setshowAddContactModal(true)
+                    : setShowAddTeamModal(true);
+                }}
                 className="py-2 px-4 bg-green-400 rounded w-max font-semibold text-white"
               >
-                Add Contact
+                {` ${ActiveMenu === "Contacts" ? "Add Contact" : "Add Team"} `}
               </button>
             </div>
           </div>
@@ -299,148 +344,168 @@ export default function Contacts() {
         {/* main content */}
         <div className="relative w-full flex gap-x-5 py-5 max-w-[100vw]">
           {/* alphabet array */}
+
           <div className="px-3 py-2 ">
             <div className="sticky top-20 flex flex-col gap-y-1 pt-5">
               {alphabetArray.map((letter) => {
                 // check if letter is in dummy array
+
+                /*
                 const isLetter =
                   ContactList &&
                   ContactList.some((user) => user.firstName.startsWith(letter));
-                if (isLetter) {
-                  return (
-                    <p
-                      key={letter}
-                      onClick={(e) => {
+                */
+
+                return (
+                  <p
+                    key={letter}
+                    onClick={(e) => {
+                      //To prevent double setting shortcut selecting only set if user is in bottom of screen
+                      if (
+                        window.innerHeight + window.scrollY >=
+                        document.body.offsetHeight
+                      ) {
                         setShortcutSelected(letter);
-                        scrollToView(letter);
-                      }}
-                      style={{
-                        transform: `translateX(${
-                          letter === shortcutSelected ? "10px" : "0px"
-                        })`,
-                      }}
-                      className={`text-center text-gray-400 cursor-pointer transition-all font-bold  hover:scale-110 hover:text-blue-600 ${
-                        shortcutSelected === letter && "text-blue-600"
-                      }`}
-                    >
-                      {letter}
-                    </p>
-                  );
-                }
+                      }
+                      scrollToView(letter);
+                    }}
+                    style={{
+                      transform: `translateX(${
+                        letter === shortcutSelected ? "10px" : "0px"
+                      })`,
+                    }}
+                    className={`text-center text-gray-400 cursor-pointer transition-all font-bold  hover:scale-110 hover:text-blue-600 ${
+                      shortcutSelected === letter && "text-cyan-500"
+                    }`}
+                  >
+                    {letter}
+                  </p>
+                );
               })}
             </div>
           </div>
           {/* table */}
-          <div className="w-full py-2">
-            <table className="w-full text-left">
-              {/* headers */}
-              <thead className="sticky top-20 bg-white z-10">
-                <tr>
-                  <th className="p-2">
-                    <div className="flex items-center gap-x-2">
-                      Name {<RenderSort sortBy="name" />}
-                    </div>
-                  </th>
-                  <th className="p-2">Email</th>
-                  <th className="p-2">Team</th>
-                  <th className="p-2">
-                    <div className="flex items-center gap-x-2 ">
-                      User Type {<RenderSort sortBy="type" />}
-                    </div>
-                  </th>
-                  <th className="p-2">
-                    <div className="flex items-center gap-x-2">
-                      Company {<RenderSort type="company" />}
-                    </div>
-                  </th>
-                  <th className="p-2 w-20 " />
-                </tr>
-              </thead>
-              {/* content */}
-              <tbody className="relative">
-                {alphabetArray.map((letter) => (
-                  <>
-                    {ContactList &&
-                      ContactList.some((user) =>
-                        user.firstName.startsWith(letter)
-                      ) && (
-                        <>
-                          <tr id={letter} key={letter} className="">
-                            <td className="pt-4 px-2">
-                              <div className="flex items-center gap-x-2">
-                                <p
-                                  className={`${
-                                    shortcutSelected == letter
-                                      ? "text-blue-600 font-bold"
-                                      : "text-gray-700 font-semibold"
-                                  }  text-lg `}
-                                >
-                                  {letter}
-                                </p>
-                              </div>
-                            </td>
-                          </tr>
-                          {ContactList &&
-                            ContactList.map(
-                              (contact, index) =>
-                                contact.firstName.charAt(0) == letter && (
-                                  <tr
-                                    ref={contact.isNewlyAdded ? rows : null}
-                                    key={contact.id}
-                                    className={
-                                      contact.isNewlyAdded
-                                        ? "opacity-100 bg-cyan-100"
-                                        : "opacity-100"
-                                    }
-                                  >
-                                    <td className="p-2">
-                                      <div className="flex items-center gap-x-2 ">
-                                        <span>
-                                          <img
-                                            className="rounded-full w-8 h-8"
-                                            src={`https://i.pravatar.cc/70?img=${index}`}
-                                          />
-                                        </span>
-                                        <p className="font-semibold">
-                                          {contact.firstName} {contact.lastName}
-                                        </p>
-                                      </div>
-                                    </td>
-                                    <td className="p-2">{contact.email}</td>
-                                    <td className="p-2"> </td>
-                                    <td className="p-2 w-64 ">
-                                      <div className="flex items-center gap-x-2 ">
-                                        <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
-                                          {contact.userType}
-                                        </p>
-                                      </div>
-                                    </td>
-                                    <td className="p-2">{defaultCompany}</td>
+          {ActiveMenu === "Contacts" ? (
+            <div className="w-full py-2">
+              <table className="w-full text-left">
+                {/* headers */}
+                <thead className="sticky top-20 bg-white z-10">
+                  <tr>
+                    <th className="p-2">
+                      <div className="flex items-center gap-x-2">
+                        Name {<RenderSort sortBy="name" />}
+                      </div>
+                    </th>
+                    <th className="p-2">Email</th>
+                    <th className="p-2">Team</th>
+                    <th className="p-2">
+                      <div className="flex items-center gap-x-2 ">
+                        User Type {<RenderSort sortBy="type" />}
+                      </div>
+                    </th>
+                    <th className="p-2">
+                      <div className="flex items-center gap-x-2">
+                        Company {<RenderSort type="company" />}
+                      </div>
+                    </th>
+                    <th className="p-2 w-20 " />
+                  </tr>
+                </thead>
+                {/* content Changes here*/}
+                <tbody className="relative">
+                  {Alphabets.map((letter, idx) => (
+                    <>
+                      <tr
+                        ref={(el) => (refLetters.current[idx] = el)} //added div useRef
+                        id={letter}
+                        key={letter}
+                        className=""
+                      >
+                        <td className="pt-4 px-2">
+                          <div className="flex items-center gap-x-2">
+                            <p
+                              className={`${
+                                shortcutSelected == letter
+                                  ? "text-cyan-500 font-bold"
+                                  : "text-gray-700 font-semibold"
+                              }  text-lg `}
+                            >
+                              {letter}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                      {ContactList &&
+                        ContactList.map(
+                          (contact, index) =>
+                            contact.firstName.charAt(0) === letter && (
+                              <tr
+                                ref={contact.isNewlyAdded ? rows : null}
+                                key={contact.id}
+                                className={
+                                  contact.isNewlyAdded
+                                    ? "opacity-100 bg-cyan-100"
+                                    : "stripe opacity-100"
+                                }
+                              >
+                                <td className="p-2">
+                                  <div className="flex items-center gap-x-2 ">
+                                    <span>
+                                      <img
+                                        className="rounded-full w-8 h-8"
+                                        src={`https://i.pravatar.cc/70?img=${index}`}
+                                      />
+                                    </span>
+                                    <p className="font-semibold">
+                                      {contact.firstName} {contact.lastName}
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="p-2">{contact.email}</td>
+                                <td className="p-2"> </td>
+                                <td className="p-2 w-64 ">
+                                  <div className="flex items-center gap-x-2 ">
+                                    <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
+                                      {contact.userType}
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="p-2">{defaultCompany}</td>
 
-                                    <td className="p-2">
-                                      <div className="flex items-center gap-x-2">
-                                        <button className="p-3 rounded w-max font-semibold text-gray-500">
-                                          <FaEdit />
-                                        </button>
-                                        <button className="p-3 text-red-400 rounded w-max font-semibold ">
-                                          <CgTrash
-                                            onClick={() =>
-                                              handleDeleteModal(contact.id)
-                                            }
-                                          />
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                )
-                            )}
-                        </>
-                      )}
-                  </>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                                <td className="p-2">
+                                  <div className="flex items-center gap-x-2">
+                                    <button className="p-3 w-max font-semibold text-gray-500 rounded-full hover:bg-gray-200">
+                                      <FaEdit
+                                        onClick={() => handleEditModal(contact)}
+                                      />
+                                    </button>
+                                    <button className="p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200">
+                                      <CgTrash
+                                        onClick={() =>
+                                          handleDeleteModal(contact.id)
+                                        }
+                                      />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                        )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <TeamsTab
+              teams={TeamList}
+              shortcutSelected={shortcutSelected}
+              refLetters={refLetters}
+              ContactList={ContactList}
+              setContactList={setContactList}
+              ShowBurst={ShowBurst}
+            />
+          )}
         </div>
         {ShowDeleteModal && (
           <DeleteModal
@@ -448,6 +513,14 @@ export default function Contacts() {
             toDeleteid={isToDelete}
             setContactList={setContactList}
             ContactList={ContactList}
+          />
+        )}
+        {ShowEditModal && (
+          <ContactInformationModal
+            ContactList={ContactList}
+            setContactList={setContactList}
+            close={() => setShowEditModal(false)}
+            user={CurrentUser}
           />
         )}
       </main>
@@ -601,6 +674,15 @@ export default function Contacts() {
           setContactList={setContactList}
           ContactList={ContactList}
           getContacts={getContacts}
+        />
+      )}
+      {ShowAddTeamModal && (
+        <AddTeamModal
+          close={() => setShowAddTeamModal(false)}
+          setTeamList={setTeamList}
+          TeamList={TeamList}
+          getContacts={getContacts}
+          setShowBurst={setShowBurst}
         />
       )}
     </>

@@ -9,7 +9,12 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
-const { inviteUser, createUser } = require("../../../services/UserService");
+const {
+  inviteUser,
+  createUser,
+  deleteUser,
+  updateUser,
+} = require("../../../services/UserService");
 const { toUTC, toLocalTime } = require("../../../shared/toUTC");
 const {
   createMatterFile,
@@ -2257,6 +2262,174 @@ async function saveGmailMessage(id, companyId, data) {
   return resp;
 }
 
+async function tagUserClientMatter(data) {
+  let resp = {};
+
+  try {
+    const arrItems = [];
+
+    const userClientMatterIdParams = {
+      TableName: "UserClientMatterTable",
+      IndexName: "byUser",
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: marshall({
+        ":userId": data.userId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    console.log("userClientMatterIdParams", userClientMatterIdParams);
+
+    const userClientMatterIdCmd = new QueryCommand(userClientMatterIdParams);
+    const userClientMatterIdRes = await ddbClient.send(userClientMatterIdCmd);
+
+    console.log("userClientMatterIdRes", userClientMatterIdRes);
+
+    if (userClientMatterIdRes.Count !== 0) {
+      for (var a = 0; a < userClientMatterIdRes.Items.length; a++) {
+        var userClientMatterId = {
+          id: userClientMatterIdRes.Items[a].id,
+        };
+        arrItems.push({
+          DeleteRequest: {
+            Key: userClientMatterId,
+          },
+        });
+      }
+    }
+
+    for (var i = 0; i < data.clientMatterId.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            userId: data.userId,
+            clientMatterId: data.clientMatterId[i],
+          }),
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const userClientMatterParams = {
+        RequestItems: {
+          UserClientMatterTable: data,
+        },
+      };
+
+      const userClientMatterCmd = new BatchWriteItemCommand(
+        userClientMatterParams
+      );
+      await ddbClient.send(userClientMatterCmd);
+    });
+
+    resp = { id: data.userId };
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function untagUserClientMatter(data) {
+  let resp = {};
+
+  try {
+    const arrItems = [];
+
+    const userClientMatterIdParams = {
+      TableName: "UserClientMatterTable",
+      IndexName: "byUser",
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: marshall({
+        ":userId": data.userId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    const userClientMatterIdCmd = new QueryCommand(userClientMatterIdParams);
+    const userClientMatterIdRes = await ddbClient.send(userClientMatterIdCmd);
+
+    for (var a = 0; a < userClientMatterIdRes.Items.length; a++) {
+      var userClientMatterId = {
+        id: userClientMatterIdRes.Items[a].id,
+      };
+      arrItems.push({
+        DeleteRequest: {
+          Key: userClientMatterId,
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const userClientMatterParams = {
+        RequestItems: {
+          UserClientMatterTable: data,
+        },
+      };
+
+      const userClientMatterCmd = new BatchWriteItemCommand(
+        userClientMatterParams
+      );
+      await ddbClient.send(userClientMatterCmd);
+    });
+
+    resp = { id: data.userId };
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function tagGmailMessageClientMatter(data) {
   let resp = {};
 
@@ -2879,6 +3052,49 @@ const resolvers = {
     userInvite: async (ctx) => {
       return await inviteUser(ctx.arguments);
     },
+    userDelete: async (ctx) => {
+      const { id, companyId, email } = ctx.arguments;
+      return await deleteUser(id, companyId, email);
+    },
+    userUpdate: async (ctx) => {
+      const {
+        id,
+        firstName,
+        lastName,
+        email,
+        contactNumber,
+        userType,
+        profilePicture,
+        company,
+      } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (firstName !== undefined) data.firstName = firstName;
+
+      if (lastName !== undefined) data.lastName = lastName;
+
+      if (email !== undefined) data.email = email;
+
+      if (contactNumber !== undefined) data.contactNumber = contactNumber;
+
+      if (userType !== undefined) data.userType = userType;
+
+      if (profilePicture !== undefined) data.profilePicture = profilePicture;
+
+      if (company !== undefined) data.company = company;
+
+      return await updateUser(id, data);
+    },
+    userClientMatterTag: async (ctx) => {
+      return await tagUserClientMatter(ctx.arguments);
+    },
+
+    userClientMatterUntag: async (ctx) => {
+      return await untagUserClientMatter(ctx.arguments);
+    },
+
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);
     },

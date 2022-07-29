@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import DeleteMatterModal from "./delete-matters-modal";
 import ToastNotification from "../toast-notification";
 import "../../assets/styles/Dashboard.css";
+import "../../assets/styles/Mobile.css";
 import AccessControl from "../../shared/accessControl";
 import CreatableSelect from "react-select/creatable";
 import { API } from "aws-amplify";
@@ -16,6 +17,7 @@ import { initialState } from "./initialState";
 import { clientMatterReducers } from "./reducers";
 import { useIdleTimer } from "react-idle-timer";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
+import useWindowDimensions from "../../shared/windowDimensions";
 import { Auth } from "aws-amplify";
 import { useHistory } from "react-router-dom";
 import { BiArrowToTop } from "react-icons/bi";
@@ -374,6 +376,30 @@ mutation addMatter($companyId: String, $name: String) {
     onIdle: handleOnIdle,
     debounce: 1000,
   });
+  {/* MOBILE CONST */}
+  const {height, width} = useWindowDimensions();
+  const [contentHeight, setContentHeight] = useState();
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  
+  function handleScrollEvent(e) {
+    const top = e.target.scrollTop > 20;
+    if (top) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
+  }
+  function handleScrollToTop () {
+    let d = document.getElementById("mobileContent");
+    d.scrollTo(0, 0);
+  }
+  
+  useEffect(() => {
+    if (userInfo) {
+      var headerTag = document.getElementById('headerTag');
+      setContentHeight(height-40-headerTag.offsetHeight);
+    }
+  }, [height, width, userInfo]);
 
   return userInfo ? (
     <>
@@ -392,10 +418,10 @@ mutation addMatter($companyId: String, $name: String) {
         </div>
         */}
         <div className="text-right sm:hidden">
-          <h1 className="text-base py-5 px-3 font-bold">AFFIDAVITS &amp; RFI </h1>
+          <h1 id='headerTag' className="text-base py-5 px-3 font-bold">AFFIDAVITS &amp; RFI </h1>
         </div>
       {/*</div>*/}
-      <div className="contentDiv bg-white p-5 font-sans rounded-lg">
+      <div className="contentDiv bg-white py-5 sm:p-5 font-sans rounded-lg flex sm:block" style={{height: width > 640 ? "" : contentHeight}}>
         <div className="relative bg-gray-100 px-12 py-8 hidden sm:block sm:px-12 sm:py-8 rounded-sm mb-8">
           <div className="grid grid-cols-4 gap-4">
             <div className="col-span-3">
@@ -465,7 +491,6 @@ mutation addMatter($companyId: String, $name: String) {
             </div>
           </div>
         </div>
-
         <div className="hidden sm:flex">
           <div className="w-full mb-3 py-5">
             <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
@@ -503,13 +528,22 @@ mutation addMatter($companyId: String, $name: String) {
         </div>
 
         <div
+          id="mobileContent"
+          onScroll={(e) => handleScrollEvent(e)}
+          style={{scrollBehavior:"smooth"}}
           className={
+            "overflow-y-auto px-5 sm:px-0 w-full sm:w-auto " + 
             //Made every view to tile view in dashboard
-            mattersView === "grid"
+            (mattersView === "grid"
               ? "grid grid-flow-row auto-rows-max gap-y-5 sm:grid-cols-4 sm:gap-4"
-              : "grid grid-flow-row auto-rows-max gap-y-6"
+              : "grid grid-flow-row auto-rows-max gap-y-6")
           }
         >
+          {showScrollButton && width < 640 ? (<>
+          <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
+            <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
+          </div>
+          </>) : (<></>)}
           <MatterContext.Provider
             value={{
               clientMatter: listmatters,
