@@ -2334,9 +2334,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           var descButtonTag = document.getElementById(data.id + '.descButton');
           if (lines > 5) {
             let bool =
-              (isReadMoreExpandedOuter(data.id) ||
-                data.backgrounds.items === null ||
-                data.backgrounds.items.length === 0);
+              (isReadMoreExpandedOuter(data.id));
             descButtonTag.style.display = bool ? 'inline-block' : 'none';
           } else {
             descButtonTag.style.display = 'none';
