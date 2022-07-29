@@ -1238,13 +1238,14 @@ const Background = () => {
                       <p 
                         id={item.id+".desc"}
                         className="absolute text-red-200 invisible pointer-events-none opacity-0" 
-                        style={{top:-10000, zIndex:-1000, marginRight:'20px'}}
+                        style={{top:-10000, zIndex:-1000, marginRight:'20px',wordBreak:"break-word"}}
                         dangerouslySetInnerHTML={{__html:item.description}}
                         >
                       </p>
                       <p 
                         className={(isReadMoreExpanded(item.id)? "" : "line-clamp-6")}
                         dangerouslySetInnerHTML={{__html:item.description}}
+                        style={{wordBreak:"break-word"}}
                         >
                       </p>
                       <button id={item.id+".descButton"} className="text-cyan-400 mb-2" onClick={()=>handleReadMoreState(item.id)}>

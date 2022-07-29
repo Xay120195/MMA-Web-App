@@ -2327,14 +2327,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         if (descTag !== null) {
           var lines = countLines(descTag);
           var descButtonTag = document.getElementById(data.id + '.descButton');
-          if (lines >= 5) {
+          if (lines > 5) {
             let bool =
-              !isReadMoreExpandedDesc(data.id) &&
               (isReadMoreExpandedOuter(data.id) ||
                 data.backgrounds.items === null ||
                 data.backgrounds.items.length === 0);
             descButtonTag.style.display = bool ? 'inline-block' : 'none';
-            descButtonTag.innerHTML = bool ? 'read more...' : 'read less...';
           } else {
             descButtonTag.style.display = 'none';
           }
@@ -3376,7 +3374,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                               {showScrollButton ? (
                                 <>
                                   <div
-                                    className="scrollButtonsFileBucket flex"
+                                    className="scrollButtonInner flex"
                                     onClick={() => handleScrollToTop()}
                                   >
                                     <BiArrowToTop
@@ -3428,7 +3426,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       ></div>
                                     </div>
                                     <div className="ml-2 flex flex-col flex-auto">
-                                      <div className="w-full">
+                                      <div className="w-full relative">
                                         <p className="font-medium text-cyan-400">
                                           {(data.date !== null) |
                                           (data.date !== undefined)
@@ -3448,9 +3446,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   ? 'line-clamp-2'
                                                   : ''
                                               }
+                                              dangerouslySetInnerHTML={{
+                                                __html: data.name,
+                                              }}
+                                              style={{wordBreak:"break-word"}}
                                             >
-                                              {' '}
-                                              {data.name}{' '}
                                             </p>
                                           </div>
                                           <AiOutlineDownload
@@ -3462,6 +3462,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         </div>
                                         <p
                                           id={data.id + '.desc'}
+                                          className="mt-1 absolute text-red-200 pointer-events-none invisible"                    
+                                          dangerouslySetInnerHTML={{
+                                            __html: data.details,
+                                          }}
+                                          style={{wordBreak:"break-word",top:-10000, zIndex:-1000}}
+
+                                        ></p>
+                                        <p
                                           className={
                                             (isReadMoreExpandedOuter(data.id) &&
                                             data.details
@@ -3470,8 +3478,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 : ' '
                                               : ' hidden ') + ' mt-1'
                                           }
+                                          dangerouslySetInnerHTML={{
+                                            __html: data.details,
+                                          }}
+                                          style={{wordBreak:"break-word"}}
                                         >
-                                          {data.details}&nbsp;
                                         </p>
                                         <button
                                           id={data.id + '.descButton'}
@@ -3480,7 +3491,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             handleReadMoreStateDesc(data.id)
                                           }
                                         >
-                                          read more...
+                                          {isReadMoreExpandedDesc(data.id)?"read less...":"read more..."}
                                         </button>
                                         <button
                                           className={
@@ -3623,8 +3634,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   ? 'block'
                                                   : 'hidden'
                                               }
+                                              dangerouslySetInnerHTML={{
+                                                __html: background.description,
+                                              }}
+                                              style={{wordBreak:"break-word"}}
                                             >
-                                              {background.description}
                                             </p>
                                           </>
                                         ))}

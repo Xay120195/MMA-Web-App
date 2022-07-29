@@ -41,6 +41,7 @@ import ToastNotification from '../toast-notification';
 import { useIdleTimer } from 'react-idle-timer';
 import { useParams } from 'react-router-dom';
 import useWindowDimensions from '../../shared/windowDimensions';
+import MobileHeader from "../mobile-header";
 
 // import { matter_rfi, questions } from "./data-source";
 
@@ -542,7 +543,7 @@ export default function Briefs() {
       >
         <div className="relative pt-3 sm:p-0 sm:flex-grow sm:flex-1">
           <div className="flex flex-col">
-            <div className="sticky pl-12 sm:pl-0 top-0 py-4 flex items-center gap-2 bg-white z-10">
+            <div className="sticky hidden block pl-12 sm:pl-0 top-0 py-4 sm:flex items-center gap-2 bg-white z-10">
               <div
                 onClick={() => history.replace('/dashboard')}
                 className="w-8 py-5 cursor-pointer"
@@ -597,17 +598,18 @@ export default function Briefs() {
                   />
                 </button>
               </Link>
-              <MobileHeader
+              
+            </div> */}
+            
+          </div>
+          <MobileHeader
               height = {height}
               width = {width}
               matter_name = {matter_name}
               client_name = {client_name}
               setContentHeight = {setContentHeight}
             />
-            </div> */}
-          </div>
-
-          {/* <div className="sm:px-0">
+          <div className="sm:px-0">
             <nav
               aria-label="Breadcrumb"
               style={style}
@@ -672,7 +674,7 @@ export default function Briefs() {
                 </li>
               </ol>
             </nav>
-          </div> */}
+          </div>
 
           <div className="hidden sm:block mt-4 sm:mt-7">
             <div className="flex sm:block">

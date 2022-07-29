@@ -276,11 +276,41 @@ export default function MattersRFI() {
       />
       <div
         className={
-          'bg-gray-100 p-4 min-h-screen flex flex-col min-w-0 break-words sm:min-h-0 sm: relative sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv'
+          'bg-gray-100 p-5 sm:p-4 min-h-screen flex flex-col min-w-0 break-words sm:min-h-0 sm: relative sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv'
         }
       >
-        <div className="relative sm:p-0 sm:flex-grow sm:flex-1">
-          <div className="sticky pl-16 sm:pl-0 top-0 py-4 flex items-center gap-2 bg-white z-10">
+        <div className="relative py-2 sm:p-0 sm:flex-grow sm:flex-1">
+        <div className="sm:hidden flex flex-row">
+            <div className="flex-grow">
+              <h1 className="font-bold text-right text-base px-2 sm:px-0 sm:text-3xl sm:text-left">
+                Request For Information
+                <span className="hidden sm:inline text-base sm:text-3xl">
+                  &nbsp;of&nbsp;
+                </span>
+                <br className="sm:hidden"></br>
+                <span className="text-base font-semibold sm:text-3xl">
+                  {client_name}/{matter_name}
+                </span>
+              </h1>
+            </div>
+            <div className="flex shrink-0 items-center sm:absolute sm:right-0">
+              <Link to={AppRoutes.DASHBOARD}>
+                <button className="hidden align-middle sm:inline-flex shrink-0 bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring">
+                  Back &nbsp;
+                  <MdArrowForwardIos />
+                </button>
+                <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
+                  <MdArrowForwardIos
+                    style={{
+                      margin: "auto",
+                    }}
+                  />
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="sticky pl-16 sm:pl-0 top-0 py-4 hidden sm:flex items-center gap-2 bg-white z-10">
             <div
               onClick={() => history.replace('/dashboard')}
               className="w-8 py-5 cursor-pointer"
