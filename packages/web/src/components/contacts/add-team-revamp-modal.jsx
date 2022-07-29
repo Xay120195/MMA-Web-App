@@ -80,7 +80,7 @@ export default function AddTeamModal({
   useEffect(() => {
     const validations = InputData.map((input) => validate(input));
     setisDisabled(validations.includes(false));
-  }, [InputData]);
+  }, [InputData, TeamName]);
 
   const handleOnChange = (e, i, property) => {
     const { value } = e.target;
