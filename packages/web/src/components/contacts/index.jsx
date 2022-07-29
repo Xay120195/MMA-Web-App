@@ -9,7 +9,6 @@ import anime from "animejs";
 import { API } from "aws-amplify";
 import AddContactModal from "./add-contact-revamp-modal";
 import DeleteModal from "./delete-modal";
-import ToastNotification from "../toast-notification";
 import User from "./user";
 import { alphabetArray } from "./alphabet";
 import ContactInformationModal from "./contact-information-modal";
@@ -17,6 +16,7 @@ import dummy from "./dummy.json";
 import TeamsTab from "./teams-tab/teams-tab";
 import teamdummy from "./teams-tab/teams.json";
 import AddTeamModal from "./add-team-revamp-modal";
+import ToastNotification from '../toast-notification';
 
 
 export default function Contacts() {
@@ -33,10 +33,14 @@ export default function Contacts() {
   const [contacts, setContacts] = useState(null);
   const [ActiveMenu, setActiveMenu] = useState("Contacts");
   const [showToast, setShowToast] = useState(false);
-  const [resultMessage, setResultMessage] = useState("");
+  const [alertMessage, setalertMessage] = useState();
   const [ActiveLetter, setActiveLetter] = useState("a");
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
+  //Delete Function variables
   const [isToDelete, setisToDelete] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userCompanyId, setUserCompanyId] = useState("");
+
   const [ContactList, setContactList] = useState(null);
 
   const [ShowEditModal, setShowEditModal] = useState(false); //added Edit Modal
@@ -108,6 +112,7 @@ export default function Contacts() {
       );
       setDefaultCompany(companyUsers.data.company.name);
       setContactList(temp);
+      console.log("contacts", temp);
       //Sync the displayed letters only with the existing contacts
       setAlphabets(
         temp
@@ -124,10 +129,13 @@ export default function Contacts() {
     setShowEditModal(true);
   };
 
-  const handleDeleteModal = (id) => {
+  const handleDeleteModal = (id, email) => {
     setisToDelete(id);
+    setUserEmail(email);
+    setUserCompanyId(localStorage.getItem("companyId"));
     setShowDeleteModal(true);
   };
+
   let history = useHistory();
 
   const handleSort = (sortedReverse, sortBy) => {
@@ -197,24 +205,11 @@ export default function Contacts() {
       window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" }); //added fixed scrolling
   };
 
-  // const handleScroll = (event) => {
-  //   console.log("scrollTop: ", event.currentTarget.scrollTop);
-  //   console.log("offsetHeight: ", event.currentTarget.offsetHeight);
-  // };
-
   useEffect(() => {
     if (ContactList === null) {
       getContacts();
+      
     }
-    /*
-
-    anime({
-      targets: rows.current,
-      opacity: [0, 1],
-      duration: 600,
-      easing: "linear",
-    });
-    */
 
     // observe the scroll event and set the active letter
     window.addEventListener(
@@ -240,9 +235,16 @@ export default function Contacts() {
         //Fixed Issue Scrolling ang setting active letter
         const currentScrollPos = window.pageYOffset;
         // get the current scroll position
-        console.log(refLetters);
+        //console.log(refLetters);
+
+        refLetters.current.map((ref, i) => {
+          if (ref===null){
+            refLetters.current.splice(refLetters.current.indexOf(ref), 1)
+          }
+        })
+
         refLetters.current.forEach((ref, i) => {
-          if (ref) {
+          if (ref !== null) {
             let top = ref.offsetTop + 100;
             let bottom =
               refLetters.current.length - 1 === i
@@ -257,6 +259,8 @@ export default function Contacts() {
               setShortcutSelected(String(ref.id));
               //set Active Letter if in range
             }
+          }else{
+
           }
         });
       },
@@ -479,10 +483,13 @@ export default function Contacts() {
                                         onClick={() => handleEditModal(contact)}
                                       />
                                     </button>
-                                    <button className="p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200">
+                                    <button className=
+                                    {contact.id === localStorage.getItem("userId") ? 
+                                    "hidden" : "p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200"}
+                                    >
                                       <CgTrash
                                         onClick={() =>
-                                          handleDeleteModal(contact.id)
+                                          handleDeleteModal(contact.id, contact.email, contact.company)
                                         }
                                       />
                                     </button>
@@ -511,8 +518,13 @@ export default function Contacts() {
           <DeleteModal
             close={() => setShowDeleteModal(false)}
             toDeleteid={isToDelete}
+            userEmail={userEmail}
+            userCompanyId={userCompanyId}
             setContactList={setContactList}
             ContactList={ContactList}
+            getContacts={getContacts}
+            setalertMessage={setalertMessage}
+            setShowToast={setShowToast}
           />
         )}
         {ShowEditModal && (
@@ -525,155 +537,15 @@ export default function Contacts() {
         )}
       </main>
 
-      {/* 
 
-      <div
-        onScroll={handleScroll}
-        className={
-          "p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
-        }
-        style={contentDiv}
-      >
-        
-        <div className="py-5 flex flex-row items-center">
-          <MdKeyboardArrowLeft
-            className="cursor-pointer hover:text-gray-500"
-            onClick={() => history.goBack()}
-          />
-
-          <div className="flex flex-col justify-center">
-            <div>
-              <h1 className="font-semibold text-lg">
-                &nbsp; Contacts
-                <span className=""> of {`Matthew Douglas`}</span>
-              </h1>
-            </div>
-            <div>
-              <span className="ml-3 flex flex-row text-xs font-bold">
-                <FaUsers className="text-sm" color={`gray`} /> &nbsp; CONTACTS
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col ">
-          <div className="py-3 flex flex-row gap-4">
-            <div
-              className={
-                ActiveMenu === "Contacts"
-                  ? `mr-right font-semibold hover:text-gray-500 cursor-pointer`
-                  : `mr-right hover:text-gray-500 cursor-pointer`
-              }
-            >
-              Contacts &nbsp; {dummy.length}
-            </div>
-            <div
-              className={
-                ActiveMenu === "Teams"
-                  ? `mr-right font-semibold hover:text-gray-500 cursor-pointer`
-                  : `mr-right hover:text-gray-500 cursor-pointer`
-              }
-            >
-              Teams &nbsp; {"0"}
-            </div>
-            <div className="ml-auto">
-              <div>
-                <button
-                  className="bg-green-400 hover:bg-green-500 text-white text-sm py-1 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                  onClick={() => setshowAddContactModal(true)}
-                >
-                  Add Contact &nbsp;
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-row">
-            <div
-              className={
-                ActiveMenu === "Contacts"
-                  ? `rounded-full bg-gray-500 w-28 h-0.5`
-                  : `rounded-full  bg-gray-100 w-28 h-0.5`
-              }
-            ></div>
-            <div
-              className={
-                ActiveMenu === "Teams"
-                  ? `bg-black w-28 h-0.5`
-                  : `rounded-full  bg-gray-100 w-52 h-0.5`
-              }
-            ></div>
-            <div className="rounded-full bg-gray-100 w-full h-0.5"></div>
-          </div>
-        </div>
-
-        
-        <div className="top-60 fixed">
-          {alphabet.map((a, idx) =>
-            ActiveLetter === a ? (
-              <div key={idx} className="py-0.5 hoverActive cursor-pointer">
-                {a.toUpperCase()}
-              </div>
-            ) : (
-              <div className="py-0.5 hover cursor-pointer">
-                {a.toUpperCase()}
-              </div>
-            )
-          )}
-        </div>
-
-        <div className="pl-6 flex flex-row w-full h-full items-center">
-          <table className="table-auto w-full">
-            <thead className="text-left">
-              <th>
-                <div className="p-5 flex flex-row gap-1 items-center">
-                  Name <RenderSort sortBy={"name"} />
-                </div>
-              </th>
-              <th>Email</th>
-              <th>Team</th>
-              <th>
-                <div className="flex flex-row gap-1 items-center">
-                  User Type <RenderSort sortBy={"type"} />
-                </div>
-              </th>
-              <th>
-                <div className="flex flex-row gap-1 items-center">
-                  Company <RenderSort sortBy={"company"} />
-                </div>
-              </th>
-              <th></th>
-            </thead>
-            <tbody className="w-full">
-              {ContactList &&
-                alphabet.map((a, idx) => (
-                  <>
-                    <tr key={idx} onScroll={() => console.log("TEST")}>
-                      <div className="px-5 py-1">
-                        <span className="scale-125 hover:text-cyan-500 font-semibold text-gray-400">
-                          {a.toUpperCase()}
-                        </span>
-                      </div>
-                    </tr>
-
-                    <RenderGroup
-                      cl={ContactList.filter((u) =>
-                        u.name.toLowerCase().startsWith(a)
-                      )}
-                    />
-                  </>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      */}
       {showAddContactModal && (
         <AddContactModal
           close={() => setshowAddContactModal(false)}
           setContactList={setContactList}
           ContactList={ContactList}
           getContacts={getContacts}
+          setalertMessage={setalertMessage}
+          setShowToast={setShowToast}
         />
       )}
       {ShowAddTeamModal && (
@@ -685,6 +557,10 @@ export default function Contacts() {
           setShowBurst={setShowBurst}
         />
       )}
+      {showToast && (
+        <ToastNotification title={alertMessage} hideToast={hideToast} />
+      )}
+
     </>
   );
 }

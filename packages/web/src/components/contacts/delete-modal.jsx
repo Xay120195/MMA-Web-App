@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import anime from "animejs";
+import { API, input } from "aws-amplify";
 export default function DeleteModal({
   close,
   toDeleteid,
+  userEmail,
+  userCompanyId,
   setContactList,
   ContactList,
+  getContacts,
+  setalertMessage,
+  setShowToast
 }) {
   function StopPropagate(e) {
     e.stopPropagation();
@@ -75,12 +81,52 @@ export default function DeleteModal({
     );
   };
 
-  const handleDelete = () => {
-    if (toDeleteid) {
-      setContactList(ContactList.filter((o) => o.id !== toDeleteid));
-      close();
+  const mDeleteUser=`mutation deleteUser($companyId: ID, $email: AWSEmail, $id: ID) {
+    userDelete(id: $id, companyId: $companyId, email: $email) {
+      id
     }
+  }`;
+
+  const handleDelete = () => {
+    close();
+    deleteUser(toDeleteid, userCompanyId, userEmail);
+
   };
+
+  function deleteUser(userid, usercompanyId, useremail) {
+    const request = API.graphql({
+      query: mDeleteUser,
+      variables: {
+        id: userid,
+        companyId: usercompanyId,
+        email: useremail
+      },
+    });
+ 
+    if(request){
+      var contactsCopy = ContactList;
+      contactsCopy.map((x, index)=>
+        x.id === userid ? 
+          contactsCopy.splice(index, 1) : x
+      );
+      setContactList(contactsCopy);
+      
+      setalertMessage(`User Deleted Sucessfully`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        getContacts();
+      }, 5000);
+    }else{
+      setalertMessage(`Cannot Delete User. Please contact support`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 4000);
+    }
+    
+    
+  }
 
   const Delete = () => {
     const [isHover, setisHover] = useState(false);
@@ -91,9 +137,9 @@ export default function DeleteModal({
         onMouseEnter={() => setisHover(true)}
         onMouseLeave={() => setisHover(false)}
         className="px-16 py-1 flex flex-row font-medium text-md justify-center
-      items-center text-white bg-red-500 rounded-md gap-2 hover:bg-white
-      hover:text-red-500 border border-red-500"
-      >
+          items-center text-white bg-red-500 rounded-md gap-2 hover:bg-white
+          hover:text-red-500 border border-red-500"
+          >
         Delete
         <svg
           width="16"
