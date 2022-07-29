@@ -7,20 +7,10 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 async function listUserClientMatter(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
+  const { limit, nextToken } = ctx.arguments;
 
-  let indexName,
-    isAscending = true;
-
-  if (sortOrder.includes("_DESC")) {
+  let indexName = "byUser",
     isAscending = false;
-  }
-
-  if (sortOrder.includes("CREATED_")) {
-    indexName = "byCreatedAt";
-  } else if (sortOrder.includes("ORDER_")) {
-    indexName = "byOrder";
-  }
 
   try {
     const userClientMatterParams = {
@@ -57,12 +47,12 @@ async function listUserClientMatter(ctx) {
           return ar.indexOf(item) === i;
         });
 
-      const uniqueBackgroundIds = unique.map((f) => marshall({ id: f }));
+      const uniqueClientMatterIds = unique.map((f) => marshall({ id: f }));
 
       const clientMattersParams = {
         RequestItems: {
-          BackgroundsTable: {
-            Keys: uniqueBackgroundIds,
+          ClientMatterTable: {
+            Keys: uniqueClientMatterIds,
           },
         },
       };
@@ -70,19 +60,26 @@ async function listUserClientMatter(ctx) {
       const clientMattersCommand = new BatchGetItemCommand(clientMattersParams);
       const clientMattersResult = await ddbClient.send(clientMattersCommand);
 
-      const objBackgrounds = clientMattersResult.Responses.BackgroundsTable.map(
-        (i) => unmarshall(i)
-      );
+      const objClientMatters =
+        clientMattersResult.Responses.ClientMatterTable.map((i) =>
+          unmarshall(i)
+        );
       const objUserClientMatter = userClientMatterResult.Items.map((i) =>
         unmarshall(i)
       );
 
-      const response = objUserClientMatter.map((item) => {
-        const filterBackground = objBackgrounds.find(
-          (u) => u.id === item.clientMatterId
-        );
-        return { ...item, ...filterBackground };
-      });
+      const response = objUserClientMatter
+        .map((item) => {
+          const filterClientMatter = objClientMatters.find(
+            (u) => u.id === item.clientMatterId
+          );
+
+          if (filterClientMatter !== undefined) {
+            return { ...item, ...filterClientMatter };
+          }
+        })
+        .filter((a) => a !== undefined);
+
       return {
         items: response,
         nextToken: userClientMatterResult.LastEvaluatedKey

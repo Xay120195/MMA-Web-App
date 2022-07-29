@@ -9,7 +9,8 @@ async function listRFIRequests(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
-  let indexName, isAscending = true;
+  let indexName,
+    isAscending = true;
 
   if (sortOrder.includes("_DESC")) {
     isAscending = false;
@@ -73,10 +74,21 @@ async function listRFIRequests(ctx) {
       );
       const objRFIRequests = rfiRequestsResult.Items.map((i) => unmarshall(i));
 
-      const response = objRFIRequests.map((item) => {
-        const filterRequest = objRequest.find((u) => u.id === item.requestId);
-        return { ...item, ...filterRequest };
-      });
+      // const response = objRFIRequests.map((item) => {
+      //   const filterRequest = objRequest.find((u) => u.id === item.requestId);
+      //   return { ...item, ...filterRequest };
+      // });
+
+      const response = objRFIRequests
+        .map((item) => {
+          const filterRequest = objRequest.find((u) => u.id === item.requestId);
+
+          if (filterRequest !== undefined) {
+            return { ...item, ...filterRequest };
+          }
+        })
+        .filter((a) => a !== undefined);
+
       return {
         items: response,
         nextToken: rfiRequestsResult.LastEvaluatedKey

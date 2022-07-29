@@ -400,9 +400,11 @@ const TableUnsavedInfo = ({
 
   const handleAddLabel = async (e, gmid) => {
     var selectedLabels = [];
+    var taggedLabels = [];
 
     for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
+      taggedLabels = [...taggedLabels, { id: e[i].value, name: e[i].label }];
     }
 
     console.log("selectedLabels", selectedLabels);
@@ -424,13 +426,23 @@ const TableUnsavedInfo = ({
       });
     }
     console.log("MainArray", unSavedEmails);
+
+    const newArrLabels = unSavedEmails;
+
+    newArrLabels.map(emails => {
+      if (emails.id === gmid) {
+        emails.labels.items = taggedLabels
+      }
+    });
+
+    console.log("updated", newArrLabels);
+    setUnsavedEmails(newArrLabels);
+
   };
 
-  const handleAddEmailAttachmentLabel = async (e, atid) => {
+  const handleAddEmailAttachmentLabel = async (e, atid, rowId) => {
     var selectedLabels = [];
     var taggedLabels = [];
-
-    console.log("arrr", unSavedEmails);
 
     for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
@@ -445,16 +457,6 @@ const TableUnsavedInfo = ({
           attachmentId: atid,
         },
       });
-
-      // const result1 = await API.graphql({
-      //   query: mTagFileLabel,
-      //   variables: {
-      //     labels: taggedLabels,
-      //     fileId: atid,
-      //   },
-      // });
-
-      // console.log("tagging", result1);
     } else {
       const result = await API.graphql({
         query: mAddEmailAttachmentLabel,
@@ -463,19 +465,28 @@ const TableUnsavedInfo = ({
           attachmentId: atid,
         },
       });
-
-      // const result1 = await API.graphql({
-      //   query: mTagFileLabel,
-      //   variables: {
-      //     labels: [],
-      //     fileId: atid,
-      //   },
-      // });
-
-      // console.log("tagging", result1);
     }
 
     console.log("MainArray", unSavedEmails);
+
+    var objIndex = unSavedEmails.findIndex(
+      (obj) => obj.id === rowId
+    );
+
+    const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(x => 
+      (x.id === atid ? { ...x, labels: { items: taggedLabels } } : x));
+
+    const updateArrAttachment = unSavedEmails;
+    updateArrAttachment.map((obj) => {
+      if (obj.id === rowId) {
+        obj.attachments.items = itemsAttachments
+      }
+    });
+
+    console.log("updateArr", updateArrAttachment);
+
+    setUnsavedEmails(updateArrAttachment);
+
   };
 
   const defaultLabels = (items) => {
@@ -776,8 +787,8 @@ const TableUnsavedInfo = ({
                             ))}
                           </td>
                           <td className="p-2 align-top w-1/6">
-                            <div className="relative" disabled={true}>
-                              <button
+                            <div className="relative mt-5" disabled={true}>
+                              {/* <button
                                 className="
                               text-opacity-90 1
                               textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
@@ -786,7 +797,7 @@ const TableUnsavedInfo = ({
                                 aria-expanded="false"
                               >
                                 {item.labelIds}
-                              </button>
+                              </button> */}
                               <CreatableSelect
                                 defaultValue={() => defaultLabels(item.labels.items)}
                                 isMulti
@@ -819,7 +830,7 @@ const TableUnsavedInfo = ({
                                     : true
                                 }
                                 onChange={(e) =>
-                                  handleAddEmailAttachmentLabel(e, item_attach.id)
+                                  handleAddEmailAttachmentLabel(e, item_attach.id, item.id)
                                 }
                                 placeholder="Labels"
                                 className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"

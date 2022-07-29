@@ -111,12 +111,24 @@ async function listBriefBackground(ctx) {
         unmarshall(i)
       );
 
-      const response = objBriefBackground.map((item) => {
-        const filterBackground = objBackgrounds.find(
-          (u) => u.id === item.backgroundId
-        );
-        return { ...item, ...filterBackground };
-      });
+      // const response = objBriefBackground.map((item) => {
+      //   const filterBackground = objBackgrounds.find(
+      //     (u) => u.id === item.backgroundId
+      //   );
+      //   return { ...item, ...filterBackground };
+      // });
+
+      const response = objBriefBackground
+        .map((item) => {
+          const filterBackground = objBackgrounds.find(
+            (u) => u.id === item.backgroundId
+          );
+
+          if (filterBackground !== undefined) {
+            return { ...item, ...filterBackground };
+          }
+        })
+        .filter((a) => a !== undefined);
 
       if (sortByDate) {
         response.sort(function (a, b) {
