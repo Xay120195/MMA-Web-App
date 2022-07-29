@@ -694,6 +694,7 @@ type Mutation {
     profilePicture: String
   ): User
   userClientMatterTag(userId: ID, clientMatterId: [ID]): User
+  userClientMatterUntag(userId: ID): User
   gmailMessageCreate(
     companyId: ID
     messageId: String

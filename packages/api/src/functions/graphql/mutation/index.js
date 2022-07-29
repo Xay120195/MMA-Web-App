@@ -2355,6 +2355,81 @@ async function tagUserClientMatter(data) {
   return resp;
 }
 
+async function untagUserClientMatter(data) {
+  let resp = {};
+
+  try {
+    const arrItems = [];
+
+    const userClientMatterIdParams = {
+      TableName: "UserClientMatterTable",
+      IndexName: "byUser",
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: marshall({
+        ":userId": data.userId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    const userClientMatterIdCmd = new QueryCommand(userClientMatterIdParams);
+    const userClientMatterIdRes = await ddbClient.send(userClientMatterIdCmd);
+
+    for (var a = 0; a < userClientMatterIdRes.Items.length; a++) {
+      var userClientMatterId = {
+        id: userClientMatterIdRes.Items[a].id,
+      };
+      arrItems.push({
+        DeleteRequest: {
+          Key: userClientMatterId,
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const userClientMatterParams = {
+        RequestItems: {
+          UserClientMatterTable: data,
+        },
+      };
+
+      const userClientMatterCmd = new BatchWriteItemCommand(
+        userClientMatterParams
+      );
+      await ddbClient.send(userClientMatterCmd);
+    });
+
+    resp = { id: data.userId };
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function tagGmailMessageClientMatter(data) {
   let resp = {};
 
@@ -3015,6 +3090,11 @@ const resolvers = {
     userClientMatterTag: async (ctx) => {
       return await tagUserClientMatter(ctx.arguments);
     },
+
+    userClientMatterUntag: async (ctx) => {
+      return await untagUserClientMatter(ctx.arguments);
+    },
+
     pageCreate: async (ctx) => {
       return await createPage(ctx.arguments);
     },
