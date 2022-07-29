@@ -45,7 +45,7 @@ import { AppRoutes } from '../../constants/AppRoutes';
 import { Auth } from 'aws-amplify';
 import { BiArrowToTop } from 'react-icons/bi';
 import BlankState from '../blank-state';
-import BlankStateMobile from '../blank-state-mobile';
+import BlankStateMobile from "../mobile-blank-state";
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
 import FilterLabels from './filter-labels-modal';
@@ -65,6 +65,7 @@ import imgLoading from '../../assets/images/loading-circle.gif';
 import { useIdleTimer } from 'react-idle-timer';
 import { useParams } from 'react-router-dom';
 import useWindowDimensions from '../../shared/windowDimensions';
+import "../../assets/styles/Mobile.css";
 import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
 //import AccessControl from "../../shared/accessControl";
 
@@ -2162,8 +2163,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   //Mobile functions
-  const [headerReadMore, setHeaderReadMore] = useState(false);
-  const [headerLines, setHeaderLines] = useState();
   const [contentHeight, setContentHeight] = useState();
   const [readMoreStateOuter, setReadMoreStateOuter] = useState([]);
   const [readMoreStateInner, setReadMoreStateInner] = useState([]);
@@ -2171,7 +2170,26 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isExpandAllActive, setIsExpandAllActive] = useState(false);
   const { height, width } = useWindowDimensions();
+  const [headerReadMore, setHeaderReadMore] = useState(false);
+  const [headerLines, setHeaderLines] = useState();
 
+  function countLines(tag) {
+    var divHeight = tag.offsetHeight
+    var lineHeight = parseInt(window.getComputedStyle(tag).getPropertyValue("line-height"));
+    var lines = Math.round(divHeight / lineHeight);
+    return lines;
+  }
+
+  useEffect(() => {
+    var headerTag = document.getElementById('headerTag');
+    setHeaderLines(countLines(headerTag));
+    if(headerReadMore) {
+      setContentHeight(height-94-headerTag.offsetHeight);
+    } else {
+      setContentHeight(height-94-parseInt(window.getComputedStyle(headerTag).getPropertyValue("line-height")));
+    }
+  }, [height, width, headerReadMore]);
+  
   function handleReadMoreStateDesc(fileId) {
     if (
       readMoreStateDesc.find((temp) => {
@@ -2314,14 +2332,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         if (descTag !== null) {
           var lines = countLines(descTag);
           var descButtonTag = document.getElementById(data.id + '.descButton');
-          if (lines >= 5) {
+          if (lines > 5) {
             let bool =
-              !isReadMoreExpandedDesc(data.id) &&
-              (isReadMoreExpandedOuter(data.id) ||
-                data.backgrounds.items === null ||
-                data.backgrounds.items.length === 0);
+              (isReadMoreExpandedOuter(data.id));
             descButtonTag.style.display = bool ? 'inline-block' : 'none';
-            descButtonTag.innerHTML = bool ? 'read more...' : 'read less...';
           } else {
             descButtonTag.style.display = 'none';
           }
@@ -2329,22 +2343,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       });
     }
   }, [matterFiles, readMoreStateDesc, readMoreStateOuter, width]);
-
-  useEffect(() => {
-    var headerTag = document.getElementById('headerTag');
-    setHeaderLines(countLines(headerTag));
-    if (headerReadMore) {
-      setContentHeight(height - 93 - headerTag.offsetHeight);
-    } else {
-      setContentHeight(
-        height -
-          93 -
-          parseInt(
-            window.getComputedStyle(headerTag).getPropertyValue('line-height')
-          )
-      );
-    }
-  }, [height, width, headerReadMore]);
 
   return (
     <>
@@ -2393,7 +2391,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
               {checkFormat(matter_name)}
             </span>
           </p>
-          {/* MOBILE VIEW OF HEADER */}
+          {/* MOBILE VIEW OF HEADER 
+          <MobileHeader
+            height = {height}
+            width = {width}
+            matter_name = {matter_name}
+            client_name = {client_name}
+            setContentHeight = {setContentHeight}
+          />
+          */}
           <div
             className="flex flex-auto"
             style={{
@@ -3391,7 +3397,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                               {showScrollButton ? (
                                 <>
                                   <div
-                                    className="scrollButtonsFileBucket flex"
+                                    className="scrollButtonInner flex"
                                     onClick={() => handleScrollToTop()}
                                   >
                                     <BiArrowToTop
@@ -3443,7 +3449,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       ></div>
                                     </div>
                                     <div className="ml-2 flex flex-col flex-auto">
-                                      <div className="w-full">
+                                      <div className="w-full relative">
                                         <p className="font-medium text-cyan-400">
                                           {(data.date !== null) |
                                           (data.date !== undefined)
@@ -3463,9 +3469,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   ? 'line-clamp-2'
                                                   : ''
                                               }
+                                              dangerouslySetInnerHTML={{
+                                                __html: data.name,
+                                              }}
+                                              style={{wordBreak:"break-word"}}
                                             >
-                                              {' '}
-                                              {data.name}{' '}
                                             </p>
                                           </div>
                                           <AiOutlineDownload
@@ -3477,6 +3485,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         </div>
                                         <p
                                           id={data.id + '.desc'}
+                                          className="mt-1 absolute text-red-200 pointer-events-none invisible"                    
+                                          dangerouslySetInnerHTML={{
+                                            __html: data.details,
+                                          }}
+                                          style={{wordBreak:"break-word",top:-10000, zIndex:-1000}}
+
+                                        ></p>
+                                        <p
                                           className={
                                             (isReadMoreExpandedOuter(data.id) &&
                                             data.details
@@ -3485,8 +3501,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 : ' '
                                               : ' hidden ') + ' mt-1'
                                           }
+                                          dangerouslySetInnerHTML={{
+                                            __html: data.details,
+                                          }}
+                                          style={{wordBreak:"break-word"}}
                                         >
-                                          {data.details}&nbsp;
                                         </p>
                                         <button
                                           id={data.id + '.descButton'}
@@ -3495,7 +3514,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             handleReadMoreStateDesc(data.id)
                                           }
                                         >
-                                          read more...
+                                          {isReadMoreExpandedDesc(data.id)?"read less...":"read more..."}
                                         </button>
                                         <button
                                           className={
@@ -3638,8 +3657,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   ? 'block'
                                                   : 'hidden'
                                               }
+                                              dangerouslySetInnerHTML={{
+                                                __html: background.description,
+                                              }}
+                                              style={{wordBreak:"break-word"}}
                                             >
-                                              {background.description}
                                             </p>
                                           </>
                                         ))}
