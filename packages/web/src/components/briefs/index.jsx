@@ -1,4 +1,5 @@
 import '../../assets/styles/Briefs.css';
+import "../../assets/styles/Mobile.css";
 
 import {
   FaBook,
@@ -26,7 +27,7 @@ import { Auth } from 'aws-amplify';
 import { BiArrowToTop } from 'react-icons/bi';
 import BlankList from '../../assets/images/RFI_Blank_List.svg';
 import BlankState from '../dynamic-blankstate';
-import BlankStateMobile from '../blank-state-mobile';
+import BlankStateMobile from "../mobile-blank-state";
 import { BsFillTrashFill } from 'react-icons/bs';
 import { CgChevronLeft } from 'react-icons/cg';
 import CreateBriefsModal from './create-brief-modal';
@@ -40,6 +41,7 @@ import ToastNotification from '../toast-notification';
 import { useIdleTimer } from 'react-idle-timer';
 import { useParams } from 'react-router-dom';
 import useWindowDimensions from '../../shared/windowDimensions';
+import MobileHeader from "../mobile-header";
 
 // import { matter_rfi, questions } from "./data-source";
 
@@ -502,11 +504,8 @@ export default function Briefs() {
     return check;
   };
 
-  {
-    /* MOBILE CONST */
-  }
-  const [headerReadMore, setHeaderReadMore] = useState(false);
-  const [headerLines, setHeaderLines] = useState();
+  {/* MOBILE CONST */}
+
   const [contentHeight, setContentHeight] = useState();
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] =
@@ -521,22 +520,6 @@ export default function Briefs() {
     var lines = Math.round(divHeight / lineHeight);
     return lines;
   }
-
-  useEffect(() => {
-    // var headerTag = document.getElementById('headerTag');
-    // setHeaderLines(countLines(headerTag));
-    // if (headerReadMore) {
-    //   setContentHeight(height - 94 - headerTag.offsetHeight);
-    // } else {
-    //   setContentHeight(
-    //     height -
-    //       94 -
-    //       parseInt(
-    //         window.getComputedStyle(headerTag).getPropertyValue('line-height')
-    //       )
-    //   );
-    // }
-  }, [height, width, headerReadMore]);
 
   function handleScrollEvent(e) {
     const top = e.target.scrollTop > 20;
@@ -560,7 +543,7 @@ export default function Briefs() {
       >
         <div className="relative pt-3 sm:p-0 sm:flex-grow sm:flex-1">
           <div className="flex flex-col">
-            <div className="sticky pl-12 sm:pl-0 top-0 py-4 flex items-center gap-2 bg-white z-10">
+            <div className="sticky hidden block pl-12 sm:pl-0 top-0 py-4 sm:flex items-center gap-2 bg-white z-10">
               <div
                 onClick={() => history.replace('/dashboard')}
                 className="w-8 py-5 cursor-pointer"
@@ -571,13 +554,13 @@ export default function Briefs() {
                 <p className="flex flex-col">
                   <span className="text-lg font-bold">Background Page</span>
                   <span className=" text-grey-600">
-                    {client_name} - {matter_name}
+                    {client_name} - {matter_name} 
                   </span>
                 </p>
                 <div className="flex items-center gap-3 text-gray-500 mt-2">
                   <Link to="/dashboard">
                     <div className="flex items-center gap-3">
-                      <FaTachometerAlt />
+                      <FaTachometerAlt /> 
                       <p className="hidden sm:block font-semibold">Dashboard</p>
                     </div>
                   </Link>
@@ -615,10 +598,18 @@ export default function Briefs() {
                   />
                 </button>
               </Link>
+              
             </div> */}
+            
           </div>
-
-          {/* <div className="sm:px-0">
+          <MobileHeader
+              height = {height}
+              width = {width}
+              matter_name = {matter_name}
+              client_name = {client_name}
+              setContentHeight = {setContentHeight}
+            />
+          <div className="sm:px-0">
             <nav
               aria-label="Breadcrumb"
               style={style}
@@ -683,7 +674,7 @@ export default function Briefs() {
                 </li>
               </ol>
             </nav>
-          </div> */}
+          </div>
 
           <div className="hidden sm:block mt-4 sm:mt-7">
             <div className="flex sm:block">
@@ -803,33 +794,15 @@ export default function Briefs() {
                 Brief
               </button>
             </div>
-            <div
-              id="mobileContent"
-              onScroll={(e) => handleScrollEvent(e)}
-              className="px-5 sm:px-0 overflow-y-auto h-min"
-              style={{ scrollBehavior: 'smooth' }}
-            >
-              {showScrollButton ? (
-                <>
-                  <div
-                    className="scrollButtonBrief flex"
-                    onClick={() => handleScrollToTop()}
-                  >
-                    <BiArrowToTop
-                      style={{
-                        color: 'white',
-                        display: 'block',
-                        margin: 'auto',
-                      }}
-                    />
-                  </div>
-                </>
-              ) : (
-                <></>
-              )}
-              {Briefs.map((item) => (
-                <div
-                  className="w-90 bg-gray-100 rounded-lg border border-gray-200 mt-5 py-3 px-5 sm:py-4 sm:px-4 sm:m-2
+            <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="px-5 sm:px-0 overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
+              {showScrollButton ? (<>
+              <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
+                <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
+              </div>
+              </>) : (<></>)}
+            {Briefs.map((item) => (
+              <div
+                className="w-90 bg-gray-100 rounded-lg border border-gray-200 mt-5 py-3 px-5 sm:py-4 sm:px-4 sm:m-2
                 hover:border-black cursor-pointer"
                   key={item.id}
                   data-info={item.id}

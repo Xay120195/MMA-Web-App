@@ -65,10 +65,8 @@ const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
             {userInfo &&
               SidebarData.map((item, index) => {
                 return (item.name === 'DASHBOARD' && showDashboard) ||
-                  (item.name === 'USERTYPEACCESS' && showUserTypeAccess) ||
-                  item.name === 'CONTACTS' ||
-                  (item.name === 'INBOX' && showInbox) ||
-                  item.name === 'ACCOUNTSETTINGS' ? (
+                  (item.name === 'INBOX' && showInbox)
+                  ? (
                   <li
                     className={
                       location.pathname === item.path ? 'active-page' : ''
@@ -80,7 +78,20 @@ const Sidebar = ({ showSidebar, userInfo, clickLogout }) => {
                       <span>{item.title}</span>
                     </Link>
                   </li>
-                ) : null;
+                ) : ( item.name === 'ACCOUNTSETTINGS' || 
+                (item.name === 'USERTYPEACCESS' && showUserTypeAccess) ||
+                item.name === 'CONTACTS'? (
+                <li
+                  className={
+                    location.pathname === item.path ? 'active-page' : 'hidden sm:block'
+                  }
+                  key={index}
+                >
+                  <Link className="nav-item" to={item.path}>
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </Link>
+                </li>):null);
               })}
           </ul>
           <hr />

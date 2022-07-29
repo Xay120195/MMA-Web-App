@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppRoutes } from "../../constants/AppRoutes";
 import dateFormat from "dateformat";
@@ -56,6 +56,27 @@ export function ClientMatters() {
   function utf8_to_b64(str) {
     return window.btoa(unescape(encodeURIComponent(str)));
   }
+  const [isActive, setIsActive] = useState([]);
+  
+  function handleActiveState (item, bool) {
+    if(bool) {
+      if(isActive.find((temp)=>{
+        return temp === item;
+      }) === undefined) {
+        setIsActive([...isActive, item]);
+      }
+    } else {
+      setIsActive(current => current.filter((id)=> {
+        return id !== item;
+      }));
+    }
+  }
+
+  function checkIsActive(item) {
+    return isActive.find((temp)=>{
+      return temp === item;
+    }) !== undefined;
+  }
 
   return (
     <>
@@ -81,13 +102,28 @@ export function ClientMatters() {
                         showDeleteMatter ? (
                           <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
                             <div className="dropdown">
-                              <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex dropDownButton">
-                                <IoIcons.IoEllipsisVertical className="hovered"/>
+                              <button 
+                                className={"bg-gray-100 p-0.5 sm:p-0 text-gray-400 sm:text-gray-700 font-semibold rounded inline-flex"}
+                                style={{backgroundColor: checkIsActive(item.id)&&width<640?"rgb(31 41 55)":"",
+                                  borderRadius: checkIsActive(item.id)&&width<640?"50%":"",
+                                  }}
+                                onClick={()=>handleActiveState(item.id,true)}>
+                                <IoIcons.IoEllipsisVertical className={(checkIsActive(item.id)&&width<640?"text-white":"")}/>
                               </button>
-                              <ul className="sm:absolute hidden text-gray-700 p-4 sm:p-2 font-semibold shadow-md z-50 dropDownCSS">
+                              {checkIsActive(item.id) ? 
+                              <>
+                                <div onMouseDown={()=>handleActiveState(item.id,false)}
+                                  className={(checkIsActive(item.id)&&width<640? "block":"hidden") +
+                                  (" fixed left-0 top-0 opacity-20 h-screen w-screen bg-black z-40 dropDownBg")}></div>
+                                <ul className={(checkIsActive(item.id)&&width<640? "block":"hidden")+ 
+                                  (" sm:absolute text-gray-700 p-4 sm:p-2 font-semibold shadow-md z-50 dropDownCSS")}>
+                                  <button className="sm:hidden py-2 flex w-full" onClick={()=>handleActiveState(item.id,false)}>
+                                    <div className="bg-gray-400 h-1.5 m-auto rounded-lg" style={{width:"50vw"}}></div>
+                                  </button>
                                 {allowOpenRFI ? (
-                                  <li className="my-2 p-2 sm:my-0 rounded-lg">
+                                  <li className="px-2 sm:p-2 rounded-lg flex ">
                                     <Link
+                                    className="py-4 sm:p-0 border-b w-full sm:border-0"
                                       to={`${AppRoutes.MATTERSRFI}/${
                                         item.id
                                       }/?matter_name=${utf8_to_b64(
@@ -101,8 +137,9 @@ export function ClientMatters() {
                                   </li>
                                 ) : null}
                                 {allowOpenFileBucket ? (
-                                  <li className="my-2 p-2 sm:my-0 rounded-lg">
+                                  <li className="px-2 sm:p-2 rounded-lg flex">
                                     <Link
+                                      className="py-4 w-full sm:p-0 border-b sm:border-0"
                                       to={`${AppRoutes.FILEBUCKET}/${
                                         item.id
                                       }/000/?matter_name=${utf8_to_b64(
@@ -111,13 +148,14 @@ export function ClientMatters() {
                                         item.client.name
                                       )}`}
                                     >
-                                      File Bucket
+                                    File Bucket
                                     </Link>
                                   </li>
                                 ) : null}
                                 {allowOpenBackground ? (
-                                  <li className="my-2 p-2 sm:my-0 rounded-lg">
+                                  <li className="px-2 sm:p-2 rounded-lg flex">
                                     <Link
+                                      className="py-4 sm:p-0 w-full"
                                       to={`${AppRoutes.BRIEFS}/${
                                         item.id
                                       }/?matter_name=${utf8_to_b64(
@@ -132,7 +170,7 @@ export function ClientMatters() {
                                 ) : null}
                                 {showDeleteMatter && (
                                   <li
-                                    className="my-2 p-2 sm:my-0 rounded-lg cursor-pointer"
+                                    className="hidden sm:inline-block my-2 p-2 sm:my-0 rounded-lg cursor-pointer"
                                     onClick={() =>
                                       setshowDeleteModal(true, item.id)
                                     }
@@ -140,24 +178,28 @@ export function ClientMatters() {
                                     Delete
                                   </li>
                                 )}
-                              </ul>
+                                </ul>
+                              </>
+                              : <></>}
+                              
+                              
+                              
                             </div>
                           </div>
                         ) : null}
                         <div>
                           <h4
                             tabIndex="0"
-                            className="focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-3"
+                            className="focus:outline-none text-gray-800 dark:text-gray-100 font-semibold sm:font-bold sm:mb-3"
                           >
                             {item.matter.name}
                           </h4>
                           <p
                             tabIndex="0"
-                            className="focus:outline-none text-gray-800 dark:text-gray-100 text-sm mb-3"
+                            className="focus:outline-none text-gray-400 sm:text-gray-800 dark:text-gray-100 text-sm mb-3"
                           >
                             {item.client.name}
                           </p>
-
                           <br />
                           <div className="grid grid-cols-4 gap-4">
                             <div className="col-span-1">

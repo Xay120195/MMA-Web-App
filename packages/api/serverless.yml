@@ -168,6 +168,11 @@ custom:
         field: userClientMatterTag
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: userClientMatterUntag
+        request: false
+        response: false
       - dataSource: LambdaUserDS
         type: User
         field: clientMatters

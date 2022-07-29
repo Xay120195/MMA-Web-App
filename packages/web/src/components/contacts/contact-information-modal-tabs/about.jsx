@@ -20,30 +20,33 @@ export default function About({
   ContactList,
   setContactList,
 }) {
-  const [Firstname, setFirstname] = useState(user.name.split(" ")[0]);
-  const [Lastname, setLastname] = useState(user.name.split(" ")[1]);
-  const [Address, setAddress] = useState(user.address);
+  const [Firstname, setFirstname] = useState(user.firstName);
+  const [Lastname, setLastname] = useState(user.lastName);
+  const [Address, setAddress] = useState(user.address ? user.address : "");
   const [Email, setEmail] = useState(user.email);
   const [UserType, setUserType] = useState({
-    value: user.type,
-    label: user.type,
+    value: user.type ? user.type : "",
+    label: user.type ? user.type : "None",
   });
-  const [Mobile, setMobile] = useState(user.mobile);
-  const [Company, setCompany] = useState(user.company);
+  const [Mobile, setMobile] = useState(user.mobile ? user.mobile : "");
+  const [Company, setCompany] = useState("LOPHILS");
   const [isDisabled, setisDisabled] = useState(true);
 
   const ChangesHaveMade = (obj) => {
     if (
-      obj.name !== Firstname + " " + Lastname ||
-      obj.company !== Company ||
+      obj.lastName !== Lastname ||
+      obj.firstName !== Firstname ||
       obj.email !== Email ||
-      obj.type !== UserType.value ||
-      obj.address !== Address ||
-      obj.mobile !== Mobile
+      Address ||
+      Mobile
     ) {
       return false;
     } else return true;
   };
+
+  useEffect(() => {
+    console.log("USER", user);
+  }, []);
 
   useEffect(() => {
     setisDisabled(ChangesHaveMade(user));
@@ -63,7 +66,6 @@ export default function About({
     return (
       <button
         onClick={() => {
-
           let foundIndex = ContactList.findIndex((x) => x.id == user.id);
           let item = {
             id: user.id,
@@ -76,7 +78,6 @@ export default function About({
             type: UserType.value,
           };
 
-          
           ContactList[foundIndex] = item;
           setContactList(ContactList);
           close();
@@ -183,7 +184,7 @@ export default function About({
               type="text"
               value={UserType}
               className="outline-0 w-80"
-              onChange={(e) => setUserType(e.target.value)}
+              onChange={(e, val) => setUserType(val)}
             />
           </div>
           <div className="flex flex-col p-1">
