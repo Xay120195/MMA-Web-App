@@ -3,8 +3,8 @@ import illustration from "./images/illustrations.png";
 import undraw from "./images/undrawpeople.png";
 export default function BlankStateTeams() {
   return (
-    <div className="flex flex-col justify-center items-center">
-      <div className="m-auto mt-20">
+    <div className="flex flex-col justify-center items-center w-full">
+      <div className="mt-20">
         <img src={undraw} alt={``}></img>
       </div>
       <div className="text-black font-medium text-2xl p-4">
@@ -16,6 +16,7 @@ export default function BlankStateTeams() {
         from the team profile page. Click the Add Team button to start adding
         one now.
       </div>
+
       <div className="" style={{ zIndex: "-1" }}>
         <img
           src={illustration}
@@ -23,12 +24,11 @@ export default function BlankStateTeams() {
           style={{
             width: "1790px",
             height: "330.04px",
-            left: "0px",
+            left: "120px",
             top: "600px",
             position: "fixed",
-
             objectFit: "cover",
-            transform: "scale(1.05)",
+            transform: "scale(1.1)",
           }}
         ></img>
       </div>

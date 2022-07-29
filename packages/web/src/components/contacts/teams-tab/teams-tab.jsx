@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { alphabetArray } from "../alphabet";
 import { CgTrash, CgSortAz, CgSortZa } from "react-icons/cg";
 import { FaEdit } from "react-icons/fa";
@@ -6,15 +6,17 @@ import BlankStateTeams from "./blank-state";
 import DeleteModal from "../delete-modal";
 import dummy from "./teams.json";
 import illustrations from "./images/illustrations.png";
+import burst from "../teams-tab/images/celebratory_burst.gif";
 export default function TeamsTab({
   teams,
   shortcutSelected,
   refLetters,
   ContactList,
   setContactList,
+  ShowBurst,
 }) {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
-  const [TeamList, setTeamList] = useState([]);
+  const [TeamList, setTeamList] = useState(teams);
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -23,7 +25,7 @@ export default function TeamsTab({
   }
   useEffect(() => {
     setTeamList(teams);
-  }, []);
+  }, [teams]);
 
   useEffect(() => {
     setAlphabets(
@@ -77,6 +79,11 @@ export default function TeamsTab({
 
   return (
     <>
+      {ShowBurst && (
+        <div className="absolute z-10">
+          <img src={burst} width="1720" height="980" />
+        </div>
+      )}
       {TeamList.length === 0 ? (
         <BlankStateTeams />
       ) : (

@@ -10,11 +10,27 @@ const options = [
   { value: "John Doe", label: "John Doe" },
 ];
 
+function uuidv4() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (
+      c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+    ).toString(16)
+  );
+}
+
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function (txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
+
 export default function AddTeamModal({
   close,
-  setContactList,
-  ContactList,
+  setTeamList,
+  TeamList,
   getContacts,
+  setShowBurst,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -56,7 +72,7 @@ export default function AddTeamModal({
   ]);
 
   const validate = (obj) => {
-    if (obj.memberName && obj.userType) {
+    if (obj.memberName && obj.userType && TeamName) {
       return true;
     } else return false;
   };
@@ -79,32 +95,23 @@ export default function AddTeamModal({
     setInputData(list);
   };
 
-  // const generateFinalObj = (obj, state) => {
-  //   return {
-  //     id: uuidv4(),
-  //     name: toTitleCase(obj.firstname + " " + obj.lastname),
-  //     email: obj.email,
-  //     team: obj.team,
-  //     type: obj.usertype,
-  //     company: obj.company,
-  //     isNewlyAdded: state,
-  //   };
-  // };
+  const generateFinalObj = (state) => {
+    return {
+      id: uuidv4(),
+      teamName: toTitleCase(TeamName),
+      members: InputData.length,
+      isNewlyAdded: state,
+    };
+  };
 
-  // const generateFinal = () => {
-  //   setContactList(
-  //     ContactList.concat(
-  //       InputData.map((input) => generateFinalObj(input, true))
-  //     )
-  //   );
-  //   setTimeout(() => {
-  //     setContactList(
-  //       ContactList.concat(
-  //         InputData.map((input) => generateFinalObj(input, false))
-  //       )
-  //     );
-  //   }, 3000);
-  // };
+  const generateFinal = () => {
+    setTeamList(TeamList.concat(generateFinalObj(true)));
+    setShowBurst(true);
+    setTimeout(() => {
+      setTeamList(TeamList.concat(generateFinalObj(false)));
+      setShowBurst(false);
+    }, 3000);
+  };
   const mInviteUser = `
       mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
         userInvite(
@@ -139,13 +146,7 @@ export default function AddTeamModal({
   }
 
   const handleSubmit = () => {
-    console.log("savedata", InputData);
-
-    InputData.map((x) => inviteUser(x));
-
-    setTimeout(() => {
-      getContacts();
-    }, 2000);
+    generateFinal();
   };
 
   return (
@@ -199,6 +200,7 @@ export default function AddTeamModal({
                 placeholder={`What's your team called?`}
                 className="rounded-md p-2 w-full border border-gray-300 outline-0"
                 onChange={(e) => setTeamName(e.target.value)}
+                required
               />
             </div>
           </div>
@@ -294,11 +296,11 @@ export default function AddTeamModal({
             }}
             className={
               isDisabled
-                ? "p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-200 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-200 cursor-default focus:ring"
-                : "p-2 pl-5 pr-5 text-md rounded-md mr-auto ml-auto bg-green-500 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-400 cursor-pointer focus:ring"
+                ? "p-2 pl-5 pr-5 text-md rounded-md ml-auto bg-green-200 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-200 cursor-default focus:ring"
+                : "p-2 pl-5 pr-5 text-md rounded-md ml-auto bg-green-500 text-white font-medium gap-1 flex flex-row justify-center items-center text-md hover:bg-green-400 cursor-pointer focus:ring"
             }
           >
-            Add Contact
+            Create Team
             <svg
               width="13"
               height="14"

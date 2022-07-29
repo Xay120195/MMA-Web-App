@@ -18,6 +18,7 @@ import TeamsTab from "./teams-tab/teams-tab";
 import teamdummy from "./teams-tab/teams.json";
 import AddTeamModal from "./add-team-revamp-modal";
 
+
 export default function Contacts() {
   const [showAddContactModal, setshowAddContactModal] = useState(false);
   const handleModalClose = () => {
@@ -44,6 +45,8 @@ export default function Contacts() {
   const [defaultCompany, setDefaultCompany] = useState("");
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowAddTeamModal, setShowAddTeamModal] = useState(false);
+  const [TeamList, setTeamList] = useState(teamdummy);
+  const [ShowBurst, setShowBurst] = useState(false);
   const hideToast = () => {
     setShowToast(false);
   };
@@ -341,6 +344,7 @@ export default function Contacts() {
         {/* main content */}
         <div className="relative w-full flex gap-x-5 py-5 max-w-[100vw]">
           {/* alphabet array */}
+
           <div className="px-3 py-2 ">
             <div className="sticky top-20 flex flex-col gap-y-1 pt-5">
               {alphabetArray.map((letter) => {
@@ -494,11 +498,12 @@ export default function Contacts() {
             </div>
           ) : (
             <TeamsTab
-              teams={teamdummy}
+              teams={TeamList}
               shortcutSelected={shortcutSelected}
-                refLetters={refLetters}
-                ContactList={ContactList}
-                setContactList={setContactList}
+              refLetters={refLetters}
+              ContactList={ContactList}
+              setContactList={setContactList}
+              ShowBurst={ShowBurst}
             />
           )}
         </div>
@@ -674,9 +679,10 @@ export default function Contacts() {
       {ShowAddTeamModal && (
         <AddTeamModal
           close={() => setShowAddTeamModal(false)}
-          setContactList={setContactList}
-          ContactList={ContactList}
+          setTeamList={setTeamList}
+          TeamList={TeamList}
           getContacts={getContacts}
+          setShowBurst={setShowBurst}
         />
       )}
     </>

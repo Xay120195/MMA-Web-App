@@ -34,12 +34,11 @@ export default function About({
 
   const ChangesHaveMade = (obj) => {
     if (
-      obj.name !== Firstname + " " + Lastname ||
-      obj.company !== Company ||
+      obj.lastName !== Lastname ||
+      obj.firstName !== Firstname ||
       obj.email !== Email ||
-      obj.type !== UserType.value ||
-      obj.address !== Address ||
-      obj.mobile !== Mobile
+      Address ||
+      Mobile
     ) {
       return false;
     } else return true;
@@ -67,7 +66,6 @@ export default function About({
     return (
       <button
         onClick={() => {
-
           let foundIndex = ContactList.findIndex((x) => x.id == user.id);
           let item = {
             id: user.id,
@@ -80,7 +78,6 @@ export default function About({
             type: UserType.value,
           };
 
-          
           ContactList[foundIndex] = item;
           setContactList(ContactList);
           close();
@@ -187,7 +184,7 @@ export default function About({
               type="text"
               value={UserType}
               className="outline-0 w-80"
-              onChange={(e) => setUserType(e.target.value)}
+              onChange={(e, val) => setUserType(val)}
             />
           </div>
           <div className="flex flex-col p-1">
