@@ -4,7 +4,7 @@ const {
   BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
-const { generatePresignedUrl } = require("../../../services/MatterService");
+const { generatePresignedUrl } = require("../../../services/MatterFileService");
 
 async function listFileLabels(ctx) {
   const { id } = ctx.source;

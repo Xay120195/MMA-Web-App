@@ -7,7 +7,7 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
-const { getFile, getMatterFiles } = require("../../../services/MatterService");
+const { getFile, getMatterFiles } = require("../../../services/MatterFileService");
 
 async function getCompany(data) {
   try {

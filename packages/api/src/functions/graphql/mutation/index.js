@@ -23,7 +23,7 @@ const {
   bulkUpdateMatterFileOrders,
   bulkCreateMatterFile,
   bulkSoftDeleteMatterFile,
-} = require("../../../services/MatterService");
+} = require("../../../services/MatterFileService");
 import { addToken } from "../../../services/gmail/addToken";
 import { google } from "googleapis";
 const { client_id, client_secret } = require("../../../services/gmail/config");
