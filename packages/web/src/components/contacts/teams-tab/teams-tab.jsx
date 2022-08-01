@@ -7,6 +7,7 @@ import DeleteModal from "../delete-modal";
 import dummy from "./teams.json";
 import illustrations from "./images/illustrations.png";
 import burst from "../teams-tab/images/celebratory_burst.gif";
+import TeamsEditModal from "./teams-edit-modal";
 export default function TeamsTab({
   teams,
   shortcutSelected,
@@ -19,6 +20,8 @@ export default function TeamsTab({
   const [TeamList, setTeamList] = useState(teams);
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowDeleteModal, setShowDeleteModal] = useState(false);
+  const [ShowEditModal, setShowEditModal] = useState(false);
+  const [CurrentTeam, setCurrentTeam] = useState();
 
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
@@ -133,34 +136,37 @@ export default function TeamsTab({
                             <div className="flex items-center gap-x-2 ">
                               <span>{team.teamName}'s Team</span>
                               <span className="text-xs rounded-full bg-gray-200 font-medium p-1">
-                                {team.members} members
+                                {team.members.length} members
                               </span>
                             </div>
                           </td>
                           <td className="p-2 text-right">
                             <div className="relative text-right left-0">
                               <span>
-                                {Array.from(Array(team.members).keys()).map(
-                                  (x, i) => (
-                                    <img
-                                      alt={``}
-                                      className="absolute rounded-full w-8 h-8 border-2 border-white"
-                                      style={{
-                                        zIndex: i,
-                                        right: `${i * 25}px`,
-                                        top: "-15px",
-                                      }}
-                                      src={`https://i.pravatar.cc/70?img=${i}`}
-                                    />
-                                  )
-                                )}
+                                {team.members.map((x, i) => (
+                                  <img
+                                    alt={``}
+                                    className="absolute rounded-full w-8 h-8 border-2 border-white"
+                                    style={{
+                                      zIndex: i,
+                                      right: `${i * 25}px`,
+                                      top: "-15px",
+                                    }}
+                                    src={`https://i.pravatar.cc/70?img=${i}`}
+                                  />
+                                ))}
                               </span>
                             </div>
                           </td>
                           <td className="p-2">
                             <div className="flex items-center gap-x-2">
                               <button className="p-3 w-max font-semibold text-gray-500 rounded-full hover:bg-gray-200">
-                                <FaEdit />
+                                <FaEdit
+                                  onClick={() => {
+                                    setShowEditModal(true);
+                                    setCurrentTeam(team);
+                                  }}
+                                />
                               </button>
                               <button className="p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200">
                                 <CgTrash
@@ -183,8 +189,17 @@ export default function TeamsTab({
         <DeleteModal
           close={() => setShowDeleteModal(false)}
           toDeleteid={`test`}
-          setContactList={setContactList}
-          ContactList={ContactList}
+          setContactList={setTeamList}
+          ContactList={TeamList}
+        />
+      )}
+      {ShowEditModal && (
+        <TeamsEditModal
+          close={() => setShowEditModal(false)}
+          toDeleteid={`test`}
+          setTeamList={setTeamList}
+          TeamList={TeamList}
+          CurrentTeam={CurrentTeam}
         />
       )}
     </>
