@@ -23,6 +23,11 @@ const {
   updateRFI,
 } = require("../../../services/RFIService");
 const {
+  createRequest,
+  deleteRequest,
+  updateRequest,
+} = require("../../../services/RequestService");
+const {
   createMatterFile,
   updateMatterFile,
   softDeleteMatterFile,
@@ -1244,51 +1249,6 @@ async function untagBriefBackground(data) {
   return resp;
 }
 
-async function createRequest(data) {
-  let resp = {};
-  try {
-    const rawParams = {
-      id: v4(),
-      question: data.question,
-      answer: data.answer,
-      createdAt: toUTC(new Date()),
-      order: data.order ? data.order : 0,
-      itemNo: data.itemNo,
-    };
-
-    const param = marshall(rawParams);
-    const cmd = new PutItemCommand({
-      TableName: "RequestTable",
-      Item: param,
-    });
-    const req = await ddbClient.send(cmd);
-
-    const rfiRequestParams = {
-      id: v4(),
-      requestId: rawParams.id,
-      rfiId: data.rfiId,
-      createdAt: toUTC(new Date()),
-    };
-
-    const rfiRequestCmd = new PutItemCommand({
-      TableName: "RFIRequestTable",
-      Item: marshall(rfiRequestParams),
-    });
-
-    const rfiRequestReq = await ddbClient.send(rfiRequestCmd);
-
-    resp = rfiRequestReq ? rawParams : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
 async function createBrief(data) {
   let resp = {};
   try {
@@ -1454,42 +1414,6 @@ async function updateBrief(id, data) {
 
     const cmd = new UpdateItemCommand({
       TableName: "BriefTable",
-      Key: marshall({ id }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-    });
-
-    const request = await ddbClient.send(cmd);
-
-    resp = request ? param : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function updateRequest(id, data) {
-  let resp = {};
-  try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const param = {
-      id,
-      ...data,
-    };
-
-    const cmd = new UpdateItemCommand({
-      TableName: "RequestTable",
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
@@ -1863,53 +1787,6 @@ async function softDeleteBrief(id, data) {
     };
     console.log(resp);
   }
-  return resp;
-}
-
-async function deleteRequest(id) {
-  let resp = {};
-  try {
-    const rfiRequestParams = {
-      TableName: "RFIRequestTable",
-      IndexName: "byRequest",
-      KeyConditionExpression: "requestId = :requestId",
-      ExpressionAttributeValues: marshall({
-        ":requestId": id,
-      }),
-      ProjectionExpression: "id", // fetch id of RFIRequestTable only
-    };
-
-    const rfiRequestCmd = new QueryCommand(rfiRequestParams);
-    const rfiRequestResult = await ddbClient.send(rfiRequestCmd);
-
-    const rfiRequestId = rfiRequestResult.Items[0];
-
-    const deleteRFIRequestCommand = new DeleteItemCommand({
-      TableName: "RFIRequestTable",
-      Key: rfiRequestId,
-    });
-
-    const deleteRFIRequestResult = await ddbClient.send(
-      deleteRFIRequestCommand
-    );
-
-    if (deleteRFIRequestResult) {
-      const cmd = new DeleteItemCommand({
-        TableName: "RequestTable",
-        Key: marshall({ id }),
-      });
-      const request = await ddbClient.send(cmd);
-
-      resp = request ? { id: id } : {};
-    }
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
   return resp;
 }
 
