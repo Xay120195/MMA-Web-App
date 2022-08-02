@@ -615,9 +615,9 @@ type Mutation {
   ): ColumnSettings
   companyAccessTypeCreate(
     companyId: String
-    userType: UserType
+    userType: [UserType]
     access: [AccessInput]
-  ): CompanyAccessType
+  ): [CompanyAccessType]
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   companyCreate(name: String, representative: RepresentativeInput): Company
   featureCreate(name: String, label: String, page: PageInput): Feature
