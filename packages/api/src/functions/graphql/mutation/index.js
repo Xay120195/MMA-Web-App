@@ -252,22 +252,36 @@ async function createUserColumnSettings(data) {
 async function createCompanyAccessType(data) {
   let resp = {};
   try {
-    const rawParams = {
-      id: v4(),
-      companyId: data.companyId,
-      userType: data.userType,
-      access: data.access,
-      createdAt: toUTC(new Date()),
+    const arrItems = [];
+
+    for (var i = 0; i < data.userType.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            companyId: data.companyId,
+            userType: data.userType[i],
+            access: data.access,
+            createdAt: toUTC(new Date()),
+          }),
+        },
+      });
+    }
+
+    const param = {
+      RequestItems: {
+        CompanyAccessTypeTable: arrItems,
+      },
     };
 
-    const param = marshall(rawParams);
-    const cmd = new PutItemCommand({
-      TableName: "CompanyAccessTypeTable",
-      Item: param,
-    });
-
+    const cmd = new BatchWriteItemCommand(param);
     const request = await ddbClient.send(cmd);
-    resp = request ? unmarshall(param) : {};
+
+    if (request) {
+      resp = arrItems.map((i) => {
+        return unmarshall(i.PutRequest.Item);
+      });
+    }
   } catch (e) {
     resp = {
       error: e.message,
@@ -2361,12 +2375,8 @@ async function tagUserClientMatter(data) {
       ProjectionExpression: "id",
     };
 
-    console.log("userClientMatterIdParams", userClientMatterIdParams);
-
     const userClientMatterIdCmd = new QueryCommand(userClientMatterIdParams);
     const userClientMatterIdRes = await ddbClient.send(userClientMatterIdCmd);
-
-    console.log("userClientMatterIdRes", userClientMatterIdRes);
 
     if (userClientMatterIdRes.Count !== 0) {
       for (var a = 0; a < userClientMatterIdRes.Items.length; a++) {

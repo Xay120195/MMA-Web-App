@@ -93,64 +93,25 @@ export default function PostRegistration() {
   async function createCompanyAccessType(companyId, pageAccess) {
     return new Promise((resolve, reject) => {
       try {
-        // For Restructure
-        // Change to batch write method
+        const defaultUserTypes = [
+          "OWNER",
+          "LEGALADMIN",
+          "BARRISTER",
+          "EXPERT",
+          "CLIENT",
+          "WITNESS",
+        ];
 
-        API.graphql({
+        const request = API.graphql({
           query: mCreateCompanyAccessType,
           variables: {
             companyId: companyId,
             access: pageAccess,
-            userType: "OWNER",
+            userType: defaultUserTypes,
           },
         });
 
-        API.graphql({
-          query: mCreateCompanyAccessType,
-          variables: {
-            companyId: companyId,
-            access: pageAccess,
-            userType: "LEGALADMIN",
-          },
-        });
-
-        API.graphql({
-          query: mCreateCompanyAccessType,
-          variables: {
-            companyId: companyId,
-            access: pageAccess,
-            userType: "BARRISTER",
-          },
-        });
-
-        API.graphql({
-          query: mCreateCompanyAccessType,
-          variables: {
-            companyId: companyId,
-            access: pageAccess,
-            userType: "EXPERT",
-          },
-        });
-
-        API.graphql({
-          query: mCreateCompanyAccessType,
-          variables: {
-            companyId: companyId,
-            access: pageAccess,
-            userType: "CLIENT",
-          },
-        });
-
-        API.graphql({
-          query: mCreateCompanyAccessType,
-          variables: {
-            companyId: companyId,
-            access: pageAccess,
-            userType: "WITNESS",
-          },
-        });
-
-        resolve();
+        resolve(request);
       } catch (e) {
         setError(e.errors[0].message);
         reject(e.errors[0].message);
@@ -187,7 +148,7 @@ export default function PostRegistration() {
 `;
 
   const mCreateCompanyAccessType = `
-  mutation createCompanyAccessType($companyId: String, $userType: UserType, $access: [AccessInput]){
+  mutation createCompanyAccessType($companyId: String, $userType: [UserType], $access: [AccessInput]){
     companyAccessTypeCreate(
       companyId: $companyId
       userType: $userType
