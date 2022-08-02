@@ -1625,7 +1625,7 @@ const TableInfo = ({
                                                           "rgb(204, 204, 204, 0.5)",
                                                         outlineWidth: "thin",
                                                         minHeight: "150px",
-                                                        maxHeight: "200px",
+                                                        maxHeight: "150px",
                                                         overflow: "auto",
                                                       }}
                                                       suppressContentEditableWarning
