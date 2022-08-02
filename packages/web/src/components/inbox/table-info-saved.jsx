@@ -540,7 +540,7 @@ const TableSavedInfo = ({
                           <td className="p-2 align-top w-1/6">
                             <div className="w-48">
                               {item.clientMatters.items.map((item_clientMatter, index) => (
-                                <>
+                                <React.Fragment key={item_clientMatter.id} >
                                   <span className="text-sm cursor-pointer mr-1 text-opacity-90 1 mt-2
                                     textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
                                   >
@@ -548,7 +548,7 @@ const TableSavedInfo = ({
                                       "/" +
                                       item_clientMatter.matter.name}
                                   </span>
-                                </>
+                                </React.Fragment>
                               ))}
                             </div>
                           </td>

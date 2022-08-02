@@ -245,11 +245,12 @@ const TableInfo = ({
     // }
   }, [getId]);
 
-  const handleDescContent = (e, description, id) => {
+  const handleDescContent = (e, description, id, index) => {
     if (!descAlert) {
       setTextDesc(description);
       setDescId(id);
       setDescAlert("");
+
     } else {
       setDescAlert("");
     }
@@ -259,7 +260,7 @@ const TableInfo = ({
     setTextDesc(event.currentTarget.textContent);
   };
 
-  const handleSaveDesc = async (e, description, date, id) => {
+  const handleSaveDesc = async (e, description, date, id, index) => {
     const updateArr = background.map((obj) => {
       if (obj.id === id) {
         return { ...obj, description: e.target.innerHTML };
@@ -267,6 +268,7 @@ const TableInfo = ({
       return obj;
     });
     setBackground(updateArr);
+    //background.recomputeRowHeights(index);
 
     if (textDesc.length <= 0) {
       setDescAlert("Description can't be empty.");
@@ -1645,7 +1647,8 @@ const TableInfo = ({
                                                           e,
                                                           item.description,
                                                           item.date,
-                                                          item.id
+                                                          item.id,
+                                                          index
                                                         )
                                                       }
                                                       contentEditable={true}
