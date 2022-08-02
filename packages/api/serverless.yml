@@ -1,5 +1,5 @@
 service: severless-appsync-lab
-# frameworkVersion: "3"
+frameworkVersion: "3"
 provider:
   name: aws
   runtime: nodejs14.x
@@ -230,6 +230,27 @@ custom:
         field: featureCreate
         request: false
         response: false
+      # Feature
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: customUserType
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: customUserTypes
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeUpdate
+        request: false
+        response: false
       # Matter File
       - dataSource: LambdaQueryDS
         type: Query
@@ -418,6 +439,11 @@ custom:
       - dataSource: LambdaCompanyDS
         type: Company
         field: clients
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: customUserTypes
         request: false
         response: false
       # Client Matter
