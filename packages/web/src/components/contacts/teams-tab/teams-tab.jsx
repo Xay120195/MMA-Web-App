@@ -22,6 +22,7 @@ export default function TeamsTab({
   const [ShowDeleteModal, setShowDeleteModal] = useState(false);
   const [ShowEditModal, setShowEditModal] = useState(false);
   const [CurrentTeam, setCurrentTeam] = useState();
+  const [ToDeleteID, setToDeleteID] = useState();
 
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
@@ -172,6 +173,7 @@ export default function TeamsTab({
                                 <CgTrash
                                   onClick={() => {
                                     setShowDeleteModal(true);
+                                    setToDeleteID(team.id);
                                   }}
                                 />
                               </button>
@@ -188,7 +190,7 @@ export default function TeamsTab({
       {ShowDeleteModal && (
         <DeleteModal
           close={() => setShowDeleteModal(false)}
-          toDeleteid={`test`}
+          toDeleteid={ToDeleteID}
           setContactList={setTeamList}
           ContactList={TeamList}
         />

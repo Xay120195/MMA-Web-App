@@ -34,12 +34,7 @@ function uuidv4() {
 
 const LOCAL_STORAGE_KEY = "clientApp.teams";
 
-export default function TeamsEditModal({
-  close,
-  setTeamlist,
-  TeamList,
-  CurrentTeam,
-}) {
+export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTeam }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isEditing, setisEditing] = useState(false);
@@ -191,8 +186,17 @@ export default function TeamsEditModal({
   const SaveButton = () => {
     return (
       <button
-            onClick={() => {
-                
+        onClick={() => {
+          let foundIndex = TeamList.findIndex((x) => x.id === CurrentTeam.id);
+
+          let team = {
+            id: TeamList[foundIndex].id,
+            teamName: TeamName.replace("'s team", ""),
+            members: InputData,
+          };
+
+          TeamList[foundIndex] = team;
+          setTeamList(TeamList);
           close();
         }}
         className={
