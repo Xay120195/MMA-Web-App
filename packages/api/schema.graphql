@@ -84,6 +84,7 @@ type Company {
   users(limit: Int, nextToken: String): CompanyUserConn
   clients(limit: Int, nextToken: String): CompanyClientConn
   matters(limit: Int, nextToken: String): CompanyMatterConn
+  customUserTypes(limit: Int, nextToken: String): CompanyCustomUserTypeConn
   clientMatters(
     limit: Int
     nextToken: String
@@ -214,6 +215,13 @@ type User {
   profilePicture: String
   organisations: UserCompanyConn
   clientMatters(limit: Int, nextToken: String): UserClientMatterCon
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type CustomUserType {
+  id: ID!
+  name: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -448,6 +456,11 @@ type CompanyUserConn {
   nextToken: String
 }
 
+type CompanyCustomUserTypeConn {
+  items: [CustomUserType]
+  nextToken: String
+}
+
 type UserCompanyConn {
   items: [Company]
   nextToken: String
@@ -543,6 +556,8 @@ type Query {
   user(id: String): User
   userColumnSettings(userId: ID, tableName: ViewTable): [UserColumnSettings]
   users: [User]
+  customUserTypes: [CustomUserType]
+  customUserType(id: ID): CustomUserType
   gmailMessage(id: ID): GmailMessage
   gmailMessages(
     email: String
@@ -600,9 +615,9 @@ type Mutation {
   ): ColumnSettings
   companyAccessTypeCreate(
     companyId: String
-    userType: UserType
+    userType: [UserType]
     access: [AccessInput]
-  ): CompanyAccessType
+  ): [CompanyAccessType]
   companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
   companyCreate(name: String, representative: RepresentativeInput): Company
   featureCreate(name: String, label: String, page: PageInput): Feature
@@ -739,4 +754,6 @@ type Mutation {
   ): GmailMessageAttachment
   gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
   gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
+  customUserTypeCreate(name: String, companyId: ID): CustomUserType
+  customUserTypeUpdate(id: ID, name: String): CustomUserType
 }

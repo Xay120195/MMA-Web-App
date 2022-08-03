@@ -1,5 +1,5 @@
 import '../../assets/styles/Briefs.css';
-import "../../assets/styles/Mobile.css";
+import '../../assets/styles/Mobile.css';
 
 import {
   FaBook,
@@ -27,13 +27,14 @@ import { Auth } from 'aws-amplify';
 import { BiArrowToTop } from 'react-icons/bi';
 import BlankList from '../../assets/images/RFI_Blank_List.svg';
 import BlankState from '../dynamic-blankstate';
-import BlankStateMobile from "../mobile-blank-state";
+import BlankStateMobile from '../mobile-blank-state';
 import { BsFillTrashFill } from 'react-icons/bs';
 import { CgChevronLeft } from 'react-icons/cg';
 import CreateBriefsModal from './create-brief-modal';
 import { HiOutlinePlusCircle } from 'react-icons/hi';
 import Illustration from '../../assets/images/no-data.svg';
 import { Link } from 'react-router-dom';
+import MobileHeader from '../mobile-header';
 import RemoveBriefModal from '../briefs/remove-brief-modal';
 import ScrollToTop from 'react-scroll-to-top';
 import SessionTimeout from '../session-timeout/session-timeout-modal';
@@ -41,7 +42,6 @@ import ToastNotification from '../toast-notification';
 import { useIdleTimer } from 'react-idle-timer';
 import { useParams } from 'react-router-dom';
 import useWindowDimensions from '../../shared/windowDimensions';
-import MobileHeader from "../mobile-header";
 
 // import { matter_rfi, questions } from "./data-source";
 
@@ -504,7 +504,9 @@ export default function Briefs() {
     return check;
   };
 
-  {/* MOBILE CONST */}
+  {
+    /* MOBILE CONST */
+  }
 
   const [contentHeight, setContentHeight] = useState();
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -554,13 +556,13 @@ export default function Briefs() {
                 <p className="flex flex-col">
                   <span className="text-lg font-bold">Background Page</span>
                   <span className=" text-grey-600">
-                    {client_name} - {matter_name} 
+                    {client_name} - {matter_name}
                   </span>
                 </p>
                 <div className="flex items-center gap-3 text-gray-500 mt-2">
                   <Link to="/dashboard">
                     <div className="flex items-center gap-3">
-                      <FaTachometerAlt /> 
+                      <FaTachometerAlt />
                       <p className="hidden sm:block font-semibold">Dashboard</p>
                     </div>
                   </Link>
@@ -600,16 +602,15 @@ export default function Briefs() {
               </Link>
               
             </div> */}
-            
           </div>
           <MobileHeader
-              height = {height}
-              width = {width}
-              matter_name = {matter_name}
-              client_name = {client_name}
-              setContentHeight = {setContentHeight}
-            />
-          <div className="sm:px-0">
+            height={height}
+            width={width}
+            matter_name={matter_name}
+            client_name={client_name}
+            setContentHeight={setContentHeight}
+          />
+          {/* <div className="sm:px-0">
             <nav
               aria-label="Breadcrumb"
               style={style}
@@ -674,9 +675,9 @@ export default function Briefs() {
                 </li>
               </ol>
             </nav>
-          </div>
+          </div> */}
 
-          <div className="hidden sm:block mt-4 sm:mt-7">
+          <div className="mt-4 sm:mt-7">
             <div className="flex sm:block">
               <button
                 type="button"
@@ -740,7 +741,7 @@ export default function Briefs() {
                 type="search"
                 placeholder="Search ..."
                 onChange={handleSearchChange}
-                className="hidden sm:block px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full sm:w-3/12 "
+                className="my-5 sm:my-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring pl-5 float-right w-full sm:w-3/12 "
               />
             </div>
           </div>
@@ -794,15 +795,33 @@ export default function Briefs() {
                 Brief
               </button>
             </div>
-            <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="px-5 sm:px-0 overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
-              {showScrollButton ? (<>
-              <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
-                <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
-              </div>
-              </>) : (<></>)}
-            {Briefs.map((item) => (
-              <div
-                className="w-90 bg-gray-100 rounded-lg border border-gray-200 mt-5 py-3 px-5 sm:py-4 sm:px-4 sm:m-2
+            <div
+              id="mobileContent"
+              onScroll={(e) => handleScrollEvent(e)}
+              className="px-5 sm:px-0 overflow-y-auto h-min"
+              style={{ scrollBehavior: 'smooth' }}
+            >
+              {showScrollButton ? (
+                <>
+                  <div
+                    className="scrollButtonInner flex"
+                    onClick={() => handleScrollToTop()}
+                  >
+                    <BiArrowToTop
+                      style={{
+                        color: 'white',
+                        display: 'block',
+                        margin: 'auto',
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <></>
+              )}
+              {Briefs.map((item) => (
+                <div
+                  className="w-90 bg-gray-100 rounded-lg border border-gray-200 mt-5 py-3 px-5 sm:py-4 sm:px-4 sm:m-2
                 hover:border-black cursor-pointer"
                   key={item.id}
                   data-info={item.id}

@@ -6,8 +6,17 @@ const {
   BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
+
 const { getUser, listUsers } = require("../../../services/UserService");
-const { getFile, getMatterFiles } = require("../../../services/MatterService");
+const { getRFI, listRFIs } = require("../../../services/RFIService");
+const {
+  getRequest,
+  listRequests,
+} = require("../../../services/RequestService");
+const {
+  getFile,
+  getMatterFiles,
+} = require("../../../services/MatterFileService");
 
 async function getCompany(data) {
   try {
@@ -361,8 +370,6 @@ async function getLabel(data) {
 }
 
 async function bulkGetLabels(data) {
-  console.log("bulkGetLabels", data);
-
   try {
     const { id } = data;
 
@@ -539,7 +546,6 @@ async function getUserColumnSettings(data) {
       Object.keys(result).length !== 0 && result !== null && result !== {}
         ? result
         : [];
-    //console.log(resp);
   } catch (e) {
     resp = {
       error: e.message,
@@ -548,90 +554,6 @@ async function getUserColumnSettings(data) {
     console.log(resp);
   }
 
-  return resp;
-}
-
-async function getRFI(data) {
-  try {
-    const param = {
-      TableName: "RFITable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const cmd = new GetItemCommand(param);
-    const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function listRFIs() {
-  try {
-    const param = {
-      TableName: "RFITable",
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function getRequest(data) {
-  try {
-    const param = {
-      TableName: "RequestTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const cmd = new GetItemCommand(param);
-    const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function listRequests() {
-  try {
-    const param = {
-      TableName: "RequestTable",
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
   return resp;
 }
 
@@ -725,6 +647,48 @@ async function listGmailMessages() {
   try {
     const param = {
       TableName: "GmailMessageTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function getCustomUserType(data) {
+  try {
+    const param = {
+      TableName: "CustomUserTypeTable",
+      Key: marshall({
+        id: data.id,
+      }),
+    };
+
+    const cmd = new GetItemCommand(param);
+    const { Item } = await ddbClient.send(cmd);
+    resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function listCustomUserType() {
+  try {
+    const param = {
+      TableName: "CustomUserTypeTable",
     };
 
     const cmd = new ScanCommand(param);
@@ -847,6 +811,12 @@ const resolvers = {
     },
     gmailAttachment: async (ctx) => {
       return getAttachment(ctx.arguments);
+    },
+    customUserTypes: async () => {
+      return listCustomUserType();
+    },
+    customUserType: async (ctx) => {
+      return getCustomUserType(ctx.arguments);
     },
   },
 };

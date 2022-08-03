@@ -9,13 +9,24 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
+const { toUTC } = require("../../../shared/toUTC");
 const {
   inviteUser,
   createUser,
   deleteUser,
   updateUser,
 } = require("../../../services/UserService");
-const { toUTC, toLocalTime } = require("../../../shared/toUTC");
+const {
+  createRFI,
+  deleteRFI,
+  softDeleteRFI,
+  updateRFI,
+} = require("../../../services/RFIService");
+const {
+  createRequest,
+  deleteRequest,
+  updateRequest,
+} = require("../../../services/RequestService");
 const {
   createMatterFile,
   updateMatterFile,
@@ -23,7 +34,8 @@ const {
   bulkUpdateMatterFileOrders,
   bulkCreateMatterFile,
   bulkSoftDeleteMatterFile,
-} = require("../../../services/MatterService");
+} = require("../../../services/MatterFileService");
+
 import { addToken } from "../../../services/gmail/addToken";
 import { google } from "googleapis";
 const { client_id, client_secret } = require("../../../services/gmail/config");
@@ -126,6 +138,89 @@ async function createFeature(data) {
   return resp;
 }
 
+async function createCustomUserType(data) {
+  let resp = {};
+  try {
+    const rawParams = {
+      id: v4(),
+      name: data.name,
+      createdAt: toUTC(new Date()),
+    };
+
+    const param = marshall(rawParams);
+    const cmd = new PutItemCommand({
+      TableName: "CustomUserTypeTable",
+      Item: param,
+    });
+
+    const request = await ddbClient.send(cmd);
+
+    if (request) {
+      const companyClientParams = {
+        id: v4(),
+        customUserTypeId: rawParams.id,
+        companyId: data.companyId,
+        createdAt: toUTC(new Date()),
+      };
+
+      const companyClientCommand = new PutItemCommand({
+        TableName: "CompanyCustomUserTypeTable",
+        Item: marshall(companyClientParams),
+      });
+
+      const companyClientRequest = await ddbClient.send(companyClientCommand);
+      resp = companyClientRequest
+        ? {
+            ...rawParams,
+            companyId: data.companyId,
+          }
+        : {};
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+async function updateCustomUserType(id, data) {
+  let resp = {};
+  try {
+    const {
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+      UpdateExpression,
+    } = getUpdateExpressions(data);
+
+    const param = {
+      id,
+      ...data,
+    };
+
+    const cmd = new UpdateItemCommand({
+      TableName: "CustomUserTypeTable",
+      Key: marshall({ id }),
+      UpdateExpression,
+      ExpressionAttributeNames,
+      ExpressionAttributeValues,
+    });
+    const request = await ddbClient.send(cmd);
+    resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 async function createUserColumnSettings(data) {
   let resp = {};
   try {
@@ -169,22 +264,36 @@ async function createUserColumnSettings(data) {
 async function createCompanyAccessType(data) {
   let resp = {};
   try {
-    const rawParams = {
-      id: v4(),
-      companyId: data.companyId,
-      userType: data.userType,
-      access: data.access,
-      createdAt: toUTC(new Date()),
+    const arrItems = [];
+
+    for (var i = 0; i < data.userType.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            companyId: data.companyId,
+            userType: data.userType[i],
+            access: data.access,
+            createdAt: toUTC(new Date()),
+          }),
+        },
+      });
+    }
+
+    const param = {
+      RequestItems: {
+        CompanyAccessTypeTable: arrItems,
+      },
     };
 
-    const param = marshall(rawParams);
-    const cmd = new PutItemCommand({
-      TableName: "CompanyAccessTypeTable",
-      Item: param,
-    });
-
+    const cmd = new BatchWriteItemCommand(param);
     const request = await ddbClient.send(cmd);
-    resp = request ? unmarshall(param) : {};
+
+    if (request) {
+      resp = arrItems.map((i) => {
+        return unmarshall(i.PutRequest.Item);
+      });
+    }
   } catch (e) {
     resp = {
       error: e.message,
@@ -1140,95 +1249,6 @@ async function untagBriefBackground(data) {
   return resp;
 }
 
-async function createRFI(data) {
-  let resp = {};
-  try {
-    const rawParams = {
-      id: v4(),
-      name: data.name,
-      createdAt: toUTC(new Date()),
-      order: data.order ? data.order : 0,
-    };
-
-    const param = marshall(rawParams);
-    const cmd = new PutItemCommand({
-      TableName: "RFITable",
-      Item: param,
-    });
-    const request = await ddbClient.send(cmd);
-
-    const clientMatterRFIParams = {
-      id: v4(),
-      rfiId: rawParams.id,
-      clientMatterId: data.clientMatterId,
-      createdAt: toUTC(new Date()),
-      isDeleted: false,
-    };
-
-    const clientMatterRFICommand = new PutItemCommand({
-      TableName: "ClientMatterRFITable",
-      Item: marshall(clientMatterRFIParams),
-    });
-
-    const clientMatterRFIRequest = await ddbClient.send(clientMatterRFICommand);
-
-    resp = clientMatterRFIRequest ? rawParams : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function createRequest(data) {
-  let resp = {};
-  try {
-    const rawParams = {
-      id: v4(),
-      question: data.question,
-      answer: data.answer,
-      createdAt: toUTC(new Date()),
-      order: data.order ? data.order : 0,
-      itemNo: data.itemNo,
-    };
-
-    const param = marshall(rawParams);
-    const cmd = new PutItemCommand({
-      TableName: "RequestTable",
-      Item: param,
-    });
-    const req = await ddbClient.send(cmd);
-
-    const rfiRequestParams = {
-      id: v4(),
-      requestId: rawParams.id,
-      rfiId: data.rfiId,
-      createdAt: toUTC(new Date()),
-    };
-
-    const rfiRequestCmd = new PutItemCommand({
-      TableName: "RFIRequestTable",
-      Item: marshall(rfiRequestParams),
-    });
-
-    const rfiRequestReq = await ddbClient.send(rfiRequestCmd);
-
-    resp = rfiRequestReq ? rawParams : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
 async function createBrief(data) {
   let resp = {};
   try {
@@ -1394,78 +1414,6 @@ async function updateBrief(id, data) {
 
     const cmd = new UpdateItemCommand({
       TableName: "BriefTable",
-      Key: marshall({ id }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-    });
-
-    const request = await ddbClient.send(cmd);
-
-    resp = request ? param : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function updateRequest(id, data) {
-  let resp = {};
-  try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const param = {
-      id,
-      ...data,
-    };
-
-    const cmd = new UpdateItemCommand({
-      TableName: "RequestTable",
-      Key: marshall({ id }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-    });
-
-    const request = await ddbClient.send(cmd);
-
-    resp = request ? param : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function updateRFI(id, data) {
-  let resp = {};
-  try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const param = {
-      id,
-      ...data,
-    };
-
-    const cmd = new UpdateItemCommand({
-      TableName: "RFITable",
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
@@ -1842,153 +1790,6 @@ async function softDeleteBrief(id, data) {
   return resp;
 }
 
-async function deleteRequest(id) {
-  let resp = {};
-  try {
-    const rfiRequestParams = {
-      TableName: "RFIRequestTable",
-      IndexName: "byRequest",
-      KeyConditionExpression: "requestId = :requestId",
-      ExpressionAttributeValues: marshall({
-        ":requestId": id,
-      }),
-      ProjectionExpression: "id", // fetch id of RFIRequestTable only
-    };
-
-    const rfiRequestCmd = new QueryCommand(rfiRequestParams);
-    const rfiRequestResult = await ddbClient.send(rfiRequestCmd);
-
-    const rfiRequestId = rfiRequestResult.Items[0];
-
-    const deleteRFIRequestCommand = new DeleteItemCommand({
-      TableName: "RFIRequestTable",
-      Key: rfiRequestId,
-    });
-
-    const deleteRFIRequestResult = await ddbClient.send(
-      deleteRFIRequestCommand
-    );
-
-    if (deleteRFIRequestResult) {
-      const cmd = new DeleteItemCommand({
-        TableName: "RequestTable",
-        Key: marshall({ id }),
-      });
-      const request = await ddbClient.send(cmd);
-
-      resp = request ? { id: id } : {};
-    }
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function deleteRFI(id) {
-  let resp = {};
-  try {
-    const clientMatterRFIParams = {
-      TableName: "ClientMatterRFITable",
-      IndexName: "byRFI",
-      KeyConditionExpression: "rfiId = :rfiId",
-      ExpressionAttributeValues: marshall({
-        ":rfiId": id,
-      }),
-      ProjectionExpression: "id", // fetch id of ClientMatterRFITable only
-    };
-
-    const clientMatterRFICmd = new QueryCommand(clientMatterRFIParams);
-    const clientMatterRFIResult = await ddbClient.send(clientMatterRFICmd);
-
-    const clientMatterRFIId = clientMatterRFIResult.Items[0];
-
-    const deleteClientMatterRFICommand = new DeleteItemCommand({
-      TableName: "ClientMatterRFITable",
-      Key: clientMatterRFIId,
-    });
-
-    const deleteClientMatterRFIResult = await ddbClient.send(
-      deleteClientMatterRFICommand
-    );
-
-    if (deleteClientMatterRFIResult) {
-      const cmd = new DeleteItemCommand({
-        TableName: "RFITable",
-        Key: marshall({ id }),
-      });
-      const request = await ddbClient.send(cmd);
-
-      resp = request ? { id: id } : {};
-    }
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function softDeleteRFI(id, data) {
-  let resp = {};
-
-  try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const param = {
-      id,
-      ...data,
-    };
-
-    const clientMatterRFIParams = {
-      TableName: "ClientMatterRFITable",
-      IndexName: "byRFI",
-      KeyConditionExpression: "rfiId = :rfiId",
-      ExpressionAttributeValues: marshall({
-        ":rfiId": id,
-      }),
-      ProjectionExpression: "id", // fetch id of ClientMatterRFITable only
-    };
-
-    const clientMatterRFICmd = new QueryCommand(clientMatterRFIParams);
-    const clientMatterRFIResult = await ddbClient.send(clientMatterRFICmd);
-
-    const clientMatterRFIId = clientMatterRFIResult.Items.map((i) =>
-      unmarshall(i)
-    )[0].id;
-
-    const cmd = new UpdateItemCommand({
-      TableName: "ClientMatterRFITable",
-      Key: marshall({ id: clientMatterRFIId }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-    });
-
-    const request = await ddbClient.send(cmd);
-
-    resp = request ? { id: id } : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
 async function deleteClientMatter(id) {
   let resp = {};
 
@@ -2278,12 +2079,8 @@ async function tagUserClientMatter(data) {
       ProjectionExpression: "id",
     };
 
-    console.log("userClientMatterIdParams", userClientMatterIdParams);
-
     const userClientMatterIdCmd = new QueryCommand(userClientMatterIdParams);
     const userClientMatterIdRes = await ddbClient.send(userClientMatterIdCmd);
-
-    console.log("userClientMatterIdRes", userClientMatterIdRes);
 
     if (userClientMatterIdRes.Count !== 0) {
       for (var a = 0; a < userClientMatterIdRes.Items.length; a++) {
@@ -3100,6 +2897,19 @@ const resolvers = {
     },
     featureCreate: async (ctx) => {
       return await createFeature(ctx.arguments);
+    },
+    customUserTypeCreate: async (ctx) => {
+      return await createCustomUserType(ctx.arguments);
+    },
+    customUserTypeUpdate: async (ctx) => {
+      const { id, name } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (name !== undefined) data.name = name;
+
+      return await updateCustomUserType(id, data);
     },
     clientCreate: async (ctx) => {
       return await createClient(ctx.arguments);
