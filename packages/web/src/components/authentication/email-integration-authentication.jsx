@@ -1,8 +1,7 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import { GoogleLogin, GoogleLogout } from "react-google-login";
 import { API } from "aws-amplify";
 var momentTZ = require("moment-timezone");
-
 class GmailIntegration extends Component {
   constructor(props) {
     super(props);
@@ -20,16 +19,7 @@ class GmailIntegration extends Component {
 
   async login(response) {
     try {
-      setTimeout(() => {
-        const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
-        if (isSignedIn) {
-          const authCurrentUser = window.gapi.auth2
-            .getAuthInstance()
-            .currentUser.get().wt.cu;
-
-          console.log("authCurrentUser: ", authCurrentUser);
-
-          const saveRefreshToken = `
+      const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String, $userTimeZone: String) {
         gmailConnectFromCode(
           email: $email
@@ -47,6 +37,15 @@ class GmailIntegration extends Component {
       }
       `;
 
+      setTimeout(() => {
+        const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+        if (isSignedIn) {
+          const authCurrentUser = window.gapi.auth2
+            .getAuthInstance()
+            .currentUser.get().wt.cu;
+
+          console.log("authCurrentUser: ", authCurrentUser);
+
           const params = {
             query: saveRefreshToken,
             variables: {
@@ -62,15 +61,20 @@ class GmailIntegration extends Component {
 
           API.graphql(params).then((r) => {
             console.log("Response: ", r);
-            this.setState((state) => ({
-              isLogined: response,
-            }));
-            localStorage.setItem("signInData", JSON.stringify(response));
-            localStorage.setItem("emailAddressIntegration", authCurrentUser);
-            window.location.reload();
+
+            if (r.data.gmailConnectFromCode !== null) {
+              this.setState((state) => ({
+                isLogined: response,
+              }));
+              localStorage.setItem("signInData", JSON.stringify(response));
+              localStorage.setItem("emailAddressIntegration", authCurrentUser);
+              window.location.reload();
+            } else {
+              console.log("MMA Error: Unable to sign in.");
+            }
           });
         } else {
-          console.log("Not signed in.");
+          console.log("API Error: Unable to sign in. Please sign in again.");
         }
       }, 1000);
     } catch (e) {
