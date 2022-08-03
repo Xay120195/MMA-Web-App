@@ -67,7 +67,7 @@ class GmailIntegration extends Component {
             }));
             localStorage.setItem("signInData", JSON.stringify(response));
             localStorage.setItem("emailAddressIntegration", authCurrentUser);
-            window.location.reload();
+            // window.location.reload();
           });
         } else {
           console.log("Not signed in.");
