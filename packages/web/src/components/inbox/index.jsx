@@ -180,7 +180,7 @@ const Inbox = () => {
 
     console.log("Refresh Token", refreshToken);
     console.log("Login Data", loginData);
-  }, []);
+  }, [refreshToken, loginData]);
 
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
 
