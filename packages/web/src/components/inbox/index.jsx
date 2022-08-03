@@ -510,7 +510,7 @@ const Inbox = () => {
                 </button>
               </div>
               <div className="ml-5">
-                <GmailIntegration />
+                <GmailIntegration refreshToken={refreshToken} />
               </div>
             </div>
           </div>
