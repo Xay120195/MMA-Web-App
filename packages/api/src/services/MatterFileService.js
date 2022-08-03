@@ -12,10 +12,10 @@ import ddbClient from "../lib/dynamodb-client";
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { toUTC, toLocalTime } = require("../shared/toUTC");
+const { toUTC } = require("../shared/toUTC");
 
 export async function generatePresignedUrl(Key, src, origin) {
-  console.log("generatePresignedUrl", src);
+  // console.log("generatePresignedUrl", src);
 
   let fileScr = "gmail-api";
 

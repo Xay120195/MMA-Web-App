@@ -151,8 +151,7 @@ const Inbox = () => {
   const [resultMessage, setResultMessage] = useState("");
   const [maxLoadingSavedEmail, setMaxLoadingSavedEmail] = useState(false);
   const [maxLoadingUnSavedEmail, setMaxLoadingUnSavedEmail] = useState(false);
-  const [tokenEmail, setTokenEmail] = useState("");
-  const [refreshToken, setRefreshToken] = useState("");
+  const [refreshToken, setRefreshToken] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
   const [labelsList, setLabelsList] = useState([]);
   const [showFiltersModal, setshowFiltersModal] = useState(false);
@@ -170,16 +169,17 @@ const Inbox = () => {
     function start() {
       gapi.client.init({
         clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-        scope: 'email',
+        scope: "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly openid",
       });
     }
-    gapi.load('client:auth2', start);
-  }, []);
+    gapi.load("client:auth2", start);
 
-  useEffect(() => {
     getUnSavedEmails(emailFilters);
     getSavedEmails(emailFilters);
     getMatterList();
+
+    console.log("Refresh Token", refreshToken);
+    console.log("Login Data", loginData);
   }, []);
 
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
@@ -197,13 +197,11 @@ const Inbox = () => {
         // nextToken: null,
         userTimeZone: userTimeZone,
         startDate:
-        filters.startDate != null
-            ? momentTZ(filters.startDate, userTimeZone).format(
-                "YYYY-MM-DD"
-              )
+          filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format("YYYY-MM-DD")
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
         endDate:
-        filters.endDate != null
+          filters.endDate != null
             ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
@@ -214,19 +212,20 @@ const Inbox = () => {
       setWaitUnSaved(false);
       const emailList = result.data.company.gmailMessages.items;
       const gmailToken = result.data.company.gmailToken;
-      const gmailTokenEmail = result.data.company.gmailToken.id;
+      const gmailTokenId = result.data.company.gmailToken.id;
       const gmailRefreshToken = result.data.company.gmailToken.refreshToken;
-      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
-      setRefreshToken(gmailRefreshToken);
-      setTokenEmail(gmailTokenEmail);
-      setUnsavedEmails(emailList);
+
       if (
         gmailRefreshToken !== null &&
         localStorage.getItem("emailAddressIntegration") === null
       ) {
         localStorage.setItem("signInData", JSON.stringify(gmailToken));
-        localStorage.setItem("emailAddressIntegration", gmailTokenEmail);
+        localStorage.setItem("emailAddressIntegration", gmailTokenId);
       }
+
+      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+      setRefreshToken(gmailRefreshToken);
+      setUnsavedEmails(emailList);
     });
   };
 
@@ -268,13 +267,11 @@ const Inbox = () => {
         //nextToken: null,
         userTimeZone: userTimeZone,
         startDate:
-        filters.startDate != null
-            ? momentTZ(filters.startDate, userTimeZone).format(
-                "YYYY-MM-DD"
-              )
+          filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format("YYYY-MM-DD")
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
         endDate:
-        filters.endDate != null
+          filters.endDate != null
             ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
             : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
       },
@@ -420,9 +417,7 @@ const Inbox = () => {
   function sortByDate(arr) {
     let sort;
     if (arr) {
-      sort = arr.sort((a, b) =>
-        b.receivedAt - a.receivedAt
-      );
+      sort = arr.sort((a, b) => b.receivedAt - a.receivedAt);
     } else {
       sort = arr;
     }
