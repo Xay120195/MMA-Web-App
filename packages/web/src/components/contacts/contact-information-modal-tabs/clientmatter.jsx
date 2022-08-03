@@ -86,6 +86,7 @@ export default function ClientMatterTab({
       setInputData(stored);
     }
   }, []);
+  
 
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
@@ -234,7 +235,7 @@ export default function ClientMatterTab({
                   <div className="flex flex-col p-1">
                     <div className="opacity-0">1</div>
 
-                    {isEditing && (
+                    {isEditing && InputData.length > 1  && (
                       <CgTrash
                         className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
                         color={`lightcoral`}
