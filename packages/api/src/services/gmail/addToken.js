@@ -74,7 +74,7 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
     .get(getMessagesByEmail, {
       params: getMessagesByEmailParams,
     })
-    .catch(({ err }) => console.log("Error in getMessagesByEmail", err));
+    .catch((err) => console.log("Error in getMessagesByEmail: ", getMessagesByEmail, err));
 
   // console.log("Request:", getMessagesByEmail);
   // console.log("Params:", getMessagesByEmailParams);
@@ -183,7 +183,11 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
                   isSaved: false,
                   createdAt: toUTC(new Date()),
                   dateReceived: i.dateReceived.toString(),
-                  filters: `${i.recipient}#${extractEmails(i.from).join(',')}#${extractEmails(i.to).join(',')}#${i.subject}#${i.snippet}`,
+                  filters: `${i.recipient}#${extractEmails(i.from).join(
+                    ","
+                  )}#${extractEmails(i.to).join(",")}#${i.subject}#${
+                    i.snippet
+                  }`,
                 },
               },
             })),
