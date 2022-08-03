@@ -180,7 +180,7 @@ const Inbox = () => {
 
     console.log("Refresh Token", refreshToken);
     console.log("Login Data", loginData);
-  }, [refreshToken, loginData]);
+  }, []);
 
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
 
@@ -427,7 +427,7 @@ const Inbox = () => {
 
   return (
     <>
-      {!loginData || !refreshToken ? (
+      {!loginData ? (
         <div
           className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
           style={contentDiv}
@@ -445,7 +445,7 @@ const Inbox = () => {
                   Lets make your trip fun and simple
                 </div>
                 <br />
-                <GmailIntegration refreshToken={refreshToken} />
+                <GmailIntegration />
               </div>
               <div className="col-span-7">
                 <div className="h-screen float-right">

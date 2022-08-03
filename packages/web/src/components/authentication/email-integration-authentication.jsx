@@ -15,10 +15,6 @@ class GmailIntegration extends Component {
     this.handleLoginFailure = this.handleLoginFailure.bind(this);
     this.logout = this.logout.bind(this);
     this.handleLogoutFailure = this.handleLogoutFailure.bind(this);
-
-    this.setState((state) => ({
-      refreshToken: props.refreshToken,
-    }));
   }
 
   async login(response) {
@@ -122,10 +118,9 @@ class GmailIntegration extends Component {
   }
 
   render() {
-    console.log("this.state.refreshToken", this.state.refreshToken);
     return (
       <div>
-        {this.state.isLogined && this.state.refreshToken ? (
+        {this.state.isLogined ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
             buttonText={
