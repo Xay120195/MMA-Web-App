@@ -214,9 +214,7 @@ const Inbox = () => {
       const gmailToken = result.data.company.gmailToken;
       const gmailTokenId = result.data.company.gmailToken.id;
       const gmailRefreshToken = result.data.company.gmailToken.refreshToken;
-      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
-      setRefreshToken(gmailRefreshToken);
-      setUnsavedEmails(emailList);
+
       if (
         gmailRefreshToken !== null &&
         localStorage.getItem("emailAddressIntegration") === null
@@ -224,6 +222,10 @@ const Inbox = () => {
         localStorage.setItem("signInData", JSON.stringify(gmailToken));
         localStorage.setItem("emailAddressIntegration", gmailTokenId);
       }
+
+      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+      setRefreshToken(gmailRefreshToken);
+      setUnsavedEmails(emailList);
     });
   };
 
