@@ -1,4 +1,4 @@
-const client = require("../../../lib/dynamodb-client");
+const ddbClient = require("../../../lib/dynamodb-client");
 const {
   QueryCommand,
   BatchGetItemCommand,
@@ -6,7 +6,7 @@ const {
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 var momentTZ = require("moment-timezone");
 
-async function listCompanyUsers(ctx) {
+async function listCompUsers(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
   try {
@@ -28,7 +28,7 @@ async function listCompanyUsers(ctx) {
     }
 
     const compUsersCmd = new QueryCommand(compUsersParam);
-    const compUsersResult = await client.send(compUsersCmd);
+    const compUsersResult = await ddbClient.send(compUsersCmd);
 
     const userIds = compUsersResult.Items.map((i) => unmarshall(i)).map((f) =>
       marshall({ id: f.userId })
@@ -44,7 +44,7 @@ async function listCompanyUsers(ctx) {
       };
 
       const usersCmd = new BatchGetItemCommand(usersParam);
-      const usersResult = await client.send(usersCmd);
+      const usersResult = await ddbClient.send(usersCmd);
 
       const objUsers = usersResult.Responses.UserTable.map((i) =>
         unmarshall(i)
@@ -85,7 +85,7 @@ async function listCompanyUsers(ctx) {
   return response;
 }
 
-async function listCompanyMatters(ctx) {
+async function listCompMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
   try {
@@ -107,7 +107,7 @@ async function listCompanyMatters(ctx) {
     }
 
     const compMattersCmd = new QueryCommand(compMattersParam);
-    const compMattersResult = await client.send(compMattersCmd);
+    const compMattersResult = await ddbClient.send(compMattersCmd);
 
     const matterIds = compMattersResult.Items.map((i) => unmarshall(i)).map(
       (f) => marshall({ id: f.matterId })
@@ -123,7 +123,7 @@ async function listCompanyMatters(ctx) {
       };
 
       const mattersCmd = new BatchGetItemCommand(mattersParam);
-      const mattersResult = await client.send(mattersCmd);
+      const mattersResult = await ddbClient.send(mattersCmd);
 
       const objMatters = mattersResult.Responses.MatterTable.map((i) =>
         unmarshall(i)
@@ -169,7 +169,7 @@ async function listCompanyMatters(ctx) {
   return response;
 }
 
-async function listCompanyClients(ctx) {
+async function listCompClients(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
 
@@ -192,7 +192,7 @@ async function listCompanyClients(ctx) {
     }
 
     const compClientsCmd = new QueryCommand(compClientsParam);
-    const compClientsResult = await client.send(compClientsCmd);
+    const compClientsResult = await ddbClient.send(compClientsCmd);
     const clientIds = compClientsResult.Items.map((i) => unmarshall(i)).map(
       (f) => marshall({ id: f.clientId })
     );
@@ -207,7 +207,7 @@ async function listCompanyClients(ctx) {
       };
 
       const clientsCmd = new BatchGetItemCommand(clientsParam);
-      const clientsResult = await client.send(clientsCmd);
+      const clientsResult = await ddbClient.send(clientsCmd);
 
       const objClients = clientsResult.Responses.ClientsTable.map((i) =>
         unmarshall(i)
@@ -253,7 +253,7 @@ async function listCompanyClients(ctx) {
   return response;
 }
 
-async function listCompanyClientMatters(ctx) {
+async function listCompClientMatters(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken, sortOrder = "CREATED_DESC" } = ctx.arguments;
 
@@ -290,7 +290,7 @@ async function listCompanyClientMatters(ctx) {
     }
 
     const compCMCmd = new QueryCommand(compCMParam);
-    const compCMResult = await client.send(compCMCmd);
+    const compCMResult = await ddbClient.send(compCMCmd);
 
     const clientMatterIds = compCMResult.Items.map((i) => unmarshall(i)).map(
       (f) => marshall({ id: f.clientMatterId })
@@ -328,7 +328,7 @@ async function listCompanyClientMatters(ctx) {
           };
 
           const cmCmd = new BatchGetItemCommand(clientmattersParam);
-          const cmResult = await client.send(cmCmd);
+          const cmResult = await ddbClient.send(cmCmd);
           return cmResult.Responses.ClientMatterTable;
         })
       );
@@ -380,7 +380,7 @@ async function listCompanyClientMatters(ctx) {
   return response;
 }
 
-async function listCompanyGmailMessages(ctx) {
+async function listCompGmailMessages(ctx) {
   const { id } = ctx.source;
   const {
     limit,
@@ -447,7 +447,7 @@ async function listCompanyGmailMessages(ctx) {
     }
 
     const compCMCmd = new QueryCommand(compCMParam);
-    const compCMResult = await client.send(compCMCmd);
+    const compCMResult = await ddbClient.send(compCMCmd);
 
     let unique = compCMResult.Items.map((a) => unmarshall(a))
       .map((x) => x.gmailMessageId)
@@ -489,7 +489,7 @@ async function listCompanyGmailMessages(ctx) {
           };
 
           const cmCmd = new BatchGetItemCommand(clientmattersParam);
-          const cmResult = await client.send(cmCmd);
+          const cmResult = await ddbClient.send(cmCmd);
           return cmResult.Responses.GmailMessageTable;
         })
       );
@@ -534,7 +534,7 @@ async function listCompanyGmailMessages(ctx) {
   return response;
 }
 
-async function getCompanyGmailToken(ctx) {
+async function getCompGmailToken(ctx) {
   const { id } = ctx.source;
 
   try {
@@ -550,9 +550,93 @@ async function getCompanyGmailToken(ctx) {
     };
 
     const compGTCmd = new QueryCommand(compGTParam);
-    const { Items } = await client.send(compGTCmd);
+    const { Items } = await ddbClient.send(compGTCmd);
 
     response = Items.length !== 0 ? unmarshall(Items[0]) : {};
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
+async function listCompCustomUserTypes(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+
+  try {
+    const compCustomUserTypesParam = {
+      TableName: "CompanyCustomUserTypeTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": id,
+      }),
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      compCustomUserTypesParam.Limit = limit;
+    }
+
+    const compCustomUserTypesCmd = new QueryCommand(compCustomUserTypesParam);
+    const compCustomUserTypesResult = await ddbClient.send(compCustomUserTypesCmd);
+    const customUserTypeIds = compCustomUserTypesResult.Items.map((i) => unmarshall(i)).map(
+      (f) => marshall({ id: f.customUserTypeId })
+    );
+
+    if (customUserTypeIds.length !== 0) {
+      const customUserTypesParam = {
+        RequestItems: {
+          CustomUserTypeTable: {
+            Keys: customUserTypeIds,
+          },
+        },
+      };
+
+      const customUserTypesCmd = new BatchGetItemCommand(customUserTypesParam);
+      const customUserTypesResult = await ddbClient.send(customUserTypesCmd);
+
+      const objCustomUserTypes = customUserTypesResult.Responses.CustomUserTypeTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCompCustomUserTypes = compCustomUserTypesResult.Items.map((i) => unmarshall(i));
+
+      // const response = objCompCustomUserTypes.map((item) => {
+      //   const filterCustomUserType = objCustomUserTypes.find((u) => u.id === item.customUserTypeId);
+      //   return { ...item, ...filterCustomUserType };
+      // });
+
+      const response = objCompCustomUserTypes
+        .map((item) => {
+          const filterCustomUserType = objCustomUserTypes.find((u) => u.id === item.customUserTypeId);
+
+          if (filterCustomUserType !== undefined) {
+            return { ...item, ...filterCustomUserType };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: compCustomUserTypesResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(compCustomUserTypesResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
   } catch (e) {
     response = {
       error: e.message,
@@ -566,22 +650,25 @@ async function getCompanyGmailToken(ctx) {
 const resolvers = {
   Company: {
     users: async (ctx) => {
-      return listCompanyUsers(ctx);
+      return listCompUsers(ctx);
     },
     matters: async (ctx) => {
-      return listCompanyMatters(ctx);
+      return listCompMatters(ctx);
     },
     clients: async (ctx) => {
-      return listCompanyClients(ctx);
+      return listCompClients(ctx);
     },
     clientMatters: async (ctx) => {
-      return listCompanyClientMatters(ctx);
+      return listCompClientMatters(ctx);
     },
     gmailMessages: async (ctx) => {
-      return listCompanyGmailMessages(ctx);
+      return listCompGmailMessages(ctx);
     },
     gmailToken: async (ctx) => {
-      return getCompanyGmailToken(ctx);
+      return getCompGmailToken(ctx);
+    },
+    customUserTypes: async (ctx) => {
+      return listCompCustomUserTypes(ctx);
     },
   },
 };
