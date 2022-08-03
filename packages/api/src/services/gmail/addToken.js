@@ -74,7 +74,10 @@ const getOldMessages = async (email, companyId, rangeFilter, pageToken) => {
     .get(getMessagesByEmail, {
       params: getMessagesByEmailParams,
     })
-    .catch((err) => console.log("Error in getMessagesByEmail: ", getMessagesByEmail, err));
+    .catch((message) => {
+      let err = message.response.data.error;
+      console.log("Error in getMessagesByEmail: ", getMessagesByEmail, err);
+    });
 
   // console.log("Request:", getMessagesByEmail);
   // console.log("Params:", getMessagesByEmailParams);
