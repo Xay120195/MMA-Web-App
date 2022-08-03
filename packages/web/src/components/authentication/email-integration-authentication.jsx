@@ -74,7 +74,7 @@ class GmailIntegration extends Component {
             }
           });
         } else {
-          console.log("API Error: Unable to sign in.");
+          console.log("API Error: Unable to sign in. Please sign in again.");
         }
       }, 1000);
     } catch (e) {

@@ -1,35 +1,42 @@
-import React, { useState, useEffect, createContext, useReducer, useRef } from "react";
-import * as IoIcons from "react-icons/io";
-import * as FaIcons from "react-icons/fa";
-import { HiMenuAlt1 } from "react-icons/hi";
-import imgDocs from "../../assets/images/docs.svg";
-import { Welcome } from "./welcome";
-import { ClientMatters } from "./matters-list";
-import { useForm } from "react-hook-form";
-import DeleteMatterModal from "./delete-matters-modal";
-import ToastNotification from "../toast-notification";
-import "../../assets/styles/Dashboard.css";
-import "../../assets/styles/Mobile.css";
-import AccessControl from "../../shared/accessControl";
-import CreatableSelect from "react-select/creatable";
-import { API } from "aws-amplify";
-import { initialState } from "./initialState";
-import { clientMatterReducers } from "./reducers";
-import { useIdleTimer } from "react-idle-timer";
-import SessionTimeout from "../session-timeout/session-timeout-modal";
-import useWindowDimensions from "../../shared/windowDimensions";
-import { Auth } from "aws-amplify";
-import { useHistory } from "react-router-dom";
-import { BiArrowToTop } from "react-icons/bi";
+import '../../assets/styles/Dashboard.css';
+import '../../assets/styles/Mobile.css';
 
+import * as FaIcons from 'react-icons/fa';
+import * as IoIcons from 'react-icons/io';
+
+import React, {
+  createContext,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import {
-  getMatterList,
   addClientMatter,
   deleteMatterClient,
+  getMatterList,
   searchMatterClient,
-} from "./actions";
-import ScrollToTop from "react-scroll-to-top";
+} from './actions';
 
+import { API } from 'aws-amplify';
+import AccessControl from '../../shared/accessControl';
+import { Auth } from 'aws-amplify';
+import { BiArrowToTop } from 'react-icons/bi';
+import { ClientMatters } from './matters-list';
+import CreatableSelect from 'react-select/creatable';
+import DeleteMatterModal from './delete-matters-modal';
+import { HiMenuAlt1 } from 'react-icons/hi';
+import ScrollToTop from 'react-scroll-to-top';
+import SessionTimeout from '../session-timeout/session-timeout-modal';
+import ToastNotification from '../toast-notification';
+import { Welcome } from './welcome';
+import { clientMatterReducers } from './reducers';
+import imgDocs from '../../assets/images/docs.svg';
+import { initialState } from './initialState';
+import { useForm } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
+import { useIdleTimer } from 'react-idle-timer';
+import useWindowDimensions from '../../shared/windowDimensions';
 
 export const MatterContext = createContext();
 
@@ -37,8 +44,8 @@ export default function Dashboard() {
   const [matterlist, dispatch] = useReducer(clientMatterReducers, initialState);
   const [error, setError] = useState(false);
   const [userInfo, setuserInfo] = useState(null);
-  const [mattersView, setmattersView] = useState("grid");
-  const [searchMatter, setSearchMatter] = useState("");
+  const [mattersView, setmattersView] = useState('grid');
+  const [searchMatter, setSearchMatter] = useState('');
   const [clientName, setclientName] = useState(null);
   const [matterName, setmatterName] = useState(null);
 
@@ -61,10 +68,9 @@ export default function Dashboard() {
   const bool = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
 
-
   //restructure data from matterlist
   const { listmatters, loading, errorMatter, toastMessage, toast } = matterlist;
-  const companyId = localStorage.getItem("companyId");
+  const companyId = localStorage.getItem('companyId');
 
   const {
     register,
@@ -75,16 +81,16 @@ export default function Dashboard() {
   useEffect(() => {
     if (userInfo === null) {
       let ls = {
-        userId: localStorage.getItem("userId"),
-        email: localStorage.getItem("email"),
-        firstName: localStorage.getItem("firstName"),
-        lastName: localStorage.getItem("lastName"),
-        company: localStorage.getItem("company"),
-        userType: localStorage.getItem("userType"),
-        access: JSON.parse(localStorage.getItem("access")),
+        userId: localStorage.getItem('userId'),
+        email: localStorage.getItem('email'),
+        firstName: localStorage.getItem('firstName'),
+        lastName: localStorage.getItem('lastName'),
+        company: localStorage.getItem('company'),
+        userType: localStorage.getItem('userType'),
+        access: JSON.parse(localStorage.getItem('access')),
       };
       setuserInfo(ls);
-      console.log("ls", ls);
+      console.log('ls', ls);
     }
 
     if (userInfo) {
@@ -98,46 +104,46 @@ export default function Dashboard() {
   }, [userInfo, dispatch, companyId]);
 
   const featureAccessFilters = async () => {
-    const dashboardAccess = await AccessControl("DASHBOARD");
+    const dashboardAccess = await AccessControl('DASHBOARD');
 
-    if (dashboardAccess.status !== "restrict") {
+    if (dashboardAccess.status !== 'restrict') {
       setShowCreateMatter(
-        dashboardAccess.data.features.includes("ADDCLIENTANDMATTER")
+        dashboardAccess.data.features.includes('ADDCLIENTANDMATTER')
       );
       setShowDeleteMatter(
-        dashboardAccess.data.features.includes("DELETECLIENTANDMATTER")
+        dashboardAccess.data.features.includes('DELETECLIENTANDMATTER')
       );
     } else {
       console.log(dashboardAccess.message);
     }
 
-    const mattersOverviewAccess = await AccessControl("MATTERSOVERVIEW");
+    const mattersOverviewAccess = await AccessControl('MATTERSOVERVIEW');
 
-    if (mattersOverviewAccess.status !== "restrict") {
+    if (mattersOverviewAccess.status !== 'restrict') {
       setAllowOpenMattersOverview(true);
     } else {
       console.log(mattersOverviewAccess.message);
     }
 
-    const fileBucketAccess = await AccessControl("FILEBUCKET");
+    const fileBucketAccess = await AccessControl('FILEBUCKET');
 
-    if (fileBucketAccess.status !== "restrict") {
+    if (fileBucketAccess.status !== 'restrict') {
       setAllowOpenFileBucket(true);
     } else {
       console.log(fileBucketAccess.message);
     }
 
-    const RFIAccess = await AccessControl("MATTERSRFI");
+    const RFIAccess = await AccessControl('MATTERSRFI');
 
-    if (RFIAccess.status !== "restrict") {
+    if (RFIAccess.status !== 'restrict') {
       setAllowOpenRFI(true);
     } else {
       console.log(RFIAccess.message);
     }
 
-    const backgroundAccess = await AccessControl("BACKGROUND");
+    const backgroundAccess = await AccessControl('BACKGROUND');
 
-    if (backgroundAccess.status !== "restrict") {
+    if (backgroundAccess.status !== 'restrict') {
       setAllowOpenBackground(true);
     } else {
       console.log(backgroundAccess.message);
@@ -274,7 +280,7 @@ mutation addClient($companyId: String, $name: String) {
   const addClients = async (data) => {
     let result;
 
-    const companyId = localStorage.getItem("companyId");
+    const companyId = localStorage.getItem('companyId');
 
     const addedClientList = await API.graphql({
       query: addClient,
@@ -304,7 +310,7 @@ mutation addMatter($companyId: String, $name: String) {
   const addMatters = async (data) => {
     let result;
 
-    const companyId = localStorage.getItem("companyId");
+    const companyId = localStorage.getItem('companyId');
 
     const addedMatterList = await API.graphql({
       query: addMatter,
@@ -332,27 +338,27 @@ mutation addMatter($companyId: String, $name: String) {
 
   var timeoutId;
   //Session timeout
-  const handleOnAction =  (event) => {
+  const handleOnAction = (event) => {
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
     bool.current = false;
-    if(showSessionTimeout){
+    if (showSessionTimeout) {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
-          console.log("Sign out completed.");
-          history.push("/");
+          console.log('Sign out completed.');
+          history.push('/');
         });
-      
+
         function clearLocalStorage() {
-          localStorage.removeItem("userId");
-          localStorage.removeItem("email");
-          localStorage.removeItem("firstName");
-          localStorage.removeItem("lastName");
-          localStorage.removeItem("userType");
-          localStorage.removeItem("company");
-          localStorage.removeItem("companyId");
-          localStorage.removeItem("access");
+          localStorage.removeItem('userId');
+          localStorage.removeItem('email');
+          localStorage.removeItem('firstName');
+          localStorage.removeItem('lastName');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('company');
+          localStorage.removeItem('companyId');
+          localStorage.removeItem('access');
         }
       }, 3000);
     }
@@ -367,7 +373,6 @@ mutation addMatter($companyId: String, $name: String) {
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
     }, 60000 * 60);
-
   };
 
   useIdleTimer({
@@ -376,11 +381,13 @@ mutation addMatter($companyId: String, $name: String) {
     onIdle: handleOnIdle,
     debounce: 1000,
   });
-  {/* MOBILE CONST */}
-  const {height, width} = useWindowDimensions();
+  {
+    /* MOBILE CONST */
+  }
+  const { height, width } = useWindowDimensions();
   const [contentHeight, setContentHeight] = useState();
   const [showScrollButton, setShowScrollButton] = useState(false);
-  
+
   function handleScrollEvent(e) {
     const top = e.target.scrollTop > 20;
     if (top) {
@@ -389,28 +396,32 @@ mutation addMatter($companyId: String, $name: String) {
       setShowScrollButton(false);
     }
   }
-  function handleScrollToTop () {
-    let d = document.getElementById("mobileContent");
+  function handleScrollToTop() {
+    let d = document.getElementById('mobileContent');
     d.scrollTo(0, 0);
   }
-  
+
   useEffect(() => {
     if (userInfo) {
       var headerTag = document.getElementById('headerTag');
-      setContentHeight(height-40-headerTag.offsetHeight);
+      setContentHeight(height - 40 - headerTag.offsetHeight);
     }
   }, [height, width, userInfo]);
 
   return userInfo ? (
     <>
-    <ScrollToTop
-      smooth
-      component={<BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>}
-      className="sm:hidden scrollButton"
-      style={{borderRadius: "50%"}}
-    />
-    <div className="bg-gray-100 p-5 sm:flex-none sm:p-0 sm:bg-white sm:h-auto"> 
-      {/*
+      <ScrollToTop
+        smooth
+        component={
+          <BiArrowToTop
+            style={{ color: 'white', display: 'block', margin: 'auto' }}
+          />
+        }
+        className="sm:hidden scrollButton"
+        style={{ borderRadius: '50%' }}
+      />
+      <div className="bg-gray-100 p-5 sm:flex-none sm:p-0 sm:bg-white sm:h-auto">
+        {/*
       <div className="sm:hidden flex flex-row">
         <div className="flex-auto py-5 px-3">
           <HiMenuAlt1 className="sm:hidden text-2xl">
@@ -418,172 +429,182 @@ mutation addMatter($companyId: String, $name: String) {
         </div>
         */}
         <div className="text-right sm:hidden">
-          <h1 id='headerTag' className="text-base py-5 px-3 font-bold">AFFIDAVITS &amp; RFI </h1>
+          <h1 id="headerTag" className="text-base py-5 px-3 font-bold">
+            AFFIDAVITS &amp; RFI{' '}
+          </h1>
         </div>
-      {/*</div>*/}
-      <div className="contentDiv bg-white py-5 sm:p-5 font-sans rounded-lg flex sm:block" style={{height: width > 640 ? "" : contentHeight}}>
-        <div className="relative bg-gray-100 px-12 py-8 hidden sm:block sm:px-12 sm:py-8 rounded-sm mb-8">
-          <div className="grid grid-cols-4 gap-4">
-            <div className="col-span-3">
-              <Welcome user={userInfo} clientmatters={listmatters} />
+        {/*</div>*/}
+        <div
+          className="contentDiv bg-white py-5 sm:p-5 font-sans rounded-lg flex sm:block flex-col"
+          style={{ height: width > 640 ? '' : contentHeight }}
+        >
+          <div className="relative bg-gray-100 px-12 py-8 hidden sm:block sm:px-12 sm:py-8 rounded-sm mb-8">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="col-span-3">
+                <Welcome user={userInfo} clientmatters={listmatters} />
 
-              {showCreateMatter && (
-                <>
-                  <p className="text-gray-400 text-sm">
-                    To start adding, type in the name and click the add button
-                    below.
-                  </p>
-                  <form onSubmit={handleSubmit(handleNewMatter)}>
-                    <div className="grid grid-flow-col grid-cols-3">
-                      <div className="pr-2">
-                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                          {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
-                          <CreatableSelect
-                            options={clientsOptions}
-                            isClearable
-                            isSearchable
-                            onChange={handleClientChanged}
-                            value={selectedClient}
-                            placeholder="Client"
-                            className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                          />
+                {showCreateMatter && (
+                  <>
+                    <p className="text-gray-400 text-sm">
+                      To start adding, type in the name and click the add button
+                      below.
+                    </p>
+                    <form onSubmit={handleSubmit(handleNewMatter)}>
+                      <div className="grid grid-flow-col grid-cols-3">
+                        <div className="pr-2">
+                          <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                            {/* <input type="text" placeholder="Client" className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"/> */}
+                            <CreatableSelect
+                              options={clientsOptions}
+                              isClearable
+                              isSearchable
+                              onChange={handleClientChanged}
+                              value={selectedClient}
+                              placeholder="Client"
+                              className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                            />
+                          </div>
+                        </div>
+                        <div className="pr-2">
+                          <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                            <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3"></span>
+                            <CreatableSelect
+                              options={mattersOptions}
+                              placeholder="Matter"
+                              isClearable
+                              isSearchable
+                              onChange={handleMatterChanged}
+                              value={selectedMatter}
+                              className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                            />
+                          </div>
+                        </div>
+                        <div className="pr-2">
+                          <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
+                            <button
+                              disabled={
+                                matterName === null || clientName === null
+                              }
+                              type="submit"
+                              className={
+                                matterName === null || clientName === null
+                                  ? 'bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center'
+                                  : 'bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center'
+                              }
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <div className="pr-2">
-                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                          <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute left-3 bg-transparent rounded text-base items-center justify-center w-8 py-3"></span>
-                          <CreatableSelect
-                            options={mattersOptions}
-                            placeholder="Matter"
-                            isClearable
-                            isSearchable
-                            onChange={handleMatterChanged}
-                            value={selectedMatter}
-                            className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                          />
-                        </div>
-                      </div>
-                      <div className="pr-2">
-                        <div className="relative flex w-full flex-wrap items-stretch mt-3 pt-5">
-                          <button
-                            disabled={
-                              matterName === null || clientName === null
-                            }
-                            type="submit"
-                            className={
-                              matterName === null || clientName === null
-                                ? "bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
-                                : "bg-gray-600 hover:bg-gray-500 text-gray-50 font-bold py-2.5 px-4 rounded items-center"
-                            }
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                </>
+                    </form>
+                  </>
+                )}
+              </div>
+
+              <div className="w-3/5 place-self-end">
+                <img src={imgDocs} alt="rightside-illustration" />
+              </div>
+            </div>
+          </div>
+          <div className="flex ">
+            <div className="w-full mb-3 py-5 px-5 sm:px-0">
+              <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
+                <IoIcons.IoIosSearch />
+              </span>
+              <input
+                type="search"
+                value={searchMatter}
+                placeholder="Search Matter or Client ..."
+                onChange={handleSearchMatterChange}
+                className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
+              />
+            </div>
+            <div className="mb-3 py-5 w-1/6 text-right hidden sm:block flex items-center">
+              {mattersView === 'grid' ? (
+                <button
+                  className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                  onClick={() => {
+                    setmattersView('list');
+                  }}
+                >
+                  View as List &nbsp;
+                  <FaIcons.FaList />
+                </button>
+              ) : (
+                <button
+                  className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
+                  onClick={() => setmattersView('grid')}
+                >
+                  View as Grid &nbsp;
+                  <FaIcons.FaTh />
+                </button>
               )}
             </div>
+          </div>
 
-            <div className="w-3/5 place-self-end">
-              <img src={imgDocs} alt="rightside-illustration" />
-            </div>
-          </div>
-        </div>
-        <div className="hidden sm:flex">
-          <div className="w-full mb-3 py-5">
-            <span className="z-10 h-full leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
-              <IoIcons.IoIosSearch />
-            </span>
-            <input
-              type="search"
-              value={searchMatter}
-              placeholder="Search Matter or Client ..."
-              onChange={handleSearchMatterChange}
-              className="px-3 py-3 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full pl-10"
-            />
-          </div>
-          <div className="mb-3 py-5 w-1/6 text-right">
-            {mattersView === "grid" ? (
-              <button
-                className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                onClick={() => {
-                    setmattersView("list");
-                }}
-              >
-                View as List &nbsp;
-                <FaIcons.FaList />
-              </button>
-            ) : (
-              <button
-                className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
-                onClick={() => setmattersView("grid")}
-              >
-                View as Grid &nbsp;
-                <FaIcons.FaTh />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div
-          id="mobileContent"
-          onScroll={(e) => handleScrollEvent(e)}
-          style={{scrollBehavior:"smooth"}}
-          className={
-            "overflow-y-auto px-5 sm:px-0 w-full sm:w-auto " + 
-            //Made every view to tile view in dashboard
-            (mattersView === "grid"
-              ? "grid grid-flow-row auto-rows-max gap-y-5 sm:grid-cols-4 sm:gap-4"
-              : "grid grid-flow-row auto-rows-max gap-y-6")
-          }
-        >
-          {showScrollButton && width < 640 ? (<>
-          <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
-            <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
-          </div>
-          </>) : (<></>)}
-          <MatterContext.Provider
-            value={{
-              clientMatter: listmatters,
-              loading: loading,
-              error: errorMatter,
-              view: mattersView,
-              onShowDeleteModal: handleShowDeleteModal,
-              showDeleteMatter: showDeleteMatter,
-              allowOpenMatter: allowOpenMatter,
-              allowOpenFileBucket: allowOpenFileBucket,
-              allowOpenBackground: allowOpenBackground,
-              allowOpenRFI: allowOpenRFI,
-            }}
+          <div
+            id="mobileContent"
+            onScroll={(e) => handleScrollEvent(e)}
+            style={{ scrollBehavior: 'smooth' }}
+            className={
+              'overflow-y-auto px-5 sm:px-0 w-full sm:w-auto ' +
+              //Made every view to tile view in dashboard
+              (mattersView === 'grid'
+                ? 'grid grid-flow-row auto-rows-max gap-y-5 sm:grid-cols-4 sm:gap-4'
+                : 'grid grid-flow-row auto-rows-max gap-y-6')
+            }
           >
-            <ClientMatters />
-          </MatterContext.Provider>
+            {showScrollButton && width < 640 ? (
+              <>
+                <div
+                  className="scrollButtonInner flex"
+                  onClick={() => handleScrollToTop()}
+                >
+                  <BiArrowToTop
+                    style={{ color: 'white', display: 'block', margin: 'auto' }}
+                  />
+                </div>
+              </>
+            ) : (
+              <></>
+            )}
+            <MatterContext.Provider
+              value={{
+                clientMatter: listmatters,
+                loading: loading,
+                error: errorMatter,
+                view: mattersView,
+                onShowDeleteModal: handleShowDeleteModal,
+                showDeleteMatter: showDeleteMatter,
+                allowOpenMatter: allowOpenMatter,
+                allowOpenFileBucket: allowOpenFileBucket,
+                allowOpenBackground: allowOpenBackground,
+                allowOpenRFI: allowOpenRFI,
+              }}
+            >
+              <ClientMatters />
+            </MatterContext.Provider>
 
-          {showDeleteModal && (
-            <DeleteMatterModal
-              handleSave={handleDeleteModal}
-              handleModalClose={handleModalClose}
-            />
-          )}
+            {showDeleteModal && (
+              <DeleteMatterModal
+                handleSave={handleDeleteModal}
+                handleModalClose={handleModalClose}
+              />
+            )}
 
-          {toast && (
-            <ToastNotification
-              showToast={toast}
-              errorMatter={errorMatter}
-              error={error}
-              title={toastMessage}
-            />
-          )}
-          {showSessionTimeout && (
-            <SessionTimeout/>
-          )}
-
+            {toast && (
+              <ToastNotification
+                showToast={toast}
+                errorMatter={errorMatter}
+                error={error}
+                title={toastMessage}
+              />
+            )}
+            {showSessionTimeout && <SessionTimeout />}
+          </div>
         </div>
       </div>
-    </div>
-      
     </>
   ) : null;
 }
