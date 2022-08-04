@@ -1257,7 +1257,6 @@ async function createBrief(data) {
       name: data.name,
       date: data.date ? data.date : null,
       createdAt: toUTC(new Date()),
-      isDeleted: false,
       order: data.order ? data.order : 0,
     };
 
@@ -1272,6 +1271,7 @@ async function createBrief(data) {
       briefId: rawParams.id,
       clientMatterId: data.clientMatterId,
       createdAt: toUTC(new Date()),
+      isDeleted: false,
     };
 
     const clientMatterBriefCommand = new PutItemCommand({
@@ -1284,7 +1284,6 @@ async function createBrief(data) {
     );
 
     resp = clientMatterBriefRequest ? rawParams : {};
-    resp = request ? rawParams : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -1771,15 +1770,34 @@ async function softDeleteBrief(id, data) {
       ...data,
     };
 
+    const clientMatterBriefParams = {
+      TableName: "ClientMatterBriefTable",
+      IndexName: "byBrief",
+      KeyConditionExpression: "briefId = :briefId",
+      ExpressionAttributeValues: marshall({
+        ":briefId": id,
+      }),
+      ProjectionExpression: "id", // fetch id of ClientMatterBriefTable only
+    };
+
+    const clientMatterBriefCmd = new QueryCommand(clientMatterBriefParams);
+    const clientMatterBriefResult = await ddbClient.send(clientMatterBriefCmd);
+
+    const clientMatterBriefId = clientMatterBriefResult.Items.map((i) =>
+      unmarshall(i)
+    )[0].id;
+
     const cmd = new UpdateItemCommand({
-      TableName: "BriefTable",
-      Key: marshall({ id }),
+      TableName: "ClientMatterBriefTable",
+      Key: marshall({ id: clientMatterBriefId }),
       UpdateExpression,
       ExpressionAttributeNames,
       ExpressionAttributeValues,
     });
+
     const request = await ddbClient.send(cmd);
-    resp = request ? param : {};
+
+    resp = request ? { id: id } : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -2918,7 +2936,24 @@ const resolvers = {
       return await createMatter(ctx.arguments);
     },
     matterFileCreate: async (ctx) => {
-      return await createMatterFile(ctx.arguments);
+      const { labels } = ctx.arguments;
+
+      const createMatterFileResponse = await createMatterFile(ctx.arguments);
+
+      if (labels) {
+        // Labels are present
+        const { id } = createMatterFileResponse;
+        const params = {
+          file: {
+            id: id,
+          },
+          label: labels,
+        };
+
+        await tagFileLabel(params);
+      }
+
+      return await createMatterFileResponse;
     },
     matterFileUpdate: async (ctx) => {
       const { id, name, details, order, date } = ctx.arguments;
