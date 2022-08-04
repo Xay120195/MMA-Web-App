@@ -329,12 +329,10 @@ const Background = () => {
               setLoading(false);
               setMaxLoading(false);
 
-              /** Concat previous items 
               let arrConcat = background.concat(result);
               setBackground([...new Set(sortByOrder(arrConcat))]);
-              */
-
-              setBackground(result);
+             
+              // setBackground(result);
             }, 1000);
           }
         }
@@ -392,11 +390,10 @@ const Background = () => {
                       .includes(searchDescription.toLowerCase())
                   );
               }
-              /** Concat previous items 
+             
               setBackground([...new Set(sortByOrder(arrConcat))]);
-              */
-
-              setBackground(result);
+             
+              //setBackground(result);
           }
         }
       } else {
@@ -1235,8 +1232,13 @@ const Background = () => {
         </div>
         ): (
           <div className="bg-white rounded-lg py-5 flex" style={{height:contentHeight}}>
-            <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="relative flex flex-col overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
-              {showScrollButton ? (<>
+                <div
+                  id="mobileContent"
+                  onScroll={(e) => handleScrollEvent(e)}
+                  className="relative flex flex-col overflow-y-auto h-min w-full"
+                  style={{ scrollBehavior: "smooth" }}
+                >
+                  {showScrollButton ? (<>
                 <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
                   <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
                 </div>
