@@ -33,8 +33,8 @@ const testColors = [
 const RFIEditor = ({ item }) => {
   const ydoc = new Y.Doc();
   const provider = new WebsocketProvider(
-    //'wss://13.215.247.130',
-    'wss://collaboration.makemyaffidavit.com',
+    // 'ws://13.215.247.130:4332',
+    'wss://tls-rfi-alb-814ebbaaa94f5d2a.elb.ap-southeast-1.amazonaws.com',
     item.id,
     ydoc
   );
