@@ -214,14 +214,28 @@ const Background = () => {
     //     }
     //   }
     // } else {
-    const backgroundOpt = await API.graphql({
-      query: qBriefBackgroundList,
-      variables: {
-        id: background_id,
-        nextToken: null,
-        sortOrder: "ORDER_ASC",
-      },
-    });
+    var backgroundOpt;
+    if(width < 640){
+      backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: {
+          id: background_id,
+          nextToken: null,
+          sortOrder: "ORDER_ASC",
+          limit: 50
+        },
+      });
+    }else{
+      backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: {
+          id: background_id,
+          nextToken: null,
+          sortOrder: "ORDER_ASC",
+        },
+      });
+    }
+    
 
     var arrConcatPrevToken = vPrevToken.concat(vNextToken);
     setVprevToken([...new Set(arrConcatPrevToken)]);
@@ -456,7 +470,9 @@ const Background = () => {
   var timeoutId;
 
   const handleOnAction = (event) => {
-    //loadMoreBackground();
+    if(width < 640){
+      loadMoreBackground();
+    }
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
@@ -486,7 +502,10 @@ const Background = () => {
   };
 
   const handleOnIdle = (event) => {
-    //loadMoreBackground();
+    if(width < 640){
+      loadMoreBackground();
+    }
+    
 
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
