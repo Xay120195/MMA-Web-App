@@ -2918,7 +2918,24 @@ const resolvers = {
       return await createMatter(ctx.arguments);
     },
     matterFileCreate: async (ctx) => {
-      return await createMatterFile(ctx.arguments);
+      const { labels } = ctx.arguments;
+
+      const createMatterFileResponse = await createMatterFile(ctx.arguments);
+
+      if (labels) {
+        // Labels are present
+        const { id } = createMatterFileResponse;
+        const params = {
+          file: {
+            id: id,
+          },
+          label: labels,
+        };
+
+        await tagFileLabel(params);
+      }
+
+      return await createMatterFileResponse;
     },
     matterFileUpdate: async (ctx) => {
       const { id, name, details, order, date } = ctx.arguments;
