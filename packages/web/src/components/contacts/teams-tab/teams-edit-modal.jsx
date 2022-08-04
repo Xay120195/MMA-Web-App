@@ -82,7 +82,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
             src={image}
             width={34}
             height={34}
-            className="rounded-full"
+            className={"rounded-full "}
           ></img>
           <div>{member.name}</div>
           <div className="ml-auto uppercase rounded-2xl bg-gray-200 font-semibold p-1 text-xs text-black">
@@ -288,11 +288,23 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
 
           {/*Profile*/}
           <div className="flex flex-row items-start py-8 gap-4">
-            <img
-              className="rounded-full"
-              src={`https://i.pravatar.cc/70?img=${1}`}
-              alt={`prop`}
-            ></img>
+            <div
+              className={`cursor-pointer ${
+                isEditing && "opacity-70 cursor-pointer hover:opacity-40"
+              }`}
+            >
+              {isEditing && (
+                <FiEdit
+                  className="absolute opacity-100"
+                  style={{ left: "70px", top: "135px", zIndex: "100" }}
+                />
+              )}
+              <img
+                className={`rounded-full`}
+                src={`https://i.pravatar.cc/70?img=${1}`}
+                alt={`prop`}
+              ></img>
+            </div>
 
             <div className={`flex flex-col justify-start gap-1 items-start`}>
               <div className="text-base font-semibold flex flex-row gap-2">

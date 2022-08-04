@@ -9,7 +9,19 @@ import { FaEye } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
-import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
+import {
+  CustomMenuList,
+  CustomValueContainer,
+} from "./custom-select-components";
+import { AiOutlinePlus } from "react-icons/ai";
+import {
+  List,
+  AutoSizer,
+  CellMeasurer,
+  CellMeasurerCache,
+  WindowScroller,
+} from "react-virtualized";
+import { AbsolutePosition } from "yjs";
 
 var moment = require("moment");
 
@@ -149,11 +161,14 @@ const TableUnsavedInfo = ({
   const [enabledArrays, setEnabledArrays] = useState([]);
 
   const [options, setOptions] = useState(null);
-
-  const cache = useRef(new CellMeasurerCache({
-    fixedWidth: true,
-    defaultHeight: 100,
-  }));
+  const [ShowAddLabel, setShowAddLabel] = useState([{ index: 0, show: false }]);
+  const [ShowLabelDescription, setShowLabelDescription] = useState(false);
+  const cache = useRef(
+    new CellMeasurerCache({
+      fixedWidth: true,
+      defaultHeight: 100,
+    })
+  );
 
   const handleSnippet = (e) => {
     setSnippetId(e.target.id);
@@ -203,13 +218,12 @@ const TableUnsavedInfo = ({
     };
     const success = await updateAttachmentDesc(data);
     if (success) {
+      var objIndex = unSavedEmails.findIndex((obj) => obj.id === rowId);
 
-      var objIndex = unSavedEmails.findIndex(
-        (obj) => obj.id === rowId
+      const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(
+        (x) => (x.id === id ? { ...x, details: e.target.innerHTML } : x)
       );
 
-      const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(x => (x.id === id ? { ...x, details: e.target.innerHTML } : x));
-      
       var updateArrAttachment = unSavedEmails.map((obj) => {
         if (obj.id === rowId) {
           return { ...obj, attachments: { items: itemsAttachments } };
@@ -269,18 +283,20 @@ const TableUnsavedInfo = ({
             recipient: emailIntegration,
             userTimeZone: userTimeZone,
             startDate:
-            emailFilters.startDate != null
+              emailFilters.startDate != null
                 ? momentTZ(emailFilters.startDate, userTimeZone).format(
                     "YYYY-MM-DD"
                   )
                 : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
             endDate:
-            emailFilters.endDate != null
-                ? momentTZ(emailFilters.endDate, userTimeZone).format("YYYY-MM-DD")
+              emailFilters.endDate != null
+                ? momentTZ(emailFilters.endDate, userTimeZone).format(
+                    "YYYY-MM-DD"
+                  )
                 : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
           },
         };
-    
+
         console.log("Get Messages by Company params:", params);
         API.graphql(params).then((result) => {
           const emailList = result.data.company.gmailMessages.items;
@@ -308,11 +324,11 @@ const TableUnsavedInfo = ({
       setResultMessage("Successfully updated.");
       setShowToast(true);
 
-      const newArrDescription = unSavedEmails.map(emails => {
+      const newArrDescription = unSavedEmails.map((emails) => {
         if (emails.id === id) {
-          return {...emails, description: e.target.innerHTML};
+          return { ...emails, description: e.target.innerHTML };
         }
-      
+
         return emails;
       });
       setUnsavedEmails(newArrDescription);
@@ -429,15 +445,14 @@ const TableUnsavedInfo = ({
 
     const newArrLabels = unSavedEmails;
 
-    newArrLabels.map(emails => {
+    newArrLabels.map((emails) => {
       if (emails.id === gmid) {
-        emails.labels.items = taggedLabels
+        emails.labels.items = taggedLabels;
       }
     });
 
     console.log("updated", newArrLabels);
     setUnsavedEmails(newArrLabels);
-
   };
 
   const handleAddEmailAttachmentLabel = async (e, atid, rowId) => {
@@ -469,24 +484,22 @@ const TableUnsavedInfo = ({
 
     console.log("MainArray", unSavedEmails);
 
-    var objIndex = unSavedEmails.findIndex(
-      (obj) => obj.id === rowId
-    );
+    var objIndex = unSavedEmails.findIndex((obj) => obj.id === rowId);
 
-    const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(x => 
-      (x.id === atid ? { ...x, labels: { items: taggedLabels } } : x));
+    const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(
+      (x) => (x.id === atid ? { ...x, labels: { items: taggedLabels } } : x)
+    );
 
     const updateArrAttachment = unSavedEmails;
     updateArrAttachment.map((obj) => {
       if (obj.id === rowId) {
-        obj.attachments.items = itemsAttachments
+        obj.attachments.items = itemsAttachments;
       }
     });
 
     console.log("updateArr", updateArrAttachment);
 
     setUnsavedEmails(updateArrAttachment);
-
   };
 
   const defaultLabels = (items) => {
@@ -519,9 +532,9 @@ const TableUnsavedInfo = ({
           return [];
         } else {
           if (mainLabels[i].cmid === cmid) {
-            if(mainLabels[i].labelsExtracted.length === 0){
+            if (mainLabels[i].labelsExtracted.length === 0) {
               return [];
-            }else{
+            } else {
               const newOptions = mainLabels[i].labelsExtracted.map(
                 ({ id: value, name: label }) => ({
                   value,
@@ -577,41 +590,40 @@ const TableUnsavedInfo = ({
             </th>
           </tr>
         </thead>
-        <tbody 
+        <tbody
           className="bg-white divide-y divide-gray-200"
-          style={{width:"100%", height:"100vh"}}
+          style={{ width: "100%", height: "100vh" }}
         >
           {waitUnSaved ? (
             <tr>
-              <td colSpan={5} ><Loading /></td>
+              <td colSpan={5}>
+                <Loading />
+              </td>
             </tr>
           ) : (
-          <WindowScroller
-          key={0}
-          >
-            {({ height, scrollTop }) => (
-              <AutoSizer disableHeight>
-              {({ width }) => (
-                <List
-
-                autoHeight
-                scrollTop={scrollTop}
-                width={width}
-                height={Infinity}
-                rowHeight={cache.current.rowHeight}
-                deferredMeasurementCache={cache.current}
-                rowCount={unSavedEmails.length}
-                rowRenderer={({ key, index, style, parent }) => {
-                  const item = unSavedEmails[index];
-                  return (
-                    <CellMeasurer 
-                      key={item.id + "-" + index} 
-                      cache={cache.current} 
-                      parent={parent} 
-                      rowIndex={index} 
-                      columnIndex={0}
-                    >
-                      {/* <div 
+            <WindowScroller key={0}>
+              {({ height, scrollTop }) => (
+                <AutoSizer disableHeight>
+                  {({ width }) => (
+                    <List
+                      autoHeight
+                      scrollTop={scrollTop}
+                      width={width}
+                      height={Infinity}
+                      rowHeight={cache.current.rowHeight}
+                      deferredMeasurementCache={cache.current}
+                      rowCount={unSavedEmails.length}
+                      rowRenderer={({ key, index, style, parent }) => {
+                        const item = unSavedEmails[index];
+                        return (
+                          <CellMeasurer
+                            key={item.id + "-" + index}
+                            cache={cache.current}
+                            parent={parent}
+                            rowIndex={index}
+                            columnIndex={0}
+                          >
+                            {/* <div 
                       style={{
                         ...style,
                         width: "100%",
@@ -619,176 +631,207 @@ const TableUnsavedInfo = ({
                         border: '1px solid #f0f0f0', 
                       }}
                       > */}
-                      {/* {({ registerChild }) => ( */}
-                        <tr 
-                          style={{
-                            ...style,
-                            width: "100%",
-                            height: "100%",
-                            border: '1px solid #f0f0f0', 
-                          }}
-                          //ref={registerChild}
-                          key={key}
-                        >
-                          <td className="p-2 align-top w-10">
-                            <input
-                              key={item.id}
-                              className="cursor-pointer mr-1"
-                              onChange={(e) =>
-                                handleSelectItem(e, item.clientMatters.items.length)
-                              }
-                              type="checkbox"
-                              value={item.id}
-                              id={item.id}
-                              checked={selectedUnsavedItems.includes(item.id)}
-                            />
-                          </td>
-                          <td className="p-2 align-top w-1/4">
-                            <div className="w-96">
-                            <p className="text-sm font-medium">{item.subject}</p>
-                            <p className="text-xs">
-                              {item.from} at{" "}
-                              {moment(item.date).format("DD MMM YYYY, hh:mm A")}
-                            </p>
-                            <span>
-                              <div className="relative">
-                                <button
-                                  className="p-1 text-blue-600
+                            {/* {({ registerChild }) => ( */}
+                            <tr
+                              style={{
+                                ...style,
+                                width: "100%",
+                                height: "100%",
+                                border: "1px solid #f0f0f0",
+                                overflow: "unset",
+                              }}
+                              //ref={registerChild}
+                              key={key}
+                            >
+                              <td className="p-2 align-top h-full w-10">
+                                <input
+                                  key={item.id}
+                                  className="cursor-pointer mr-1"
+                                  onChange={(e) =>
+                                    handleSelectItem(
+                                      e,
+                                      item.clientMatters.items.length
+                                    )
+                                  }
+                                  type="checkbox"
+                                  value={item.id}
+                                  id={item.id}
+                                  checked={selectedUnsavedItems.includes(
+                                    item.id
+                                  )}
+                                />
+                              </td>
+                              <td className="p-2 align-top w-1/4">
+                                <div className="w-96">
+                                  <p className="text-sm font-medium">
+                                    {item.subject}
+                                  </p>
+                                  <p className="text-xs">
+                                    {item.from} at{" "}
+                                    {moment(item.date).format(
+                                      "DD MMM YYYY, hh:mm A"
+                                    )}
+                                  </p>
+                                  <span>
+                                    <div className="relative">
+                                      <button
+                                        className="p-1 text-blue-600
                             text-opacity-90
                             text-[12px] font-normal inline-flex items-center gap-x-2 rounded primary_light hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 text-xs "
-                                  type="button"
-                                  aria-expanded="false"
-                                  id={item.id}
-                                  onClick={handleSnippet}
-                                >
-                                  read more
-                                  <FaEye />
-                                </button>
-                              </div>
-                              {show && snippetId === item.id && (
-                                <div
-                                  ref={(el) => (ref.current[index] = el)}
-                                  className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
-                                  id={item.id}
-                                >
-                                  <p>From : {item.from}</p>
-                                  <p>
-                                    Date :{" "}
-                                    {moment(item.date).format("DD MMM YYYY, hh:mm A")}
-                                  </p>
-                                  <p>Subject : {item.subject}</p>
-                                  <p>To : {item.to}</p>
-                                  <p>CC: {item.cc}</p>
+                                        type="button"
+                                        aria-expanded="false"
+                                        id={item.id}
+                                        onClick={handleSnippet}
+                                      >
+                                        read more
+                                        <FaEye />
+                                      </button>
+                                    </div>
+                                    {show && snippetId === item.id && (
+                                      <div
+                                        ref={(el) => (ref.current[index] = el)}
+                                        className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                        id={item.id}
+                                      >
+                                        <p>From : {item.from}</p>
+                                        <p>
+                                          Date :{" "}
+                                          {moment(item.date).format(
+                                            "DD MMM YYYY, hh:mm A"
+                                          )}
+                                        </p>
+                                        <p>Subject : {item.subject}</p>
+                                        <p>To : {item.to}</p>
+                                        <p>CC: {item.cc}</p>
 
-                                  <p
-                                    className="mt-8 p-2"
-                                    dangerouslySetInnerHTML={{
-                                      __html: Base64.decode(
+                                        <p
+                                          className="mt-8 p-2"
+                                          dangerouslySetInnerHTML={{
+                                            __html: Base64.decode(
+                                              item.payload
+                                                .map((email) => email.content)
+                                                .join("")
+                                                .split('data":"')
+                                                .pop()
+                                                .split('"}')[0]
+                                            ).replace("body{color:", ""),
+                                          }}
+                                        ></p>
+                                      </div>
+                                    )}
+                                  </span>
+                                  <button
+                                    className="hidden no-underline hover:underline text-xs text-blue-400"
+                                    onClick={(e) =>
+                                      handleDownload(
+                                        item.id,
+                                        item.subject,
                                         item.payload
                                           .map((email) => email.content)
                                           .join("")
                                           .split('data":"')
                                           .pop()
                                           .split('"}')[0]
-                                      ).replace("body{color:", ""),
-                                    }}
-                                  ></p>
+                                      )
+                                    }
+                                  >
+                                    Preview Email PDF
+                                  </button>
+                                  <div className="hidden">
+                                    <span id={"preview_" + item.id}>
+                                      <img src={googleLogin} alt="" />
+                                      <hr></hr>
+                                      <h2>
+                                        <b>{item.subject}</b>
+                                      </h2>
+                                      <hr></hr>
+                                      <br />
+                                      <p>From : {item.from}</p>
+                                      <p>
+                                        Date :{" "}
+                                        {moment(item.date).format(
+                                          "DD MMM YYYY, hh:mm A"
+                                        )}
+                                      </p>
+                                      <p>To : {item.to}</p>
+                                      <p>CC: {item.cc}</p>
+                                    </span>
+                                  </div>
                                 </div>
-                              )}
-                            </span>
-                            <button
-                              className="hidden no-underline hover:underline text-xs text-blue-400"
-                              onClick={(e) =>
-                                handleDownload(
-                                  item.id,
-                                  item.subject,
-                                  item.payload
-                                    .map((email) => email.content)
-                                    .join("")
-                                    .split('data":"')
-                                    .pop()
-                                    .split('"}')[0]
-                                )
-                              }
-                            >
-                              Preview Email PDF
-                            </button>
-                            <div className="hidden">
-                              <span id={"preview_" + item.id}>
-                                <img src={googleLogin} alt="" />
-                                <hr></hr>
-                                <h2>
-                                  <b>{item.subject}</b>
-                                </h2>
-                                <hr></hr>
-                                <br />
-                                <p>From : {item.from}</p>
-                                <p>
-                                  Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}
-                                </p>
-                                <p>To : {item.to}</p>
-                                <p>CC: {item.cc}</p>
-                              </span>
-                            </div>
-                            </div>
-                          </td>
-                          <td className="p-2 align-top w-2/8">
-                            <p
-                              className="p-2 w-full font-poppins rounded-sm"
-                              style={{
-                                border: "solid 1px #c4c4c4",
-                                cursor: "auto",
-                                outlineColor: "rgb(204, 204, 204, 0.5)",
-                                outlineWidth: "thin",
-                                minHeight: "35px",
-                                maxHeight: "35px",
-                                overflow: "auto",
-                              }}
-                              suppressContentEditableWarning
-                              dangerouslySetInnerHTML={{ __html: item.description }}
-                              onBlur={(e) => handleSaveMainDesc(e, item.id)}
-                              contentEditable={true}
-                            ></p>
-                            {item.attachments.items.map((item_attach, index) => (
-                              <React.Fragment key={item_attach.id}>
-                                <div className="flex items-start mt-2">
-                                  <p
-                                    className="
+                              </td>
+                              <td className="p-2 align-top w-2/8">
+                                <p
+                                  className="p-2 w-full font-poppins rounded-sm"
+                                  style={{
+                                    border: "solid 1px #c4c4c4",
+                                    cursor: "auto",
+                                    outlineColor: "rgb(204, 204, 204, 0.5)",
+                                    outlineWidth: "thin",
+                                    minHeight: "35px",
+                                    maxHeight: "35px",
+                                    overflow: "auto",
+                                  }}
+                                  suppressContentEditableWarning
+                                  dangerouslySetInnerHTML={{
+                                    __html: item.description,
+                                  }}
+                                  onBlur={(e) => handleSaveMainDesc(e, item.id)}
+                                  contentEditable={true}
+                                ></p>
+                                {item.attachments.items.map(
+                                  (item_attach, index) => (
+                                    <React.Fragment key={item_attach.id}>
+                                      <div className="flex items-start mt-2">
+                                        <p
+                                          className="
                                     cursor-pointer mr-1 text-opacity-90 1 
                                     textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
-                                    id={item_attach.id}
-                                    title={item_attach.name}
-                                    onClick={() => previewAndDownloadFile(item_attach.id)}
-                                  >
-                                    {item_attach.name.substring(0, 10)}
-                                    {item_attach.name.length >= 10 ? "..." : ""}
-                                  </p>
-                                  <div
-                                    className="p-2 w-full h-full font-poppins rounded-sm float-right"
-                                    style={{
-                                      border: "solid 1px #c4c4c4",
-                                      cursor: "auto",
-                                      outlineColor: "rgb(204, 204, 204, 0.5)",
-                                      outlineWidth: "thin",
-                                      minHeight: "35px",
-                                      maxHeight: "35px",
-                                      overflow: "auto",
-                                      
-                                    }}
-                                    suppressContentEditableWarning
-                                    dangerouslySetInnerHTML={{
-                                      __html: item_attach.details,
-                                    }}
-                                    onBlur={(e) => handleSaveDesc(e, item_attach.id, item.id)}
-                                    contentEditable={true}
-                                  ></div>
-                                </div>
-                              </React.Fragment>
-                            ))}
-                          </td>
-                          <td className="p-2 align-top w-1/6">
-                            <div className="relative mt-5" disabled={true}>
-                              {/* <button
+                                          id={item_attach.id}
+                                          title={item_attach.name}
+                                          onClick={() =>
+                                            previewAndDownloadFile(
+                                              item_attach.id
+                                            )
+                                          }
+                                        >
+                                          {item_attach.name.substring(0, 10)}
+                                          {item_attach.name.length >= 10
+                                            ? "..."
+                                            : ""}
+                                        </p>
+                                        <div
+                                          className="p-2 w-full h-full font-poppins rounded-sm float-right"
+                                          style={{
+                                            border: "solid 1px #c4c4c4",
+                                            cursor: "auto",
+                                            outlineColor:
+                                              "rgb(204, 204, 204, 0.5)",
+                                            outlineWidth: "thin",
+                                            minHeight: "35px",
+                                            maxHeight: "35px",
+                                            overflow: "auto",
+                                          }}
+                                          suppressContentEditableWarning
+                                          dangerouslySetInnerHTML={{
+                                            __html: item_attach.details,
+                                          }}
+                                          onBlur={(e) =>
+                                            handleSaveDesc(
+                                              e,
+                                              item_attach.id,
+                                              item.id
+                                            )
+                                          }
+                                          contentEditable={true}
+                                        ></div>
+                                      </div>
+                                    </React.Fragment>
+                                  )
+                                )}
+                              </td>
+                              <td className="p-2 align-top w-1/6">
+                                <div className="relative mt-2" disabled={true}>
+                                  {/* <button
                                 className="
                               text-opacity-90 1
                               textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
@@ -798,81 +841,269 @@ const TableUnsavedInfo = ({
                               >
                                 {item.labelIds}
                               </button> */}
-                              <CreatableSelect
-                                defaultValue={() => defaultLabels(item.labels.items)}
-                                isMulti
-                                isClearable
-                                options={getOptions(item.clientMatters.items)}
-                                isSearchable
-                                openMenuOnClick={true}
-                                isDisabled={
-                                  checkArrLength(item.clientMatters.items.length) ||
-                                  checkEnable(item.id)
-                                    ? false
-                                    : true
-                                }
-                                onChange={(e) => handleAddLabel(e, item.id)}
-                                placeholder="Labels"
-                                className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                              />
-                            </div>
-                            {item.attachments.items.map((item_attach, index) => (
-                              <CreatableSelect
-                                defaultValue={() => defaultLabels(item_attach.labels.items)}
-                                isMulti
-                                isClearable
-                                options={getOptions(item.clientMatters.items)}
-                                openMenuOnClick={true}
-                                isDisabled={
-                                  checkArrLength(item.clientMatters.items.length) ||
-                                  checkEnable(item.id)
-                                    ? false
-                                    : true
-                                }
-                                onChange={(e) =>
-                                  handleAddEmailAttachmentLabel(e, item_attach.id, item.id)
-                                }
-                                placeholder="Labels"
-                                className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                              />
-                            ))}
-                          </td>
-                          <td className="p-2 align-top w-1/6">
-                            <React.Fragment key={item.id}>
-                              <CreatableSelect
-                                defaultValue={item.clientMatters.items.map(
-                                  (item_clientMatter, index) => ({
-                                    value: item_clientMatter.id,
-                                    label:
-                                      item_clientMatter.client.name +
-                                      "/" +
-                                      item_clientMatter.matter.name,
-                                  })
+                                  <button
+                                    onClick={() => {
+                                      if (
+                                        ShowAddLabel[0].item === item.id &&
+                                        ShowAddLabel[0].isDesc === true &&
+                                        ShowAddLabel[0].show === true
+                                      ) {
+                                        setShowAddLabel((prev) => [
+                                          {
+                                            item: item.id,
+                                            index: index,
+                                            show: false,
+                                            isDesc: false,
+                                          },
+                                        ]);
+                                      } else {
+                                        setShowAddLabel((prev) => [
+                                          {
+                                            item: item.id,
+                                            index: index,
+                                            show: true,
+                                            isDesc: true,
+                                          },
+                                        ]);
+                                      }
+                                    }}
+                                    disabled={
+                                      checkArrLength(
+                                        item.clientMatters.items.length
+                                      ) || checkEnable(item.id)
+                                        ? false
+                                        : true
+                                    }
+                                    className={`flex flex-row justify-center items-center border border-gray-300 px-1 py-1 mr-2 focus:ring mt-4 shadow-md ${
+                                      checkArrLength(
+                                        item.clientMatters.items.length
+                                      ) || checkEnable(item.id)
+                                        ? "hover:border-gray-400"
+                                        : "bg-gray-200 cursor-default"
+                                    }`}
+                                    style={{ width: "110px" }}
+                                  >
+                                    <div>
+                                      {`${
+                                        ShowAddLabel[0].item === item.id &&
+                                        ShowAddLabel[0].isDesc === true &&
+                                        ShowAddLabel[0].show === true
+                                          ? "Cancel Add"
+                                          : "Add Labels"
+                                      }`}
+                                    </div>
+                                  </button>
+                                  {ShowAddLabel[0].item === item.id &&
+                                    ShowAddLabel[0].isDesc === true &&
+                                    ShowAddLabel[0].show === true &&
+                                    <CreatableSelect
+                                      defaultValue={() =>
+                                        defaultLabels(item.labels.items)
+                                      }
+                                    menuPortalTarget={document.body}
+                                      styles={{
+                                        container: (base) => ({
+                                          ...base,
+                                          zIndex: "1000",
+                                        }),
+                                        control: (base, state) => ({
+                                          ...base,
+                                          //bottom: "-3px",
+                                          //left: "120px",
+                                          position: "fixed",
+                                          minWidth: "250px",
+                                        }),
+                                        valueContainer: (base) => ({
+                                          ...base,
+                                          width: "auto",
+                                        }),
+                                      }}
+                                      components={{
+                                        MenuList: CustomMenuList,
+                                        MultiValueContainer: CustomValueContainer,
+                                      }}
+                                      isMulti
+                                      isClearable
+                                      options={getOptions(
+                                        item.clientMatters.items
+                                      )}
+                                      isSearchable
+                                      openMenuOnClick={true}
+                                      isDisabled={
+                                        checkArrLength(
+                                          item.clientMatters.items.length
+                                        ) || checkEnable(item.id)
+                                          ? false
+                                          : true
+                                      }
+                                      onChange={(e) => handleAddLabel(e, item.id)}
+                                      placeholder="Labels"
+                                      className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                    />
+                                  }
+                                </div>
+                                {item.attachments.items.map(
+                                  (item_attach, index) => (
+                                    <>
+                                      <div className="">
+                                        <button
+                                          onClick={() => {
+                                            if (
+                                              ShowAddLabel[0].item ===
+                                                item.id &&
+                                              ShowAddLabel[0].index === index &&
+                                              ShowAddLabel[0].show === true &&
+                                              ShowAddLabel[0].isDesc === false
+                                            ) {
+                                              setShowAddLabel((prev) => [
+                                                {
+                                                  item: item.id,
+                                                  index: index,
+                                                  show: false,
+                                                  isDesc: false,
+                                                },
+                                              ]);
+                                            } else {
+                                              setShowAddLabel((prev) => [
+                                                {
+                                                  item: item.id,
+                                                  index: index,
+                                                  show: true,
+                                                  isDesc: false,
+                                                },
+                                              ]);
+                                            }
+                                          }}
+                                          disabled={
+                                            checkArrLength(
+                                              item.clientMatters.items.length
+                                            ) || checkEnable(item.id)
+                                              ? false
+                                              : true
+                                          }
+                                          className={`flex flex-row justify-center items-center border border-gray-300 px-1 py-1 mr-2 focus:ring mt-4 shadow-md ${
+                                            checkArrLength(
+                                              item.clientMatters.items.length
+                                            ) || checkEnable(item.id)
+                                              ? "hover:border-gray-400"
+                                              : "bg-gray-200 cursor-default"
+                                          }`}
+                                          style={{ width: "110px" }}
+                                        >
+                                          <div>
+                                            {`${
+                                              ShowAddLabel[0].item ===
+                                                item.id &&
+                                              ShowAddLabel[0].index === index &&
+                                              ShowAddLabel[0].show === true &&
+                                              ShowAddLabel[0].isDesc === false
+                                                ? "Cancel Add"
+                                                : "Add Labels"
+                                            }`}
+                                          </div>
+                                        </button>
+
+                                        {ShowAddLabel[0].item === item.id &&
+                                          ShowAddLabel[0].index === index &&
+                                          ShowAddLabel[0].show === true &&  
+                                              ShowAddLabel[0].isDesc === false && (
+                                            <div className="">
+                                              <CreatableSelect
+                                                menuPortalTarget={document.body}
+                                                defaultValue={() =>
+                                                  defaultLabels(
+                                                    item_attach.labels.items
+                                                  )
+                                                }
+                                                styles={{
+                                                  container: (base) => ({
+                                                    ...base,
+                                                    zIndex: "1000",
+                                                  }),
+                                                  control: (base, state) => ({
+                                                    ...base,
+                                                    //bottom: "-3px",
+                                                    //left: "120px",
+                                                    position: "fixed",
+                                                    minWidth: "250px",
+                                                  }),
+                                                  valueContainer: (base) => ({
+                                                    ...base,
+                                                    width: "auto",
+                                                  }),
+                                                }}
+                                                components={{
+                                                  MenuList: CustomMenuList,
+                                                  MultiValueContainer:
+                                                    CustomValueContainer,
+                                                }}
+                                                isMulti
+                                                isClearable
+                                                options={getOptions(
+                                                  item.clientMatters.items
+                                                )}
+                                                openMenuOnClick={true}
+                                                isDisabled={
+                                                  checkArrLength(
+                                                    item.clientMatters.items
+                                                      .length
+                                                  ) || checkEnable(item.id)
+                                                    ? false
+                                                    : true
+                                                }
+                                                onChange={(e) =>
+                                                  handleAddEmailAttachmentLabel(
+                                                    e,
+                                                    item_attach.id,
+                                                    item.id
+                                                  )
+                                                }
+                                                placeholder="Labels"
+                                                className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                              />
+                                            </div>
+                                          )}
+                                      </div>
+                                    </>
+                                  )
                                 )}
-                                options={matterList}
-                                isSearchable
-                                onChange={(options, e) =>
-                                  handleClientMatter(options, item.id)
-                                }
-                                noOptionsMessage={() => "No result found"}
-                                isValidNewOption={() => false}
-                                placeholder="Client/Matter"
-                                className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                              />
-                            </React.Fragment>
-                          </td>
-                        </tr>
-                      {/* )} */}
-                      {/* </div> */}
-                    </CellMeasurer>
-                  );
-                }}
-                />
-                )}
-              </AutoSizer>
+                              </td>
+                              <td className="p-2 align-top w-1/6">
+                                <React.Fragment key={item.id}>
+                                  <CreatableSelect
+                                    defaultValue={item.clientMatters.items.map(
+                                      (item_clientMatter, index) => ({
+                                        value: item_clientMatter.id,
+                                        label:
+                                          item_clientMatter.client.name +
+                                          "/" +
+                                          item_clientMatter.matter.name,
+                                      })
+                                    )}
+                                    options={matterList}
+                                    isSearchable
+                                    onChange={(options, e) =>
+                                      handleClientMatter(options, item.id)
+                                    }
+                                    noOptionsMessage={() => "No result found"}
+                                    isValidNewOption={() => false}
+                                    placeholder="Client/Matter"
+                                    className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                                  />
+                                </React.Fragment>
+                              </td>
+                            </tr>
+                            {/* )} */}
+                            {/* </div> */}
+                          </CellMeasurer>
+                        );
+                      }}
+                    />
+                  )}
+                </AutoSizer>
               )}
-              </WindowScroller>
-            )}
+            </WindowScroller>
+          )}
         </tbody>
       </table>
       {/*{maxLoadingUnSavedEmail ? (
@@ -892,7 +1123,7 @@ const TableUnsavedInfo = ({
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />
       )}
-      </>
+    </>
   );
 };
 
