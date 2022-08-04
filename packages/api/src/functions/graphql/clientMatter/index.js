@@ -218,12 +218,18 @@ async function listClientMatterBriefs(ctx) {
   }
 
   try {
+    let fe = "";
+    if (!isDeleted) {
+      fe = " OR attribute_not_exists(isDeleted)";
+    }
     const cmBriefParam = {
       TableName: "ClientMatterBriefTable",
       IndexName: indexName,
       KeyConditionExpression: "clientMatterId = :clientMatterId",
+      FilterExpression: "isDeleted = :isDeleted" + fe,
       ExpressionAttributeValues: marshall({
         ":clientMatterId": id,
+        ":isDeleted": isDeleted,
       }),
       ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
@@ -235,6 +241,7 @@ async function listClientMatterBriefs(ctx) {
       cmBriefParam.Limit = limit;
     }
 
+    console.log(cmBriefParam);
     const cmBriefCmd = new QueryCommand(cmBriefParam);
     const cmBriefResult = await client.send(cmBriefCmd);
 
@@ -258,20 +265,19 @@ async function listClientMatterBriefs(ctx) {
         unmarshall(i)
       );
 
-      let filterObjBrief;
+      // let filterObjBrief;
 
-      if (isDeleted === false) {
-        // for old data
-        filterObjBrief = objBriefs.filter(
-          (u) => u.isDeleted === false || u.isDeleted === undefined
-        );
-      } else {
-        filterObjBrief = objBriefs.filter((u) => u.isDeleted === isDeleted);
-      }
+      // if (isDeleted === false) {
+      //   filterObjBrief = objBriefs.filter(
+      //     (u) => u.isDeleted === false || u.isDeleted === undefined
+      //   );
+      // } else {
+      //   filterObjBrief = objBriefs.filter((u) => u.isDeleted === isDeleted);
+      // }
 
       const response = objCMBrief
         .map((item) => {
-          const filterBrief = filterObjBrief.find((u) => u.id === item.briefId);
+          const filterBrief = objBriefs.find((u) => u.id === item.briefId);
 
           if (filterBrief !== undefined) {
             return { ...item, ...filterBrief };
