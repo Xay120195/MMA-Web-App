@@ -640,6 +640,7 @@ type Mutation {
     isGmailPDF: Boolean
     gmailMessageId: String
     date: AWSDateTime
+    labels: [LabelInput]
   ): File
 
   matterFileSoftDelete(id: ID): File
