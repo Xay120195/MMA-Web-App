@@ -214,14 +214,28 @@ const Background = () => {
     //     }
     //   }
     // } else {
-    const backgroundOpt = await API.graphql({
-      query: qBriefBackgroundList,
-      variables: {
-        id: background_id,
-        nextToken: null,
-        sortOrder: "ORDER_ASC",
-      },
-    });
+    var backgroundOpt;
+    if(width < 640){
+      backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: {
+          id: background_id,
+          nextToken: null,
+          sortOrder: "ORDER_ASC",
+          limit: 50
+        },
+      });
+    }else{
+      backgroundOpt = await API.graphql({
+        query: qBriefBackgroundList,
+        variables: {
+          id: background_id,
+          nextToken: null,
+          sortOrder: "ORDER_ASC",
+        },
+      });
+    }
+    
 
     var arrConcatPrevToken = vPrevToken.concat(vNextToken);
     setVprevToken([...new Set(arrConcatPrevToken)]);
@@ -315,12 +329,10 @@ const Background = () => {
               setLoading(false);
               setMaxLoading(false);
 
-              /** Concat previous items 
               let arrConcat = background.concat(result);
               setBackground([...new Set(sortByOrder(arrConcat))]);
-              */
-
-              setBackground(result);
+             
+              // setBackground(result);
             }, 1000);
           }
         }
@@ -378,11 +390,10 @@ const Background = () => {
                       .includes(searchDescription.toLowerCase())
                   );
               }
-              /** Concat previous items 
+             
               setBackground([...new Set(sortByOrder(arrConcat))]);
-              */
-
-              setBackground(result);
+             
+              //setBackground(result);
           }
         }
       } else {
@@ -456,7 +467,9 @@ const Background = () => {
   var timeoutId;
 
   const handleOnAction = (event) => {
-    //loadMoreBackground();
+    if(width < 640){
+      loadMoreBackground();
+    }
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
@@ -486,7 +499,10 @@ const Background = () => {
   };
 
   const handleOnIdle = (event) => {
-    //loadMoreBackground();
+    if(width < 640){
+      loadMoreBackground();
+    }
+    
 
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
@@ -1216,8 +1232,13 @@ const Background = () => {
         </div>
         ): (
           <div className="bg-white rounded-lg py-5 flex" style={{height:contentHeight}}>
-            <div id="mobileContent" onScroll={(e) => handleScrollEvent(e)} className="relative flex flex-col overflow-y-auto h-min" style={{scrollBehavior:"smooth"}}>
-              {showScrollButton ? (<>
+                <div
+                  id="mobileContent"
+                  onScroll={(e) => handleScrollEvent(e)}
+                  className="relative flex flex-col overflow-y-auto h-min w-full"
+                  style={{ scrollBehavior: "smooth" }}
+                >
+                  {showScrollButton ? (<>
                 <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
                   <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
                 </div>

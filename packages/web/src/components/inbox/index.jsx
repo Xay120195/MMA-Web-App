@@ -9,7 +9,9 @@ import TabsRender from "./tabs";
 // import { useIdleTimer } from "react-idle-timer";
 import ToastNotification from "../toast-notification";
 import FiltersModal from "./filters-modal";
+import SavingModal from "./saving-state";
 import { gapi } from "gapi-script";
+
 
 var momentTZ = require("moment-timezone");
 const userTimeZone = momentTZ.tz.guess();
@@ -19,9 +21,6 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
     gmailToken {
       refreshToken
       id
-      userId
-      companyId
-      updatedAt
     }
     gmailMessages(
       isDeleted: $isDeleted
@@ -169,7 +168,8 @@ const Inbox = () => {
     function start() {
       gapi.client.init({
         clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-        scope: "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly openid",
+        scope:
+          "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly openid",
       });
     }
     gapi.load("client:auth2", start);
@@ -178,8 +178,8 @@ const Inbox = () => {
     getSavedEmails(emailFilters);
     getMatterList();
 
-    console.log("Refresh Token", refreshToken);
-    console.log("Login Data", loginData);
+    console.log("UseEffect: Refresh Token", refreshToken);
+    console.log("UseEffect: Login Data", loginData);
   }, []);
 
   var emailIntegration = localStorage.getItem("emailAddressIntegration");
@@ -281,6 +281,17 @@ const Inbox = () => {
     await API.graphql(params).then((result) => {
       setWaitSaved(false);
       const emailList = result.data.company.gmailMessages.items;
+      const gmailToken = result.data.company.gmailToken;
+      const gmailTokenId = result.data.company.gmailToken.id;
+      const gmailRefreshToken = result.data.company.gmailToken.refreshToken;
+      if (
+        gmailRefreshToken !== null &&
+        localStorage.getItem("emailAddressIntegration") === null
+      ) {
+        localStorage.setItem("signInData", JSON.stringify(gmailToken));
+        localStorage.setItem("emailAddressIntegration", gmailTokenId);
+      }
+      setRefreshToken(gmailRefreshToken);
       setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);
     });
@@ -425,37 +436,12 @@ const Inbox = () => {
     return sort;
   }
 
+  console.log("Render: refreshToken:", refreshToken);
+  console.log("Render: loginData:", loginData);
+
   return (
     <>
-      {!loginData ? (
-        <div
-          className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
-          style={contentDiv}
-        >
-          <div className="h-screen flex-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 relative">
-              <div className="col-span-3 pl-8 pt-20">
-                <h5 className="text-black text-2xl font-bold">
-                  AFFIDAVITS & RFI
-                </h5>
-                <div className="text-black text-xl font-normal my-5 leading-10">
-                  Looks like you're not yet connected with your Google Account
-                </div>
-                <div className="text-gray-400 text-lg font-medium">
-                  Lets make your trip fun and simple
-                </div>
-                <br />
-                <GmailIntegration />
-              </div>
-              <div className="col-span-7">
-                <div className="h-screen float-right">
-                  <img src={googleLogin} alt="" className="h-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
+      {loginData && refreshToken ? (
         <div
           className="p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
           style={contentDiv}
@@ -526,7 +512,7 @@ const Inbox = () => {
                 </button>
               </div>
               <div className="ml-5">
-                <GmailIntegration />
+                <GmailIntegration refreshToken={refreshToken} />
               </div>
             </div>
           </div>
@@ -607,6 +593,34 @@ const Inbox = () => {
             </div>
           </div>
         </div>
+      ) : (
+        <div
+          className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
+          style={contentDiv}
+        >
+          <div className="h-screen flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 relative">
+              <div className="col-span-3 pl-8 pt-20">
+                <h5 className="text-black text-2xl font-bold">
+                  AFFIDAVITS & RFI
+                </h5>
+                <div className="text-black text-xl font-normal my-5 leading-10">
+                  Looks like you're not yet connected with your Google Account
+                </div>
+                <div className="text-gray-400 text-lg font-medium">
+                  Lets make your trip fun and simple
+                </div>
+                <br />
+                <GmailIntegration />
+              </div>
+              <div className="col-span-7">
+                <div className="h-screen float-right">
+                  <img src={googleLogin} alt="" className="h-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {showFiltersModal && (
@@ -615,6 +629,10 @@ const Inbox = () => {
           closeFiltersModal={handleFiltersModalClose}
           currentFilter={emailFilters}
         />
+      )}
+
+      {saveLoading && (
+        <SavingModal/>
       )}
 
       {showToast && resultMessage && (
