@@ -290,6 +290,7 @@ type GmailMessageAttachment {
   labels: GmailAttachmentLabelConn
   downloadURL: String
   updatedAt: AWSDateTime
+  isDeleted: Boolean
 }
 
 # enum
@@ -753,7 +754,7 @@ type Mutation {
     order: Int
   ): GmailMessageAttachment
   gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
-  gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
+  gmailMessageAttachmentUpdate(id: ID, details: String, isDeleted: Boolean): GmailMessageAttachment
   customUserTypeCreate(name: String, companyId: ID): CustomUserType
   customUserTypeUpdate(id: ID, name: String): CustomUserType
 }

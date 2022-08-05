@@ -476,7 +476,7 @@ async function listCompGmailMessages(ctx) {
       // Add the last batch if it has records and is not equal to 25
       if (current_batch.length > 0 && current_batch.length != 25) {
         batches.push(current_batch);
-      }
+      } 
 
       const asyncResult = await Promise.all(
         batches.map(async (data, index) => {
