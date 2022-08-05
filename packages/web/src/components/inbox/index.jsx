@@ -9,7 +9,9 @@ import TabsRender from "./tabs";
 // import { useIdleTimer } from "react-idle-timer";
 import ToastNotification from "../toast-notification";
 import FiltersModal from "./filters-modal";
+import SavingModal from "./saving-state";
 import { gapi } from "gapi-script";
+
 
 var momentTZ = require("moment-timezone");
 const userTimeZone = momentTZ.tz.guess();
@@ -627,6 +629,10 @@ const Inbox = () => {
           closeFiltersModal={handleFiltersModalClose}
           currentFilter={emailFilters}
         />
+      )}
+
+      {saveLoading && (
+        <SavingModal/>
       )}
 
       {showToast && resultMessage && (
