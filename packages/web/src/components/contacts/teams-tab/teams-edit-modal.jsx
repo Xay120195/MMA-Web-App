@@ -42,7 +42,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
   const [TeamName, setTeamName] = useState("");
   const [IsHovering, setIsHovering] = useState(false);
   const [InputData, setInputData] = useState([]);
-  const [Image, setImage] = useState("");
+  const [Image, setImage] = useState();
 
   const inputFile = useRef(null);
   useEffect((e) => {
@@ -73,11 +73,8 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
     }
 
     setTeamName(CurrentTeam.teamName);
+    setImage(CurrentTeam.image);
   }, []);
-
-  useEffect(() => {
-    console.log(Image);
-  }, [Image]);
 
   const RowCard = ({ image, member }) => {
     return (
@@ -100,11 +97,13 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
   };
 
   const ChangesHaveMade = (obj, i) => {
+    console.log("HIT");
     if (CurrentTeam.members[i]) {
       if (
         obj.name !== CurrentTeam.members[i].name ||
         obj.userType !== CurrentTeam.members[i].userType ||
-        TeamName !== CurrentTeam.teamName
+        TeamName !== CurrentTeam.teamName ||
+        Image !== CurrentTeam.image
       ) {
         return true;
       } else {
@@ -129,7 +128,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
       InputData && InputData.map((input, i) => validate(input, i));
     setisDisabled(!validations.includes(true));
     console.log(validations);
-  }, [InputData, TeamName]);
+  }, [InputData, TeamName, Image]);
 
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
@@ -197,6 +196,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
 
           let team = {
             id: TeamList[foundIndex].id,
+            image: Image,
             teamName: TeamName.replace("'s team", ""),
             members: InputData,
           };
@@ -323,10 +323,11 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
               )}
               <img
                 className={`rounded-full`}
-                src={Image ? Image : `https://i.pravatar.cc/70?img=${1}`}
+                src={Image}
                 width={70}
                 height={70}
                 alt={`prop`}
+                style={{ objectFit: "cover" }}
               ></img>
             </div>
 
