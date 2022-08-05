@@ -66,13 +66,14 @@ export default function AddTeamModal({
 
   const [InputData, setInputData] = useState([
     {
-      memberName: "",
+      id: uuidv4(),
+      name: "",
       userType: "",
     },
   ]);
 
   const validate = (obj) => {
-    if (obj.memberName && obj.userType && TeamName) {
+    if (obj.name && obj.userType && TeamName) {
       return true;
     } else return false;
   };
@@ -99,7 +100,7 @@ export default function AddTeamModal({
     return {
       id: uuidv4(),
       teamName: toTitleCase(TeamName),
-      members: InputData.length,
+      members: InputData,
       isNewlyAdded: state,
     };
   };
@@ -212,16 +213,14 @@ export default function AddTeamModal({
                     {`Member`} {i + 1}
                   </div>
                   <Select
-                    name={`memberName`}
+                    name={`name`}
                     options={options}
                     type="text"
                     value={{
-                      value: x.memberName,
-                      label: x.memberName,
+                      value: x.name,
+                      label: x.name,
                     }}
-                    onChange={(e, val) =>
-                      handleSelectChange(e, val, i, `memberName`)
-                    }
+                    onChange={(e, val) => handleSelectChange(e, val, i, `name`)}
                     className="rounded-md  w-80 focus:border-gray-100 text-gray-400"
                   />
                 </div>
@@ -246,11 +245,13 @@ export default function AddTeamModal({
 
                 <div className="flex flex-col p-1">
                   <div className="opacity-0">a</div>
-                  <CgTrash
-                    className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
-                    color={`lightcoral`}
-                    onClick={() => handleDelete(i)}
-                  />
+                  {InputData.length > 1 && (
+                    <CgTrash
+                      className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
+                      color={`lightcoral`}
+                      onClick={() => handleDelete(i)}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -264,7 +265,8 @@ export default function AddTeamModal({
               setInputData([
                 ...InputData,
                 {
-                  memberName: "",
+                  id: uuidv4(),
+                  name: "",
                   userType: "",
                 },
               ]);

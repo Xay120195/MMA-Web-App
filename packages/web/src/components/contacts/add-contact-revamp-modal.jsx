@@ -269,11 +269,13 @@ export default function AddContactModal({
                 </div> */}
                 <div className="flex flex-col p-1">
                   <div className="opacity-0">a</div>
-                  <CgTrash
-                    className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
-                    color={`lightcoral`}
-                    onClick={() => handleDelete(i)}
-                  />
+                  {InputData.length > 1 && (
+                    <CgTrash
+                      className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
+                      color={`lightcoral`}
+                      onClick={() => handleDelete(i)}
+                    />
+                  )}
                 </div>
               </div>
               <div className="flex flex-row">

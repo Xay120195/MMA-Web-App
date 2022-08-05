@@ -221,47 +221,6 @@ export async function createMatterFile(data) {
   return resp;
 }
 
-// export async function bulkCreateMatterFile(data) {
-//   let resp = {};
-//   try {
-//     const arrItems = [];
-
-//     for (var i = 0; i < data.length; i++) {
-//       var p = {
-//         id: v4(),
-//         matterId: data[i].matterId,
-//         s3ObjectKey: data[i].s3ObjectKey,
-//         size: data[i].size,
-//         type: data[i].type,
-//         name: data[i].name,
-//         isDeleted: false,
-//         date: data[i].date ? data[i].date : null,
-//         order: data[i].order ? data[i].order : 0,
-//         createdAt: toUTC(new Date()),
-//       };
-//       arrItems.push(p);
-//     }
-
-//     const asyncResult = await Promise.all(
-//       arrItems.map(async (i) => {
-//         return await createMatterFile(i);
-//       })
-//     );
-
-//     if (asyncResult) {
-//       resp = arrItems;
-//     }
-//   } catch (e) {
-//     resp = {
-//       error: e.message,
-//       errorStack: e.stack,
-//     };
-//     console.log(resp);
-//   }
-
-//   return resp;
-// }
-
 export async function bulkCreateMatterFile(data) {
   let resp = {};
   try {

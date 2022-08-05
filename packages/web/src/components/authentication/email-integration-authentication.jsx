@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 import { GoogleLogin, GoogleLogout } from "react-google-login";
 import { API } from "aws-amplify";
 var momentTZ = require("moment-timezone");
@@ -6,15 +6,16 @@ class GmailIntegration extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isLogined: localStorage.getItem("signInData")
-        ? JSON.parse(localStorage.getItem("signInData"))
-        : null,
+      isLogined: localStorage.getItem("signInData") || null,
+      refreshToken: props.refreshToken || null,
     };
 
     this.login = this.login.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this);
     this.logout = this.logout.bind(this);
     this.handleLogoutFailure = this.handleLogoutFailure.bind(this);
+
+    console.log(this.state);
   }
 
   async login(response) {
@@ -65,6 +66,7 @@ class GmailIntegration extends Component {
             if (r.data.gmailConnectFromCode !== null) {
               this.setState((state) => ({
                 isLogined: response,
+                refreshToken: r.data.gmailConnectFromCode.refreshToken,
               }));
               localStorage.setItem("signInData", JSON.stringify(response));
               localStorage.setItem("emailAddressIntegration", authCurrentUser);
@@ -85,6 +87,7 @@ class GmailIntegration extends Component {
   logout(response) {
     this.setState((state) => ({
       isLogined: null,
+      refreshToken: null,
     }));
 
     const removeRefreshToken = `
@@ -120,7 +123,7 @@ class GmailIntegration extends Component {
   render() {
     return (
       <div>
-        {this.state.isLogined ? (
+        {this.state.isLogined && this.state.refreshToken ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
             buttonText={

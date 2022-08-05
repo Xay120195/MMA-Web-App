@@ -6,7 +6,7 @@ import { IoIosSearch } from "react-icons/io";
 const { MenuList, ValueContainer, SingleValue, Placeholder } = components;
 
 const CustomMenuList = ({ selectProps, ...props }) => {
-  const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
+   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
   const change = useRef(null);
   // Copied from source
   const ariaAttributes = {
