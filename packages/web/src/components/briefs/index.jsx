@@ -1,6 +1,7 @@
 import '../../assets/styles/Briefs.css';
 import '../../assets/styles/Mobile.css';
 
+import { CgArrowRight, CgChevronLeft, CgChevronRight } from 'react-icons/cg';
 import {
   FaBook,
   FaEllipsisH,
@@ -29,7 +30,6 @@ import BlankList from '../../assets/images/RFI_Blank_List.svg';
 import BlankState from '../dynamic-blankstate';
 import BlankStateMobile from '../mobile-blank-state';
 import { BsFillTrashFill } from 'react-icons/bs';
-import { CgChevronLeft } from 'react-icons/cg';
 import CreateBriefsModal from './create-brief-modal';
 import { HiOutlinePlusCircle } from 'react-icons/hi';
 import Illustration from '../../assets/images/no-data.svg';
@@ -545,7 +545,7 @@ export default function Briefs() {
       >
         <div className="relative pt-3 sm:p-0 sm:flex-grow sm:flex-1">
           <div className="flex flex-col">
-            <div className="sticky hidden block pl-12 sm:pl-0 top-0 py-4 sm:flex items-center gap-2 bg-white z-10">
+            <div className="sticky hidden pl-12 sm:pl-0 top-0 py-4 sm:flex items-center gap-2 bg-white z-10">
               <div
                 onClick={() => history.replace('/dashboard')}
                 className="w-8 py-5 cursor-pointer"
@@ -574,42 +574,30 @@ export default function Briefs() {
                 </div>
               </div>
             </div>
-            {/* <div className="flex-grow hidden sm:block">
-              <h1 className="font-bold text-right text-base px-2 sm:px-0 sm:text-3xl sm:text-left">
-                Background Page
-                <span className="hidden sm:inline text-base sm:text-3xl">
-                  &nbsp;of&nbsp;
-                </span>
-                <br className="sm:hidden" />
-                <span className="text-base font-semibold sm:text-3xl">
+            <div className="sticky sm:hidden flex justify-end items-center gap-4">
+              <div className="text-right text-gray-700">
+                <p className="text-lg font-bold">Background Page</p>
+                <p className="text-lg font-bold text-gray-600">
                   {client_name}/{matter_name}
-                </span>
-              </h1>
-            </div> */}
-            {/* <div className="hidden sm:flex shrink-0 items-center sm:absolute sm:right-0">
-              <Link to={AppRoutes.DASHBOARD}>
-                <button className="hidden align-middle sm:inline-flex shrink-0 bg-white hover:bg-gray-100 text-black font-semibold py-2.5 px-4 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring">
-                  Back &nbsp;
-                  <MdArrowForwardIos />
-                </button>
-                <button className="sm:hidden shrink-0 bg-white hover:bg-gray-100 text-black font-semibold rounded inline-flex items-center border-0 w-9 h-9 rounded-full shadow-md outline-none focus:outline-none focus:ring">
-                  <MdArrowForwardIos
-                    style={{
-                      margin: 'auto',
-                    }}
-                  />
-                </button>
-              </Link>
-              
-            </div> */}
+                </p>
+              </div>
+              <div>
+                <div
+                  onClick={() => history.replace('/dashboard')}
+                  className="w-10 h-10 shadow flex justify-center items-center rounded-full"
+                >
+                  <CgChevronRight size={24} />
+                </div>
+              </div>
+            </div>
           </div>
-          <MobileHeader
+          {/* <MobileHeader
             height={height}
             width={width}
             matter_name={matter_name}
             client_name={client_name}
             setContentHeight={setContentHeight}
-          />
+          /> */}
           {/* <div className="sm:px-0">
             <nav
               aria-label="Breadcrumb"
@@ -677,7 +665,7 @@ export default function Briefs() {
             </nav>
           </div> */}
 
-          <div className="mt-4 sm:mt-7">
+          <div className=" sm:mt-7">
             <div className="flex sm:block">
               <button
                 type="button"
