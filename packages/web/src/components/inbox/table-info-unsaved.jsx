@@ -908,8 +908,6 @@ const TableUnsavedInfo = ({
                                           }),
                                           control: (base, state) => ({
                                             ...base,
-                                            //bottom: "-3px",
-                                            //left: "120px",
                                             position: "fixed",
                                             minWidth: "250px",
                                           }),
@@ -1006,12 +1004,12 @@ const TableUnsavedInfo = ({
                                           </div>
                                         </button>
                                         <div className="mt-4 ml-5">
-                                          {defaultLabels(
+                                          ({defaultLabels(
                                             item_attach.labels.items
                                           ).length > 0 &&
                                             defaultLabels(
                                               item_attach.labels.items
-                                            ).length}
+                                            ).length})
                                         </div>
                                       </div>
                                       {ShowAddLabel[0].item === item.id &&
