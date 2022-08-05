@@ -759,7 +759,7 @@ const TableUnsavedInfo = ({
                                   </div>
                                 </div>
                               </td>
-                              <td className="p-2 align-top w-2/8">
+                              <td className="p-2 align-top w-2/5">
                                 <p
                                   className="p-2 w-full font-poppins rounded-sm"
                                   style={{
@@ -895,57 +895,60 @@ const TableUnsavedInfo = ({
                                   </button>
                                   {ShowAddLabel[0].item === item.id &&
                                     ShowAddLabel[0].isDesc === true &&
-                                    ShowAddLabel[0].show === true &&
-                                    <CreatableSelect
-                                      defaultValue={() =>
-                                        defaultLabels(item.labels.items)
-                                      }
-                                    menuPortalTarget={document.body}
-                                      styles={{
-                                        container: (base) => ({
-                                          ...base,
-                                          zIndex: "1000",
-                                        }),
-                                        control: (base, state) => ({
-                                          ...base,
-                                          //bottom: "-3px",
-                                          //left: "120px",
-                                          position: "fixed",
-                                          minWidth: "250px",
-                                        }),
-                                        valueContainer: (base) => ({
-                                          ...base,
-                                          width: "auto",
-                                        }),
-                                      }}
-                                      components={{
-                                        MenuList: CustomMenuList,
-                                        MultiValueContainer: CustomValueContainer,
-                                      }}
-                                      isMulti
-                                      isClearable
-                                      options={getOptions(
-                                        item.clientMatters.items
-                                      )}
-                                      isSearchable
-                                      openMenuOnClick={true}
-                                      isDisabled={
-                                        checkArrLength(
-                                          item.clientMatters.items.length
-                                        ) || checkEnable(item.id)
-                                          ? false
-                                          : true
-                                      }
-                                      onChange={(e) => handleAddLabel(e, item.id)}
-                                      placeholder="Labels"
-                                      className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                    />
-                                  }
+                                    ShowAddLabel[0].show === true && (
+                                      <CreatableSelect
+                                        defaultValue={() =>
+                                          defaultLabels(item.labels.items)
+                                        }
+                                        menuPortalTarget={document.body}
+                                        styles={{
+                                          container: (base) => ({
+                                            ...base,
+                                            zIndex: "1000",
+                                          }),
+                                          control: (base, state) => ({
+                                            ...base,
+                                            //bottom: "-3px",
+                                            //left: "120px",
+                                            position: "fixed",
+                                            minWidth: "250px",
+                                          }),
+                                          valueContainer: (base) => ({
+                                            ...base,
+                                            width: "auto",
+                                          }),
+                                        }}
+                                        components={{
+                                          MenuList: CustomMenuList,
+                                          MultiValueContainer:
+                                            CustomValueContainer,
+                                        }}
+                                        isMulti
+                                        isClearable
+                                        options={getOptions(
+                                          item.clientMatters.items
+                                        )}
+                                        isSearchable
+                                        openMenuOnClick={true}
+                                        isDisabled={
+                                          checkArrLength(
+                                            item.clientMatters.items.length
+                                          ) || checkEnable(item.id)
+                                            ? false
+                                            : true
+                                        }
+                                        onChange={(e) =>
+                                          handleAddLabel(e, item.id)
+                                        }
+                                        placeholder="Labels"
+                                        className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                      />
+                                    )}
                                 </div>
                                 {item.attachments.items.map(
                                   (item_attach, index) => (
                                     <>
-                                      <div className="">
+                                      <div className="flex flex-row items-center">
                                         <button
                                           onClick={() => {
                                             if (
@@ -1002,68 +1005,75 @@ const TableUnsavedInfo = ({
                                             }`}
                                           </div>
                                         </button>
-
-                                        {ShowAddLabel[0].item === item.id &&
-                                          ShowAddLabel[0].index === index &&
-                                          ShowAddLabel[0].show === true &&  
-                                              ShowAddLabel[0].isDesc === false && (
-                                            <div className="">
-                                              <CreatableSelect
-                                                menuPortalTarget={document.body}
-                                                defaultValue={() =>
-                                                  defaultLabels(
-                                                    item_attach.labels.items
-                                                  )
-                                                }
-                                                styles={{
-                                                  container: (base) => ({
-                                                    ...base,
-                                                    zIndex: "1000",
-                                                  }),
-                                                  control: (base, state) => ({
-                                                    ...base,
-                                                    //bottom: "-3px",
-                                                    //left: "120px",
-                                                    position: "fixed",
-                                                    minWidth: "250px",
-                                                  }),
-                                                  valueContainer: (base) => ({
-                                                    ...base,
-                                                    width: "auto",
-                                                  }),
-                                                }}
-                                                components={{
-                                                  MenuList: CustomMenuList,
-                                                  MultiValueContainer:
-                                                    CustomValueContainer,
-                                                }}
-                                                isMulti
-                                                isClearable
-                                                options={getOptions(
-                                                  item.clientMatters.items
-                                                )}
-                                                openMenuOnClick={true}
-                                                isDisabled={
-                                                  checkArrLength(
-                                                    item.clientMatters.items
-                                                      .length
-                                                  ) || checkEnable(item.id)
-                                                    ? false
-                                                    : true
-                                                }
-                                                onChange={(e) =>
-                                                  handleAddEmailAttachmentLabel(
-                                                    e,
-                                                    item_attach.id,
-                                                    item.id
-                                                  )
-                                                }
-                                                placeholder="Labels"
-                                                className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                              />
-                                            </div>
-                                          )}
+                                        <div className="mt-4 ml-5">
+                                          {defaultLabels(
+                                            item_attach.labels.items
+                                          ).length > 0 &&
+                                            defaultLabels(
+                                              item_attach.labels.items
+                                            ).length}
+                                        </div>
                                       </div>
+                                      {ShowAddLabel[0].item === item.id &&
+                                        ShowAddLabel[0].index === index &&
+                                        ShowAddLabel[0].show === true &&
+                                        ShowAddLabel[0].isDesc === false && (
+                                          <div className="">
+                                            <CreatableSelect
+                                              menuPortalTarget={document.body}
+                                              defaultValue={() =>
+                                                defaultLabels(
+                                                  item_attach.labels.items
+                                                )
+                                              }
+                                              styles={{
+                                                container: (base) => ({
+                                                  ...base,
+                                                  zIndex: "1000",
+                                                }),
+                                                control: (base, state) => ({
+                                                  ...base,
+                                                  //bottom: "-3px",
+                                                  //left: "120px",
+                                                  position: "fixed",
+                                                  minWidth: "250px",
+                                                }),
+                                                valueContainer: (base) => ({
+                                                  ...base,
+                                                  width: "auto",
+                                                }),
+                                              }}
+                                              components={{
+                                                MenuList: CustomMenuList,
+                                                MultiValueContainer:
+                                                  CustomValueContainer,
+                                              }}
+                                              isMulti
+                                              isClearable
+                                              options={getOptions(
+                                                item.clientMatters.items
+                                              )}
+                                              openMenuOnClick={true}
+                                              isDisabled={
+                                                checkArrLength(
+                                                  item.clientMatters.items
+                                                    .length
+                                                ) || checkEnable(item.id)
+                                                  ? false
+                                                  : true
+                                              }
+                                              onChange={(e) =>
+                                                handleAddEmailAttachmentLabel(
+                                                  e,
+                                                  item_attach.id,
+                                                  item.id
+                                                )
+                                              }
+                                              placeholder="Labels"
+                                              className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                            />
+                                          </div>
+                                        )}
                                     </>
                                   )
                                 )}
