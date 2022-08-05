@@ -42,7 +42,9 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
   const [TeamName, setTeamName] = useState("");
   const [IsHovering, setIsHovering] = useState(false);
   const [InputData, setInputData] = useState([]);
+  const [Image, setImage] = useState("");
 
+  const inputFile = useRef(null);
   useEffect((e) => {
     anime({
       targets: modalContainer.current,
@@ -70,8 +72,12 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
       setInputData(stored);
     }
 
-    setTeamName(CurrentTeam.teamName + "'s Team");
+    setTeamName(CurrentTeam.teamName);
   }, []);
+
+  useEffect(() => {
+    console.log(Image);
+  }, [Image]);
 
   const RowCard = ({ image, member }) => {
     return (
@@ -82,7 +88,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
             src={image}
             width={34}
             height={34}
-            className="rounded-full"
+            className={"rounded-full "}
           ></img>
           <div>{member.name}</div>
           <div className="ml-auto uppercase rounded-2xl bg-gray-200 font-semibold p-1 text-xs text-black">
@@ -98,7 +104,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
       if (
         obj.name !== CurrentTeam.members[i].name ||
         obj.userType !== CurrentTeam.members[i].userType ||
-        TeamName !== CurrentTeam.teamName + "'s Team"
+        TeamName !== CurrentTeam.teamName
       ) {
         return true;
       } else {
@@ -288,11 +294,41 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
 
           {/*Profile*/}
           <div className="flex flex-row items-start py-8 gap-4">
-            <img
-              className="rounded-full"
-              src={`https://i.pravatar.cc/70?img=${1}`}
-              alt={`prop`}
-            ></img>
+            <input
+              type="file"
+              id="file"
+              ref={inputFile}
+              style={{ display: "none" }}
+              onChange={(event) => {
+                if (event.target.files && event.target.files[0]) {
+                  setImage(URL.createObjectURL(event.target.files[0]));
+                }
+              }}
+            />
+            <div
+              onClick={() => {
+                if (isEditing) {
+                  inputFile.current.click();
+                }
+              }}
+              className={`${
+                isEditing && "opacity-70 cursor-pointer hover:opacity-40"
+              }`}
+            >
+              {isEditing && (
+                <FiEdit
+                  className="absolute opacity-100"
+                  style={{ left: "70px", top: "135px", zIndex: "100" }}
+                />
+              )}
+              <img
+                className={`rounded-full`}
+                src={Image ? Image : `https://i.pravatar.cc/70?img=${1}`}
+                width={70}
+                height={70}
+                alt={`prop`}
+              ></img>
+            </div>
 
             <div className={`flex flex-col justify-start gap-1 items-start`}>
               <div className="text-base font-semibold flex flex-row gap-2">
@@ -328,7 +364,9 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
                     type="text"
                     value={TeamName}
                     className="rounded-md p-2 w-full border border-gray-300 outline-0"
-                    onChange={(e) => setTeamName(e.target.value)}
+                    onChange={(e) => {
+                      setTeamName(e.target.value);
+                    }}
                     required
                   />
                 </div>
