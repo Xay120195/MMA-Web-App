@@ -830,7 +830,8 @@ const TableUnsavedInfo = ({
                                 )}
                               </td>
                               <td className="p-2 align-top w-1/6">
-                                <div className="relative mt-2" disabled={true}>
+                                <div className="relative mt-4" disabled={true}>
+                                  {/*mt-2 new version mt-4 old version*/}
                                   {/* <button
                                 className="
                               text-opacity-90 1
@@ -841,6 +842,7 @@ const TableUnsavedInfo = ({
                               >
                                 {item.labelIds}
                               </button> */}
+                                  {/* --NEW LABEL DESIGN STARTS HERE-- 
                                   <button
                                     onClick={() => {
                                       if (
@@ -942,10 +944,36 @@ const TableUnsavedInfo = ({
                                         className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                       />
                                     )}
+                                    */}
+                                  {/*Reverted Changes STARTS HERE 1st part */}
+                                  <CreatableSelect
+                                    defaultValue={() =>
+                                      defaultLabels(item.labels.items)
+                                    }
+                                    isMulti
+                                    isClearable
+                                    options={getOptions(
+                                      item.clientMatters.items
+                                    )}
+                                    isSearchable
+                                    openMenuOnClick={true}
+                                    isDisabled={
+                                      checkArrLength(
+                                        item.clientMatters.items.length
+                                      ) || checkEnable(item.id)
+                                        ? false
+                                        : true
+                                    }
+                                    onChange={(e) => handleAddLabel(e, item.id)}
+                                    placeholder="Labels"
+                                    className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                  />
                                 </div>
                                 {item.attachments.items.map(
                                   (item_attach, index) => (
+                                    /*NEW LABELS STARTS HERE PART 2 
                                     <>
+                                      
                                       <div className="flex flex-row items-center">
                                         <button
                                           onClick={() => {
@@ -1004,12 +1032,14 @@ const TableUnsavedInfo = ({
                                           </div>
                                         </button>
                                         <div className="mt-4 ml-5">
-                                          ({defaultLabels(
+                                          (
+                                          {defaultLabels(
                                             item_attach.labels.items
                                           ).length > 0 &&
                                             defaultLabels(
                                               item_attach.labels.items
-                                            ).length})
+                                            ).length}
+                                          )
                                         </div>
                                       </div>
                                       {ShowAddLabel[0].item === item.id &&
@@ -1073,9 +1103,39 @@ const TableUnsavedInfo = ({
                                           </div>
                                         )}
                                     </>
+                                    REVERT CHANGES START HERE*/
+
+                                    <CreatableSelect
+                                      defaultValue={() =>
+                                        defaultLabels(item_attach.labels.items)
+                                      }
+                                      isMulti
+                                      isClearable
+                                      options={getOptions(
+                                        item.clientMatters.items
+                                      )}
+                                      openMenuOnClick={true}
+                                      isDisabled={
+                                        checkArrLength(
+                                          item.clientMatters.items.length
+                                        ) || checkEnable(item.id)
+                                          ? false
+                                          : true
+                                      }
+                                      onChange={(e) =>
+                                        handleAddEmailAttachmentLabel(
+                                          e,
+                                          item_attach.id,
+                                          item.id
+                                        )
+                                      }
+                                      placeholder="Labels"
+                                      className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                    />
                                   )
                                 )}
                               </td>
+
                               <td className="p-2 align-top w-1/6">
                                 <React.Fragment key={item.id}>
                                   <CreatableSelect
