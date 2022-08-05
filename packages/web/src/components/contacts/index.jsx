@@ -321,7 +321,7 @@ export default function Contacts() {
                 <span
                   className={`text-sm rounded-full flex items-center justify-center font-semibold `}
                 >
-                  {teamdummy && teamdummy.length}
+                  {TeamList && TeamList.length}
                 </span>
               </p>
             </div>
