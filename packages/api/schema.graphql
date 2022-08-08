@@ -38,6 +38,7 @@ type Brief {
   ): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+  labelId: ID # not null if brief is created through label
 }
 
 type Client {
@@ -211,6 +212,7 @@ type User {
   contactNumber: String
   company: Company
   userType: UserType
+  customUserType: CustomUserType
   profilePicture: String
   organisations: UserCompanyConn
   clientMatters(limit: Int, nextToken: String): UserClientMatterCon
@@ -398,6 +400,11 @@ input RepresentativeInput {
   firstName: String
   lastName: String
   email: AWSEmail
+}
+
+input CustomUserTypeInput {
+  id: ID!
+  name: String
 }
 
 # Relationships / Conns
@@ -596,6 +603,7 @@ type Mutation {
     date: AWSDateTime
     clientMatterId: String
     order: Int
+    labelId: ID
   ): Brief
   briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
@@ -689,6 +697,7 @@ type Mutation {
     lastName: String
     email: AWSEmail
     userType: UserType
+    customUserType: CustomUserTypeInput
     company: CompanyInput
   ): User
   userInvite(
@@ -696,6 +705,7 @@ type Mutation {
     lastName: String
     email: AWSEmail
     userType: UserType
+    customUserType: CustomUserTypeInput
     company: CompanyInput
   ): User
   userDelete(id: ID, companyId: ID, email: AWSEmail): User
@@ -707,6 +717,7 @@ type Mutation {
     contactNumber: String
     company: CompanyInput
     userType: UserType
+    customUserType: CustomUserTypeInput
     profilePicture: String
   ): User
   userClientMatterTag(userId: ID, clientMatterId: [ID]): User
@@ -754,7 +765,11 @@ type Mutation {
     order: Int
   ): GmailMessageAttachment
   gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
-  gmailMessageAttachmentUpdate(id: ID, details: String, isDeleted: Boolean): GmailMessageAttachment
+  gmailMessageAttachmentUpdate(
+    id: ID
+    details: String
+    isDeleted: Boolean
+  ): GmailMessageAttachment
   customUserTypeCreate(name: String, companyId: ID): CustomUserType
   customUserTypeUpdate(id: ID, name: String): CustomUserType
 }

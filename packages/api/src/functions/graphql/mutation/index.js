@@ -23,10 +23,9 @@ const {
   updateRFI,
 } = require("../../../services/RFIService");
 const {
-  createRequest,
-  deleteRequest,
-  updateRequest,
-} = require("../../../services/RequestService");
+  createCustomUserType,
+  updateCustomUserType,
+} = require("../../../services/CustomUserTypeService");
 const {
   createMatterFile,
   updateMatterFile,
@@ -127,89 +126,6 @@ async function createFeature(data) {
 
     const request = await ddbClient.send(cmd);
     resp = request ? unmarshall(param) : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function createCustomUserType(data) {
-  let resp = {};
-  try {
-    const rawParams = {
-      id: v4(),
-      name: data.name,
-      createdAt: toUTC(new Date()),
-    };
-
-    const param = marshall(rawParams);
-    const cmd = new PutItemCommand({
-      TableName: "CustomUserTypeTable",
-      Item: param,
-    });
-
-    const request = await ddbClient.send(cmd);
-
-    if (request) {
-      const companyClientParams = {
-        id: v4(),
-        customUserTypeId: rawParams.id,
-        companyId: data.companyId,
-        createdAt: toUTC(new Date()),
-      };
-
-      const companyClientCommand = new PutItemCommand({
-        TableName: "CompanyCustomUserTypeTable",
-        Item: marshall(companyClientParams),
-      });
-
-      const companyClientRequest = await ddbClient.send(companyClientCommand);
-      resp = companyClientRequest
-        ? {
-            ...rawParams,
-            companyId: data.companyId,
-          }
-        : {};
-    }
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function updateCustomUserType(id, data) {
-  let resp = {};
-  try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
-
-    const param = {
-      id,
-      ...data,
-    };
-
-    const cmd = new UpdateItemCommand({
-      TableName: "CustomUserTypeTable",
-      Key: marshall({ id }),
-      UpdateExpression,
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-    });
-    const request = await ddbClient.send(cmd);
-    resp = request ? param : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -1258,6 +1174,7 @@ async function createBrief(data) {
       date: data.date ? data.date : null,
       createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
+      labelId: data.labelId ? data.labelId : null,
     };
 
     const param = marshall(rawParams);
@@ -1491,146 +1408,6 @@ async function bulkUpdateBackgroundOrders(data) {
         await ddbClient.send(updateBackgroundCmd);
       })
     );
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function bulkInitializeBackgroundOrders(clientMatterId) {
-  let resp = [];
-
-  try {
-    const cmBackgroundsParam = {
-      TableName: "BriefBackgroundTable",
-      IndexName: "byCreatedAt",
-      KeyConditionExpression: "clientMatterId = :clientMatterId",
-      ExpressionAttributeValues: marshall({
-        ":clientMatterId": clientMatterId,
-      }),
-      ProjectionExpression: "backgroundId",
-      ScanIndexForward: true,
-    };
-
-    const cmBackgroundsCmd = new QueryCommand(cmBackgroundsParam);
-    const cmBackgroundsResult = await ddbClient.send(cmBackgroundsCmd);
-
-    const backgroundIds = cmBackgroundsResult.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.backgroundId }));
-
-    if (backgroundIds.length !== 0) {
-      let batches = [],
-        current_batch = [],
-        item_count = 0;
-
-      backgroundIds.filter(function (item, i, ar) {
-        return ar.indexOf(item) === i;
-      });
-
-      backgroundIds.forEach((data) => {
-        item_count++;
-        current_batch.push(data);
-
-        // Chunk items to 25
-        if (item_count % 25 == 0) {
-          batches.push(current_batch);
-          current_batch = [];
-        }
-      });
-
-      if (current_batch.length > 0 && current_batch.length != 25) {
-        batches.push(current_batch);
-      }
-
-      const asyncBackgroundsResult = await Promise.all(
-        batches.map(async (data) => {
-          const backgroundsParam = {
-            RequestItems: {
-              BackgroundsTable: {
-                Keys: data,
-                ExpressionAttributeNames: {
-                  "#order": "order",
-                },
-                ProjectionExpression: "id, #order",
-              },
-            },
-          };
-
-          const backgroundsCommand = new BatchGetItemCommand(backgroundsParam);
-          const backgroundsResult = await ddbClient.send(backgroundsCommand);
-
-          return backgroundsResult.Responses.BackgroundsTable.map((i) =>
-            unmarshall(i)
-          );
-        })
-      );
-
-      let objBackgrounds = [].concat.apply([], asyncBackgroundsResult);
-
-      objBackgrounds.sort(function (a, b) {
-        return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
-      });
-
-      const arrangement = objBackgrounds.map((data, index) => {
-        return {
-          id: data.id,
-          order: index + 1,
-        };
-      });
-
-      return await bulkUpdateBackgroundOrders(arrangement);
-    }
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
-  return resp;
-}
-
-async function bulkInitializeMatterFileOrders(clientMatterId) {
-  let resp = [];
-  try {
-    const matterFileParam = {
-      TableName: "MatterFileTable",
-      IndexName: "byCreatedAt",
-      KeyConditionExpression: "matterId = :matterId",
-      FilterExpression: "isDeleted = :isDeleted",
-      ExpressionAttributeValues: marshall({
-        ":matterId": clientMatterId,
-        ":isDeleted": false,
-      }),
-      ScanIndexForward: true,
-    };
-
-    const matterFileCmd = new QueryCommand(matterFileParam);
-    const matterFileResult = await ddbClient.send(matterFileCmd);
-
-    const objMatterFiles = matterFileResult.Items.map((d) => unmarshall(d));
-
-    if (objMatterFiles.length !== 0) {
-      objMatterFiles.sort(function (a, b) {
-        return a.order < b.order ? -1 : 1; // ? -1 : 1 for ascending/increasing order
-      });
-
-      const arrangement = objMatterFiles.map((data, index) => {
-        return {
-          id: data.id,
-          order: index + 1,
-        };
-      });
-
-      return await bulkUpdateMatterFileOrders(arrangement);
-    }
   } catch (e) {
     resp = {
       error: e.message,
@@ -2881,6 +2658,7 @@ const resolvers = {
         userType,
         profilePicture,
         company,
+        customUserType,
       } = ctx.arguments;
       const data = {
         updatedAt: toUTC(new Date()),
@@ -2899,6 +2677,8 @@ const resolvers = {
       if (profilePicture !== undefined) data.profilePicture = profilePicture;
 
       if (company !== undefined) data.company = company;
+
+      if (customUserType !== undefined) data.customUserType = customUserType;
 
       return await updateUser(id, data);
     },
@@ -2982,11 +2762,6 @@ const resolvers = {
       const { arrangement } = ctx.arguments; // id and order
       return await bulkUpdateMatterFileOrders(arrangement);
     },
-
-    // matterFileBulkInitializeOrders: async (ctx) => {
-    //   const { clientMatterId } = ctx.arguments; // id and order
-    //   return await bulkInitializeMatterFileOrders(clientMatterId);
-    // },
 
     matterFileSoftDelete: async (ctx) => {
       const { id } = ctx.arguments;
@@ -3077,11 +2852,6 @@ const resolvers = {
       const { arrangement } = ctx.arguments; // id and order
       return await bulkUpdateBackgroundOrders(arrangement);
     },
-
-    // backgroundBulkInitializeOrders: async (ctx) => {
-    //   const { clientMatterId } = ctx.arguments; // id and order
-    //   return await bulkInitializeBackgroundOrders(clientMatterId);
-    // },
 
     backgroundDelete: async (ctx) => {
       const { id } = ctx.arguments;

@@ -10,6 +10,10 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
 const { getRFI, listRFIs } = require("../../../services/RFIService");
 const {
+  getCustomUserType,
+  listCustomUserType,
+} = require("../../../services/CustomUserTypeService");
+const {
   getRequest,
   listRequests,
 } = require("../../../services/RequestService");
@@ -647,48 +651,6 @@ async function listGmailMessages() {
   try {
     const param = {
       TableName: "GmailMessageTable",
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function getCustomUserType(data) {
-  try {
-    const param = {
-      TableName: "CustomUserTypeTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const cmd = new GetItemCommand(param);
-    const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function listCustomUserType() {
-  try {
-    const param = {
-      TableName: "CustomUserTypeTable",
     };
 
     const cmd = new ScanCommand(param);
