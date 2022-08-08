@@ -178,6 +178,11 @@ custom:
         field: clientMatters
         request: false
         response: false
+      - dataSource: LambdaUserDS
+        type: User
+        field: customUserType
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: userColumnSettings
