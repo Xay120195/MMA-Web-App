@@ -175,7 +175,7 @@ async function listGmailMessageAttachments(ctx) {
       TableName: "GmailMessageAttachment",
       IndexName: "byMessage",
       KeyConditionExpression: "messageId = :messageId",
-      FilterExpression: "isDeleted = :isDeleted",
+      //FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
         ":messageId": id,
         //":isDeleted": isDeleted,
