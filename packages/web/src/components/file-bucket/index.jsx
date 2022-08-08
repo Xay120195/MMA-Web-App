@@ -1,18 +1,18 @@
-import '../../assets/styles/BlankState.css';
-import '../../assets/styles/custom-styles.css';
-import '../../assets/styles/FileBucket.css';
+import "../../assets/styles/BlankState.css";
+import "../../assets/styles/custom-styles.css";
+import "../../assets/styles/FileBucket.css";
 
-import * as IoIcons from 'react-icons/io';
+import * as IoIcons from "react-icons/io";
 
-import { AiFillTags, AiOutlineDownload } from 'react-icons/ai';
+import { AiFillTags, AiOutlineDownload } from "react-icons/ai";
 import {
   BsArrowLeft,
   BsFillTrashFill,
   BsSortDown,
   BsSortUpAlt,
-} from 'react-icons/bs';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { FaRegFileAudio, FaRegFileVideo, FaSort } from 'react-icons/fa';
+} from "react-icons/bs";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
 import {
   FiChevronDown,
   FiChevronUp,
@@ -20,7 +20,7 @@ import {
   FiChevronsUp,
   FiCopy,
   FiUpload,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 import {
   GrDocument,
   GrDocumentExcel,
@@ -29,44 +29,50 @@ import {
   GrDocumentText,
   GrDocumentTxt,
   GrDocumentWord,
-} from 'react-icons/gr';
-import { MdArrowBackIos, MdDragIndicator } from 'react-icons/md';
+} from "react-icons/gr";
+import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import React, {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-} from 'react';
-import { Redirect, useHistory } from 'react-router-dom';
+} from "react";
+import { Redirect, useHistory } from "react-router-dom";
 
-import { API } from 'aws-amplify';
-import { AppRoutes } from '../../constants/AppRoutes';
-import { Auth } from 'aws-amplify';
-import { BiArrowToTop } from 'react-icons/bi';
-import BlankState from '../blank-state';
+import { API } from "aws-amplify";
+import { AppRoutes } from "../../constants/AppRoutes";
+import { Auth } from "aws-amplify";
+import { BiArrowToTop } from "react-icons/bi";
+import BlankState from "../blank-state";
 import BlankStateMobile from "../mobile-blank-state";
-import CreatableSelect from 'react-select/creatable';
-import DatePicker from 'react-datepicker';
-import FilterLabels from './filter-labels-modal';
-import Illustration from '../../assets/images/no-data.svg';
-import { Link } from 'react-router-dom';
-import Loading from '../loading/loading';
-import Multiselect from 'multiselect-react-dropdown';
-import NoResultState from '../no-result-state';
-import RemoveFileModal from './remove-file-modal';
-import ScrollToTop from 'react-scroll-to-top';
-import SessionTimeout from '../session-timeout/session-timeout-modal';
-import ToastNotification from '../toast-notification';
-import UploadLinkModal from './file-upload-modal';
-import dateFormat from 'dateformat';
-import ellipsis from '../../shared/ellipsis';
-import imgLoading from '../../assets/images/loading-circle.gif';
-import { useIdleTimer } from 'react-idle-timer';
-import { useParams } from 'react-router-dom';
-import useWindowDimensions from '../../shared/windowDimensions';
+import CreatableSelect from "react-select/creatable";
+import DatePicker from "react-datepicker";
+import FilterLabels from "./filter-labels-modal";
+import Illustration from "../../assets/images/no-data.svg";
+import { Link } from "react-router-dom";
+import Loading from "../loading/loading";
+import Multiselect from "multiselect-react-dropdown";
+import NoResultState from "../no-result-state";
+import RemoveFileModal from "./remove-file-modal";
+import ScrollToTop from "react-scroll-to-top";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import ToastNotification from "../toast-notification";
+import UploadLinkModal from "./file-upload-modal";
+import dateFormat from "dateformat";
+import ellipsis from "../../shared/ellipsis";
+import imgLoading from "../../assets/images/loading-circle.gif";
+import { useIdleTimer } from "react-idle-timer";
+import { useParams } from "react-router-dom";
+import useWindowDimensions from "../../shared/windowDimensions";
 import "../../assets/styles/Mobile.css";
-import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
+import {
+  List,
+  AutoSizer,
+  CellMeasurer,
+  CellMeasurerCache,
+  WindowScroller,
+} from "react-virtualized";
 //import AccessControl from "../../shared/accessControl";
 import { handleSaveBrief } from "./handle-save-brief";
 import { mCreateBrief } from "./handle-save-brief";

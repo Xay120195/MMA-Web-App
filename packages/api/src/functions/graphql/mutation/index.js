@@ -1258,6 +1258,7 @@ async function createBrief(data) {
       date: data.date ? data.date : null,
       createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
+      labelId: data.labelId ? data.labelId : null
     };
 
     const param = marshall(rawParams);
@@ -3266,12 +3267,13 @@ const resolvers = {
       return await createGmailMessageAttachment(ctx.arguments);
     },
     gmailMessageAttachmentUpdate: async (ctx) => {
-      const { id, details } = ctx.arguments;
+      const { id, details, isDeleted } = ctx.arguments;
       const data = {
         updatedAt: toUTC(new Date()),
       };
 
       if (details !== undefined) data.details = details;
+      if (isDeleted !== undefined) data.isDeleted = isDeleted;
 
       return await updateGmailMessageAttachment(id, data);
     },
