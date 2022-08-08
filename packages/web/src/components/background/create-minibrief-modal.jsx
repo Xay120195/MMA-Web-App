@@ -42,7 +42,7 @@ export default function BriefModal(props) {
     `;
 
   const mCreateBrief = `
-  mutation MyMutation($clientMatterId: String, $date: AWSDateTime, $name: String, $order: Int) {
+  mutation createBrief($clientMatterId: String, $date: AWSDateTime, $name: String, $order: Int) {
     briefCreate(clientMatterId: $clientMatterId, date: $date, name: $name, order: $order) {
       id
       name
