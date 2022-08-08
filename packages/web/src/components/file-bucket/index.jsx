@@ -3286,21 +3286,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       />
                                                                     </span>
                                                                   </div>
-                                                                  <span>
-                                                                    <br />
-                                                                    <GrDocumentExcel
-                                                                      className="text-blue-400 mx-1 text-2xl cursor-pointer"
-                                                                      onClick={() =>
-                                                                        createBackgroundFromLabel(
-                                                                          data.id,
-                                                                          {
-                                                                            id: "129385a1-fed5-4317-bcee-2c6217b6f9c6",
-                                                                            name: "Label ADRIAN",
-                                                                          }
-                                                                        )
-                                                                      }
-                                                                    />
-                                                                  </span>
                                                                   <p className="text-red-400 filename-validation">
                                                                     {data.id ===
                                                                       fileId &&
