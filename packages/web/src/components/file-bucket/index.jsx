@@ -155,7 +155,7 @@ export default function FileBucket() {
   let history = useHistory();
 
   const [briefNames, setBriefNames] = useState(null);
-
+  const [ShowLabel, setShowLabel] = useState([{ index: -1 }]);
   var moment = require("moment");
 
   const cache = useRef(
@@ -796,10 +796,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleLabelChanged = async (id, e, existingLabels) => {
-    //console.log("event", e);
+    console.log("event", e);
 
     var labelsList = [];
 
+    {
+      /*
     for (var i = 0; i < e.length; i++) {
       if (e[i].__isNew__) {
         const createLabel = await API.graphql({
@@ -809,8 +811,41 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             name: e[i].label,
           },
         });
+        console.log("createLabel", createLabel);
+        let updateLabel = labels;
+        updateLabel.push({
+          value: createLabel.data.labelCreate.id,
+          label: createLabel.data.labelCreate.name,
+        });
+        setLabels(updateLabel);
+        labelsList = [
+          ...labelsList,
+          {
+            id: createLabel.data.labelCreate.id,
+            name: createLabel.data.labelCreate.name,
+          },
+        ];
+      } else {
+        if (e[i]) {
+          labelsList = [...labelsList, { id: e[i].value, name: e[i].label }];
+        } else {
+          labelsList = [...labelsList, { id: e.value, name: e.label }];
+        }
+      }
+    }
+ */
+    }
+    if (e.label) {
+      if (e.__isNew__) {
+        const createLabel = await API.graphql({
+          query: mCreateLabel,
+          variables: {
+            clientMatterId: matter_id,
+            name: e.label,
+          },
+        });
 
-        //console.log(createLabel);
+        console.log("createLabel", createLabel);
         let updateLabel = labels;
         updateLabel.push({
           value: createLabel.data.labelCreate.id,
@@ -826,12 +861,24 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             name: createLabel.data.labelCreate.name,
           },
         ];
+
+        const addBrief = await API.graphql({
+          query: mCreateBrief,
+          variables: {
+            clientMatterId: matter_id,
+            name: e.label,
+            date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
+            order: 0,
+          },
+        });
+
+        console.log("brief", addBrief);
       } else {
-        labelsList = [...labelsList, { id: e[i].value, name: e[i].label }];
+        labelsList = [...labelsList, { id: e.value, name: e.label }];
       }
     }
 
-    //console.log("collectedlabels", labelsList);
+    console.log("collectedlabels", labelsList);
 
     const request = await API.graphql({
       query: mTagFileLabel,
@@ -2953,7 +3000,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                               >
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top w-1/12"
+                                                                  className="px-2 py-3 align-top"
+                                                                  style={{
+                                                                    minWidth:
+                                                                      "5%",
+                                                                    width:
+                                                                      "5.5%",
+                                                                  }}
                                                                 >
                                                                   <div className="grid grid-cols-1 border-l-2">
                                                                     <div className="inline-flex mb-16">
@@ -3295,15 +3348,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-1/4"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-5/12"
                                                                 >
                                                                   <div className="flex mb-12">
                                                                     <span
                                                                       className={
                                                                         data.id ===
                                                                         descriptionClassId
-                                                                          ? "w-96 p-2 font-poppins h-full mx-2"
-                                                                          : "w-96 p-2 font-poppins h-full mx-2 single-line"
+                                                                          ? "w-full p-2 font-poppins h-full mx-2"
+                                                                          : "w-full p-2 font-poppins h-full mx-2 single-line"
                                                                       }
                                                                       style={{
                                                                         cursor:
@@ -3499,8 +3552,109 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-1/6"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/6"
                                                                 >
+                                                                  {/*New label starts here*/}
+
+                                                                  <button
+                                                                    onClick={() => {
+                                                                      if (
+                                                                        ShowLabel[0]
+                                                                          .index ===
+                                                                        index
+                                                                      ) {
+                                                                        setShowLabel(
+                                                                          [
+                                                                            {
+                                                                              index:
+                                                                                -1,
+                                                                            },
+                                                                          ]
+                                                                        );
+                                                                      } else {
+                                                                        setShowLabel(
+                                                                          [
+                                                                            {
+                                                                              index:
+                                                                                index,
+                                                                            },
+                                                                          ]
+                                                                        );
+                                                                      }
+                                                                    }}
+                                                                    className={`flex flex-row justify-center items-center border border-gray-300 px-1 py-1 mr-2 focus:ring mt-4 shadow-md`}
+                                                                    style={{
+                                                                      width:
+                                                                        "110px",
+                                                                    }}
+                                                                  >
+                                                                    {ShowLabel[0]
+                                                                      .index ===
+                                                                    index
+                                                                      ? "Cancel Label"
+                                                                      : "Add Label"}
+                                                                  </button>
+
+                                                                  {ShowLabel[0]
+                                                                    .index ===
+                                                                    index && (
+                                                                    <CreatableSelect
+                                                                      menuPortalTarget={
+                                                                        document.body
+                                                                      }
+                                                                      defaultValue={() =>
+                                                                        defaultOptions(
+                                                                          data
+                                                                            .labels
+                                                                            .items
+                                                                        )
+                                                                      }
+                                                                      styles={{
+                                                                        container:
+                                                                          (
+                                                                            base
+                                                                          ) => ({
+                                                                            ...base,
+                                                                            zIndex:
+                                                                              "1000",
+                                                                          }),
+                                                                        control:
+                                                                          (
+                                                                            base,
+                                                                            state
+                                                                          ) => ({
+                                                                            ...base,
+                                                                            position:
+                                                                              "fixed",
+                                                                            minWidth:
+                                                                              "250px",
+                                                                          }),
+                                                                      }}
+                                                                      options={
+                                                                        labels
+                                                                      }
+                                                                      isClearable
+                                                                      isSearchable
+                                                                      openMenuOnClick={
+                                                                        true
+                                                                      }
+                                                                      onChange={(
+                                                                        e
+                                                                      ) =>
+                                                                        handleLabelChanged(
+                                                                          data.id,
+                                                                          e,
+                                                                          data
+                                                                            .labels
+                                                                            .items
+                                                                        )
+                                                                      }
+                                                                      placeholder="Labels"
+                                                                      className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                                                    />
+                                                                  )}
+
+                                                                  {/*Old Label starts here
                                                                   <CreatableSelect
                                                                     defaultValue={() =>
                                                                       defaultOptions(
@@ -3531,7 +3685,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     }
                                                                     placeholder="Labels"
                                                                     className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                                                  />
+                                                                  />*/}
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
