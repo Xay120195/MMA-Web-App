@@ -22,7 +22,7 @@ import {
   FiUpload,
 } from "react-icons/fi";
 import {
-  GrDocument,
+  // GrDocument,
   GrDocumentExcel,
   GrDocumentImage,
   GrDocumentPdf,
@@ -32,13 +32,16 @@ import {
 } from "react-icons/gr";
 import { MdArrowBackIos, MdDragIndicator } from "react-icons/md";
 import React, {
-  useCallback,
+  // useCallback,
   useEffect,
-  useMemo,
+  // useMemo,
   useRef,
   useState,
 } from "react";
-import { Redirect, useHistory } from "react-router-dom";
+import {
+  // Redirect,
+  useHistory,
+} from "react-router-dom";
 
 import { API } from "aws-amplify";
 import { AppRoutes } from "../../constants/AppRoutes";
@@ -74,12 +77,11 @@ import {
   WindowScroller,
 } from "react-virtualized";
 //import AccessControl from "../../shared/accessControl";
-import { handleSaveBrief } from "./handle-save-brief";
-import { mCreateBrief } from "./handle-save-brief";
+
 export var selectedRows = [];
 export var selectedCompleteDataRows = [];
 export var pageSelectedLabels;
-var moment = require("moment");
+
 export default function FileBucket() {
   let tempArr = [];
   let nameArr = [];
@@ -148,12 +150,13 @@ export default function FileBucket() {
   const [copyBgIds, setCopyBgIds] = useState(null);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [ShowLabel, setShowLabel] = useState([{ index: -1 }]);
   const itemsRef = useRef([]);
   const bool = useRef(false);
   let history = useHistory();
 
   const [briefNames, setBriefNames] = useState(null);
+  const [ShowLabel, setShowLabel] = useState([{ index: -1 }]);
+  var moment = require("moment");
 
   const cache = useRef(
     new CellMeasurerCache({
@@ -808,16 +811,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             name: e[i].label,
           },
         });
-
         console.log("createLabel", createLabel);
         let updateLabel = labels;
         updateLabel.push({
           value: createLabel.data.labelCreate.id,
           label: createLabel.data.labelCreate.name,
         });
-
         setLabels(updateLabel);
-
         labelsList = [
           ...labelsList,
           {
@@ -1103,14 +1103,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   const defaultOptions = (items) => {
-    console.log("items", items);
     if (items !== null) {
       const newOptions = items.map(({ id: value, name: label }) => ({
         value,
         label,
       }));
-      console.log("optionscheck", newOptions[0]);
-      return newOptions[0];
+      console.log("optionscheck", newOptions);
+      return newOptions;
     } else {
       return null;
     }
@@ -2057,8 +2056,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setLastSelectedItem(value);
 
     if (nextValue.length > 0) {
-      const isf1 = matterFiles.filter((item) => nextValue.includes(item.id));
-      const xmatterFiles = isf1.map(
+      const mf = matterFiles.filter((item) => nextValue.includes(item.id));
+      const xmatterFiles = mf.map(
         ({
           id,
           backgrounds,
@@ -2323,6 +2322,64 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     );
   }
 
+  const mCreateBrief = `
+  mutation createBrief($clientMatterId: String, $date: AWSDateTime, $name: String, $order: Int) {
+    briefCreate(clientMatterId: $clientMatterId, date: $date, name: $name, order: $order) {
+      id
+      name
+      date
+      createdAt
+    }
+  }
+  `;
+
+  const createBackgroundFromLabel = async (row_id, label) => {
+    const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
+
+    const params = {
+      clientMatterId: matter_id,
+      name: label.name,
+      date: null,
+      order: 0,
+      labelId: label.id,
+    };
+
+    // Create Brief
+    const createBrief = await API.graphql({
+      query: mCreateBrief,
+      variables: params,
+    });
+
+    const briefId = createBrief.data.briefCreate.id,
+      fileId = mf[0].id,
+      fileDetails = mf[0].details,
+      fileDate =
+        mf[0].date != null
+          ? moment.utc(moment(new Date(mf[0].date), "YYYY-MM-DD")).toISOString()
+          : null;
+
+    // Create Background
+    const createBackground = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        briefId: briefId,
+        description: fileDetails,
+        date: fileDate,
+      },
+    });
+
+    if (createBackground.data.backgroundCreate.id !== null) {
+      // Tag File to Background
+      await API.graphql({
+        query: mUpdateBackgroundFile,
+        variables: {
+          backgroundId: createBackground.data.backgroundCreate.id,
+          files: [{ id: fileId }],
+        },
+      });
+    }
+  };
+
   useEffect(() => {
     console.log("TRIGGERED");
     if (isExpandAllActive) {
@@ -2446,7 +2503,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           </p>
         </div>
         {/* END */}
-        <div className="flex sm:flex-none sm-block pt-3 sm:py-5 sm:bg-white sm:z-40 sm:absolute sm:mt-10">
+        <div className="flex sm:flex-none sm-block pt-3 sm:py-5 sm:bg-white sm:z-40 sm:absolute sm:mt-10 ">
           <p className="hidden sm:block font-bold text-3xl">
             File Bucket&nbsp;<span className="text-3xl">of</span>&nbsp;
             <span className="font-semibold text-3xl">
@@ -2945,9 +3002,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                   {...provider.dragHandleProps}
                                                                   className="px-2 py-3 align-top"
                                                                   style={{
-                                                                    width:
-                                                                      "5.5%",
                                                                     minWidth:
+                                                                      "5%",
+                                                                    width:
                                                                       "5.5%",
                                                                   }}
                                                                 >
