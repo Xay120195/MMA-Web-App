@@ -5,7 +5,6 @@ const {
   DeleteItemCommand,
   QueryCommand,
   BatchWriteItemCommand,
-  BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { v4 } = require("uuid");
@@ -26,6 +25,13 @@ const {
   createCustomUserType,
   updateCustomUserType,
 } = require("../../../services/CustomUserTypeService");
+
+const {
+  createTeam,
+  updateTeam,
+  deleteTeam,
+} = require("../../../services/TeamService");
+
 const {
   createMatterFile,
   updateMatterFile,
@@ -3055,6 +3061,23 @@ const resolvers = {
       if (description !== undefined) data.description = description;
 
       return await updateGmailMessageDescription(id, data);
+    },
+    teamCreate: async (ctx) => {
+      return await createTeam(ctx.arguments);
+    },
+    teamUpdate: async (ctx) => {
+      const { id, name } = ctx.arguments;
+      const data = {
+        updatedAt: toUTC(new Date()),
+      };
+
+      if (name !== undefined) data.name = name;
+
+      return await updateTeam(id, data);
+    },
+    teamDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      return await deleteTeam(id);
     },
   },
 };

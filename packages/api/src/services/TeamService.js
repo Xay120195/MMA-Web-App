@@ -4,16 +4,18 @@ const {
   GetItemCommand,
   ScanCommand,
   UpdateItemCommand,
+  QueryCommand,
+  DeleteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { v4 } from "uuid";
 const { toUTC } = require("../shared/toUTC");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
-export async function getCustomUserType(data) {
+export async function getTeam(data) {
   let resp = {};
   try {
     const param = {
-      TableName: "CustomUserTypeTable",
+      TableName: "TeamTable",
       Key: marshall({
         id: data.id,
       }),
@@ -32,11 +34,11 @@ export async function getCustomUserType(data) {
   return resp;
 }
 
-export async function listCustomUserTypes() {
+export async function listTeams() {
   let resp = {};
   try {
     const param = {
-      TableName: "CustomUserTypeTable",
+      TableName: "TeamTable",
     };
 
     const cmd = new ScanCommand(param);
@@ -53,7 +55,7 @@ export async function listCustomUserTypes() {
   return resp;
 }
 
-export async function createCustomUserType(data) {
+export async function createTeam(data) {
   let resp = {};
   try {
     const rawParams = {
@@ -64,29 +66,27 @@ export async function createCustomUserType(data) {
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
-      TableName: "CustomUserTypeTable",
+      TableName: "TeamTable",
       Item: param,
     });
 
     const request = await ddbClient.send(cmd);
 
     if (request) {
-      const companyCustomUserTypeParams = {
+      const companyTeamParams = {
         id: v4(),
-        customUserTypeId: rawParams.id,
+        teamId: rawParams.id,
         companyId: data.companyId,
         createdAt: toUTC(new Date()),
       };
 
-      const companyCustomUserTypeCommand = new PutItemCommand({
-        TableName: "CompanyCustomUserTypeTable",
-        Item: marshall(companyCustomUserTypeParams),
+      const companyTeamCommand = new PutItemCommand({
+        TableName: "CompanyTeamTable",
+        Item: marshall(companyTeamParams),
       });
 
-      const companyCustomUserTypeRequest = await ddbClient.send(
-        companyCustomUserTypeCommand
-      );
-      resp = companyCustomUserTypeRequest
+      const companyTeamRequest = await ddbClient.send(companyTeamCommand);
+      resp = companyTeamRequest
         ? {
             ...rawParams,
             companyId: data.companyId,
@@ -104,7 +104,7 @@ export async function createCustomUserType(data) {
   return resp;
 }
 
-export async function updateCustomUserType(id, data) {
+export async function updateTeam(id, data) {
   let resp = {};
   try {
     const {
@@ -119,7 +119,7 @@ export async function updateCustomUserType(id, data) {
     };
 
     const cmd = new UpdateItemCommand({
-      TableName: "CustomUserTypeTable",
+      TableName: "TeamTable",
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
@@ -127,6 +127,53 @@ export async function updateCustomUserType(id, data) {
     });
     const request = await ddbClient.send(cmd);
     resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function deleteTeam(id) {
+  let resp = {};
+  try {
+    const companyTeamParams = {
+      TableName: "CompanyTeamTable",
+      IndexName: "byTeam",
+      KeyConditionExpression: "teamId = :teamId",
+      ExpressionAttributeValues: marshall({
+        ":teamId": id,
+      }),
+      ProjectionExpression: "id", // fetch id of CompanyTeamTable only
+    };
+
+    const companyTeamCmd = new QueryCommand(companyTeamParams);
+    const companyTeamResult = await ddbClient.send(companyTeamCmd);
+
+    const companyTeamId = companyTeamResult.Items[0];
+
+    const deleteCompanyTeamCommand = new DeleteItemCommand({
+      TableName: "CompanyTeamTable",
+      Key: companyTeamId,
+    });
+
+    const deleteCompanyTeamResult = await ddbClient.send(
+      deleteCompanyTeamCommand
+    );
+
+    if (deleteCompanyTeamResult) {
+      const cmd = new DeleteItemCommand({
+        TableName: "TeamTable",
+        Key: marshall({ id }),
+      });
+      const request = await ddbClient.send(cmd);
+
+      resp = request ? { id: id } : {};
+    }
   } catch (e) {
     resp = {
       error: e.message,
