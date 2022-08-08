@@ -38,6 +38,7 @@ type Brief {
   ): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+  labelId: ID # not null if brief is created through label
 }
 
 type Client {
@@ -596,6 +597,7 @@ type Mutation {
     date: AWSDateTime
     clientMatterId: String
     order: Int
+    labelId: ID
   ): Brief
   briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
