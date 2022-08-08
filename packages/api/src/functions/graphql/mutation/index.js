@@ -1258,6 +1258,7 @@ async function createBrief(data) {
       date: data.date ? data.date : null,
       createdAt: toUTC(new Date()),
       order: data.order ? data.order : 0,
+      labelId: data.labelId ? data.labelId : null
     };
 
     const param = marshall(rawParams);
