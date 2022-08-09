@@ -78,9 +78,8 @@ const TableUnsavedInfo = ({
   momentTZ,
   qGmailMessagesbyCompany,
   setAttachmentIsDeleted,
-  attachmentIsDeleted,
   setAttachmentId,
-  attachmentId,
+  lastCounter
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -544,7 +543,7 @@ const TableUnsavedInfo = ({
           </tr>
         </thead>
         <tbody
-          className="bg-white divide-y divide-gray-200"
+          className="bg-white divide-y divide-gray-200 mb-8"
           style={{ width: "100%", height: "100vh" }}
         >
           {waitUnSaved ? (
@@ -554,7 +553,8 @@ const TableUnsavedInfo = ({
               </td>
             </tr>
           ) : (
-            <WindowScroller key={0}>
+            <WindowScroller key={0}
+            >
               {({ height, scrollTop }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -562,7 +562,7 @@ const TableUnsavedInfo = ({
                       autoHeight
                       scrollTop={scrollTop}
                       width={width}
-                      height={Infinity}
+                      height={height}
                       rowHeight={cache.current.rowHeight}
                       deferredMeasurementCache={cache.current}
                       rowCount={unSavedEmails.length}
@@ -593,7 +593,6 @@ const TableUnsavedInfo = ({
                                 border: "1px solid #f0f0f0",
                                 overflow: "unset",
                               }}
-                              //ref={registerChild}
                               key={key}
                             >
                               <td className="p-2 align-top h-full w-10">
@@ -786,8 +785,8 @@ const TableUnsavedInfo = ({
                                             }
                                         ></div>
                                         {!item_attach.isDeleted || item_attach.isDeleted === null ? 
-                                          <FaTrash 
-                                            className="mt-2 ml-2 cursor-pointer hover:text-red-700" 
+                                          <span 
+                                            className="mt-2 ml-2 cursor-pointer hover:text-red-700 font-bold" 
                                             onClick={(e) =>
                                               handleDeleteAttachment(
                                                 item_attach.id,
@@ -796,7 +795,9 @@ const TableUnsavedInfo = ({
                                                 e
                                               )
                                             }
-                                          />
+                                          >
+                                            X
+                                          </span>
                                           :
                                           <button
                                           className="bg-white-500 hover:bg-gray-700 hover:text-white text-gray font-bold py-2 px-1 rounded ml-2 cursor-pointer"
