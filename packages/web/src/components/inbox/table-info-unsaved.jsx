@@ -55,6 +55,13 @@ query getAttachmentDownloadLink($id: String) {
   }
 }`;
 
+const mUpdateAttachmentStatus = `
+mutation updateAttachment($id: ID, $isDeleted: Boolean) {
+  gmailMessageAttachmentUpdate(id: $id, isDeleted: $isDeleted) {
+    id
+  }
+}`;
+
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
@@ -70,6 +77,10 @@ const TableUnsavedInfo = ({
   userTimeZone,
   momentTZ,
   qGmailMessagesbyCompany,
+  setAttachmentIsDeleted,
+  attachmentIsDeleted,
+  setAttachmentId,
+  attachmentId,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -489,6 +500,23 @@ const TableUnsavedInfo = ({
     });
   };
 
+  const handleDeleteAttachment = async (id, index, val, e) => {
+    const params = {
+      query: mUpdateAttachmentStatus,
+      variables: {
+        id: id,
+        isDeleted: val
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      console.log(result);
+      setAttachmentIsDeleted(val);
+      setAttachmentId(index);
+      getUnSavedEmails(emailFilters)
+    });
+  }
+
   return (
     <>
       <table
@@ -725,7 +753,12 @@ const TableUnsavedInfo = ({
                                             : ""}
                                         </p>
                                         <div
-                                          className="p-2 w-full h-full font-poppins rounded-sm float-right"
+                                          className=
+                                          {!item_attach.isDeleted || item_attach.isDeleted === null ?
+                                            "p-2 w-full h-full font-poppins rounded-sm float-right"
+                                            :
+                                            "p-2 w-full h-full font-poppins rounded-sm float-right bg-gray-300"
+                                          }
                                           style={{
                                             border: "solid 1px #c4c4c4",
                                             cursor: "auto",
@@ -747,9 +780,36 @@ const TableUnsavedInfo = ({
                                               item.id
                                             )
                                           }
-                                          contentEditable={true}
+                                          contentEditable=
+                                            {!item_attach.isDeleted || item_attach.isDeleted === null ? 
+                                              true : false
+                                            }
                                         ></div>
-                                        <FaTrash className="mt-2 ml-2 cursor-pointer hover:text-red-700" />
+                                        {!item_attach.isDeleted || item_attach.isDeleted === null ? 
+                                          <FaTrash 
+                                            className="mt-2 ml-2 cursor-pointer hover:text-red-700" 
+                                            onClick={(e) =>
+                                              handleDeleteAttachment(
+                                                item_attach.id,
+                                                index,
+                                                true,
+                                                e
+                                              )
+                                            }
+                                          />
+                                          :
+                                          <button
+                                          className="bg-white-500 hover:bg-gray-700 hover:text-white text-gray font-bold py-2 px-1 rounded ml-2 cursor-pointer"
+                                          onClick={(e) =>
+                                            handleDeleteAttachment(
+                                              item_attach.id,
+                                              index,
+                                              false,
+                                              e
+                                            )
+                                          }
+                                          >Cancel</button>
+                                        }
                                       </div>
                                     </React.Fragment>
                                   )
