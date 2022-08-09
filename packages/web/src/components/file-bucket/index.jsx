@@ -862,40 +862,42 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           },
         ];
 
-        const addBrief = await API.graphql({
-          query: mCreateBrief,
-          variables: {
-            clientMatterId: matter_id,
-            name: e.label,
-            date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
-            order: 0,
-          },
-        });
+        // const addBrief = await API.graphql({
+        //   query: mCreateBrief,
+        //   variables: {
+        //     clientMatterId: matter_id,
+        //     name: e.label,
+        //     date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
+        //     order: 0,
+        //   },
+        // });
 
-        console.log("brief", addBrief);
+        // console.log("brief", addBrief);
       } else {
         labelsList = [...labelsList, { id: e.value, name: e.label }];
       }
     }
 
-    console.log("collectedlabels", labelsList);
+    // console.log("collectedlabels", labelsList);
 
-    const request = await API.graphql({
-      query: mTagFileLabel,
-      variables: {
-        fileId: id,
-        labels: labelsList,
-      },
-    });
+    // const request = await API.graphql({
+    //   query: mTagFileLabel,
+    //   variables: {
+    //     fileId: id,
+    //     labels: labelsList,
+    //   },
+    // });
+    createBackgroundFromLabel(id, {id: e.value, name: e.label});
+    
 
-    if (request) {
-      setResultMessage("Updating labels");
+    // if (request) {
+      setResultMessage("Creating Background..");
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
         getMatterFiles(1);
       }, 2000);
-    }
+    // }
   };
 
   const convertArrayToObject = (array) => {
@@ -2852,10 +2854,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                     style={{ position: "sticky", top: "235px" }}
                                   >
                                     <tr>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap"
+                                      style={{minWidth: "5%", width: "5.5%"}}>
                                         Item No.
                                       </th>
-                                      <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
+                                      <th className="px-2 py-4 text-center inline-flex whitespace-nowrap w-1/12">
                                         <span className="ml-4">
                                           Date &nbsp;
                                         </span>
@@ -2900,16 +2903,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           }
                                         })()}
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/12">
                                         Name
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-5/12">
                                         Description
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/12">
                                         Labels
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/12">
                                         Page Reference
                                       </th>
                                     </tr>
@@ -3151,7 +3154,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-1/6"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/12"
                                                                 >
                                                                   <div className="inline-flex">
                                                                     {data.type
@@ -3552,7 +3555,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/6"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/12"
                                                                 >
                                                                   {/*New label starts here*/}
 
@@ -3625,9 +3628,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ) => ({
                                                                             ...base,
                                                                             position:
-                                                                              "fixed",
+                                                                              "absolute",
                                                                             minWidth:
-                                                                              "250px",
+                                                                              "230px",
                                                                           }),
                                                                       }}
                                                                       options={
@@ -3650,7 +3653,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         )
                                                                       }
                                                                       placeholder="Labels"
-                                                                      className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                                                      className="mt-2 -mb-2 absolute w-full placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                                                     />
                                                                   )}
 
@@ -3686,10 +3689,70 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     placeholder="Labels"
                                                                     className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                                                   />*/}
+                                                                  <div className="grid grid-cols-1">
+                                                                    <div className="flex mb-14"></div>
+
+                                                                    {data.backgrounds.items
+                                                                      .sort(
+                                                                        (
+                                                                          a,
+                                                                          b
+                                                                        ) =>
+                                                                          a.order >
+                                                                          b.order
+                                                                            ? 1
+                                                                            : -1
+                                                                      )
+                                                                      .map(
+                                                                        (
+                                                                          background,
+                                                                          index
+                                                                        ) =>
+                                                                          background
+                                                                            .briefs
+                                                                            .items[0] ===
+                                                                            null ||
+                                                                          background
+                                                                            .briefs
+                                                                            .items[0] ===
+                                                                            undefined ? (
+                                                                            <div
+                                                                              key={
+                                                                                background.id
+                                                                              }
+                                                                              index={
+                                                                                index
+                                                                              }
+                                                                            ></div>
+                                                                          ) : (
+                                                                            <div
+                                                                              className="h-10.5 w-full py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                              key={
+                                                                                background.id
+                                                                              }
+                                                                              index={
+                                                                                index
+                                                                              }
+                                                                              onClick={(
+                                                                                event
+                                                                              ) =>
+                                                                                handleRedirectLink(
+                                                                                  event,
+                                                                                  background.id
+                                                                                )
+                                                                              }
+                                                                            >
+                                                                              <b>
+                                                                                {background.briefs.items[0].name}
+                                                                              </b>
+                                                                            </div>
+                                                                          )
+                                                                      )}
+                                                                  </div>
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/6"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/12"
                                                                 >
                                                                   <div className="grid grid-cols-1">
                                                                     <div className="flex mb-24"></div>
@@ -3729,7 +3792,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                             ></div>
                                                                           ) : (
                                                                             <div
-                                                                              className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                              className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
                                                                               key={
                                                                                 background.id
                                                                               }
@@ -3746,12 +3809,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                               }
                                                                             >
                                                                               <b>
-                                                                                {background.order +
-                                                                                  ". " +
-                                                                                  background
-                                                                                    .briefs
-                                                                                    .items[0]
-                                                                                    .name}
+                                                                                {"Row" + " " + background.order}
                                                                               </b>
                                                                             </div>
                                                                           )
