@@ -146,6 +146,7 @@ const ActionButtons = ({
 
 
   const handleEmails = async (status) => {
+    setSaveLoading(true);
     // Soon will change this to bulk mutation 
     if(status) {
       var clientMatterId = "";
