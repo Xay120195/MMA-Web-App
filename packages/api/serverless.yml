@@ -782,6 +782,11 @@ custom:
         field: teams
         request: false
         response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: teams
+        request: false
+        response: false
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA
