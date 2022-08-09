@@ -509,8 +509,6 @@ async function getUserColumnSettings(data) {
       userColumnSettingsCommand
     );
 
-    //const userColumnSettings = userColumnSettingsRequest.Items.map((i) => unmarshall(i));
-
     const columnSettingsIds = userColumnSettingsRequest.Items.map((i) =>
       unmarshall(i)
     ).map((f) => marshall({ id: f.columnSettings.id }));
@@ -547,7 +545,6 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    //console.log(result);
     resp =
       Object.keys(result).length !== 0 && result !== null && result !== {}
         ? result
@@ -607,8 +604,6 @@ async function getBriefByName(data) {
 
     const objCMBrief = cmBriefResult.Items.map((i) => unmarshall(i));
 
-    console.log(objCMBrief);
-
     const briefIds = objCMBrief.map((f) => marshall({ id: f.briefId }));
 
     if (briefIds.length !== 0) {
@@ -639,10 +634,10 @@ async function getBriefByName(data) {
         })
         .filter((a) => a !== undefined);
 
-      return response[0];
+      return response[0] !== undefined ? response[0] : { id: "" };
     } else {
       return {
-        items: [],
+        items: [{ id: "" }],
         nextToken: null,
       };
     }
