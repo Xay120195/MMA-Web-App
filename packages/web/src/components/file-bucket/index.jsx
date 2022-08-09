@@ -451,7 +451,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           order
           description
           date
-          briefs {
+          briefs(limit: $limit, nextToken: $nextToken, isDeleted: $isDeleted) {
             items {
               id
               name
@@ -710,12 +710,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         isDeleted: false,
         //limit: 50,
         //nextToken: next === 1 ? null : vNextToken,
+        limit: 100,
+        nextToken: null,
         sortOrder: sortOrder,
       },
     };
     await API.graphql(params).then((files) => {
       let matterFilesList = files.data.matterFiles.items;
-      console.log("matterFilesList: ", matterFilesList);
+      console.log("matterFilesList: TEST", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
       setMatterFiles(sortByOrder(matterFilesList)); // no need to use sortByOrder
@@ -1507,24 +1509,37 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
       `;
 
+  const mDeleteBackground = `mutation deleteBackground($id: ID) {
+  backgroundDelete(id: $id) {
+    id
+  }
+}`;
+
   //deleteBackgroundFromLabel
-  const handleDeleteBackground = (id) => {
+  const handleDeleteBackground = (id, background) => {
+    console.log(background);
+
+    const deletedBackground = API.graphql({
+      query: mDeleteBackground,
+      variables: {
+        id: background.id,
+      },
+    });
     const deletedId = API.graphql({
       query: mSoftDeleteBrief,
       variables: {
-        id: id,
+        id: background.briefs.items[0].id,
       },
     });
 
-    //console.log("deletedID", Promise(deletedId));
+    //console.log("deletedID", deletedId);
 
     setShowToast(true);
-    setResultMessage(`Successfully deleted a background`);
-
+    setResultMessage(`Successfully deleted a background && brief`);
+    getBriefs();
     setTimeout(() => {
       setShowToast(false);
-
-      getBriefs();
+      getMatterFiles(1);
     }, 2000);
   };
 
@@ -3954,7 +3969,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                   }
                                                                                   onClick={() =>
                                                                                     handleDeleteBackground(
-                                                                                      background.id
+                                                                                      background.id,
+                                                                                      background
                                                                                     )
                                                                                   }
                                                                                 >
