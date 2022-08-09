@@ -11,8 +11,10 @@ const { getUser, listUsers } = require("../../../services/UserService");
 const { getRFI, listRFIs } = require("../../../services/RFIService");
 const {
   getCustomUserType,
-  listCustomUserType,
+  listCustomUserTypes,
 } = require("../../../services/CustomUserTypeService");
+const { getTeam, listTeams } = require("../../../services/TeamService");
+
 const {
   getRequest,
   listRequests,
@@ -775,10 +777,16 @@ const resolvers = {
       return getAttachment(ctx.arguments);
     },
     customUserTypes: async () => {
-      return listCustomUserType();
+      return listCustomUserTypes();
     },
     customUserType: async (ctx) => {
       return getCustomUserType(ctx.arguments);
+    },
+    teams: async () => {
+      return listTeams();
+    },
+    team: async (ctx) => {
+      return getTeam(ctx.arguments);
     },
   },
 };
