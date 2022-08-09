@@ -2951,7 +2951,7 @@ const resolvers = {
       return await createBrief(ctx.arguments);
     },
     briefUpdate: async (ctx) => {
-      const { id, date, name, order } = ctx.arguments;
+      const { id, date, name, order, labelId } = ctx.arguments;
       const data = {
         updatedAt: toUTC(new Date()),
       };
@@ -2961,6 +2961,8 @@ const resolvers = {
       if (name !== undefined) data.name = name;
 
       if (order !== undefined) data.order = order;
+
+      if (labelId !== undefined) data.labelId = labelId;
 
       return await updateBrief(id, data);
     },
