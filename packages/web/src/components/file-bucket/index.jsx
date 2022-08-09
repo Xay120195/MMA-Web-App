@@ -1,7 +1,7 @@
 import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import "../../assets/styles/FileBucket.css";
-
+import { CgTrash } from "react-icons/cg";
 import * as IoIcons from "react-icons/io";
 
 import { AiFillTags, AiOutlineDownload } from "react-icons/ai";
@@ -261,6 +261,47 @@ export default function FileBucket() {
 
     console.log("result", request);
 
+    var labelsList = [];
+
+    //auto create label named 'Background'
+    if (request?.data?.matterFileBulkCreate) {
+      request.data.matterFileBulkCreate.forEach(async (matterFile) => {
+        const createLabel = await API.graphql({
+          query: mCreateLabel,
+          variables: {
+            clientMatterId: matter_id,
+            name: "Background",
+          },
+        });
+
+        console.log("createLabel", createLabel);
+        let updateLabel = labels;
+        updateLabel.push({
+          value: createLabel.data.labelCreate.id,
+          label: createLabel.data.labelCreate.name,
+        });
+
+        setLabels(updateLabel);
+
+        labelsList = [
+          ...labelsList,
+          {
+            id: createLabel.data.labelCreate.id,
+            name: createLabel.data.labelCreate.name,
+          },
+        ];
+        createBackgroundFromLabel(
+          matterFile.id,
+          {
+            id: createLabel.data.labelCreate.id,
+            name: createLabel.data.labelCreate.name,
+          },
+          matterFile,
+          true
+        );
+      });
+    }
+    //createBackgroundFromLabel(request.data.matterFileBulkCreate.id);
     //don't delete for single upload
     // const request = API.graphql({
     //   query: mCreateMatterFile,
@@ -796,7 +837,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleLabelChanged = async (id, e, existingLabels) => {
-    console.log("event", e);
+    console.log("event", e, "id", id);
 
     var labelsList = [];
 
@@ -887,16 +928,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     //     labels: labelsList,
     //   },
     // });
-    createBackgroundFromLabel(id, {id: e.value, name: e.label});
-    
+    createBackgroundFromLabel(id, { id: e.value, name: e.label });
 
     // if (request) {
-      setResultMessage("Creating Background..");
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        getMatterFiles(1);
-      }, 2000);
+    setResultMessage("Creating Background..");
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles(1);
+    }, 2000);
     // }
   };
 
@@ -1458,6 +1498,35 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     }
     `;
+
+  const mSoftDeleteBrief = `
+      mutation softDeleteBriefById($id: ID) {
+        briefSoftDelete(id: $id) {
+          id
+        }
+      }
+      `;
+
+  //deleteBackgroundFromLabel
+  const handleDeleteBackground = (id) => {
+    const deletedId = API.graphql({
+      query: mSoftDeleteBrief,
+      variables: {
+        id: id,
+      },
+    });
+
+    //console.log("deletedID", Promise(deletedId));
+
+    setShowToast(true);
+    setResultMessage(`Successfully deleted a background`);
+
+    setTimeout(() => {
+      setShowToast(false);
+
+      getBriefs();
+    }, 2000);
+  };
 
   //filter function
   const handleFilter = async (fileFilter) => {
@@ -2335,50 +2404,103 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
   `;
 
-  const createBackgroundFromLabel = async (row_id, label) => {
-    const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
+  const createBackgroundFromLabel = async (row_id, label, isNew) => {
+    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", matterFiles);
 
-    const params = {
-      clientMatterId: matter_id,
-      name: label.name,
-      date: null,
-      order: 0,
-      labelId: label.id,
-    };
+    if (isNew) {
+      const params = {
+        clientMatterId: matter_id,
+        name: label.name,
+        date: null,
+        order: 0,
+        labelId: label.id,
+      };
 
-    // Create Brief
-    const createBrief = await API.graphql({
-      query: mCreateBrief,
-      variables: params,
-    });
+      // Create Brief
+      const createBrief = await API.graphql({
+        query: mCreateBrief,
+        variables: params,
+      });
 
-    const briefId = createBrief.data.briefCreate.id,
-      fileId = mf[0].id,
-      fileDetails = mf[0].details,
-      fileDate =
-        mf[0].date != null
-          ? moment.utc(moment(new Date(mf[0].date), "YYYY-MM-DD")).toISOString()
-          : null;
+      console.log("createBrief", createBrief);
 
-    // Create Background
-    const createBackground = await API.graphql({
-      query: mCreateBackground,
-      variables: {
-        briefId: briefId,
-        description: fileDetails,
-        date: fileDate,
-      },
-    });
+      const briefId = createBrief.data.briefCreate.id,
+        fileId = row_id,
+        fileDetails = "",
+        fileDate = null;
 
-    if (createBackground.data.backgroundCreate.id !== null) {
-      // Tag File to Background
-      await API.graphql({
-        query: mUpdateBackgroundFile,
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
         variables: {
-          backgroundId: createBackground.data.backgroundCreate.id,
-          files: [{ id: fileId }],
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
         },
       });
+
+      console.log("createBackground", createBackground);
+
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
+    } else {
+      const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
+      const params = {
+        clientMatterId: matter_id,
+        name: label.name,
+        date: null,
+        order: 0,
+        labelId: label.id,
+      };
+
+      // Create Brief
+      const createBrief = await API.graphql({
+        query: mCreateBrief,
+        variables: params,
+      });
+
+      console.log("createBrief", createBrief);
+
+      const briefId = createBrief.data.briefCreate.id,
+        fileId = mf[0].id,
+        fileDetails = mf[0].details,
+        fileDate =
+          mf[0].date != null
+            ? moment
+                .utc(moment(new Date(mf[0].date), "YYYY-MM-DD"))
+                .toISOString()
+            : null;
+
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
+        },
+      });
+
+      console.log("createBackground", createBackground);
+
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
     }
   };
 
@@ -2854,8 +2976,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                     style={{ position: "sticky", top: "235px" }}
                                   >
                                     <tr>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap"
-                                      style={{minWidth: "5%", width: "5.5%"}}>
+                                      <th
+                                        className="px-2 py-4 text-center whitespace-nowrap"
+                                        style={{
+                                          minWidth: "5%",
+                                          width: "5.5%",
+                                        }}
+                                      >
                                         Item No.
                                       </th>
                                       <th className="px-2 py-4 text-center inline-flex whitespace-nowrap w-1/12">
@@ -3710,6 +3837,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         ) =>
                                                                           background
                                                                             .briefs
+                                                                            .length <
+                                                                            1 ||
+                                                                          background
+                                                                            .briefs
                                                                             .items[0] ===
                                                                             null ||
                                                                           background
@@ -3727,9 +3858,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ) : (
                                                                             <div
                                                                               className="h-10.5 w-full py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                                              key={
-                                                                                background.id
-                                                                              }
                                                                               index={
                                                                                 index
                                                                               }
@@ -3743,7 +3871,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                               }
                                                                             >
                                                                               <b>
-                                                                                {background.briefs.items[0].name}
+                                                                                {
+                                                                                  background
+                                                                                    .briefs
+                                                                                    .items[0]
+                                                                                    .name
+                                                                                }
                                                                               </b>
                                                                             </div>
                                                                           )
@@ -3775,6 +3908,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         ) =>
                                                                           background
                                                                             .briefs
+                                                                            .length <
+                                                                            1 ||
+                                                                          background
+                                                                            .briefs
                                                                             .items[0] ===
                                                                             null ||
                                                                           background
@@ -3783,35 +3920,50 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                             undefined ? (
                                                                             <div
                                                                               className="h-10.5 py-3 p-1 mb-1.5"
-                                                                              key={
-                                                                                background.id
-                                                                              }
                                                                               index={
                                                                                 index
                                                                               }
                                                                             ></div>
                                                                           ) : (
-                                                                            <div
-                                                                              className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                                              key={
-                                                                                background.id
-                                                                              }
-                                                                              index={
-                                                                                index
-                                                                              }
-                                                                              onClick={(
-                                                                                event
-                                                                              ) =>
-                                                                                handleRedirectLink(
-                                                                                  event,
-                                                                                  background.id
-                                                                                )
-                                                                              }
-                                                                            >
-                                                                              <b>
-                                                                                {"Row" + " " + background.order}
-                                                                              </b>
-                                                                            </div>
+                                                                            <>
+                                                                              <div className="flex">
+                                                                                <div
+                                                                                  className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                                  index={
+                                                                                    index
+                                                                                  }
+                                                                                  onClick={(
+                                                                                    event
+                                                                                  ) =>
+                                                                                    handleRedirectLink(
+                                                                                      event,
+                                                                                      background.id
+                                                                                    )
+                                                                                  }
+                                                                                >
+                                                                                  <b>
+                                                                                    {"Row" +
+                                                                                      " " +
+                                                                                      background.order}
+                                                                                  </b>
+                                                                                </div>
+                                                                                <div
+                                                                                  className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
+                                                                                  index={
+                                                                                    index
+                                                                                  }
+                                                                                  onClick={() =>
+                                                                                    handleDeleteBackground(
+                                                                                      background.id
+                                                                                    )
+                                                                                  }
+                                                                                >
+                                                                                  <b>
+                                                                                    <CgTrash className="" />
+                                                                                  </b>
+                                                                                </div>
+                                                                              </div>
+                                                                            </>
                                                                           )
                                                                       )}
                                                                   </div>
