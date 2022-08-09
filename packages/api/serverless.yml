@@ -256,6 +256,11 @@ custom:
         field: customUserTypeUpdate
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeDelete
+        request: false
+        response: false
       # Matter File
       - dataSource: LambdaQueryDS
         type: Query

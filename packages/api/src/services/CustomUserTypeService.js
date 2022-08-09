@@ -4,6 +4,8 @@ const {
   GetItemCommand,
   ScanCommand,
   UpdateItemCommand,
+  QueryCommand,
+  DeleteItemCommand
 } = require("@aws-sdk/client-dynamodb");
 import { v4 } from "uuid";
 const { toUTC } = require("../shared/toUTC");
@@ -127,6 +129,53 @@ export async function updateCustomUserType(id, data) {
     });
     const request = await ddbClient.send(cmd);
     resp = request ? param : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function deleteCustomUserType(id) {
+  let resp = {};
+  try {
+    const companyCustomUserTypeParams = {
+      TableName: "CompanyCustomUserTypeTable",
+      IndexName: "byCustomUserType",
+      KeyConditionExpression: "customUserTypeId = :customUserTypeId",
+      ExpressionAttributeValues: marshall({
+        ":customUserTypeId": id,
+      }),
+      ProjectionExpression: "id", // fetch id of CompanyCustomUserTypeTable only
+    };
+
+    const companyCustomUserTypeCmd = new QueryCommand(companyCustomUserTypeParams);
+    const companyCustomUserTypeResult = await ddbClient.send(companyCustomUserTypeCmd);
+
+    const companyCustomUserTypeId = companyCustomUserTypeResult.Items[0];
+
+    const deleteCompanyCustomUserTypeCommand = new DeleteItemCommand({
+      TableName: "CompanyCustomUserTypeTable",
+      Key: companyCustomUserTypeId,
+    });
+
+    const deleteCompanyCustomUserTypeResult = await ddbClient.send(
+      deleteCompanyCustomUserTypeCommand
+    );
+
+    if (deleteCompanyCustomUserTypeResult) {
+      const cmd = new DeleteItemCommand({
+        TableName: "CustomUserTypeTable",
+        Key: marshall({ id }),
+      });
+      const request = await ddbClient.send(cmd);
+
+      resp = request ? { id: id } : {};
+    }
   } catch (e) {
     resp = {
       error: e.message,

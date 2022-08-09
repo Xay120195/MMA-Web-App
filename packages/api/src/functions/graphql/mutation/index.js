@@ -24,6 +24,7 @@ const {
 const {
   createCustomUserType,
   updateCustomUserType,
+  deleteCustomUserType,
 } = require("../../../services/CustomUserTypeService");
 
 const {
@@ -2714,6 +2715,11 @@ const resolvers = {
       if (name !== undefined) data.name = name;
 
       return await updateCustomUserType(id, data);
+    },
+
+    customUserTypeDelete: async (ctx) => {
+      const { id } = ctx.arguments;
+      return await deleteCustomUserType(id);
     },
     clientCreate: async (ctx) => {
       return await createClient(ctx.arguments);

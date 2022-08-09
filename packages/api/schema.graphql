@@ -809,6 +809,7 @@ type Mutation {
   ): GmailMessageAttachment
   customUserTypeCreate(name: String, companyId: ID): CustomUserType
   customUserTypeUpdate(id: ID, name: String): CustomUserType
+  customUserTypeDelete(id: ID): CustomUserType
   teamCreate(companyId: ID, name: String): Team
   teamUpdate(id: ID, name: String): Team
   teamDelete(id: ID): Team
