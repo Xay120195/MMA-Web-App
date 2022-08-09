@@ -78,6 +78,7 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
                 name
               }
             }
+            isDeleted
           }
         }
         receivedAt
@@ -154,6 +155,7 @@ const Inbox = () => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [labelsList, setLabelsList] = useState([]);
   const [showFiltersModal, setshowFiltersModal] = useState(false);
+  const [attachmentIsDeleted, setattachmentIsDeleted] = useState(false);
   const [emailFilters, setEmailFilters] = useState({
     startDate: new Date(),
     endDate: new Date(),

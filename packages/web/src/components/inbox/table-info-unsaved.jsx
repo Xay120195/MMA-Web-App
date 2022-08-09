@@ -5,7 +5,7 @@ import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
 import { useRootClose } from "react-overlays";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTrash } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
@@ -24,81 +24,6 @@ import {
 import { AbsolutePosition } from "yjs";
 
 var moment = require("moment");
-
-/*const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String, $startDate: String, $endDate: String, $userTimeZone: String) {
-  company(id: $id) {
-    gmailToken {
-      refreshToken
-      id
-      userId
-      companyId
-      updatedAt
-    }
-    gmailMessages(
-      isDeleted: $isDeleted
-      isSaved: $isSaved
-      limit: $limit
-      nextToken: $nextToken
-      recipient: $recipient
-      startDate: $startDate
-      endDate: $endDate
-      userTimeZone: $userTimeZone
-    ) {
-      items {
-        id
-        from
-        to
-        cc
-        bcc
-        subject
-        date
-        snippet
-        payload {
-          content
-        }
-        labels {
-          items {
-            id
-            name
-          }
-        }
-        description
-        clientMatters {
-          items {
-            id
-            client {
-              id
-              name
-            }
-            matter {
-              id
-              name
-            }
-          }
-        }
-        attachments {
-          items {
-            id
-            details
-            name
-            s3ObjectKey
-            size
-            type
-            labels {
-              items {
-                id
-                name
-              }
-            }
-          }
-        }
-        receivedAt
-      }
-      nextToken
-    }
-  }
-}`;*/
 
 const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id: ID) {
   gmailMessageAttachmentUpdate(id: $id, details: $details) {
@@ -824,6 +749,7 @@ const TableUnsavedInfo = ({
                                           }
                                           contentEditable={true}
                                         ></div>
+                                        <FaTrash className="mt-2 ml-2 cursor-pointer hover:text-red-700" />
                                       </div>
                                     </React.Fragment>
                                   )
