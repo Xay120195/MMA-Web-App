@@ -564,6 +564,7 @@ type Query {
   background(id: ID): Background
   backgrounds: [Background]
   brief(id: ID): Brief
+  briefByName(clientMatterId: ID, name: String): Brief
   briefs: [Brief]
   client(id: ID): Client
   clientMatter(id: ID): ClientMatter
