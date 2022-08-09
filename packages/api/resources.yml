@@ -261,7 +261,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-  
+
   CustomUserTypeTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -283,6 +283,8 @@ Resources:
           AttributeType: S
         - AttributeName: companyId
           AttributeType: S
+        - AttributeName: customUserTypeId
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -290,6 +292,12 @@ Resources:
         - IndexName: byCompany
           KeySchema:
             - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byCustomUserType
+          KeySchema:
+            - AttributeName: customUserTypeId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
@@ -1082,6 +1090,45 @@ Resources:
         - IndexName: byLabel
           KeySchema:
             - AttributeName: labelId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+  TeamTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TeamTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  CompanyTeamTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CompanyTeamTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: companyId
+          AttributeType: S
+        - AttributeName: teamId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCompany
+          KeySchema:
+            - AttributeName: companyId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byTeam
+          KeySchema:
+            - AttributeName: teamId
               KeyType: HASH
           Projection:
             ProjectionType: ALL

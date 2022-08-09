@@ -26,6 +26,7 @@ type Background {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
+
 type Brief {
   id: ID!
   name: String
@@ -85,6 +86,7 @@ type Company {
   clients(limit: Int, nextToken: String): CompanyClientConn
   matters(limit: Int, nextToken: String): CompanyMatterConn
   customUserTypes(limit: Int, nextToken: String): CompanyCustomUserTypeConn
+  teams(limit: Int, nextToken: String): CompanyTeamConn
   clientMatters(
     limit: Int
     nextToken: String
@@ -215,7 +217,8 @@ type User {
   customUserType: CustomUserType
   profilePicture: String
   organisations: UserCompanyConn
-  clientMatters(limit: Int, nextToken: String): UserClientMatterCon
+  clientMatters(limit: Int, nextToken: String): UserClientMatterConn
+  teams(limit: Int, nextToken: String): UserTeamConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -293,6 +296,23 @@ type GmailMessageAttachment {
   downloadURL: String
   updatedAt: AWSDateTime
   isDeleted: Boolean
+}
+
+type Team {
+  id: ID!
+  teamPicture: String
+  name: String!
+  description: String
+  members: TeamMemberConn
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Member {
+  id: ID!
+  user: User!
+  userType: UserType
+  customUserType: CustomUserType
 }
 
 # enum
@@ -468,8 +488,18 @@ type CompanyCustomUserTypeConn {
   nextToken: String
 }
 
+type CompanyTeamConn {
+  items: [Team]
+  nextToken: String
+}
+
 type UserCompanyConn {
   items: [Company]
+  nextToken: String
+}
+
+type UserTeamConn {
+  items: [Team]
   nextToken: String
 }
 
@@ -497,7 +527,7 @@ type RFIRequestsConn {
   nextToken: String
 }
 
-type UserClientMatterCon {
+type UserClientMatterConn {
   items: [ClientMatter]
   nextToken: String
 }
@@ -525,10 +555,16 @@ type GmailAttachmentLabelConn {
   nextToken: String
 }
 
+type TeamMemberConn {
+  items: [Member]
+  nextToken: String
+}
+
 type Query {
   background(id: ID): Background
   backgrounds: [Background]
   brief(id: ID): Brief
+  briefByName(clientMatterId: ID, name: String): Brief
   briefs: [Brief]
   client(id: ID): Client
   clientMatter(id: ID): ClientMatter
@@ -574,6 +610,8 @@ type Query {
     endDate: String
   ): [GmailMessage]
   gmailAttachment(id: String): GmailMessageAttachment
+  teams: [Team]
+  team(id: ID): Team
 }
 
 type Mutation {
@@ -772,4 +810,8 @@ type Mutation {
   ): GmailMessageAttachment
   customUserTypeCreate(name: String, companyId: ID): CustomUserType
   customUserTypeUpdate(id: ID, name: String): CustomUserType
+  customUserTypeDelete(id: ID): CustomUserType
+  teamCreate(companyId: ID, name: String): Team
+  teamUpdate(id: ID, name: String): Team
+  teamDelete(id: ID): Team
 }

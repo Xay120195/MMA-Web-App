@@ -78,6 +78,7 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
                 name
               }
             }
+            isDeleted
           }
         }
         receivedAt
@@ -154,6 +155,9 @@ const Inbox = () => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [labelsList, setLabelsList] = useState([]);
   const [showFiltersModal, setshowFiltersModal] = useState(false);
+  const [attachmentIsDeleted, setAttachmentIsDeleted] = useState(false);
+  const [attachmentId, setAttachmentId] = useState("");
+  const [lastCounter, setLastCounter] = useState(null);
   const [emailFilters, setEmailFilters] = useState({
     startDate: new Date(),
     endDate: new Date(),
@@ -226,6 +230,7 @@ const Inbox = () => {
       setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
       setRefreshToken(gmailRefreshToken);
       setUnsavedEmails(emailList);
+      setLastCounter(emailList.length);
     });
   };
 
@@ -571,6 +576,11 @@ const Inbox = () => {
                       userTimeZone={userTimeZone}
                       momentTZ={momentTZ}
                       qGmailMessagesbyCompany={qGmailMessagesbyCompany}
+                      setAttachmentIsDeleted={setAttachmentIsDeleted}
+                      attachmentIsDeleted={attachmentIsDeleted}
+                      setAttachmentId={setAttachmentId}
+                      attachmentId={attachmentId}
+                      lastCounter={lastCounter}
                     />
                   </div>
                 ) : (
@@ -586,6 +596,8 @@ const Inbox = () => {
                       maxLoadingSavedEmail={maxLoadingSavedEmail}
                       waitSaved={waitSaved}
                       sortByDate={sortByDate}
+                      setAttachmentIsDeleted={setAttachmentIsDeleted}
+                      attachmentIsDeleted={attachmentIsDeleted}
                     />
                   </div>
                 )}

@@ -1,7 +1,7 @@
 import "../../assets/styles/BlankState.css";
 import "../../assets/styles/custom-styles.css";
 import "../../assets/styles/FileBucket.css";
-
+import { CgTrash } from "react-icons/cg";
 import * as IoIcons from "react-icons/io";
 
 import { AiFillTags, AiOutlineDownload } from "react-icons/ai";
@@ -261,6 +261,47 @@ export default function FileBucket() {
 
     console.log("result", request);
 
+    var labelsList = [];
+
+    //auto create label named 'Background'
+    if (request?.data?.matterFileBulkCreate) {
+      request.data.matterFileBulkCreate.forEach(async (matterFile) => {
+        const createLabel = await API.graphql({
+          query: mCreateLabel,
+          variables: {
+            clientMatterId: matter_id,
+            name: "Background",
+          },
+        });
+
+        console.log("createLabel", createLabel);
+        let updateLabel = labels;
+        updateLabel.push({
+          value: createLabel.data.labelCreate.id,
+          label: createLabel.data.labelCreate.name,
+        });
+
+        setLabels(updateLabel);
+
+        labelsList = [
+          ...labelsList,
+          {
+            id: createLabel.data.labelCreate.id,
+            name: createLabel.data.labelCreate.name,
+          },
+        ];
+        createBackgroundFromLabel(
+          matterFile.id,
+          {
+            id: createLabel.data.labelCreate.id,
+            name: createLabel.data.labelCreate.name,
+          },
+          matterFile,
+          true
+        );
+      });
+    }
+    //createBackgroundFromLabel(request.data.matterFileBulkCreate.id);
     //don't delete for single upload
     // const request = API.graphql({
     //   query: mCreateMatterFile,
@@ -410,7 +451,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           order
           description
           date
-          briefs {
+          briefs(limit: $limit, nextToken: $nextToken, isDeleted: $isDeleted) {
             items {
               id
               name
@@ -669,12 +710,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         isDeleted: false,
         //limit: 50,
         //nextToken: next === 1 ? null : vNextToken,
+        limit: 100,
+        nextToken: null,
         sortOrder: sortOrder,
       },
     };
     await API.graphql(params).then((files) => {
       let matterFilesList = files.data.matterFiles.items;
-      console.log("matterFilesList: ", matterFilesList);
+      console.log("matterFilesList: TEST", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
       setMatterFiles(sortByOrder(matterFilesList)); // no need to use sortByOrder
@@ -796,7 +839,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleLabelChanged = async (id, e, existingLabels) => {
-    console.log("event", e);
+    console.log("event", e, "id", id);
 
     var labelsList = [];
 
@@ -862,40 +905,41 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           },
         ];
 
-        const addBrief = await API.graphql({
-          query: mCreateBrief,
-          variables: {
-            clientMatterId: matter_id,
-            name: e.label,
-            date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
-            order: 0,
-          },
-        });
+        // const addBrief = await API.graphql({
+        //   query: mCreateBrief,
+        //   variables: {
+        //     clientMatterId: matter_id,
+        //     name: e.label,
+        //     date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
+        //     order: 0,
+        //   },
+        // });
 
-        console.log("brief", addBrief);
+        // console.log("brief", addBrief);
       } else {
         labelsList = [...labelsList, { id: e.value, name: e.label }];
       }
     }
 
-    console.log("collectedlabels", labelsList);
+    // console.log("collectedlabels", labelsList);
 
-    const request = await API.graphql({
-      query: mTagFileLabel,
-      variables: {
-        fileId: id,
-        labels: labelsList,
-      },
-    });
+    // const request = await API.graphql({
+    //   query: mTagFileLabel,
+    //   variables: {
+    //     fileId: id,
+    //     labels: labelsList,
+    //   },
+    // });
+    createBackgroundFromLabel(id, { id: e.value, name: e.label });
 
-    if (request) {
-      setResultMessage("Updating labels");
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        getMatterFiles(1);
-      }, 2000);
-    }
+    // if (request) {
+    setResultMessage("Creating Background..");
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles(1);
+    }, 2000);
+    // }
   };
 
   const convertArrayToObject = (array) => {
@@ -1456,6 +1500,48 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     }
     `;
+
+  const mSoftDeleteBrief = `
+      mutation softDeleteBriefById($id: ID) {
+        briefSoftDelete(id: $id) {
+          id
+        }
+      }
+      `;
+
+  const mDeleteBackground = `mutation deleteBackground($id: ID) {
+  backgroundDelete(id: $id) {
+    id
+  }
+}`;
+
+  //deleteBackgroundFromLabel
+  const handleDeleteBackground = (id, background) => {
+    console.log(background);
+
+    const deletedBackground = API.graphql({
+      query: mDeleteBackground,
+      variables: {
+        id: background.id,
+      },
+    });
+    const deletedId = API.graphql({
+      query: mSoftDeleteBrief,
+      variables: {
+        id: background.briefs.items[0].id,
+      },
+    });
+
+    //console.log("deletedID", deletedId);
+
+    setShowToast(true);
+    setResultMessage(`Successfully deleted a background and brief`);
+    getBriefs();
+    setTimeout(() => {
+      setShowToast(false);
+      getMatterFiles(1);
+    }, 2000);
+  };
 
   //filter function
   const handleFilter = async (fileFilter) => {
@@ -2333,50 +2419,103 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
   `;
 
-  const createBackgroundFromLabel = async (row_id, label) => {
-    const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
+  const createBackgroundFromLabel = async (row_id, label, isNew) => {
+    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", matterFiles);
 
-    const params = {
-      clientMatterId: matter_id,
-      name: label.name,
-      date: null,
-      order: 0,
-      labelId: label.id,
-    };
+    if (isNew) {
+      const params = {
+        clientMatterId: matter_id,
+        name: label.name,
+        date: null,
+        order: 0,
+        labelId: label.id,
+      };
 
-    // Create Brief
-    const createBrief = await API.graphql({
-      query: mCreateBrief,
-      variables: params,
-    });
+      // Create Brief
+      const createBrief = await API.graphql({
+        query: mCreateBrief,
+        variables: params,
+      });
 
-    const briefId = createBrief.data.briefCreate.id,
-      fileId = mf[0].id,
-      fileDetails = mf[0].details,
-      fileDate =
-        mf[0].date != null
-          ? moment.utc(moment(new Date(mf[0].date), "YYYY-MM-DD")).toISOString()
-          : null;
+      console.log("createBrief", createBrief);
 
-    // Create Background
-    const createBackground = await API.graphql({
-      query: mCreateBackground,
-      variables: {
-        briefId: briefId,
-        description: fileDetails,
-        date: fileDate,
-      },
-    });
+      const briefId = createBrief.data.briefCreate.id,
+        fileId = row_id,
+        fileDetails = "",
+        fileDate = null;
 
-    if (createBackground.data.backgroundCreate.id !== null) {
-      // Tag File to Background
-      await API.graphql({
-        query: mUpdateBackgroundFile,
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
         variables: {
-          backgroundId: createBackground.data.backgroundCreate.id,
-          files: [{ id: fileId }],
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
         },
       });
+
+      console.log("createBackground", createBackground);
+
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
+    } else {
+      const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
+      const params = {
+        clientMatterId: matter_id,
+        name: label.name,
+        date: null,
+        order: 0,
+        labelId: label.id,
+      };
+
+      // Create Brief
+      const createBrief = await API.graphql({
+        query: mCreateBrief,
+        variables: params,
+      });
+
+      console.log("createBrief", createBrief);
+
+      const briefId = createBrief.data.briefCreate.id,
+        fileId = mf[0].id,
+        fileDetails = mf[0].details,
+        fileDate =
+          mf[0].date != null
+            ? moment
+                .utc(moment(new Date(mf[0].date), "YYYY-MM-DD"))
+                .toISOString()
+            : null;
+
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
+        },
+      });
+
+      console.log("createBackground", createBackground);
+
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
     }
   };
 
@@ -2852,10 +2991,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                     style={{ position: "sticky", top: "235px" }}
                                   >
                                     <tr>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap">
+                                      <th
+                                        className="px-2 py-4 text-center whitespace-nowrap"
+                                        style={{
+                                          minWidth: "5%",
+                                          width: "5.5%",
+                                        }}
+                                      >
                                         Item No.
                                       </th>
-                                      <th className="px-2 py-4 text-center inline-flex whitespace-nowrap">
+                                      <th className="px-2 py-4 text-center inline-flex whitespace-nowrap w-1/12">
                                         <span className="ml-4">
                                           Date &nbsp;
                                         </span>
@@ -2900,16 +3045,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           }
                                         })()}
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/12">
                                         Name
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-3/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-5/12">
                                         Description
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-1/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/12">
                                         Labels
                                       </th>
-                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/6">
+                                      <th className="px-2 py-4 text-center whitespace-nowrap w-2/12">
                                         Page Reference
                                       </th>
                                     </tr>
@@ -3151,7 +3296,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-1/6"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/12"
                                                                 >
                                                                   <div className="inline-flex">
                                                                     {data.type
@@ -3552,7 +3697,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/6"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/12"
                                                                 >
                                                                   {/*New label starts here*/}
 
@@ -3625,9 +3770,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ) => ({
                                                                             ...base,
                                                                             position:
-                                                                              "fixed",
+                                                                              "absolute",
                                                                             minWidth:
-                                                                              "250px",
+                                                                              "230px",
                                                                           }),
                                                                       }}
                                                                       options={
@@ -3650,7 +3795,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         )
                                                                       }
                                                                       placeholder="Labels"
-                                                                      className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                                                      className="mt-2 -mb-2 absolute w-full placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                                                     />
                                                                   )}
 
@@ -3686,10 +3831,76 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     placeholder="Labels"
                                                                     className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                                                   />*/}
+                                                                  <div className="grid grid-cols-1">
+                                                                    <div className="flex mb-14"></div>
+
+                                                                    {data.backgrounds.items
+                                                                      .sort(
+                                                                        (
+                                                                          a,
+                                                                          b
+                                                                        ) =>
+                                                                          a.order >
+                                                                          b.order
+                                                                            ? 1
+                                                                            : -1
+                                                                      )
+                                                                      .map(
+                                                                        (
+                                                                          background,
+                                                                          index
+                                                                        ) =>
+                                                                          background
+                                                                            .briefs
+                                                                            .length <
+                                                                            1 ||
+                                                                          background
+                                                                            .briefs
+                                                                            .items[0] ===
+                                                                            null ||
+                                                                          background
+                                                                            .briefs
+                                                                            .items[0] ===
+                                                                            undefined ? (
+                                                                            <div
+                                                                              key={
+                                                                                background.id
+                                                                              }
+                                                                              index={
+                                                                                index
+                                                                              }
+                                                                            ></div>
+                                                                          ) : (
+                                                                            <div
+                                                                              className="h-10.5 w-full py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                              index={
+                                                                                index
+                                                                              }
+                                                                              onClick={(
+                                                                                event
+                                                                              ) =>
+                                                                                handleRedirectLink(
+                                                                                  event,
+                                                                                  background.id
+                                                                                )
+                                                                              }
+                                                                            >
+                                                                              <b>
+                                                                                {
+                                                                                  background
+                                                                                    .briefs
+                                                                                    .items[0]
+                                                                                    .name
+                                                                                }
+                                                                              </b>
+                                                                            </div>
+                                                                          )
+                                                                      )}
+                                                                  </div>
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
-                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/6"
+                                                                  className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/12"
                                                                 >
                                                                   <div className="grid grid-cols-1">
                                                                     <div className="flex mb-24"></div>
@@ -3712,6 +3923,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         ) =>
                                                                           background
                                                                             .briefs
+                                                                            .length <
+                                                                            1 ||
+                                                                          background
+                                                                            .briefs
                                                                             .items[0] ===
                                                                             null ||
                                                                           background
@@ -3720,40 +3935,51 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                             undefined ? (
                                                                             <div
                                                                               className="h-10.5 py-3 p-1 mb-1.5"
-                                                                              key={
-                                                                                background.id
-                                                                              }
                                                                               index={
                                                                                 index
                                                                               }
                                                                             ></div>
                                                                           ) : (
-                                                                            <div
-                                                                              className="h-10.5 py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                                              key={
-                                                                                background.id
-                                                                              }
-                                                                              index={
-                                                                                index
-                                                                              }
-                                                                              onClick={(
-                                                                                event
-                                                                              ) =>
-                                                                                handleRedirectLink(
-                                                                                  event,
-                                                                                  background.id
-                                                                                )
-                                                                              }
-                                                                            >
-                                                                              <b>
-                                                                                {background.order +
-                                                                                  ". " +
-                                                                                  background
-                                                                                    .briefs
-                                                                                    .items[0]
-                                                                                    .name}
-                                                                              </b>
-                                                                            </div>
+                                                                            <>
+                                                                              <div className="flex">
+                                                                                <div
+                                                                                  className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                                  index={
+                                                                                    index
+                                                                                  }
+                                                                                  onClick={(
+                                                                                    event
+                                                                                  ) =>
+                                                                                    handleRedirectLink(
+                                                                                      event,
+                                                                                      background.id
+                                                                                    )
+                                                                                  }
+                                                                                >
+                                                                                  <b>
+                                                                                    {"Row" +
+                                                                                      " " +
+                                                                                      background.order}
+                                                                                  </b>
+                                                                                </div>
+                                                                                <div
+                                                                                  className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
+                                                                                  index={
+                                                                                    index
+                                                                                  }
+                                                                                  onClick={() =>
+                                                                                    handleDeleteBackground(
+                                                                                      background.id,
+                                                                                      background
+                                                                                    )
+                                                                                  }
+                                                                                >
+                                                                                  <b>
+                                                                                    <CgTrash className="" />
+                                                                                  </b>
+                                                                                </div>
+                                                                              </div>
+                                                                            </>
                                                                           )
                                                                       )}
                                                                   </div>
