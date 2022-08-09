@@ -585,6 +585,79 @@ async function getBrief(data) {
   return resp;
 }
 
+async function getBriefByName(data) {
+  try {
+    const { clientMatterId, name } = data;
+    const ExpressionAttributeValues = {
+      ":clientMatterId": clientMatterId,
+      ":isDeleted": false,
+    };
+
+    const cmBriefParam = {
+      TableName: "ClientMatterBriefTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      FilterExpression:
+        "isDeleted = :isDeleted OR attribute_not_exists(isDeleted)",
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
+    };
+
+    const cmBriefCmd = new QueryCommand(cmBriefParam);
+    const cmBriefResult = await ddbClient.send(cmBriefCmd);
+
+    const objCMBrief = cmBriefResult.Items.map((i) => unmarshall(i));
+
+    console.log(objCMBrief);
+
+    const briefIds = objCMBrief.map((f) => marshall({ id: f.briefId }));
+
+    if (briefIds.length !== 0) {
+      const briefParam = {
+        RequestItems: {
+          BriefTable: {
+            Keys: briefIds,
+          },
+        },
+      };
+
+      const briefCommand = new BatchGetItemCommand(briefParam);
+      const briefResult = await ddbClient.send(briefCommand);
+
+      const objBriefs = briefResult.Responses.BriefTable.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objCMBrief
+        .map((item) => {
+          const filterBrief = objBriefs.find(
+            (u) => u.id === item.briefId && u.name === name
+          );
+
+          if (filterBrief !== undefined) {
+            return { ...item, ...filterBrief };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return response[0];
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+
+    // resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
 async function listBriefs() {
   try {
     const param = {
@@ -763,6 +836,9 @@ const resolvers = {
     },
     brief: async (ctx) => {
       return getBrief(ctx.arguments);
+    },
+    briefByName: async (ctx) => {
+      return getBriefByName(ctx.arguments);
     },
     briefs: async () => {
       return listBriefs();
