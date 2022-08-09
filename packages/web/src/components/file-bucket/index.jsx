@@ -1535,7 +1535,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     //console.log("deletedID", deletedId);
 
     setShowToast(true);
-    setResultMessage(`Successfully deleted a background && brief`);
+    setResultMessage(`Successfully deleted a background and brief`);
     getBriefs();
     setTimeout(() => {
       setShowToast(false);
