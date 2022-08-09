@@ -5,7 +5,7 @@ import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
 import { useRootClose } from "react-overlays";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTrash } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
@@ -24,81 +24,6 @@ import {
 import { AbsolutePosition } from "yjs";
 
 var moment = require("moment");
-
-/*const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String, $startDate: String, $endDate: String, $userTimeZone: String) {
-  company(id: $id) {
-    gmailToken {
-      refreshToken
-      id
-      userId
-      companyId
-      updatedAt
-    }
-    gmailMessages(
-      isDeleted: $isDeleted
-      isSaved: $isSaved
-      limit: $limit
-      nextToken: $nextToken
-      recipient: $recipient
-      startDate: $startDate
-      endDate: $endDate
-      userTimeZone: $userTimeZone
-    ) {
-      items {
-        id
-        from
-        to
-        cc
-        bcc
-        subject
-        date
-        snippet
-        payload {
-          content
-        }
-        labels {
-          items {
-            id
-            name
-          }
-        }
-        description
-        clientMatters {
-          items {
-            id
-            client {
-              id
-              name
-            }
-            matter {
-              id
-              name
-            }
-          }
-        }
-        attachments {
-          items {
-            id
-            details
-            name
-            s3ObjectKey
-            size
-            type
-            labels {
-              items {
-                id
-                name
-              }
-            }
-          }
-        }
-        receivedAt
-      }
-      nextToken
-    }
-  }
-}`;*/
 
 const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id: ID) {
   gmailMessageAttachmentUpdate(id: $id, details: $details) {
@@ -130,6 +55,13 @@ query getAttachmentDownloadLink($id: String) {
   }
 }`;
 
+const mUpdateAttachmentStatus = `
+mutation updateAttachment($id: ID, $isDeleted: Boolean) {
+  gmailMessageAttachmentUpdate(id: $id, isDeleted: $isDeleted) {
+    id
+  }
+}`;
+
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
@@ -145,6 +77,10 @@ const TableUnsavedInfo = ({
   userTimeZone,
   momentTZ,
   qGmailMessagesbyCompany,
+  setAttachmentIsDeleted,
+  attachmentIsDeleted,
+  setAttachmentId,
+  attachmentId,
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -564,6 +500,23 @@ const TableUnsavedInfo = ({
     });
   };
 
+  const handleDeleteAttachment = async (id, index, val, e) => {
+    const params = {
+      query: mUpdateAttachmentStatus,
+      variables: {
+        id: id,
+        isDeleted: val
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      console.log(result);
+      setAttachmentIsDeleted(val);
+      setAttachmentId(index);
+      getUnSavedEmails(emailFilters)
+    });
+  }
+
   return (
     <>
       <table
@@ -800,7 +753,12 @@ const TableUnsavedInfo = ({
                                             : ""}
                                         </p>
                                         <div
-                                          className="p-2 w-full h-full font-poppins rounded-sm float-right"
+                                          className=
+                                          {!item_attach.isDeleted || item_attach.isDeleted === null ?
+                                            "p-2 w-full h-full font-poppins rounded-sm float-right"
+                                            :
+                                            "p-2 w-full h-full font-poppins rounded-sm float-right bg-gray-300"
+                                          }
                                           style={{
                                             border: "solid 1px #c4c4c4",
                                             cursor: "auto",
@@ -822,8 +780,36 @@ const TableUnsavedInfo = ({
                                               item.id
                                             )
                                           }
-                                          contentEditable={true}
+                                          contentEditable=
+                                            {!item_attach.isDeleted || item_attach.isDeleted === null ? 
+                                              true : false
+                                            }
                                         ></div>
+                                        {!item_attach.isDeleted || item_attach.isDeleted === null ? 
+                                          <FaTrash 
+                                            className="mt-2 ml-2 cursor-pointer hover:text-red-700" 
+                                            onClick={(e) =>
+                                              handleDeleteAttachment(
+                                                item_attach.id,
+                                                index,
+                                                true,
+                                                e
+                                              )
+                                            }
+                                          />
+                                          :
+                                          <button
+                                          className="bg-white-500 hover:bg-gray-700 hover:text-white text-gray font-bold py-2 px-1 rounded ml-2 cursor-pointer"
+                                          onClick={(e) =>
+                                            handleDeleteAttachment(
+                                              item_attach.id,
+                                              index,
+                                              false,
+                                              e
+                                            )
+                                          }
+                                          >Cancel</button>
+                                        }
                                       </div>
                                     </React.Fragment>
                                   )
