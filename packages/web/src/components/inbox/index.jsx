@@ -11,7 +11,6 @@ import ToastNotification from "../toast-notification";
 import FiltersModal from "./filters-modal";
 import SavingModal from "./saving-state";
 import { gapi } from "gapi-script";
-import "../../assets/styles/Inbox.css";
 
 
 var momentTZ = require("moment-timezone");
