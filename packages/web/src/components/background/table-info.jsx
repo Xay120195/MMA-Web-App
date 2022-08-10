@@ -1616,8 +1616,8 @@ const TableInfo = ({
                                                     {...provider.dragHandleProps}
                                                     className="px-2 py-3 align-top place-items-center relative w-4/6 max-w-xs"
                                                   >
-                                                    {/* <RFIEditor item={item} /> */}
-                                                    <div
+                                                    <RFIEditor item={item} />
+                                                    {/* <div
                                                       className="p-2 w-full h-full font-poppins"
                                                       style={{
                                                         cursor: "auto",
@@ -1652,7 +1652,7 @@ const TableInfo = ({
                                                         )
                                                       }
                                                       contentEditable={true}
-                                                    ></div>
+                                                    ></div> */}
                                                     <span className="text-red-400 filename-validation">
                                                       {item.id === descId && descAlert}
                                                     </span>
