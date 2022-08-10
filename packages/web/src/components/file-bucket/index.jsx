@@ -721,6 +721,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       backgrounds {
         items {
           id
+          files{
+            items{
+              id
+            }
+          }
           order
           description
           date
@@ -1784,27 +1789,42 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 }`;
 
+  const mDeleteFileAttachment = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
   //deleteBackgroundFromLabel
-  const handleDeleteBackground = (id, background) => {
-    console.log(background);
+  const handleDeleteBackground = (rowId, rowFiles, fileId) => {
+    //console.log("rowId",rowId);
+    //console.log("rowFiles", rowFiles);
+    //console.log("fileId", fileId); //remove in rowFiles
 
-    const deletedBackground = API.graphql({
-      query: mDeleteBackground,
+    const filesArr = rowFiles.items.map(
+      ({ id }) => ({
+        id: id,
+      })
+    );
+    
+    const filteredArrFiles = filesArr.filter((i) => i.id !== fileId);
+
+    //console.log("passthis", filteredArrFiles);
+
+    const request = API.graphql({
+      query: mDeleteFileAttachment,
       variables: {
-        id: background.id,
+        backgroundId: rowId,
+        files: filteredArrFiles,
       },
     });
-    const deletedId = API.graphql({
-      query: mSoftDeleteBrief,
-      variables: {
-        id: background.briefs.items[0].id,
-      },
-    });
-
-    //console.log("deletedID", deletedId);
+    
+    //console.log("success", request);
 
     setShowToast(true);
-    setResultMessage(`Successfully deleted a background and brief`);
+    setResultMessage(`Successfully deleted a background`);
     getBriefs();
     setTimeout(() => {
       setShowToast(false);
@@ -4302,7 +4322,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                   onClick={() =>
                                                                                     handleDeleteBackground(
                                                                                       background.id,
-                                                                                      background
+                                                                                      background.files,
+                                                                                      data.id
                                                                                     )
                                                                                   }
                                                                                 >
