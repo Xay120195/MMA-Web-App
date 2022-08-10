@@ -382,7 +382,7 @@ const TableSavedInfo = ({
                               {show && snippetId === item.id && (
                                 <div
                                   ref={(el) => (ref.current[index] = el)}
-                                  className=" absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                  className=" fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                                   id={item.id}
                                 >
                                   <p>From : {item.from}</p>
