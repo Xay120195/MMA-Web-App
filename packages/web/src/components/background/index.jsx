@@ -180,7 +180,6 @@ const Background = () => {
   const getBackground = async () => {
     console.log("getBackground()");
     let result = [];
-    setWait(false);
 
     // if (background_id === "000") {
     // Remove this condition after migration
@@ -226,6 +225,8 @@ const Background = () => {
         },
       });
     }else{
+      setWait(true);
+
       backgroundOpt = await API.graphql({
         query: qBriefBackgroundList,
         variables: {
@@ -264,7 +265,6 @@ const Background = () => {
         console.log("I AM IN HERE", result);
         // setBackground(sortByOrder(result)); // no sorting needed
         setBackground(sortByOrder(result));
-        setWait(true);
         setMaxLoading(false);
       }
     }
