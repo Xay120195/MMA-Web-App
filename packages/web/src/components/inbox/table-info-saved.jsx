@@ -311,7 +311,11 @@ const TableSavedInfo = ({
                 scrollTop={scrollTop}
                 width={width}
                 height={height}
-                rowHeight={cache.current.rowHeight}
+                //rowHeight={cache.current.rowHeight}
+                rowHeight=/*{cache.current.rowHeight}*/
+                {savedEmails.length === 1 ?
+                  "100" : cache.current.rowHeight
+                }
                 deferredMeasurementCache={cache.current}
                 rowCount={savedEmails.length}
                 rowRenderer={({ key, index, style, parent }) => {
