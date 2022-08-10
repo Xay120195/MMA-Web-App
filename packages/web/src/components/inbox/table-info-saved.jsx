@@ -311,7 +311,11 @@ const TableSavedInfo = ({
                 scrollTop={scrollTop}
                 width={width}
                 height={height}
-                rowHeight={cache.current.rowHeight}
+                //rowHeight={cache.current.rowHeight}
+                rowHeight=/*{cache.current.rowHeight}*/
+                {savedEmails.length === 1 ?
+                  "100" : cache.current.rowHeight
+                }
                 deferredMeasurementCache={cache.current}
                 rowCount={savedEmails.length}
                 rowRenderer={({ key, index, style, parent }) => {
@@ -382,7 +386,7 @@ const TableSavedInfo = ({
                               {show && snippetId === item.id && (
                                 <div
                                   ref={(el) => (ref.current[index] = el)}
-                                  className=" absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                  className=" fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                                   id={item.id}
                                 >
                                   <p>From : {item.from}</p>
