@@ -843,8 +843,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     var labelsList = [];
 
-    {
-      /*
+    /*
     for (var i = 0; i < e.length; i++) {
       if (e[i].__isNew__) {
         const createLabel = await API.graphql({
@@ -877,60 +876,54 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     }
  */
-    }
+
     if (e.label) {
       if (e.__isNew__) {
-        const createLabel = await API.graphql({
+        await API.graphql({
           query: mCreateLabel,
           variables: {
             clientMatterId: matter_id,
             name: e.label,
           },
+        }).then((r) => {
+          console.log("createLabel", r);
+
+          const newLabelId = r.data.labelCreate.id,
+            newLabelName = r.data.labelCreate.name;
+
+          console.log("newLabelId", newLabelId);
+          console.log("newLabelName", newLabelName);
+
+          let updateLabel = labels;
+          updateLabel.push({
+            value: newLabelId,
+            label: newLabelName,
+          });
+
+          setLabels(updateLabel);
+
+          labelsList = [
+            ...labelsList,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+          ];
+          createBackgroundFromLabel(
+            id,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+            true
+          );
         });
-
-        console.log("createLabel", createLabel);
-        let updateLabel = labels;
-        updateLabel.push({
-          value: createLabel.data.labelCreate.id,
-          label: createLabel.data.labelCreate.name,
-        });
-
-        setLabels(updateLabel);
-
-        labelsList = [
-          ...labelsList,
-          {
-            id: createLabel.data.labelCreate.id,
-            name: createLabel.data.labelCreate.name,
-          },
-        ];
-
-        // const addBrief = await API.graphql({
-        //   query: mCreateBrief,
-        //   variables: {
-        //     clientMatterId: matter_id,
-        //     name: e.label,
-        //     date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
-        //     order: 0,
-        //   },
-        // });
-
-        // console.log("brief", addBrief);
       } else {
         labelsList = [...labelsList, { id: e.value, name: e.label }];
+
+        createBackgroundFromLabel(id, { id: e.value, name: e.label });
       }
     }
-
-    // console.log("collectedlabels", labelsList);
-
-    // const request = await API.graphql({
-    //   query: mTagFileLabel,
-    //   variables: {
-    //     fileId: id,
-    //     labels: labelsList,
-    //   },
-    // });
-    createBackgroundFromLabel(id, { id: e.value, name: e.label });
 
     // if (request) {
     setResultMessage("Creating Background..");
@@ -2437,7 +2430,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   `;
 
   const createBackgroundFromLabel = async (row_id, label, isNew) => {
-    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", matterFiles);
+    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", label);
 
     // check if brief already exists
     let briefNameExists = false;
@@ -2452,13 +2445,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     let briefId = getBriefByName.data.briefByName.id,
       existingBriefNameLabel = getBriefByName.data.briefByName.labelId;
 
-    if (briefId !== "" || briefId !== null) {
+    if (briefId !== "" && briefId !== null) {
       briefNameExists = true;
     }
 
     if (isNew) {
+      
       if (!briefNameExists) {
-        // Create Brief
         const params = {
           clientMatterId: matter_id,
           name: label.name,
@@ -2475,14 +2468,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         console.log("createBrief", createBrief);
         briefId = createBrief.data.briefCreate.id;
       } else {
+        console.log("existingBriefNameLabel", existingBriefNameLabel);
         if (existingBriefNameLabel === null) {
-          // Tag Label to Brief
+          const params = {
+            id: briefId,
+            labelId: label.id,
+          };
+          
           await API.graphql({
             query: mUpdateBrief,
-            variables: {
-              id: briefId,
-              labelId: label.id,
-            },
+            variables: params,
           });
         }
       }
