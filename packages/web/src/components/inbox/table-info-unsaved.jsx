@@ -563,10 +563,10 @@ const TableUnsavedInfo = ({
                       scrollTop={scrollTop}
                       width={width}
                       height={height}
-                      rowHeight={cache.current.rowHeight}
-                      /*{unSavedEmails.length === 1 ?
+                      rowHeight=/*{cache.current.rowHeight}*/
+                      {unSavedEmails.length === 1 ?
                         "100" : cache.current.rowHeight
-                      }*/
+                      }
                       deferredMeasurementCache={cache.current}
                       rowCount={unSavedEmails.length}
                       rowRenderer={({ key, index, style, parent }) => {
@@ -590,7 +590,7 @@ const TableUnsavedInfo = ({
                             {/* {({ registerChild }) => ( */}
                             <tr
                               style=
-                              {lastCounter === index+1 ? 
+                              /*{lastCounter === index+1 ? 
                                 {
                                   ...style,
                                   width: "100%",
@@ -603,14 +603,13 @@ const TableUnsavedInfo = ({
                                   height: "100%",
                                   border: "1px solid #f0f0f0",
                                 }
-                              }
-                              /*{{
+                              }*/
+                              {{
                                 ...style,
                                 width: "100%",
                                 height: "100%",
                                 border: "1px solid #f0f0f0",
-                                paddingBottom: "150px",
-                              }}*/
+                              }}
                               className={lastCounter === index+1 ? "tr-child" : ""}
                               key={key}
                             >
