@@ -12,12 +12,7 @@ import {
   BsSortUpAlt,
 } from "react-icons/bs";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import {
-  FaLaptopHouse,
-  FaRegFileAudio,
-  FaRegFileVideo,
-  FaSort,
-} from "react-icons/fa";
+import { FaRegFileAudio, FaRegFileVideo, FaSort } from "react-icons/fa";
 import {
   FiChevronDown,
   FiChevronUp,
@@ -212,21 +207,6 @@ export default function FileBucket() {
     }
     `;
 
-  const getName = `
-  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
-    clientMatter(id: $id) {
-      briefs(limit: $limit, nextToken: $nextToken) {
-        items {
-          id
-          name
-          date
-          order
-        }
-      }
-    }
-  }
-  `;
-
   const handleUploadLink = async (uf) => {
     var uploadedFiles = uf.files.map((f) => ({ ...f, matterId: matter_id }));
     window.scrollTo(0, 0);
@@ -256,7 +236,6 @@ export default function FileBucket() {
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
     handleModalClose();
-    await getMatterFiles();
     setTimeout(() => {
       setShowToast(false);
       getMatterFiles(1);
@@ -266,178 +245,6 @@ export default function FileBucket() {
     // sortedFiles.map((file) => {
     //   createMatterFile(file);
     // });
-  };
-
-  const isBackgroundBriefNameExist = async (target) => {
-    //query all background brief names
-    console.log("isBackgroundBriefNameExist");
-    console.log("TARGET", target);
-    const params = {
-      query: getName,
-      variables: {
-        id: matter_id,
-        limit: 50,
-        nextToken: null,
-      },
-    };
-    const request = await API.graphql(params);
-    console.log("getNames", request);
-
-    //Check if 'background' is existing in briefs
-    let backgroundExist = false;
-    request.data.clientMatter.briefs.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
-        backgroundExist = true;
-      }
-    });
-
-    console.log("briefs backgroundExist:", backgroundExist);
-
-    return backgroundExist;
-  };
-
-  const isBackgroundLabelExist = async (target) => {
-    console.log("isBackgroundLabelExist()");
-    console.log("TARGET", target);
-    //query all labels
-    const labelsOpt = await API.graphql({
-      query: listLabels,
-      variables: {
-        clientMatterId: matter_id,
-      },
-    });
-
-    console.log("getLabels", labelsOpt);
-
-    //Check if 'background' is existing in labels
-    let backgroundExist = false;
-    labelsOpt.data.clientMatter.labels.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
-        backgroundExist = true;
-      }
-    });
-
-    console.log("labels backgroundExist:", backgroundExist);
-
-    return backgroundExist;
-  };
-
-  const getLabelbyName = async (target) => {
-    console.log("getLabelbyName");
-    const labelsOpt = await API.graphql({
-      query: listLabels,
-      variables: {
-        clientMatterId: matter_id,
-      },
-    });
-
-    console.log("labelsOpt", labelsOpt);
-
-    const final = labelsOpt?.data?.clientMatter?.labels?.items.filter(
-      (label) => {
-        if (label.name.toLowerCase() === target.toLowerCase()) {
-          return label;
-        }
-      }
-    );
-    return final[0]; //get the First result // if any duplicates, we don't have a label delete mutation
-  };
-
-  const getBackgroundByBriefName = async (target, brief) => {
-    console.group("getBackgroundByBriefName");
-    console.log("TARGET", brief);
-
-    const params = {
-      query: qBriefBackgroundList,
-      variables: {
-        id: brief,
-        nextToken: null,
-        sortOrder: "ORDER_ASC",
-      },
-    };
-    const request = await API.graphql(params);
-    console.log("getNames", request);
-
-    console.groupEnd();
-    if (request?.data?.brief.name === target) {
-      return request?.data?.brief?.backgrounds?.items[0].id;
-    }
-    //return final[0]; //get the First result // if any duplicates
-  };
-
-  const getBriefByName = async (target) => {
-    console.log("getBriefByName");
-    console.log("TARGET", target);
-    const request = await API.graphql({
-      query: qBriefByName,
-      variables: {
-        clientMatterId: matter_id,
-        name: target,
-      },
-    });
-    console.log("getBriefs", request);
-
-    return request.data?.briefByName?.id;
-  };
-
-  const bindMatterToDefaultLabel = async (matterid, brief, label) => {
-    console.group("bindMatterToDefaultLabel");
-    console.log("matterid", matterid);
-    console.log("files", files);
-
-    const updateBrief = await API.graphql({
-      query: mUpdateBrief,
-      variables: {
-        id: brief,
-        labelId: label.id,
-      },
-    });
-
-    console.log("updateBrief", updateBrief);
-    console.log("abea7a1b-d230-4255-aa6d-dd7fd6e56864");
-    /*
-    const updateBackground = await API.graphql({
-      query: mUpdateBackgroundFile,
-      variables: {
-        backgroundId: background,
-        files: files.concat({ id: matterid }),
-      },
-    });
-    */
-    const createBackground = await API.graphql({
-      query: mCreateBackground,
-      variables: {
-        briefId: brief,
-        description: "",
-        date: null,
-      },
-    });
-
-    console.log("createBackground", createBackground);
-
-    const updateBackground = await API.graphql({
-      query: mUpdateBackgroundFile,
-      variables: {
-        backgroundId: createBackground.data.backgroundCreate.id,
-        files: [{ id: matterid }],
-      },
-    });
-
-    console.log("updateBackground", updateBackground);
-    console.groupEnd();
-  };
-
-  const getOrigFiles = async (target, backgroundid) => {
-    const backgroundFilesOpt = await API.graphql({
-      query: qlistBackgroundFiles,
-      variables: {
-        id: backgroundid,
-      },
-    });
-
-    return backgroundFilesOpt.data.background.files.items.map((file) => {
-      return { id: file.id };
-    });
   };
 
   async function createMatterFile(param) {
@@ -454,66 +261,9 @@ export default function FileBucket() {
 
     console.log("createMatterFile", request);
 
-    //Create label and background, brief if not existing
-    if (!(await isBackgroundLabelExist("Background"))) {
-      console.log("No Background Label Exist, Creating Label");
-      const createLabel = await API.graphql({
-        query: mCreateLabel,
-        variables: {
-          clientMatterId: matter_id,
-          name: "Background",
-        },
-      });
-      console.groupEnd();
-      console.log("createLabel", createLabel);
-    }
-
-    if (!(await isBackgroundBriefNameExist("Background"))) {
-      console.group("No Background Brief Exist, Creating Label");
-      const label = await getLabelbyName("Background");
-
-      const params = {
-        clientMatterId: matter_id,
-        name: label.name,
-        date: null,
-        order: 0,
-        labelId: label.id,
-      };
-
-      const createBrief = await API.graphql({
-        query: mCreateBrief,
-        variables: params,
-      });
-
-      console.log("createBrief", createBrief);
-
-      const createBackground = await API.graphql({
-        query: mCreateBackground,
-        variables: {
-          briefId: createBrief.data.briefCreate.id,
-          description: "",
-          date: null,
-        },
-      });
-
-      console.log("createBackground", createBackground);
-      console.groupEnd();
-    }
-
-    const brief = await getBriefByName("Background");
-    //const background = await getBackgroundByBriefName("Background", brief);
-    const label = await getLabelbyName("Background");
-    //const files = await getOrigFiles("Background", background);
-    request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
-      console.log("Binding File", matterFile.name, " to a 'Background' label");
-      await bindMatterToDefaultLabel(matterFile.id, brief, label);
-    });
-
-    //var labelsList = [];
+    var labelsList = [];
 
     //auto create label named 'Background'
-    {
-      /*
     if (request?.data?.matterFileBulkCreate) {
       request.data.matterFileBulkCreate.forEach(async (matterFile) => {
         const createLabel = await API.graphql({
@@ -550,8 +300,6 @@ export default function FileBucket() {
           true
         );
       });
-    }
-    */
     }
     //createBackgroundFromLabel(request.data.matterFileBulkCreate.id);
     //don't delete for single upload
@@ -662,31 +410,6 @@ mutation tagFileLabel($fileId: ID, $labels: [LabelInput]) {
   }
 }
 `;
-
-  const qBriefBackgroundList = `
-    query getBriefByID($limit: Int, $nextToken: String, $id: ID, $sortOrder: OrderBy) {
-      brief(id: $id) {
-        id
-        name
-        backgrounds(limit: $limit, nextToken: $nextToken, sortOrder: $sortOrder) {
-          items {
-            id
-            description
-            date
-            createdAt
-            order
-            files {
-              items {
-                id
-                name
-              }
-            }
-          }
-          nextToken
-        }
-      }
-    }  
-  `;
 
   //   const mUpdateMatterFileOrder = `
   //     mutation updateMatterFile ($id: ID, $order: Int) {
@@ -994,7 +717,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     };
     await API.graphql(params).then((files) => {
       let matterFilesList = files.data.matterFiles.items;
-      console.log("matterFilesList: ", matterFilesList);
+      console.log("matterFilesList: TEST", matterFilesList);
       setVnextToken(files.data.matterFiles.nextToken);
       setFiles(sortByOrder(matterFilesList));
       setMatterFiles(sortByOrder(matterFilesList)); // no need to use sortByOrder
@@ -1120,8 +843,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     var labelsList = [];
 
-    {
-      /*
+    /*
     for (var i = 0; i < e.length; i++) {
       if (e[i].__isNew__) {
         const createLabel = await API.graphql({
@@ -1154,60 +876,54 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     }
  */
-    }
+
     if (e.label) {
       if (e.__isNew__) {
-        const createLabel = await API.graphql({
+        await API.graphql({
           query: mCreateLabel,
           variables: {
             clientMatterId: matter_id,
             name: e.label,
           },
+        }).then((r) => {
+          console.log("createLabel", r);
+
+          const newLabelId = r.data.labelCreate.id,
+            newLabelName = r.data.labelCreate.name;
+
+          console.log("newLabelId", newLabelId);
+          console.log("newLabelName", newLabelName);
+
+          let updateLabel = labels;
+          updateLabel.push({
+            value: newLabelId,
+            label: newLabelName,
+          });
+
+          setLabels(updateLabel);
+
+          labelsList = [
+            ...labelsList,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+          ];
+          createBackgroundFromLabel(
+            id,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+            true
+          );
         });
-
-        console.log("createLabel", createLabel);
-        let updateLabel = labels;
-        updateLabel.push({
-          value: createLabel.data.labelCreate.id,
-          label: createLabel.data.labelCreate.name,
-        });
-
-        setLabels(updateLabel);
-
-        labelsList = [
-          ...labelsList,
-          {
-            id: createLabel.data.labelCreate.id,
-            name: createLabel.data.labelCreate.name,
-          },
-        ];
-
-        // const addBrief = await API.graphql({
-        //   query: mCreateBrief,
-        //   variables: {
-        //     clientMatterId: matter_id,
-        //     name: e.label,
-        //     date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
-        //     order: 0,
-        //   },
-        // });
-
-        // console.log("brief", addBrief);
       } else {
         labelsList = [...labelsList, { id: e.value, name: e.label }];
+
+        createBackgroundFromLabel(id, { id: e.value, name: e.label });
       }
     }
-
-    // console.log("collectedlabels", labelsList);
-
-    // const request = await API.graphql({
-    //   query: mTagFileLabel,
-    //   variables: {
-    //     fileId: id,
-    //     labels: labelsList,
-    //   },
-    // });
-    createBackgroundFromLabel(id, { id: e.value, name: e.label });
 
     // if (request) {
     setResultMessage("Creating Background..");
@@ -1793,43 +1509,30 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 }`;
 
   //deleteBackgroundFromLabel
-  const handleDeleteFileFromBackground = async (id, background) => {
-    console.log("ID", id);
-    console.log("BACKGROUND", background);
+  const handleDeleteBackground = (id, background) => {
+    console.log(background);
 
-    const backgroundFilesOpt = await API.graphql({
-      query: qlistBackgroundFiles,
+    const deletedBackground = API.graphql({
+      query: mDeleteBackground,
       variables: {
         id: background.id,
       },
     });
+    const deletedId = API.graphql({
+      query: mSoftDeleteBrief,
+      variables: {
+        id: background.briefs.items[0].id,
+      },
+    });
 
-    console.log("filesopt", backgroundFilesOpt);
-
-    if (backgroundFilesOpt.data.background.files !== null) {
-      const arrFileResult = backgroundFilesOpt.data.background.files.items.map(
-        ({ id }) => ({
-          id: id,
-        })
-      );
-      console.log("arrFileResult", arrFileResult);
-      const filteredArrFiles = arrFileResult.filter((i) => i.id !== id);
-      console.log("filteredArrFiles", filteredArrFiles);
-
-      const request = await API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: background.id,
-          files: filteredArrFiles,
-        },
-      });
-    }
+    //console.log("deletedID", deletedId);
 
     setShowToast(true);
-    setResultMessage(`Successfully deleted file from background`);
-    getMatterFiles();
+    setResultMessage(`Successfully deleted a background and brief`);
+    getBriefs();
     setTimeout(() => {
       setShowToast(false);
+      getMatterFiles(1);
     }, 2000);
   };
 
@@ -2727,8 +2430,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   `;
 
   const createBackgroundFromLabel = async (row_id, label, isNew) => {
-    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", matterFiles);
-    console.log("label", label);
+    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", label);
 
     // check if brief already exists
     let briefNameExists = false;
@@ -2740,22 +2442,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       },
     });
 
-    console.log("getBriefByName", getBriefByName);
+    let briefId = getBriefByName.data.briefByName.id,
+      existingBriefNameLabel = getBriefByName.data.briefByName.labelId;
 
-    let briefId;
-    let existingBriefNameLabel;
-    if (getBriefByName.data?.briefByName != null) {
-      briefId = getBriefByName.data?.briefByName?.id;
-      existingBriefNameLabel = getBriefByName.data?.briefByName?.labelId;
-    }
-
-    if (briefId !== "" || briefId !== null) {
+    if (briefId !== "" && briefId !== null) {
       briefNameExists = true;
     }
 
     if (isNew) {
       if (!briefNameExists) {
-        // Create Brief
         const params = {
           clientMatterId: matter_id,
           name: label.name,
@@ -2769,20 +2464,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           variables: params,
         });
 
-        console.log("createBriefa", createBrief);
+        console.log("createBrief", createBrief);
         briefId = createBrief.data.briefCreate.id;
       } else {
+        console.log("existingBriefNameLabel", existingBriefNameLabel);
         if (existingBriefNameLabel === null) {
-          // Tag Label to Brief
-          const uBrief = await API.graphql({
-            query: mUpdateBrief,
-            variables: {
-              id: briefId,
-              labelId: label.id,
-            },
-          });
+          const params = {
+            id: briefId,
+            labelId: label.id,
+          };
 
-          console.log("mUpdateBrief", uBrief);
+          await API.graphql({
+            query: mUpdateBrief,
+            variables: params,
+          });
         }
       }
 
@@ -2800,7 +2495,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         },
       });
 
-      console.log("createBackgrounda", createBackground);
+      console.log("createBackground", createBackground);
       if (createBackground.data.backgroundCreate.id !== null) {
         // Tag File to Background
         await API.graphql({
@@ -2813,7 +2508,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
     } else {
       const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
-      console.log("HIT");
+
       if (!briefNameExists) {
         const params = {
           clientMatterId: matter_id,
@@ -2834,15 +2529,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       } else {
         if (existingBriefNameLabel === null) {
           // Tag Label to Brief
-          const updateBrief = await API.graphql({
+          await API.graphql({
             query: mUpdateBrief,
             variables: {
               id: briefId,
               labelId: label.id,
             },
           });
-
-          console.log("updateBrief", updateBrief);
         }
       }
 
@@ -2855,6 +2548,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 .toISOString()
             : null;
 
+      // Create Background
       const createBackground = await API.graphql({
         query: mCreateBackground,
         variables: {
@@ -4327,8 +4021,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                     index
                                                                                   }
                                                                                   onClick={() =>
-                                                                                    handleDeleteFileFromBackground(
-                                                                                      data.id,
+                                                                                    handleDeleteBackground(
+                                                                                      background.id,
                                                                                       background
                                                                                     )
                                                                                   }
@@ -4751,4 +4445,4 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       {showSessionTimeout && <SessionTimeout />}
     </>
   );
-} 
+}

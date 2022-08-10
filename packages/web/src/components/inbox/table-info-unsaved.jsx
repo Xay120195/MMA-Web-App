@@ -563,7 +563,10 @@ const TableUnsavedInfo = ({
                       scrollTop={scrollTop}
                       width={width}
                       height={height}
-                      rowHeight={cache.current.rowHeight}
+                      rowHeight=/*{cache.current.rowHeight}*/
+                      {unSavedEmails.length === 1 ?
+                        "100" : cache.current.rowHeight
+                      }
                       deferredMeasurementCache={cache.current}
                       rowCount={unSavedEmails.length}
                       rowRenderer={({ key, index, style, parent }) => {
@@ -586,13 +589,28 @@ const TableUnsavedInfo = ({
                       > */}
                             {/* {({ registerChild }) => ( */}
                             <tr
-                              style={{
+                              style=
+                              /*{lastCounter === index+1 ? 
+                                {
+                                  ...style,
+                                  width: "100%",
+                                  height: "100%",
+                                  border: "1px solid #f0f0f0",
+                                  paddingBottom: "150px",
+                                } : {
+                                  ...style,
+                                  width: "100%",
+                                  height: "100%",
+                                  border: "1px solid #f0f0f0",
+                                }
+                              }*/
+                              {{
                                 ...style,
                                 width: "100%",
                                 height: "100%",
                                 border: "1px solid #f0f0f0",
-                                overflow: "unset",
                               }}
+                              className={lastCounter === index+1 ? "tr-child" : ""}
                               key={key}
                             >
                               <td className="p-2 align-top h-full w-10">
@@ -642,7 +660,7 @@ const TableUnsavedInfo = ({
                                     {show && snippetId === item.id && (
                                       <div
                                         ref={(el) => (ref.current[index] = el)}
-                                        className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                                         id={item.id}
                                       >
                                         <p>From : {item.from}</p>
