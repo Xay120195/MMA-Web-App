@@ -367,6 +367,10 @@ export default function FileBucket() {
     return final[0]; //get the First result // if any duplicates, we don't have a label delete mutation
   };
 
+  const getFileType = (type) => {
+    return type.split("/").slice(0, -1).join("/");
+  };
+
   const getBackgroundByBriefName = async (target, brief) => {
     console.group("getBackgroundByBriefName");
     console.log("TARGET", brief);
@@ -729,6 +733,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           order
           description
           date
+          createdAt
           briefs(limit: $limit, nextToken: $nextToken, isDeleted: $isDeleted) {
             items {
               id
@@ -1205,7 +1210,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     // if (request) {
     setDisableSelect(true);
-    setShowLabel([{index: -1}]);
+    setShowLabel([{ index: -1 }]);
     setResultMessage("Creating Background..");
     setShowToast(true);
     setTimeout(() => {
@@ -1803,12 +1808,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     //console.log("rowFiles", rowFiles);
     //console.log("fileId", fileId); //remove in rowFiles
 
-    const filesArr = rowFiles.items.map(
-      ({ id }) => ({
-        id: id,
-      })
-    );
-    
+    const filesArr = rowFiles.items.map(({ id }) => ({
+      id: id,
+    }));
+
     const filteredArrFiles = filesArr.filter((i) => i.id !== fileId);
 
     //console.log("passthis", filteredArrFiles);
@@ -1820,7 +1823,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         files: filteredArrFiles,
       },
     });
-    
+
     //console.log("success", request);
 
     setShowToast(true);
@@ -3538,31 +3541,24 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       </span>
                                                                     </div>
 
-                                                                    {data.backgrounds.items
-                                                                      .sort(
-                                                                        (
-                                                                          a,
-                                                                          b
-                                                                        ) =>
-                                                                          a.order >
-                                                                          b.order
-                                                                            ? 1
-                                                                            : -1
+                                                                    {sortByOrder(
+                                                                      data
+                                                                        .backgrounds
+                                                                        .items
+                                                                    ).map(
+                                                                      (
+                                                                        background,
+                                                                        counter
+                                                                      ) => (
+                                                                        <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
+                                                                          {index +
+                                                                            1}
+                                                                          .
+                                                                          {counter +
+                                                                            1}
+                                                                        </div>
                                                                       )
-                                                                      .map(
-                                                                        (
-                                                                          background,
-                                                                          counter
-                                                                        ) => (
-                                                                          <div className="text-xs flex ml-7 mt-7 border-l-2 pt-0.5 ">
-                                                                            {index +
-                                                                              1}
-                                                                            .
-                                                                            {counter +
-                                                                              1}
-                                                                          </div>
-                                                                        )
-                                                                      )}
+                                                                    )}
                                                                   </div>
                                                                 </td>
                                                                 <td className="align-top py-2 w-1/12">
@@ -3597,120 +3593,76 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     {/* <p>{data.date === undefined? "null" : data.date}</p> */}
                                                                   </div>
 
-                                                                  {data.backgrounds.items
-                                                                    .sort(
-                                                                      (a, b) =>
-                                                                        a.order >
-                                                                        b.order
-                                                                          ? 1
-                                                                          : -1
+                                                                  {sortByOrder(
+                                                                    data
+                                                                      .backgrounds
+                                                                      .items
+                                                                  ).map(
+                                                                    (
+                                                                      background,
+                                                                      index
+                                                                    ) => (
+                                                                      <div className="text-xs block mt-2">
+                                                                        <DatePicker
+                                                                          popperProps={{
+                                                                            positionFixed: true,
+                                                                          }}
+                                                                          className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
+                                                                          dateFormat="dd MMM yyyy"
+                                                                          selected={
+                                                                            background.date ===
+                                                                            null
+                                                                              ? null
+                                                                              : background.date ===
+                                                                                undefined
+                                                                              ? null
+                                                                              : new Date(
+                                                                                  background.date
+                                                                                )
+                                                                          }
+                                                                          placeholderText="No Date"
+                                                                          onChange={(
+                                                                            selected
+                                                                          ) =>
+                                                                            handleChangeDateBackground(
+                                                                              selected,
+                                                                              background.id,
+                                                                              data.id
+                                                                            )
+                                                                          }
+                                                                        />
+                                                                      </div>
                                                                     )
-                                                                    .map(
-                                                                      (
-                                                                        background,
-                                                                        index
-                                                                      ) => (
-                                                                        <div className="text-xs block mt-2">
-                                                                          <DatePicker
-                                                                            popperProps={{
-                                                                              positionFixed: true,
-                                                                            }}
-                                                                            className=" mt-1 border w-28 rounded text-xs py-2 px-1 border-gray-300"
-                                                                            dateFormat="dd MMM yyyy"
-                                                                            selected={
-                                                                              background.date ===
-                                                                              null
-                                                                                ? null
-                                                                                : background.date ===
-                                                                                  undefined
-                                                                                ? null
-                                                                                : new Date(
-                                                                                    background.date
-                                                                                  )
-                                                                            }
-                                                                            placeholderText="No Date"
-                                                                            onChange={(
-                                                                              selected
-                                                                            ) =>
-                                                                              handleChangeDateBackground(
-                                                                                selected,
-                                                                                background.id,
-                                                                                data.id
-                                                                              )
-                                                                            }
-                                                                          />
-                                                                        </div>
-                                                                      )
-                                                                    )}
+                                                                  )}
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
                                                                   className="px-2 py-3 align-top place-items-center relative flex-wrap w-2/12"
                                                                 >
                                                                   <div className="inline-flex">
-                                                                    {data.type
-                                                                      .split(
-                                                                        "/"
-                                                                      )
-                                                                      .slice(
-                                                                        0,
-                                                                        -1
-                                                                      )
-                                                                      .join(
-                                                                        "/"
-                                                                      ) ===
+                                                                    {getFileType(
+                                                                      data.type
+                                                                    ) ===
                                                                     "image" ? (
                                                                       <GrDocumentImage className="text-2xl" />
-                                                                    ) : data.type
-                                                                        .split(
-                                                                          "/"
-                                                                        )
-                                                                        .slice(
-                                                                          0,
-                                                                          -1
-                                                                        )
-                                                                        .join(
-                                                                          "/"
-                                                                        ) ===
+                                                                    ) : getFileType(
+                                                                        data.type
+                                                                      ) ===
                                                                       "audio" ? (
                                                                       <FaRegFileAudio className="text-2xl" />
-                                                                    ) : data.type
-                                                                        .split(
-                                                                          "/"
-                                                                        )
-                                                                        .slice(
-                                                                          0,
-                                                                          -1
-                                                                        )
-                                                                        .join(
-                                                                          "/"
-                                                                        ) ===
+                                                                    ) : getFileType(
+                                                                        data.type
+                                                                      ) ===
                                                                       "video" ? (
                                                                       <FaRegFileVideo className="text-2xl" />
-                                                                    ) : data.type
-                                                                        .split(
-                                                                          "/"
-                                                                        )
-                                                                        .slice(
-                                                                          0,
-                                                                          -1
-                                                                        )
-                                                                        .join(
-                                                                          "/"
-                                                                        ) ===
+                                                                    ) : getFileType(
+                                                                        data.type
+                                                                      ) ===
                                                                       "text" ? (
                                                                       <GrDocumentTxt className="text-2xl" />
-                                                                    ) : data.type
-                                                                        .split(
-                                                                          "/"
-                                                                        )
-                                                                        .slice(
-                                                                          0,
-                                                                          -1
-                                                                        )
-                                                                        .join(
-                                                                          "/"
-                                                                        ) ===
+                                                                    ) : getFileType(
+                                                                        data.type
+                                                                      ) ===
                                                                         "application" &&
                                                                       data.type
                                                                         .split(
@@ -3719,17 +3671,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         .pop() ===
                                                                         "sheet" ? (
                                                                       <GrDocumentExcel className="text-2xl" />
-                                                                    ) : data.type
-                                                                        .split(
-                                                                          "/"
-                                                                        )
-                                                                        .slice(
-                                                                          0,
-                                                                          -1
-                                                                        )
-                                                                        .join(
-                                                                          "/"
-                                                                        ) ===
+                                                                    ) : getFileType(
+                                                                        data.type
+                                                                      ) ===
                                                                         "application" &&
                                                                       data.type
                                                                         .split(
@@ -3738,17 +3682,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         .pop() ===
                                                                         "document" ? (
                                                                       <GrDocumentWord className="text-2xl" />
-                                                                    ) : data.type
-                                                                        .split(
-                                                                          "/"
-                                                                        )
-                                                                        .slice(
-                                                                          0,
-                                                                          -1
-                                                                        )
-                                                                        .join(
-                                                                          "/"
-                                                                        ) ===
+                                                                    ) : getFileType(
+                                                                        data.type
+                                                                      ) ===
                                                                         "application" &&
                                                                       data.type
                                                                         .split(
@@ -3757,17 +3693,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         .pop() ===
                                                                         "text" ? (
                                                                       <GrDocumentText className="text-2xl" />
-                                                                    ) : data.type
-                                                                        .split(
-                                                                          "/"
-                                                                        )
-                                                                        .slice(
-                                                                          0,
-                                                                          -1
-                                                                        )
-                                                                        .join(
-                                                                          "/"
-                                                                        ) ===
+                                                                    ) : getFileType(
+                                                                        data.type
+                                                                      ) ===
                                                                       "application" ? (
                                                                       <GrDocumentPdf className="text-2xl" />
                                                                     ) : (
@@ -3928,121 +3856,117 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       descAlert}
                                                                   </span>
 
-                                                                  {data.backgrounds.items
-                                                                    .sort(
-                                                                      (a, b) =>
-                                                                        a.order >
-                                                                        b.order
-                                                                          ? 1
-                                                                          : -1
+                                                                  {sortByOrder(
+                                                                    data
+                                                                      .backgrounds
+                                                                      .items
+                                                                  ).map(
+                                                                    (
+                                                                      background,
+                                                                      i
+                                                                    ) => (
+                                                                      <div className="flex mt-3.5">
+                                                                        <span
+                                                                          className={
+                                                                            background.id ===
+                                                                            descriptionClassId
+                                                                              ? "w-full p-2 font-poppins h-full mx-2"
+                                                                              : "w-96 p-2 font-poppins h-full mx-2 single-line"
+                                                                          }
+                                                                          style={{
+                                                                            cursor:
+                                                                              "auto",
+                                                                            outlineColor:
+                                                                              "rgb(204, 204, 204, 0.5)",
+                                                                            outlineWidth:
+                                                                              "thin",
+                                                                            maxHeight:
+                                                                              "35px",
+                                                                            overflowY:
+                                                                              "auto",
+                                                                          }}
+                                                                          suppressContentEditableWarning
+                                                                          onClick={(
+                                                                            event
+                                                                          ) =>
+                                                                            handleDescContent(
+                                                                              event,
+                                                                              background.description,
+                                                                              background.id,
+                                                                              index +
+                                                                                "-" +
+                                                                                i
+                                                                            )
+                                                                          }
+                                                                          dangerouslySetInnerHTML={{
+                                                                            __html:
+                                                                              background.description,
+                                                                          }}
+                                                                          onInput={(
+                                                                            event
+                                                                          ) =>
+                                                                            handleChangeDesc(
+                                                                              event
+                                                                            )
+                                                                          }
+                                                                          onBlur={(
+                                                                            e
+                                                                          ) =>
+                                                                            handleSaveDesc(
+                                                                              e,
+                                                                              background.description,
+                                                                              background.date,
+                                                                              background.id
+                                                                            )
+                                                                          }
+                                                                          contentEditable={
+                                                                            true
+                                                                          }
+                                                                          ref={(
+                                                                            el
+                                                                          ) =>
+                                                                            (itemsRef.current[
+                                                                              index +
+                                                                                "-" +
+                                                                                i
+                                                                            ] =
+                                                                              el)
+                                                                          }
+                                                                          onFocus={(
+                                                                            e
+                                                                          ) =>
+                                                                            handleChangeDescription(
+                                                                              e,
+                                                                              background.description,
+                                                                              background.id,
+                                                                              index +
+                                                                                "-" +
+                                                                                i
+                                                                            )
+                                                                          }
+                                                                        ></span>
+                                                                        {background.description ===
+                                                                          null ||
+                                                                        background.description ===
+                                                                          undefined ||
+                                                                        background.description ===
+                                                                          "" ||
+                                                                        background
+                                                                          .description
+                                                                          .length <
+                                                                          47 ? (
+                                                                          <p></p>
+                                                                        ) : background.id ===
+                                                                          descriptionClassId ? (
+                                                                          <p></p>
+                                                                        ) : (
+                                                                          <p className="py-2 -ml-1">
+                                                                            ...
+                                                                          </p>
+                                                                        )}
+                                                                      </div>
                                                                     )
-                                                                    .map(
-                                                                      (
-                                                                        background,
-                                                                        i
-                                                                      ) => (
-                                                                        <div className="flex mt-3.5">
-                                                                          <span
-                                                                            className={
-                                                                              background.id ===
-                                                                              descriptionClassId
-                                                                                ? "w-full p-2 font-poppins h-full mx-2"
-                                                                                : "w-96 p-2 font-poppins h-full mx-2 single-line"
-                                                                            }
-                                                                            style={{
-                                                                              cursor:
-                                                                                "auto",
-                                                                              outlineColor:
-                                                                                "rgb(204, 204, 204, 0.5)",
-                                                                              outlineWidth:
-                                                                                "thin",
-                                                                              maxHeight:
-                                                                                "35px",
-                                                                              overflowY:
-                                                                                "auto",
-                                                                            }}
-                                                                            suppressContentEditableWarning
-                                                                            onClick={(
-                                                                              event
-                                                                            ) =>
-                                                                              handleDescContent(
-                                                                                event,
-                                                                                background.description,
-                                                                                background.id,
-                                                                                index +
-                                                                                  "-" +
-                                                                                  i
-                                                                              )
-                                                                            }
-                                                                            dangerouslySetInnerHTML={{
-                                                                              __html:
-                                                                                background.description,
-                                                                            }}
-                                                                            onInput={(
-                                                                              event
-                                                                            ) =>
-                                                                              handleChangeDesc(
-                                                                                event
-                                                                              )
-                                                                            }
-                                                                            onBlur={(
-                                                                              e
-                                                                            ) =>
-                                                                              handleSaveDesc(
-                                                                                e,
-                                                                                background.description,
-                                                                                background.date,
-                                                                                background.id
-                                                                              )
-                                                                            }
-                                                                            contentEditable={
-                                                                              true
-                                                                            }
-                                                                            ref={(
-                                                                              el
-                                                                            ) =>
-                                                                              (itemsRef.current[
-                                                                                index +
-                                                                                  "-" +
-                                                                                  i
-                                                                              ] =
-                                                                                el)
-                                                                            }
-                                                                            onFocus={(
-                                                                              e
-                                                                            ) =>
-                                                                              handleChangeDescription(
-                                                                                e,
-                                                                                background.description,
-                                                                                background.id,
-                                                                                index +
-                                                                                  "-" +
-                                                                                  i
-                                                                              )
-                                                                            }
-                                                                          ></span>
-                                                                          {background.description ===
-                                                                            null ||
-                                                                          background.description ===
-                                                                            undefined ||
-                                                                          background.description ===
-                                                                            "" ||
-                                                                          background
-                                                                            .description
-                                                                            .length <
-                                                                            47 ? (
-                                                                            <p></p>
-                                                                          ) : background.id ===
-                                                                            descriptionClassId ? (
-                                                                            <p></p>
-                                                                          ) : (
-                                                                            <p className="py-2 -ml-1">
-                                                                              ...
-                                                                            </p>
-                                                                          )}
-                                                                        </div>
-                                                                      )
-                                                                    )}
+                                                                  )}
                                                                 </td>
                                                                 <td
                                                                   {...provider.dragHandleProps}
@@ -4186,68 +4110,61 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                   <div className="grid grid-cols-1">
                                                                     <div className="flex mb-14"></div>
 
-                                                                    {data.backgrounds.items
-                                                                      .sort(
-                                                                        (
-                                                                          a,
-                                                                          b
-                                                                        ) =>
-                                                                          a.order >
-                                                                          b.order
-                                                                            ? 1
-                                                                            : -1
-                                                                      )
-                                                                      .map(
-                                                                        (
-                                                                          background,
-                                                                          index
-                                                                        ) =>
-                                                                          background
-                                                                            .briefs
-                                                                            .length <
-                                                                            1 ||
-                                                                          background
-                                                                            .briefs
-                                                                            .items[0] ===
-                                                                            null ||
-                                                                          background
-                                                                            .briefs
-                                                                            .items[0] ===
-                                                                            undefined ? (
-                                                                            <div
-                                                                              key={
+                                                                    {sortByOrder(
+                                                                      data
+                                                                        .backgrounds
+                                                                        .items
+                                                                    ).map(
+                                                                      (
+                                                                        background,
+                                                                        index
+                                                                      ) =>
+                                                                        background
+                                                                          .briefs
+                                                                          .length <
+                                                                          1 ||
+                                                                        background
+                                                                          .briefs
+                                                                          .items[0] ===
+                                                                          null ||
+                                                                        background
+                                                                          .briefs
+                                                                          .items[0] ===
+                                                                          undefined ? (
+                                                                          <div
+                                                                            key={
+                                                                              background.id
+                                                                            }
+                                                                            index={
+                                                                              index
+                                                                            }
+                                                                          ></div>
+                                                                        ) : (
+                                                                          <div
+                                                                            className="h-10.5 w-full py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                            index={
+                                                                              index
+                                                                            }
+                                                                            onClick={(
+                                                                              event
+                                                                            ) =>
+                                                                              handleRedirectLink(
+                                                                                event,
                                                                                 background.id
+                                                                              )
+                                                                            }
+                                                                          >
+                                                                            <b>
+                                                                              {
+                                                                                background
+                                                                                  .briefs
+                                                                                  .items[0]
+                                                                                  .name
                                                                               }
-                                                                              index={
-                                                                                index
-                                                                              }
-                                                                            ></div>
-                                                                          ) : (
-                                                                            <div
-                                                                              className="h-10.5 w-full py-3 p-1 mb-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                                              index={
-                                                                                index
-                                                                              }
-                                                                              onClick={(
-                                                                                event
-                                                                              ) =>
-                                                                                handleRedirectLink(
-                                                                                  event,
-                                                                                  background.id
-                                                                                )
-                                                                              }
-                                                                            >
-                                                                              <b>
-                                                                                {
-                                                                                  background
-                                                                                    .briefs
-                                                                                    .items[0]
-                                                                                    .name
-                                                                                }
-                                                                              </b>
-                                                                            </div>
-                                                                          )
-                                                                      )}
+                                                                            </b>
+                                                                          </div>
+                                                                        )
+                                                                    )}
                                                                   </div>
                                                                 </td>
                                                                 <td
@@ -4257,84 +4174,77 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                   <div className="grid grid-cols-1">
                                                                     <div className="flex mb-24"></div>
 
-                                                                    {data.backgrounds.items
-                                                                      .sort(
-                                                                        (
-                                                                          a,
-                                                                          b
-                                                                        ) =>
-                                                                          a.order >
-                                                                          b.order
-                                                                            ? -1
-                                                                            : 1
-                                                                      )
-                                                                      .map(
-                                                                        (
-                                                                          background,
-                                                                          index
-                                                                        ) =>
-                                                                          background
-                                                                            .briefs
-                                                                            .length <
-                                                                            1 ||
-                                                                          background
-                                                                            .briefs
-                                                                            .items[0] ===
-                                                                            null ||
-                                                                          background
-                                                                            .briefs
-                                                                            .items[0] ===
-                                                                            undefined ? (
-                                                                            <div
-                                                                              className="h-10.5 py-3 p-1 mb-1.5"
-                                                                              index={
-                                                                                index
-                                                                              }
-                                                                            ></div>
-                                                                          ) : (
-                                                                            <>
-                                                                              <div className="flex">
-                                                                                <div
-                                                                                  className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
-                                                                                  index={
-                                                                                    index
-                                                                                  }
-                                                                                  onClick={(
-                                                                                    event
-                                                                                  ) =>
-                                                                                    handleRedirectLink(
-                                                                                      event,
-                                                                                      background.id
-                                                                                    )
-                                                                                  }
-                                                                                >
-                                                                                  <b>
-                                                                                    {"Row" +
-                                                                                      " " +
-                                                                                      background.order}
-                                                                                  </b>
-                                                                                </div>
-                                                                                <div
-                                                                                  className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
-                                                                                  index={
-                                                                                    index
-                                                                                  }
-                                                                                  onClick={() =>
-                                                                                    handleDeleteBackground(
-                                                                                      background.id,
-                                                                                      background.files,
-                                                                                      data.id
-                                                                                    )
-                                                                                  }
-                                                                                >
-                                                                                  <b>
-                                                                                    <CgTrash className="" />
-                                                                                  </b>
-                                                                                </div>
+                                                                    {sortByOrder(
+                                                                      data
+                                                                        .backgrounds
+                                                                        .items
+                                                                    ).map(
+                                                                      (
+                                                                        background,
+                                                                        index
+                                                                      ) =>
+                                                                        background
+                                                                          .briefs
+                                                                          .length <
+                                                                          1 ||
+                                                                        background
+                                                                          .briefs
+                                                                          .items[0] ===
+                                                                          null ||
+                                                                        background
+                                                                          .briefs
+                                                                          .items[0] ===
+                                                                          undefined ? (
+                                                                          <div
+                                                                            className="h-10.5 py-3 p-1 mb-1.5"
+                                                                            index={
+                                                                              index
+                                                                            }
+                                                                          ></div>
+                                                                        ) : (
+                                                                          <>
+                                                                            <div className="flex">
+                                                                              <div
+                                                                                className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                                index={
+                                                                                  index
+                                                                                }
+                                                                                onClick={(
+                                                                                  event
+                                                                                ) =>
+                                                                                  handleRedirectLink(
+                                                                                    event,
+                                                                                    background.id
+                                                                                  )
+                                                                                }
+                                                                              >
+                                                                                <b>
+                                                                                  {"Row" +
+                                                                                    " " +
+                                                                                    background.order}
+                                                                                </b>
                                                                               </div>
-                                                                            </>
-                                                                          )
-                                                                      )}
+                                                                              <div
+                                                                                className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
+                                                                                index={
+                                                                                  index
+                                                                                }
+                                                                                onClick={() =>
+                                                                                  handleDeleteBackground(
+                                                                                    background.id,
+                                                                                    background.files,
+                                                                                    data.id
+                                                                                  )
+                                                                                }
+                                                                              >
+                                                                                <b>
+                                                                                  <CgTrash className="" />
+                                                                                </b>
+                                                                              </div>
+                                                                            </div>
+                                                                          </>
+                                                                        )
+                                                                    )}
                                                                   </div>
                                                                 </td>
                                                               </tr>
@@ -4543,11 +4453,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           <FiChevronDown className="inline" />
                                         </button>
                                       </div>
-                                      {data.backgrounds.items
-                                        .sort((a, b) =>
-                                          a.order > b.order ? 1 : -1
-                                        )
-                                        .map((background, counter, arr) => (
+                                      {sortByOrder(data.backgrounds.items).map(
+                                        (background, counter, arr) => (
                                           <>
                                             <div
                                               className={
@@ -4670,7 +4577,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                               }}
                                             ></p>
                                           </>
-                                        ))}
+                                        )
+                                      )}
                                       {isReadMoreExpandedDesc(data.id) |
                                         isReadMoreExpandedOuter(data.id) &&
                                       ((data.details !== "") &
