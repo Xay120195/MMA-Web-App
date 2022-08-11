@@ -10,6 +10,12 @@ const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
 const { getRFI, listRFIs } = require("../../../services/RFIService");
 const {
+  getCustomUserType,
+  listCustomUserTypes,
+} = require("../../../services/CustomUserTypeService");
+const { getTeam, listTeams } = require("../../../services/TeamService");
+
+const {
   getRequest,
   listRequests,
 } = require("../../../services/RequestService");
@@ -503,8 +509,6 @@ async function getUserColumnSettings(data) {
       userColumnSettingsCommand
     );
 
-    //const userColumnSettings = userColumnSettingsRequest.Items.map((i) => unmarshall(i));
-
     const columnSettingsIds = userColumnSettingsRequest.Items.map((i) =>
       unmarshall(i)
     ).map((f) => marshall({ id: f.columnSettings.id }));
@@ -541,7 +545,6 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    //console.log(result);
     resp =
       Object.keys(result).length !== 0 && result !== null && result !== {}
         ? result
@@ -569,6 +572,77 @@ async function getBrief(data) {
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
     resp = Item ? unmarshall(Item) : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+async function getBriefByName(data) {
+  try {
+    const { clientMatterId, name } = data;
+    const ExpressionAttributeValues = {
+      ":clientMatterId": clientMatterId,
+      ":isDeleted": false,
+    };
+
+    const cmBriefParam = {
+      TableName: "ClientMatterBriefTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      FilterExpression:
+        "isDeleted = :isDeleted OR attribute_not_exists(isDeleted)",
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
+    };
+
+    const cmBriefCmd = new QueryCommand(cmBriefParam);
+    const cmBriefResult = await ddbClient.send(cmBriefCmd);
+
+    const objCMBrief = cmBriefResult.Items.map((i) => unmarshall(i));
+
+    const briefIds = objCMBrief.map((f) => marshall({ id: f.briefId }));
+
+    if (briefIds.length !== 0) {
+      const briefParam = {
+        RequestItems: {
+          BriefTable: {
+            Keys: briefIds,
+          },
+        },
+      };
+
+      const briefCommand = new BatchGetItemCommand(briefParam);
+      const briefResult = await ddbClient.send(briefCommand);
+
+      const objBriefs = briefResult.Responses.BriefTable.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objCMBrief
+        .map((item) => {
+          const filterBrief = objBriefs.find(
+            (u) => u.id === item.briefId && u.name === name
+          );
+
+          if (filterBrief !== undefined) {
+            return { ...item, ...filterBrief };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return response[0] !== undefined ? response[0] : { id: "" };
+    } else {
+      return {
+        items: [{ id: "" }],
+        nextToken: null,
+      };
+    }
+
+    // resp = Item ? unmarshall(Item) : {};
   } catch (e) {
     resp = {
       error: e.message,
@@ -647,48 +721,6 @@ async function listGmailMessages() {
   try {
     const param = {
       TableName: "GmailMessageTable",
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function getCustomUserType(data) {
-  try {
-    const param = {
-      TableName: "CustomUserTypeTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const cmd = new GetItemCommand(param);
-    const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function listCustomUserType() {
-  try {
-    const param = {
-      TableName: "CustomUserTypeTable",
     };
 
     const cmd = new ScanCommand(param);
@@ -800,6 +832,9 @@ const resolvers = {
     brief: async (ctx) => {
       return getBrief(ctx.arguments);
     },
+    briefByName: async (ctx) => {
+      return getBriefByName(ctx.arguments);
+    },
     briefs: async () => {
       return listBriefs();
     },
@@ -813,10 +848,16 @@ const resolvers = {
       return getAttachment(ctx.arguments);
     },
     customUserTypes: async () => {
-      return listCustomUserType();
+      return listCustomUserTypes();
     },
     customUserType: async (ctx) => {
       return getCustomUserType(ctx.arguments);
+    },
+    teams: async () => {
+      return listTeams();
+    },
+    team: async (ctx) => {
+      return getTeam(ctx.arguments);
     },
   },
 };

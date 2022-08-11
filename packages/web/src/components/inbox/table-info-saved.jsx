@@ -311,7 +311,11 @@ const TableSavedInfo = ({
                 scrollTop={scrollTop}
                 width={width}
                 height={height}
-                rowHeight={cache.current.rowHeight}
+                //rowHeight={cache.current.rowHeight}
+                rowHeight=/*{cache.current.rowHeight}*/
+                {savedEmails.length === 1 ?
+                  "100" : cache.current.rowHeight
+                }
                 deferredMeasurementCache={cache.current}
                 rowCount={savedEmails.length}
                 rowRenderer={({ key, index, style, parent }) => {
@@ -382,7 +386,7 @@ const TableSavedInfo = ({
                               {show && snippetId === item.id && (
                                 <div
                                   ref={(el) => (ref.current[index] = el)}
-                                  className=" absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                  className=" fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                                   id={item.id}
                                 >
                                   <p>From : {item.from}</p>
@@ -480,46 +484,50 @@ const TableSavedInfo = ({
                           </div>
 
                           {item.attachments.items.map((item_attach, index) => (
-                            <React.Fragment key={item_attach.id}>
-                              <div className="flex items-start mt-2 h-full w-full border-t">
-                                <p
-                                  className="mt-1 w-24 cursor-pointer ml-5 mr-1 text-opacity-90 1
-                                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor 
-                                    bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none 
-                                    focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
-                                  id={item_attach.id}
-                                  title={item_attach.name}
-                                  onClick={() =>
-                                    previewAndDownloadFile(item_attach.id)
-                                  }
-                                >
-                                  {item_attach.name.substring(0, 10)}
-                                  {item_attach.name.length >= 10 ? "..." : ""}
-                                </p>
-                                <div
-                                  className="mt-1 p-2 h-full font-poppins w-full rounded-sm"
-                                  dangerouslySetInnerHTML={{
-                                    __html: item_attach.details,
-                                  }}
-                                ></div>
-                                <div className="flex-wrap inline-flex ml-8 w-80 h-full">
-                                  {item_attach.labels.items.map((x) => (
-                                    <button
-                                      key={x.id}
-                                      className="mt-1 mb-1 h-6 mr-1 text-opacity-90 1 group text-xs 
-                                          font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 
-                                          focus:outline-none focus-visible:ring-2 focus-visible:ring-white 
-                                          focus-visible:ring-opacity-75"
-                                      id="headlessui-popover-button-87"
-                                      type="button"
-                                      aria-expanded="false"
+                              <React.Fragment key={item_attach.id}>
+                                {item_attach.isDeleted !== true ? 
+                                  <div className="flex items-start mt-2 h-full w-full border-t">
+                                    <p
+                                      className="mt-1 w-24 cursor-pointer ml-5 mr-1 text-opacity-90 1
+                                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor 
+                                        bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none 
+                                        focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
+                                      id={item_attach.id}
+                                      title={item_attach.name}
+                                      onClick={() =>
+                                        previewAndDownloadFile(item_attach.id)
+                                      }
                                     >
-                                      {x.name}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            </React.Fragment>
+                                      {item_attach.name.substring(0, 10)}
+                                      {item_attach.name.length >= 10 ? "..." : ""}
+                                    </p>
+                                    <div
+                                      className="mt-1 p-2 h-full font-poppins w-full rounded-sm"
+                                      dangerouslySetInnerHTML={{
+                                        __html: item_attach.details,
+                                      }}
+                                    ></div>
+                                    <div className="flex-wrap inline-flex ml-8 w-80 h-full">
+                                      {item_attach.labels.items.map((x) => (
+                                        <button
+                                          key={x.id}
+                                          className="mt-1 mb-1 h-6 mr-1 text-opacity-90 1 group text-xs 
+                                              font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 
+                                              focus:outline-none focus-visible:ring-2 focus-visible:ring-white 
+                                              focus-visible:ring-opacity-75"
+                                          id="headlessui-popover-button-87"
+                                          type="button"
+                                          aria-expanded="false"
+                                        >
+                                          {x.name}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  :
+                                  ""
+                                }
+                              </React.Fragment>
                           ))}
                         </td>
                         {/* <td  className="p-2 align-top w-1/6" >
