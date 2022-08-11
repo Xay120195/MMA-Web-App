@@ -168,17 +168,14 @@ async function listGmailMessageLabels(ctx) {
 
 async function listGmailMessageAttachments(ctx) {
   const { id } = ctx.source;
-  //const { isDeleted = false } = ctx.arguments;
 
   try {
     const gmailAttachmentsParam = {
       TableName: "GmailMessageAttachment",
       IndexName: "byMessage",
       KeyConditionExpression: "messageId = :messageId",
-      //FilterExpression: "isDeleted = :isDeleted",
       ExpressionAttributeValues: marshall({
         ":messageId": id,
-        //":isDeleted": isDeleted,
       }),
     };
 

@@ -1,64 +1,56 @@
-import "../../assets/styles/Briefs.css";
-import "../../assets/styles/Mobile.css";
+import '../../assets/styles/Briefs.css';
+import '../../assets/styles/Mobile.css';
 
-import { 
-  // CgArrowRight, 
-  CgChevronLeft, 
-  CgChevronRight } from "react-icons/cg";
+import { CgArrowRight, CgChevronLeft, CgChevronRight } from 'react-icons/cg';
 import {
   FaBook,
   FaEllipsisH,
   FaTachometerAlt,
   FaUserCircle,
-  // FaUsers,
-} from "react-icons/fa";
-import { 
-  // FiChevronDown, 
-  FiChevronRight, 
-  // FiChevronUp 
-} from "react-icons/fi";
+  FaUsers,
+} from 'react-icons/fa';
+import { FiChevronDown, FiChevronRight, FiChevronUp } from 'react-icons/fi';
 import {
-  // MdArrowForwardIos,
-  // MdDelete,
-  // MdDownload,
+  MdArrowForwardIos,
+  MdDelete,
+  MdDownload,
   MdEdit,
-} from "react-icons/md";
-import React, { useEffect, useRef, useState } from "react";
-import { 
-  // Redirect, 
-  useHistory } from "react-router-dom";
+} from 'react-icons/md';
+import React, { useEffect, useRef, useState } from 'react';
+import { Redirect, useHistory } from 'react-router-dom';
 
-import { API } from "aws-amplify";
-// import AccessControl from "../../shared/accessControl";
-import { AiFillEye } from "react-icons/ai";
-// import { AiOutlineFolderOpen } from "react-icons/ai";
-import { AppRoutes } from "../../constants/AppRoutes";
-import { Auth } from "aws-amplify";
-import { BiArrowToTop } from "react-icons/bi";
-import BlankList from "../../assets/images/RFI_Blank_List.svg";
-import BlankState from "../dynamic-blankstate";
-import BlankStateMobile from "../mobile-blank-state";
-import { BsFillTrashFill } from "react-icons/bs";
-import CreateBriefsModal from "./create-brief-modal";
-import { HiOutlinePlusCircle } from "react-icons/hi";
-import Illustration from "../../assets/images/no-data.svg";
-import { Link } from "react-router-dom";
-import MobileHeader from "../mobile-header";
-import RemoveBriefModal from "../briefs/remove-brief-modal";
-import ScrollToTop from "react-scroll-to-top";
-import SessionTimeout from "../session-timeout/session-timeout-modal";
-import ToastNotification from "../toast-notification";
-import { useIdleTimer } from "react-idle-timer";
-import { useParams } from "react-router-dom";
-import useWindowDimensions from "../../shared/windowDimensions";
+import { API } from 'aws-amplify';
+import AccessControl from '../../shared/accessControl';
+import { AiFillEye } from 'react-icons/ai';
+import { AiOutlineFolderOpen } from 'react-icons/ai';
+import { AppRoutes } from '../../constants/AppRoutes';
+import { Auth } from 'aws-amplify';
+import { BiArrowToTop } from 'react-icons/bi';
+import BlankList from '../../assets/images/RFI_Blank_List.svg';
+import BlankState from '../dynamic-blankstate';
+import BlankStateMobile from '../mobile-blank-state';
+import { BsFillTrashFill } from 'react-icons/bs';
+import CreateBriefsModal from './create-brief-modal';
+import { HiOutlinePlusCircle } from 'react-icons/hi';
+import Illustration from '../../assets/images/no-data.svg';
+import { Link } from 'react-router-dom';
+import MobileHeader from '../mobile-header';
+import RemoveBriefModal from '../briefs/remove-brief-modal';
+import ScrollToTop from 'react-scroll-to-top';
+import SessionTimeout from '../session-timeout/session-timeout-modal';
+import ToastNotification from '../toast-notification';
+import { useIdleTimer } from 'react-idle-timer';
+import { useParams } from 'react-router-dom';
+import useWindowDimensions from '../../shared/windowDimensions';
 
 // import { matter_rfi, questions } from "./data-source";
+
 // import CreateRFIModal from "./create-RFI-modal";
 
 export default function Briefs() {
   const { matter_id } = useParams();
 
-  const modalRFIAlertMsg = "Background successfully created.";
+  const modalRFIAlertMsg = 'Background successfully created.';
 
   const [showCreateRFIModal, setshowCreateRFIModal] = useState(false);
 
@@ -70,9 +62,9 @@ export default function Briefs() {
   const [allowUpdateQuestion, setAllowUpdateQuestion] = useState(false);
   const [allowUpdateResponse, setAllowUpdateResponse] = useState(false);
   const [alertMessage, setalertMessage] = useState();
-  const [briefName, setBriefName] = useState("");
-  const [briefId, setBriefId] = useState("");
-  const [validationAlert, setValidationAlert] = useState("");
+  const [briefName, setBriefName] = useState('');
+  const [briefId, setBriefId] = useState('');
+  const [validationAlert, setValidationAlert] = useState('');
   const [showColumn, setShowColumn] = useState(false);
   const [showBName, setShowBame] = useState(true);
   const [showDate, setShowDate] = useState(true);
@@ -100,7 +92,7 @@ export default function Briefs() {
     setShowToast(false);
   };
 
-  var moment = require("moment");
+  var moment = require('moment');
 
   const [RFI, setRFI] = useState(null);
 
@@ -161,7 +153,7 @@ export default function Briefs() {
   }`;
 
   const getBriefs = async () => {
-    console.log("matterid", matter_id);
+    console.log('matterid', matter_id);
     const params = {
       query: listBriefs,
       variables: {
@@ -173,7 +165,7 @@ export default function Briefs() {
 
     await API.graphql(params).then((brief) => {
       const matterFilesList = brief.data.clientMatter.briefs.items;
-      console.log("mfl", matterFilesList);
+      console.log('mfl', matterFilesList);
       setBriefs(matterFilesList);
       setBriefsCopy(matterFilesList);
     });
@@ -190,8 +182,8 @@ export default function Briefs() {
   });
 
   const handleSaveBrief = async (briefname) => {
-    console.log("matterid", matter_id);
-    console.log("briefname", briefname);
+    console.log('matterid', matter_id);
+    console.log('briefname', briefname);
 
     // alert(briefname);
 
@@ -200,12 +192,12 @@ export default function Briefs() {
       variables: {
         clientMatterId: matter_id,
         name: briefname,
-        date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
+        date: moment.utc(moment(new Date(), 'YYYY-MM-DD')).toISOString(),
         order: 0,
       },
     });
 
-    console.log("brief", addBrief);
+    console.log('brief', addBrief);
     const getID = addBrief.data.briefCreate.id;
 
     handleModalClose();
@@ -230,8 +222,8 @@ export default function Briefs() {
   };
 
   const mainGrid = {
-    display: "grid",
-    gridtemplatecolumn: "1fr auto",
+    display: 'grid',
+    gridtemplatecolumn: '1fr auto',
   };
 
   const searchText = (val) => {
@@ -241,8 +233,8 @@ export default function Briefs() {
           return (
             item.name
               .toLowerCase()
-              .replace(" ", "")
-              .includes(val.toLowerCase().replace(" ", "")) === true
+              .replace(' ', '')
+              .includes(val.toLowerCase().replace(' ', '')) === true
           );
         })
       );
@@ -258,7 +250,7 @@ export default function Briefs() {
   };
 
   const style = {
-    paddingLeft: "0rem",
+    paddingLeft: '0rem',
   };
 
   function visitBrief(id) {
@@ -271,30 +263,30 @@ export default function Briefs() {
   }
 
   function getParameterByName(name, url = window.location.href) {
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
       results = regex.exec(url);
     if (!results) return null;
-    if (!results[2]) return "";
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
   }
 
   function b64_to_utf8(str) {
     return decodeURIComponent(atob(str));
   }
 
-  const m_name = getParameterByName("matter_name");
-  const c_name = getParameterByName("client_name");
+  const m_name = getParameterByName('matter_name');
+  const c_name = getParameterByName('client_name');
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
   const handleNameContent = (e, name, id) => {
     if (!validationAlert) {
-      setBriefName(!name ? "" : name);
+      setBriefName(!name ? '' : name);
       setBriefId(id);
-      setValidationAlert("");
+      setValidationAlert('');
     } else {
-      setBriefName("");
+      setBriefName('');
     }
   };
 
@@ -303,8 +295,8 @@ export default function Briefs() {
   };
 
   const handleSaveBriefName = (e, name, id) => {
-    const originalString = briefName.replace(/(<([^>]+)>)/gi, "");
-    const final = originalString.replace(/\&nbsp;/g, " ");
+    const originalString = briefName.replace(/(<([^>]+)>)/gi, '');
+    const final = originalString.replace(/\&nbsp;/g, ' ');
 
     const updateName = Briefs.map((x) => {
       if (x.id === id) {
@@ -318,9 +310,9 @@ export default function Briefs() {
     setBriefs(updateName);
 
     if (briefName.length <= 0) {
-      setValidationAlert("Brief Name is required");
+      setValidationAlert('Brief Name is required');
     } else if (briefName === name) {
-      setValidationAlert("");
+      setValidationAlert('');
       const data = {
         id,
         name: e.target.innerHTML,
@@ -332,11 +324,11 @@ export default function Briefs() {
 
         setTimeout(() => {
           setShowToast(false);
-          setalertMessage("");
+          setalertMessage('');
         }, 1000);
       }
     } else {
-      setValidationAlert("");
+      setValidationAlert('');
       const data = {
         id,
         name: e.target.innerHTML,
@@ -348,7 +340,7 @@ export default function Briefs() {
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
-          setalertMessage("");
+          setalertMessage('');
         }, 1000);
       }
     }
@@ -373,10 +365,10 @@ export default function Briefs() {
 
   const formatDisplayDate = (val) => {
     let date = new Date(val);
-    const day = date.toLocaleString("default", { day: "2-digit" });
-    const month = date.toLocaleString("default", { month: "short" });
-    const year = date.toLocaleString("default", { year: "numeric" });
-    return day + " " + month + " " + year;
+    const day = date.toLocaleString('default', { day: '2-digit' });
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.toLocaleString('default', { year: 'numeric' });
+    return day + ' ' + month + ' ' + year;
   };
 
   const handleColumn = () => {
@@ -415,7 +407,7 @@ export default function Briefs() {
 
   //session timeout
   const handleOnAction = (event) => {
-    console.log("user is clicking");
+    console.log('user is clicking');
 
     //function for detecting if user moved/clicked.
     //if modal is active and user moved, automatic logout (session expired)
@@ -424,19 +416,19 @@ export default function Briefs() {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
-          console.log("Sign out completed.");
-          history.push("/");
+          console.log('Sign out completed.');
+          history.push('/');
         });
 
         function clearLocalStorage() {
-          localStorage.removeItem("userId");
-          localStorage.removeItem("email");
-          localStorage.removeItem("firstName");
-          localStorage.removeItem("lastName");
-          localStorage.removeItem("userType");
-          localStorage.removeItem("company");
-          localStorage.removeItem("companyId");
-          localStorage.removeItem("access");
+          localStorage.removeItem('userId');
+          localStorage.removeItem('email');
+          localStorage.removeItem('firstName');
+          localStorage.removeItem('lastName');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('company');
+          localStorage.removeItem('companyId');
+          localStorage.removeItem('access');
         }
       }, 3000);
     }
@@ -445,7 +437,7 @@ export default function Briefs() {
   };
 
   const handleOnIdle = (event) => {
-    console.log("user is idle");
+    console.log('user is idle');
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
     //bool.current = true;
@@ -508,7 +500,7 @@ export default function Briefs() {
 
   const checkFormat = (str) => {
     var check = str;
-    check = check.replace("%20", " "); //returns my_name
+    check = check.replace('%20', ' '); //returns my_name
     return check;
   };
 
@@ -525,7 +517,7 @@ export default function Briefs() {
   function countLines(tag) {
     var divHeight = tag.offsetHeight;
     var lineHeight = parseInt(
-      window.getComputedStyle(tag).getPropertyValue("line-height")
+      window.getComputedStyle(tag).getPropertyValue('line-height')
     );
     var lines = Math.round(divHeight / lineHeight);
     return lines;
@@ -540,7 +532,7 @@ export default function Briefs() {
     }
   }
   function handleScrollToTop() {
-    let d = document.getElementById("mobileContent");
+    let d = document.getElementById('mobileContent');
     d.scrollTo(0, 0);
   }
 
@@ -548,14 +540,14 @@ export default function Briefs() {
     <>
       <div
         className={
-          "bg-gray-100 p-5 min-h-screen relative flex flex-col min-w-0 break-words sm:min-h-0 sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv"
+          'bg-gray-100 p-5 min-h-screen relative flex flex-col min-w-0 break-words sm:min-h-0 sm:mb-6 sm:shadow-lg sm:rounded sm:bg-white contentDiv'
         }
       >
         <div className="relative pt-3 sm:p-0 sm:flex-grow sm:flex-1">
           <div className="flex flex-col">
             <div className="sticky hidden pl-12 sm:pl-0 top-0 py-4 sm:flex items-center gap-2 bg-white z-10">
               <div
-                onClick={() => history.replace("/dashboard")}
+                onClick={() => history.replace('/dashboard')}
                 className="w-8 py-5 cursor-pointer"
               >
                 <CgChevronLeft />
@@ -591,7 +583,7 @@ export default function Briefs() {
               </div>
               <div>
                 <div
-                  onClick={() => history.replace("/dashboard")}
+                  onClick={() => history.replace('/dashboard')}
                   className="w-10 h-10 shadow flex justify-center items-center rounded-full"
                 >
                   <CgChevronRight size={24} />
@@ -685,7 +677,7 @@ export default function Briefs() {
               <button
                 type="button"
                 className={
-                  "hidden hover:bg-gray-200 text-black text-sm py-2 px-4 rounded sm:inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2"
+                  'hidden hover:bg-gray-200 text-black text-sm py-2 px-4 rounded sm:inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-2'
                 }
                 onClick={handleColumn}
               >
@@ -749,19 +741,19 @@ export default function Briefs() {
           <div className="sm:p-5 sm:px-5 sm:py-1 left-0 sm:mt-5">
             <div
               className="w-full flex items-center sm:flex-none h-42 bg-white sm:bg-gray-100 rounded-lg sm:border border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
-              style={{ height: width > 640 ? "auto" : contentHeight }}
+              style={{ height: width > 640 ? 'auto' : contentHeight }}
             >
               {width > 640 ? (
                 <BlankState
-                  displayText={"There are no items to show in this view"}
-                  txtLink={"add new Background"}
+                  displayText={'There are no items to show in this view'}
+                  txtLink={'add new Background'}
                   iconDisplay={BlankList}
                   handleClick={() => setshowCreateBriefsModal(true)}
                 />
               ) : (
                 <BlankStateMobile
-                  header={"There are no items to show in this view."}
-                  content={"Any added files in the desktop will appear here"}
+                  header={'There are no items to show in this view.'}
+                  content={'Any added files in the desktop will appear here'}
                   svg={Illustration}
                 />
               )}
@@ -770,13 +762,13 @@ export default function Briefs() {
         ) : (
           <div
             className="flex flex-col sm:block sm:shadow sm:overflow-hidden border-b bg-white sm:border-gray-200 rounded-lg sm:my-5 py-5 sm:p-0"
-            style={{ height: width > 640 ? "auto" : contentHeight }}
+            style={{ height: width > 640 ? 'auto' : contentHeight }}
           >
             <div className="mx-5 sm:hidden items-stretch flex border-b border-gray-200">
               <button
                 className={
-                  (isAllFilesSelectedButton ? "border-black" : "border-white") +
-                  " border-b-2 py-2 font-semibold"
+                  (isAllFilesSelectedButton ? 'border-black' : 'border-white') +
+                  ' border-b-2 py-2 font-semibold'
                 }
               >
                 All Files
@@ -784,8 +776,8 @@ export default function Briefs() {
               <button
                 className={
                   (!isAllFilesSelectedButton
-                    ? "border-black"
-                    : "border-white") + " ml-5 border-b-2 py-2 font-semibold"
+                    ? 'border-black'
+                    : 'border-white') + ' ml-5 border-b-2 py-2 font-semibold'
                 }
               >
                 Brief
@@ -795,7 +787,7 @@ export default function Briefs() {
               id="mobileContent"
               onScroll={(e) => handleScrollEvent(e)}
               className="px-5 sm:px-0 overflow-y-auto h-min"
-              style={{ scrollBehavior: "smooth" }}
+              style={{ scrollBehavior: 'smooth' }}
             >
               {showScrollButton ? (
                 <>
@@ -805,9 +797,9 @@ export default function Briefs() {
                   >
                     <BiArrowToTop
                       style={{
-                        color: "white",
-                        display: "block",
-                        margin: "auto",
+                        color: 'white',
+                        display: 'block',
+                        margin: 'auto',
                       }}
                     />
                   </div>
@@ -845,9 +837,9 @@ export default function Briefs() {
                               <p
                                 suppressContentEditableWarning={true}
                                 style={{
-                                  cursor: "auto",
-                                  outlineColor: "rgb(204, 204, 204, 0.5)",
-                                  outlineWidth: "thin",
+                                  cursor: 'auto',
+                                  outlineColor: 'rgb(204, 204, 204, 0.5)',
+                                  outlineWidth: 'thin',
                                 }}
                                 data-info={item.id}
                                 onMouseOver={handleMouseOver}
@@ -899,7 +891,7 @@ export default function Briefs() {
                             >
                               {item.date
                                 ? formatDisplayDate(item.date)
-                                : "No date"}
+                                : 'No date'}
                             </p>
                           )}
                         </div>
@@ -914,18 +906,33 @@ export default function Briefs() {
                       onClick={() => visitBrief(item.id)}
                     >
                       {showTag && <FaUserCircle className={`h-10 w-10 `} />}
-                    </div>
-                    <div className="hiden sm:inline-flex float-right -mt-8 ml-4">
-                      <BsFillTrashFill className="float-right text-md ml-auto text-gray-500 hover:text-gray-700 inline-flex items-center outline-none focus:outline-none" 
-                      onClick={(e) => handleShowRemoveModal(item.id) }
+                      {/* <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-7 w-7 my-1 mx-1 cursor-pointer ${
+                        !showBName && !showDate && !showTag && `mt-3`
+                      }`}
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      onClick={() => visitBrief(item.id)}
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
                       />
+                    </svg> */}
+                    </div>
+                    <div className="hidden sm:inline-flex float-right -mt-8 ml-4">
+                      {/* <BsFillTrashFill className="float-right text-md mb-10 text-red-500 hover:text-red-300 inline-flex items-center " 
+                      onClick={(e) => handleShowRemoveModal(item.id) }
+                      /> */}
 
-                      {/* <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
+                      <div className="p-1 ml-auto bg-transparent border-0 text-black opacity-4 float-right text-3xl leading-none font-semibold outline-none focus:outline-none">
                         <div className="dropdown">
-                        <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
+                          <button className="bg-gray-100 text-gray-700 font-semibold rounded inline-flex">
                             <FaEllipsisH />
                           </button>
-                          <ul className="dropdown-menu right-8 absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded">
+                          <ul className="dropdown-menu absolute hidden text-gray-700 pt-1 bg-white p-2 font-semibold rounded z-50 -ml-8">
                             <li
                               className="p-2 cursor-pointer"
                               onClick={() => handleShowRemoveModal(item.id)}
@@ -934,7 +941,7 @@ export default function Briefs() {
                             </li>
                           </ul>
                         </div>
-                      </div> */}
+                      </div>
                     </div>
                   </div>
                 </div>

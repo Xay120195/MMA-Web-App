@@ -1,19 +1,9 @@
 const { listUserClientMatter } = require("../../../services/UserService");
-const {
-  getCustomUserType,
-} = require("../../../services/CustomUserTypeService");
 
 const resolvers = {
   User: {
     clientMatters: async (ctx) => {
       return listUserClientMatter(ctx);
-    },
-    customUserType: async (ctx) => {
-      const { userType, customUserType } = ctx.source;
-
-      if (userType == null) {
-        return await getCustomUserType(customUserType);
-      }
     },
   },
 };

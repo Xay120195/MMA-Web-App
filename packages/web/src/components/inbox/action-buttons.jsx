@@ -146,7 +146,6 @@ const ActionButtons = ({
 
 
   const handleEmails = async (status) => {
-    setSaveLoading(true);
     // Soon will change this to bulk mutation 
     if(status) {
       var clientMatterId = "";
@@ -171,7 +170,6 @@ const ActionButtons = ({
       let  arrSavedEmails = unSavedEmails.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) !== -1;
       });
-      console.log("GET FILES:", arrSavedEmails);
       var arrByDates = sortByDate(savedEmails.concat(arrSavedEmails));
       console.log(arrByDates);
       setSavedEmails(arrByDates);
@@ -195,37 +193,35 @@ const ActionButtons = ({
           console.log("PAYLOAD:", payload);
 
           handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
-          
+        
           item.attachments.items.map(attachment => {
-            if(attachment.isDeleted !== true) {
-              API.graphql({
-                query: mSaveAttachmentEmailsToMatter,
-                variables: {
-                  matterId: clientMatterId,
-                  s3ObjectKey: attachment.s3ObjectKey,
-                  size: attachment.size,
-                  name: attachment.name,
-                  type: attachment.type,
-                  order: 0,
-                  isGmailAttachment: true,
-                  isGmailPDF: false,
-                  gmailMessageId: item.id,
-                  details: attachment.details,
-                  date: new Date(item.date).toISOString(),
-                },
-              }).then((result)=>{
-                // console.log("requestattachment", result.data.matterFileCreate.id);
-                // console.log("attachmentlabels", attachment.labels.items);
+            API.graphql({
+              query: mSaveAttachmentEmailsToMatter,
+              variables: {
+                matterId: clientMatterId,
+                s3ObjectKey: attachment.s3ObjectKey,
+                size: attachment.size,
+                name: attachment.name,
+                type: attachment.type,
+                order: 0,
+                isGmailAttachment: true,
+                isGmailPDF: false,
+                gmailMessageId: item.id,
+                details: attachment.details,
+                date: new Date(item.date).toISOString(),
+              },
+            }).then((result)=>{
+              // console.log("requestattachment", result.data.matterFileCreate.id);
+              // console.log("attachmentlabels", attachment.labels.items);
 
-                const tagAttachment = API.graphql({
-                  query: mTagFile,
-                  variables: {
-                    fileId: result.data.matterFileCreate.id,
-                    labels: attachment.labels.items,
-                  },
-                })
-              });
-            }
+              const tagAttachment = API.graphql({
+                query: mTagFile,
+                variables: {
+                  fileId: result.data.matterFileCreate.id,
+                  labels: attachment.labels.items,
+                },
+              })
+            });
           });
         });
 
@@ -304,7 +300,7 @@ const ActionButtons = ({
       pagebreak: { before: '.page-break', avoid: 'img' }
     };
     var content = document.getElementById("preview_"+gmailMessageId);
-    content.innerHTML += Base64.decode(htmlContent).replace("body{color:", "");
+    content += Base64.decode(htmlContent).replace("body{color:", "");
 
     await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);

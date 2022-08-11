@@ -172,10 +172,9 @@ export async function createUser(data) {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
-      userType: data.userType ? data.userType : null,
+      userType: data.userType,
       company: data.company,
       createdAt: toUTC(new Date()),
-      customUserType: data.customUserType ? data.customUserType : null,
     };
 
     const param = marshall(rawParams);

@@ -26,7 +26,6 @@ type Background {
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
-
 type Brief {
   id: ID!
   name: String
@@ -39,7 +38,6 @@ type Brief {
   ): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
-  labelId: ID # not null if brief is created through label
 }
 
 type Client {
@@ -86,7 +84,6 @@ type Company {
   clients(limit: Int, nextToken: String): CompanyClientConn
   matters(limit: Int, nextToken: String): CompanyMatterConn
   customUserTypes(limit: Int, nextToken: String): CompanyCustomUserTypeConn
-  teams(limit: Int, nextToken: String): CompanyTeamConn
   clientMatters(
     limit: Int
     nextToken: String
@@ -214,11 +211,9 @@ type User {
   contactNumber: String
   company: Company
   userType: UserType
-  customUserType: CustomUserType
   profilePicture: String
   organisations: UserCompanyConn
-  clientMatters(limit: Int, nextToken: String): UserClientMatterConn
-  teams(limit: Int, nextToken: String): UserTeamConn
+  clientMatters(limit: Int, nextToken: String): UserClientMatterCon
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -295,24 +290,6 @@ type GmailMessageAttachment {
   labels: GmailAttachmentLabelConn
   downloadURL: String
   updatedAt: AWSDateTime
-  isDeleted: Boolean
-}
-
-type Team {
-  id: ID!
-  teamPicture: String
-  name: String!
-  description: String
-  members: TeamMemberConn
-  createdAt: AWSDateTime
-  updatedAt: AWSDateTime
-}
-
-type Member {
-  id: ID!
-  user: User!
-  userType: UserType
-  customUserType: CustomUserType
 }
 
 # enum
@@ -422,11 +399,6 @@ input RepresentativeInput {
   email: AWSEmail
 }
 
-input CustomUserTypeInput {
-  id: ID!
-  name: String
-}
-
 # Relationships / Conns
 type BackgroundFileConn {
   items: [File]
@@ -488,18 +460,8 @@ type CompanyCustomUserTypeConn {
   nextToken: String
 }
 
-type CompanyTeamConn {
-  items: [Team]
-  nextToken: String
-}
-
 type UserCompanyConn {
   items: [Company]
-  nextToken: String
-}
-
-type UserTeamConn {
-  items: [Team]
   nextToken: String
 }
 
@@ -527,7 +489,7 @@ type RFIRequestsConn {
   nextToken: String
 }
 
-type UserClientMatterConn {
+type UserClientMatterCon {
   items: [ClientMatter]
   nextToken: String
 }
@@ -555,16 +517,10 @@ type GmailAttachmentLabelConn {
   nextToken: String
 }
 
-type TeamMemberConn {
-  items: [Member]
-  nextToken: String
-}
-
 type Query {
   background(id: ID): Background
   backgrounds: [Background]
   brief(id: ID): Brief
-  briefByName(clientMatterId: ID, name: String): Brief
   briefs: [Brief]
   client(id: ID): Client
   clientMatter(id: ID): ClientMatter
@@ -610,8 +566,6 @@ type Query {
     endDate: String
   ): [GmailMessage]
   gmailAttachment(id: String): GmailMessageAttachment
-  teams: [Team]
-  team(id: ID): Team
 }
 
 type Mutation {
@@ -641,12 +595,11 @@ type Mutation {
     date: AWSDateTime
     clientMatterId: String
     order: Int
-    labelId: ID
   ): Brief
   briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
   briefSoftDelete(id: ID): Brief
-  briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int, labelId: ID): Brief
+  briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int): Brief
   clientCreate(name: String, companyId: String): Client
   clientMatterCreate(
     companyId: String
@@ -735,7 +688,6 @@ type Mutation {
     lastName: String
     email: AWSEmail
     userType: UserType
-    customUserType: CustomUserTypeInput
     company: CompanyInput
   ): User
   userInvite(
@@ -743,7 +695,6 @@ type Mutation {
     lastName: String
     email: AWSEmail
     userType: UserType
-    customUserType: CustomUserTypeInput
     company: CompanyInput
   ): User
   userDelete(id: ID, companyId: ID, email: AWSEmail): User
@@ -755,7 +706,6 @@ type Mutation {
     contactNumber: String
     company: CompanyInput
     userType: UserType
-    customUserType: CustomUserTypeInput
     profilePicture: String
   ): User
   userClientMatterTag(userId: ID, clientMatterId: [ID]): User
@@ -803,15 +753,7 @@ type Mutation {
     order: Int
   ): GmailMessageAttachment
   gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
-  gmailMessageAttachmentUpdate(
-    id: ID
-    details: String
-    isDeleted: Boolean
-  ): GmailMessageAttachment
+  gmailMessageAttachmentUpdate(id: ID, details: String): GmailMessageAttachment
   customUserTypeCreate(name: String, companyId: ID): CustomUserType
   customUserTypeUpdate(id: ID, name: String): CustomUserType
-  customUserTypeDelete(id: ID): CustomUserType
-  teamCreate(companyId: ID, name: String): Team
-  teamUpdate(id: ID, name: String): Team
-  teamDelete(id: ID): Team
 }
