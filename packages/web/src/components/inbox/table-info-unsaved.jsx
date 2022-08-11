@@ -5,7 +5,7 @@ import Loading from "../loading/loading";
 import CreatableSelect from "react-select/creatable";
 import { useRootClose } from "react-overlays";
 import imgLoading from "../../assets/images/loading-circle.gif";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaTrash } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
@@ -24,81 +24,6 @@ import {
 import { AbsolutePosition } from "yjs";
 
 var moment = require("moment");
-
-/*const qGmailMessagesbyCompany = `
-query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String, $startDate: String, $endDate: String, $userTimeZone: String) {
-  company(id: $id) {
-    gmailToken {
-      refreshToken
-      id
-      userId
-      companyId
-      updatedAt
-    }
-    gmailMessages(
-      isDeleted: $isDeleted
-      isSaved: $isSaved
-      limit: $limit
-      nextToken: $nextToken
-      recipient: $recipient
-      startDate: $startDate
-      endDate: $endDate
-      userTimeZone: $userTimeZone
-    ) {
-      items {
-        id
-        from
-        to
-        cc
-        bcc
-        subject
-        date
-        snippet
-        payload {
-          content
-        }
-        labels {
-          items {
-            id
-            name
-          }
-        }
-        description
-        clientMatters {
-          items {
-            id
-            client {
-              id
-              name
-            }
-            matter {
-              id
-              name
-            }
-          }
-        }
-        attachments {
-          items {
-            id
-            details
-            name
-            s3ObjectKey
-            size
-            type
-            labels {
-              items {
-                id
-                name
-              }
-            }
-          }
-        }
-        receivedAt
-      }
-      nextToken
-    }
-  }
-}`;*/
 
 const mUpdateAttachmentDescription = `mutation MyMutation($details: String, $id: ID) {
   gmailMessageAttachmentUpdate(id: $id, details: $details) {
@@ -130,6 +55,22 @@ query getAttachmentDownloadLink($id: String) {
   }
 }`;
 
+const mUpdateAttachmentStatus = `
+mutation updateAttachment($id: ID, $isDeleted: Boolean) {
+  gmailMessageAttachmentUpdate(id: $id, isDeleted: $isDeleted) {
+    id
+  }
+}`;
+
+const mCreateLabel = `
+mutation createLabel($clientMatterId: String, $name: String) {
+    labelCreate(clientMatterId:$clientMatterId, name:$name) {
+        id
+        name
+    }
+}
+`;
+
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
@@ -145,6 +86,9 @@ const TableUnsavedInfo = ({
   userTimeZone,
   momentTZ,
   qGmailMessagesbyCompany,
+  setAttachmentIsDeleted,
+  setAttachmentId,
+  lastCounter
 }) => {
   const ref = useRef([]);
   const [show, setShow] = useState(false);
@@ -415,6 +359,7 @@ const TableUnsavedInfo = ({
   }`;
 
   const handleAddLabel = async (e, gmid) => {
+    
     var selectedLabels = [];
     var taggedLabels = [];
 
@@ -564,6 +509,23 @@ const TableUnsavedInfo = ({
     });
   };
 
+  const handleDeleteAttachment = async (id, index, val, e) => {
+    const params = {
+      query: mUpdateAttachmentStatus,
+      variables: {
+        id: id,
+        isDeleted: val
+      },
+    };
+
+    await API.graphql(params).then((result) => {
+      console.log(result);
+      setAttachmentIsDeleted(val);
+      setAttachmentId(index);
+      getUnSavedEmails(emailFilters)
+    });
+  }
+
   return (
     <>
       <table
@@ -591,7 +553,7 @@ const TableUnsavedInfo = ({
           </tr>
         </thead>
         <tbody
-          className="bg-white divide-y divide-gray-200"
+          className="bg-white divide-y divide-gray-200 mb-8"
           style={{ width: "100%", height: "100vh" }}
         >
           {waitUnSaved ? (
@@ -601,7 +563,8 @@ const TableUnsavedInfo = ({
               </td>
             </tr>
           ) : (
-            <WindowScroller key={0}>
+            <WindowScroller key={0}
+            >
               {({ height, scrollTop }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -609,8 +572,11 @@ const TableUnsavedInfo = ({
                       autoHeight
                       scrollTop={scrollTop}
                       width={width}
-                      height={Infinity}
-                      rowHeight={cache.current.rowHeight}
+                      height={height}
+                      rowHeight=/*{cache.current.rowHeight}*/
+                      {unSavedEmails.length === 1 ?
+                        "100" : cache.current.rowHeight
+                      }
                       deferredMeasurementCache={cache.current}
                       rowCount={unSavedEmails.length}
                       rowRenderer={({ key, index, style, parent }) => {
@@ -633,14 +599,28 @@ const TableUnsavedInfo = ({
                       > */}
                             {/* {({ registerChild }) => ( */}
                             <tr
-                              style={{
+                              style=
+                              /*{lastCounter === index+1 ? 
+                                {
+                                  ...style,
+                                  width: "100%",
+                                  height: "100%",
+                                  border: "1px solid #f0f0f0",
+                                  paddingBottom: "150px",
+                                } : {
+                                  ...style,
+                                  width: "100%",
+                                  height: "100%",
+                                  border: "1px solid #f0f0f0",
+                                }
+                              }*/
+                              {{
                                 ...style,
                                 width: "100%",
                                 height: "100%",
                                 border: "1px solid #f0f0f0",
-                                overflow: "unset",
                               }}
-                              //ref={registerChild}
+                              className={lastCounter === index+1 ? "tr-child" : ""}
                               key={key}
                             >
                               <td className="p-2 align-top h-full w-10">
@@ -690,7 +670,7 @@ const TableUnsavedInfo = ({
                                     {show && snippetId === item.id && (
                                       <div
                                         ref={(el) => (ref.current[index] = el)}
-                                        className="absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                                         id={item.id}
                                       >
                                         <p>From : {item.from}</p>
@@ -800,7 +780,12 @@ const TableUnsavedInfo = ({
                                             : ""}
                                         </p>
                                         <div
-                                          className="p-2 w-full h-full font-poppins rounded-sm float-right"
+                                          className=
+                                          {!item_attach.isDeleted || item_attach.isDeleted === null ?
+                                            "p-2 w-full h-full font-poppins rounded-sm float-right"
+                                            :
+                                            "p-2 w-full h-full font-poppins rounded-sm float-right bg-gray-300"
+                                          }
                                           style={{
                                             border: "solid 1px #c4c4c4",
                                             cursor: "auto",
@@ -822,8 +807,38 @@ const TableUnsavedInfo = ({
                                               item.id
                                             )
                                           }
-                                          contentEditable={true}
+                                          contentEditable=
+                                            {!item_attach.isDeleted || item_attach.isDeleted === null ? 
+                                              true : false
+                                            }
                                         ></div>
+                                        {!item_attach.isDeleted || item_attach.isDeleted === null ? 
+                                          <span 
+                                            className="mt-2 ml-2 cursor-pointer hover:text-red-700 font-bold" 
+                                            onClick={(e) =>
+                                              handleDeleteAttachment(
+                                                item_attach.id,
+                                                index,
+                                                true,
+                                                e
+                                              )
+                                            }
+                                          >
+                                            X
+                                          </span>
+                                          :
+                                          <button
+                                          className="bg-white-500 hover:bg-gray-700 hover:text-white text-gray font-bold py-2 px-1 rounded ml-2 cursor-pointer"
+                                          onClick={(e) =>
+                                            handleDeleteAttachment(
+                                              item_attach.id,
+                                              index,
+                                              false,
+                                              e
+                                            )
+                                          }
+                                          >Cancel</button>
+                                        }
                                       </div>
                                     </React.Fragment>
                                   )
