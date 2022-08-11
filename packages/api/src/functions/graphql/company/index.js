@@ -586,10 +586,12 @@ async function listCompCustomUserTypes(ctx) {
     }
 
     const compCustomUserTypesCmd = new QueryCommand(compCustomUserTypesParam);
-    const compCustomUserTypesResult = await ddbClient.send(compCustomUserTypesCmd);
-    const customUserTypeIds = compCustomUserTypesResult.Items.map((i) => unmarshall(i)).map(
-      (f) => marshall({ id: f.customUserTypeId })
+    const compCustomUserTypesResult = await ddbClient.send(
+      compCustomUserTypesCmd
     );
+    const customUserTypeIds = compCustomUserTypesResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.customUserTypeId }));
 
     if (customUserTypeIds.length !== 0) {
       const customUserTypesParam = {
@@ -603,10 +605,13 @@ async function listCompCustomUserTypes(ctx) {
       const customUserTypesCmd = new BatchGetItemCommand(customUserTypesParam);
       const customUserTypesResult = await ddbClient.send(customUserTypesCmd);
 
-      const objCustomUserTypes = customUserTypesResult.Responses.CustomUserTypeTable.map((i) =>
+      const objCustomUserTypes =
+        customUserTypesResult.Responses.CustomUserTypeTable.map((i) =>
+          unmarshall(i)
+        );
+      const objCompCustomUserTypes = compCustomUserTypesResult.Items.map((i) =>
         unmarshall(i)
       );
-      const objCompCustomUserTypes = compCustomUserTypesResult.Items.map((i) => unmarshall(i));
 
       // const response = objCompCustomUserTypes.map((item) => {
       //   const filterCustomUserType = objCustomUserTypes.find((u) => u.id === item.customUserTypeId);
@@ -615,7 +620,9 @@ async function listCompCustomUserTypes(ctx) {
 
       const response = objCompCustomUserTypes
         .map((item) => {
-          const filterCustomUserType = objCustomUserTypes.find((u) => u.id === item.customUserTypeId);
+          const filterCustomUserType = objCustomUserTypes.find(
+            (u) => u.id === item.customUserTypeId
+          );
 
           if (filterCustomUserType !== undefined) {
             return { ...item, ...filterCustomUserType };
@@ -628,6 +635,85 @@ async function listCompCustomUserTypes(ctx) {
         nextToken: compCustomUserTypesResult.LastEvaluatedKey
           ? Buffer.from(
               JSON.stringify(compCustomUserTypesResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
+async function listTeams(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+
+  try {
+    const compTeamsParam = {
+      TableName: "CompanyTeamTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": id,
+      }),
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      compTeamsParam.Limit = limit;
+    }
+
+    const compTeamsCmd = new QueryCommand(compTeamsParam);
+    const compTeamsResult = await ddbClient.send(compTeamsCmd);
+    const teamIds = compTeamsResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.teamId })
+    );
+
+    if (teamIds.length !== 0) {
+      const teamsParam = {
+        RequestItems: {
+          TeamTable: {
+            Keys: teamIds,
+          },
+        },
+      };
+
+      const teamsCmd = new BatchGetItemCommand(teamsParam);
+      const teamsResult = await ddbClient.send(teamsCmd);
+
+      const objTeams = teamsResult.Responses.TeamTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCompTeams = compTeamsResult.Items.map((i) => unmarshall(i));
+
+      const response = objCompTeams
+        .map((item) => {
+          const filterTeam = objTeams.find((u) => u.id === item.teamId);
+
+          if (filterTeam !== undefined) {
+            return { ...item, ...filterTeam };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: compTeamsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(compTeamsResult.LastEvaluatedKey)
             ).toString("base64")
           : null,
       };
@@ -669,6 +755,9 @@ const resolvers = {
     },
     customUserTypes: async (ctx) => {
       return listCompCustomUserTypes(ctx);
+    },
+    teams: async (ctx) => {
+      return listTeams(ctx);
     },
   },
 };

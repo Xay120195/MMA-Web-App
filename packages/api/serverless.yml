@@ -178,6 +178,11 @@ custom:
         field: clientMatters
         request: false
         response: false
+      - dataSource: LambdaUserDS
+        type: User
+        field: customUserType
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: userColumnSettings
@@ -249,6 +254,11 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: customUserTypeUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeDelete
         request: false
         response: false
       # Matter File
@@ -497,6 +507,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: brief
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: briefByName
         request: false
         response: false
       - dataSource: LambdaQueryDS
@@ -750,6 +765,36 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: gmailAttachmentLabelUntag
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: teamCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: teamUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: teamDelete
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: team
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: teams
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: teams
         request: false
         response: false
     # Data Sources

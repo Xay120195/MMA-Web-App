@@ -218,19 +218,23 @@ async function listClientMatterBriefs(ctx) {
   }
 
   try {
-    let fe = "";
+    const FilterExpression = ["isDeleted = :isDeleted"];
+    const ExpressionAttributeValues = {
+      ":clientMatterId": id,
+      ":isDeleted": isDeleted,
+    };
+
     if (!isDeleted) {
-      fe = " OR attribute_not_exists(isDeleted)";
+      // if false, retrieve old data
+      // include isDeleted = null
+      FilterExpression.push("attribute_not_exists(isDeleted)");
     }
     const cmBriefParam = {
       TableName: "ClientMatterBriefTable",
       IndexName: indexName,
       KeyConditionExpression: "clientMatterId = :clientMatterId",
-      FilterExpression: "isDeleted = :isDeleted" + fe,
-      ExpressionAttributeValues: marshall({
-        ":clientMatterId": id,
-        ":isDeleted": isDeleted,
-      }),
+      FilterExpression: FilterExpression.join(" OR "),
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
       ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
@@ -241,7 +245,6 @@ async function listClientMatterBriefs(ctx) {
       cmBriefParam.Limit = limit;
     }
 
-    console.log(cmBriefParam);
     const cmBriefCmd = new QueryCommand(cmBriefParam);
     const cmBriefResult = await client.send(cmBriefCmd);
 
