@@ -13,6 +13,7 @@ const ActionButtons = ({
   setSelectedUnsavedItems,
   setSelectedSavedItems,
   openTab,
+  setOpenTab,
   getUnSavedEmails,
   getSavedEmails,
   unSavedEmails,
@@ -147,6 +148,7 @@ const ActionButtons = ({
 
   const handleEmails = async (status) => {
     setSaveLoading(true);
+    setOpenTab(2);
     // Soon will change this to bulk mutation 
     if(status) {
       var clientMatterId = "";
