@@ -1133,3 +1133,31 @@ Resources:
           Projection:
             ProjectionType: ALL
       BillingMode: PAY_PER_REQUEST
+  TeamMemberTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TeamMemberTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: teamId
+          AttributeType: S
+        - AttributeName: memberId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byTeam
+          KeySchema:
+            - AttributeName: teamId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: byMember
+          KeySchema:
+            - AttributeName: memberId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST

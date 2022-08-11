@@ -31,6 +31,7 @@ const {
   createTeam,
   updateTeam,
   deleteTeam,
+  tagTeamMember
 } = require("../../../services/TeamService");
 
 const {
@@ -3087,6 +3088,10 @@ const resolvers = {
       const { id } = ctx.arguments;
       return await deleteTeam(id);
     },
+    teamMemberTag: async (ctx) => {
+      return await tagTeamMember(ctx.arguments);
+    },
+    
   },
 };
 
