@@ -415,18 +415,7 @@ export default function FileBucket() {
     console.log("brief", brief);
     console.log("label", label);
 
-    if (brief !== "") {
-      const updateBrief = await API.graphql({
-        query: mUpdateBrief,
-        variables: {
-          id: brief,
-          labelId: label.id,
-        },
-      });
-
-      console.log("updateBrief", updateBrief);
-
-      /*
+    /*
     const updateBackground = await API.graphql({
       query: mUpdateBackgroundFile,
       variables: {
@@ -435,28 +424,27 @@ export default function FileBucket() {
       },
     });
     */
-      const createBackground = await API.graphql({
-        query: mCreateBackground,
-        variables: {
-          briefId: brief,
-          description: "",
-          date: null,
-        },
-      });
+    const createBackground = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        briefId: brief,
+        description: "",
+        date: null,
+      },
+    });
 
-      console.log("createBackground", createBackground);
+    console.log("createBackground", createBackground);
 
-      const updateBackground = await API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: createBackground.data.backgroundCreate.id,
-          files: [{ id: matterid }],
-        },
-      });
+    const updateBackground = await API.graphql({
+      query: mUpdateBackgroundFile,
+      variables: {
+        backgroundId: createBackground.data.backgroundCreate.id,
+        files: [{ id: matterid }],
+      },
+    });
 
-      console.log("updateBackground", updateBackground);
-      console.groupEnd();
-    }
+    console.log("updateBackground", updateBackground);
+    console.groupEnd();
   };
 
   const getOrigFiles = async (target, backgroundid) => {
@@ -536,6 +524,17 @@ export default function FileBucket() {
     //const background = await getBackgroundByBriefName("Background", brief);
     const label = await getLabelbyName("Background");
     //const files = await getOrigFiles("Background", background);
+
+    const updateBrief = await API.graphql({
+      query: mUpdateBrief,
+      variables: {
+        id: brief,
+        labelId: label.id,
+      },
+    });
+
+    console.log("updateBrief", updateBrief);
+
     request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
       console.log("Binding File", matterFile.name, " to a 'Background' label");
       await bindMatterToDefaultLabel(matterFile.id, brief, label);
