@@ -6,6 +6,7 @@ const {
   UpdateItemCommand,
   QueryCommand,
   DeleteItemCommand,
+  BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { v4 } from "uuid";
 const { toUTC } = require("../shared/toUTC");
@@ -174,6 +175,106 @@ export async function deleteTeam(id) {
 
       resp = request ? { id: id } : {};
     }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function tagTeamMember(data) {
+  let resp = {};
+
+  console.log(data);
+  try {
+    const arrItems = [],
+      arrIDs = [];
+
+    // Delete Existing
+    const teamMembersParams = {
+      TableName: "TeamMemberTable",
+      IndexName: "byTeam",
+      KeyConditionExpression: "teamId = :teamId",
+      ExpressionAttributeValues: marshall({
+        ":teamId": data.teamId,
+      }),
+      ProjectionExpression: "id",
+    };
+
+    const teamMembersCmd = new QueryCommand(teamMembersParams);
+    const teamMembersRes = await ddbClient.send(teamMembersCmd);
+
+    if (teamMembersRes.Count !== 0) {
+      for (var a = 0; a < teamMembersRes.Items.length; a++) {
+        var teamMembersId = {
+          id: teamMembersRes.Items[a].id,
+        };
+        arrItems.push({
+          DeleteRequest: {
+            Key: teamMembersId,
+          },
+        });
+      }
+    }
+
+    for (var i = 0; i < data.members.length; i++) {
+      var uuid = v4();
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: uuid,
+            teamId: data.teamId,
+            memberId: data.members[i].userId,
+            usertype: data.members[i].userType
+              ? data.members[i].userType
+              : null,
+            customUserType: data.members[i].customUserType
+              ? data.members[i].customUserType
+              : null,
+            createdAt: toUTC(new Date()),
+          }),
+        },
+      });
+    }
+
+    const batches = [];
+    let current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    console.log("batches", JSON.stringify(batches));
+
+    batches.forEach(async (data) => {
+      const teamMemberParams = {
+        RequestItems: {
+          TeamMemberTable: data,
+        },
+      };
+
+      const teamMemberCmd = new BatchWriteItemCommand(teamMemberParams);
+      await ddbClient.send(teamMemberCmd);
+    });
+
+    resp = { id: data.teamId };
   } catch (e) {
     resp = {
       error: e.message,
