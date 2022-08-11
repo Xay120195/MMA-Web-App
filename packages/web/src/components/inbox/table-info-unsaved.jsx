@@ -62,6 +62,15 @@ mutation updateAttachment($id: ID, $isDeleted: Boolean) {
   }
 }`;
 
+const mCreateLabel = `
+mutation createLabel($clientMatterId: String, $name: String) {
+    labelCreate(clientMatterId:$clientMatterId, name:$name) {
+        id
+        name
+    }
+}
+`;
+
 const TableUnsavedInfo = ({
   selectedUnsavedItems,
   setSelectedUnsavedItems,
@@ -350,6 +359,7 @@ const TableUnsavedInfo = ({
   }`;
 
   const handleAddLabel = async (e, gmid) => {
+    
     var selectedLabels = [];
     var taggedLabels = [];
 

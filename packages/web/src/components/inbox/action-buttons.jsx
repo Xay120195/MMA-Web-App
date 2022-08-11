@@ -304,7 +304,7 @@ const ActionButtons = ({
       pagebreak: { before: '.page-break', avoid: 'img' }
     };
     var content = document.getElementById("preview_"+gmailMessageId);
-    content += Base64.decode(htmlContent).replace("body{color:", "");
+    content.innerHTML += Base64.decode(htmlContent).replace("body{color:", "");
 
     await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
       const preBlob = dataURItoBlob(pdfAsString);
