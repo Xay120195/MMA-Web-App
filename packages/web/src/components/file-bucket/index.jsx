@@ -1162,6 +1162,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }
       }
     }
+
+    tagFileLabel(id, labelsList);
  */
 
     if (e.label) {
