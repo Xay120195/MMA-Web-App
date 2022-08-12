@@ -299,7 +299,6 @@ export default function FileBucket() {
       query: getName,
       variables: {
         id: matter_id,
-        limit: 50,
         nextToken: null,
       },
     };
