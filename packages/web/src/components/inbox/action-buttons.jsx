@@ -221,7 +221,11 @@ const ActionButtons = ({
                 console.log("attachmentlabels", attachment.labels.items);
 
                 attachment.labels.items.map(labels => {
-                  console.log(labels.id," - ",labels.name);
+                  console.log("ID NOW", result.id);
+                  createBackgroundFromLabel(clientMatterId, result.data.matterFileCreate.id, attachment.details, item.date, {
+                    id: labels.id,
+                    name: labels.name,
+                  });
                 });
                 
                 const tagAttachment = API.graphql({
@@ -359,6 +363,13 @@ const ActionButtons = ({
                 console.log("res arrray",result.data.matterFileCreate.id);
                 console.log("labels",labels);
 
+                labels.items.map(label => {
+                  createBackgroundFromLabel(matterId, result.data.matterFileCreate.id, description, dateEmail, {
+                    id: label.id,
+                    name: label.name,
+                  });
+                });
+
                 const request1 = API.graphql({
                   query: mTagFile,
                   variables: {
@@ -458,11 +469,7 @@ const ActionButtons = ({
 
 
 
-  const createBackgroundFromLabel = async (matter_id, row_id, label, isNew) => {
-    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", label);
-
-    //const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
-    const mf = '';
+  const createBackgroundFromLabel = async (matter_id, row_id, attachDetails, attachDate, label, isNew) => {
     // check if brief already exists
     let briefNameExists = false;
     const getBriefByName = await API.graphql({
@@ -513,11 +520,11 @@ const ActionButtons = ({
       }
 
       const fileId = row_id,
-        fileDetails = mf[0].details,
+        fileDetails = attachDetails,
         fileDate =
-          mf[0].date != null
+          attachDate != null
             ? moment
-                .utc(moment(new Date(mf[0].date), "YYYY-MM-DD"))
+                .utc(moment(new Date(attachDate), "YYYY-MM-DD"))
                 .toISOString()
             : null;
 
@@ -573,12 +580,12 @@ const ActionButtons = ({
         }
       }
 
-      const fileId = mf[0].id,
-        fileDetails = mf[0].details,
+      const fileId = row_id,
+        fileDetails = attachDetails,
         fileDate =
-          mf[0].date != null
+          attachDate != null
             ? moment
-                .utc(moment(new Date(mf[0].date), "YYYY-MM-DD"))
+                .utc(moment(new Date(attachDate), "YYYY-MM-DD"))
                 .toISOString()
             : null;
 
