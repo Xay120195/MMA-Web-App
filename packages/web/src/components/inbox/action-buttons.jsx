@@ -149,6 +149,7 @@ const ActionButtons = ({
   const handleEmails = async (status) => {
     setSaveLoading(true);
     setOpenTab(2);
+    setTimeout(() => {
     // Soon will change this to bulk mutation 
     if(status) {
       var clientMatterId = "";
@@ -195,9 +196,8 @@ const ActionButtons = ({
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
           console.log("PAYLOAD:", payload);
           
-          setTimeout(() => {
-            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
-          }, 500);
+          
+          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
           
           
           item.attachments.items.map(attachment => {
@@ -278,6 +278,7 @@ const ActionButtons = ({
         });
       });
     }
+    }, 1000);
   };
 
   const handleCheckAllChange = (e) => {
