@@ -195,9 +195,8 @@ const ActionButtons = ({
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
           console.log("PAYLOAD:", payload);
           
-          setTimeout(() => {
-            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
-          }, 500);
+          
+          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
           
           
           item.attachments.items.map(attachment => {
@@ -296,88 +295,91 @@ const ActionButtons = ({
       }
     }`;
 
-  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent, labels) => {
-    var opt = {
-      margin:       [30, 30, 30, 30],
-      filename:     fileName,
-      image:        { type: 'jpeg',quality: 0.98 },
-      html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
-      jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
-      pagebreak: { before: '.page-break', avoid: 'img' }
-    };
-    var content = document.getElementById("preview_"+gmailMessageId);
-    content.innerHTML += Base64.decode(htmlContent).replace("body{color:", "");
+  const handleUploadGmailEmail = (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent, labels) => {
+    
+    setTimeout( async () => {
+      var opt = {
+        margin:       [30, 30, 30, 30],
+        filename:     fileName,
+        image:        { type: 'jpeg',quality: 0.98 },
+        html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
+        jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
+        pagebreak: { before: '.page-break', avoid: 'img' }
+      };
+      var content = document.getElementById("preview_"+gmailMessageId);
+      content.innerHTML += Base64.decode(htmlContent).replace("body{color:", "");
 
-    await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
-      const preBlob = dataURItoBlob(pdfAsString);
-      const file = new File([preBlob], fileName, {type: 'application/pdf'});
+      await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
+        const preBlob = dataURItoBlob(pdfAsString);
+        const file = new File([preBlob], fileName, {type: 'application/pdf'});
 
-      var key = `${gmailMessageId}/${Number(new Date())}${file.name
-        .replaceAll(/\s/g, "")
-        .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`,
-        type="application/pdf",
-        size=file.size;
+        var key = `${gmailMessageId}/${Number(new Date())}${file.name
+          .replaceAll(/\s/g, "")
+          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`,
+          type="application/pdf",
+          size=file.size;
 
-      // put objects to s3
-      try {
-        Storage.put(key, file, {
-          contentType: type,
-          progressCallback(progress) {
-            console.log(progress);
-          },
-          errorCallback: (err) => {
-            console.error("204: Unexpected error while uploading", err);
-          },
-          
-        })
-          .then((fd) => {
-
-            // insert to file bucket
-            const params = {
-              query: mCreateMatterFile,
-              variables: {
-                matterId: matterId,
-                s3ObjectKey: fd.key,
-                size: parseInt(size),
-                name: file.name,
-                type: type,
-                order: 0,
-                isGmailPDF: true,
-                isGmailAttachment: true,
-                gmailMessageId: gmailMessageId,
-                details: description,
-                date: new Date(dateEmail).toISOString(),
-              },
-            };
-        
-            API.graphql(params).then((result) => {
-              console.log("res arrray",result.data.matterFileCreate.id);
-              console.log("labels",labels);
-
-              const request1 = API.graphql({
-                query: mTagFile,
-                variables: {
-                  fileId: result.data.matterFileCreate.id,
-                  labels: labels.items,
-                },
-              });
-            });
-
+        // put objects to s3
+        try {
+          Storage.put(key, file, {
+            contentType: type,
+            progressCallback(progress) {
+              console.log(progress);
+            },
+            errorCallback: (err) => {
+              console.error("204: Unexpected error while uploading", err);
+            },
+            
           })
-          .catch((err) => {
-            console.error("220: Unexpected error while uploading", err);
+            .then((fd) => {
 
-          });
-              
-      } catch (e) {
-        const response = {
-          error: e.message,
-          errorStack: e.stack,
-          statusCode: 500,
-        };
-        console.error("228: Unexpected error while uploading", response);
-      }
-    });
+              // insert to file bucket
+              const params = {
+                query: mCreateMatterFile,
+                variables: {
+                  matterId: matterId,
+                  s3ObjectKey: fd.key,
+                  size: parseInt(size),
+                  name: file.name,
+                  type: type,
+                  order: 0,
+                  isGmailPDF: true,
+                  isGmailAttachment: true,
+                  gmailMessageId: gmailMessageId,
+                  details: description,
+                  date: new Date(dateEmail).toISOString(),
+                },
+              };
+          
+              API.graphql(params).then((result) => {
+                console.log("res arrray",result.data.matterFileCreate.id);
+                console.log("labels",labels);
+
+                const request1 = API.graphql({
+                  query: mTagFile,
+                  variables: {
+                    fileId: result.data.matterFileCreate.id,
+                    labels: labels.items,
+                  },
+                });
+              });
+
+            })
+            .catch((err) => {
+              console.error("220: Unexpected error while uploading", err);
+
+            });
+                
+        } catch (e) {
+          const response = {
+            error: e.message,
+            errorStack: e.stack,
+            statusCode: 500,
+          };
+          console.error("228: Unexpected error while uploading", response);
+        }
+      });
+    }, 1000);
   };
 
   function dataURItoBlob(dataURI) {
