@@ -3,6 +3,7 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
+import googleLogin from "../../assets/images/gmail-print.png";
 //import { useWorker, WORKER_STATUS } from "@koale/useworker";
 
 var moment = require("moment");
@@ -195,7 +196,7 @@ const ActionButtons = ({
           console.log("PAYLOAD:", payload);
           
           
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
+          handleUploadGmailEmail(item.id, item.description, item.subject, item.from, item.to, item.cc, item.date, clientMatterId, payload, item.labels);
           
           
           item.attachments.items.map(attachment => {
@@ -302,7 +303,7 @@ const ActionButtons = ({
       }
     }`;
 
-  const handleUploadGmailEmail = (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent, labels) => {
+  const handleUploadGmailEmail = (gmailMessageId, description, fileName, from, to, cc, dateEmail, matterId, htmlContent, labels) => {
     
     setTimeout( async () => {
       var opt = {
@@ -313,7 +314,11 @@ const ActionButtons = ({
         jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
         pagebreak: { before: '.page-break', avoid: 'img' }
       };
-      var content = document.getElementById("preview_"+gmailMessageId);
+      //var content = document.getElementById("preview_"+gmailMessageId);
+      //var content = <span><img src={googleLogin} alt="" /><hr></hr><h2><b>{fileName}</b></h2><hr></hr><br /><p>From : {from}</p><p>Date :{" "}{moment(dateEmail).format("DD MMM YYYY, hh:mm A")}</p><p>To : {to}</p><p>CC: {cc}</p></span>;
+
+      var content = `<span><img src=${googleLogin} alt="" /><hr></hr><h2><b>${fileName}</b></h2><hr></hr><br /><p>From : ${from}</p><p>Date :${" "}${moment(dateEmail).format("DD MMM YYYY, hh:mm A")}</p><p>To : ${to}</p><p>CC: ${cc}</p></span>`;
+
       content += Base64.decode(htmlContent).replace("body{color:", "");
 
       await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
