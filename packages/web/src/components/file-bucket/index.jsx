@@ -412,17 +412,6 @@ export default function FileBucket() {
     console.log("matterid", matterid);
 
     /*
-    const updateBrief = await API.graphql({
-      query: mUpdateBrief,
-      variables: {
-        id: brief,
-        labelId: label.id,
-      },
-    });
-
-    console.log("updateBrief", updateBrief);
-
-    
     const updateBackground = await API.graphql({
       query: mUpdateBackgroundFile,
       variables: {
