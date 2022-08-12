@@ -194,8 +194,11 @@ const ActionButtons = ({
 
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
           console.log("PAYLOAD:", payload);
-
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
+          
+          setTimeout(() => {
+            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
+          }, 500);
+          
           
           item.attachments.items.map(attachment => {
             if(attachment.isDeleted !== true) {
