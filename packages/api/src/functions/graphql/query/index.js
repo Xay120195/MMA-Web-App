@@ -853,6 +853,7 @@ const resolvers = {
     customUserType: async (ctx) => {
       return getCustomUserType(ctx.arguments);
     },
+
     teams: async () => {
       return listTeams();
     },
