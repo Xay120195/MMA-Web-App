@@ -562,9 +562,24 @@ export default function FileBucket() {
     }
     */
 
-    request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
+    request?.data?.matterFileBulkCreate.forEach(async (matterFile, idx) => {
       console.log("Binding File", matterFile.name, " to a 'Background' label");
       await bindMatterToDefaultLabel(matterFile.id, brief, label);
+
+      if (idx === request?.data?.matterFileBulkCreate.length - 1) {
+        console.log(
+          "Last callback call at index " +
+            idx +
+            " with value " +
+            matterFile.name
+        );
+
+        //making sure to refresh matterfiles when file upload is longer at last index
+        setTimeout(() => {
+          console.log("Refreshing Matter Files");
+          getMatterFiles(1);
+        }, 3000);
+      }
     });
 
     //var labelsList = [];
