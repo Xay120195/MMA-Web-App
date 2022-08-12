@@ -427,6 +427,11 @@ input CustomUserTypeInput {
   name: String
 }
 
+input MemberInput {
+  userId: ID
+  userType: UserType
+  customUserType: CustomUserTypeInput
+}
 # Relationships / Conns
 type BackgroundFileConn {
   items: [File]
@@ -814,4 +819,5 @@ type Mutation {
   teamCreate(companyId: ID, name: String): Team
   teamUpdate(id: ID, name: String): Team
   teamDelete(id: ID): Team
+  teamMemberTag(teamId: ID, members: [MemberInput]): Team
 }

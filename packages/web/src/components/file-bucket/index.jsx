@@ -275,12 +275,11 @@ export default function FileBucket() {
 
     console.log('Uploaded Files', sortedFiles);
 
-    createMatterFile(sortedFiles);
+    await createMatterFile(sortedFiles);
 
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
     handleModalClose();
-    await getMatterFiles();
     setTimeout(() => {
       setShowToast(false);
       getMatterFiles(1);
@@ -300,7 +299,6 @@ export default function FileBucket() {
       query: getName,
       variables: {
         id: matter_id,
-        limit: 50,
         nextToken: null,
       },
     };
@@ -310,7 +308,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in briefs
     let backgroundExist = false;
     request.data.clientMatter.briefs.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -336,7 +336,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in labels
     let backgroundExist = false;
     labelsOpt.data.clientMatter.labels.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -347,7 +349,7 @@ export default function FileBucket() {
   };
 
   const getLabelbyName = async (target) => {
-    console.log('getLabelbyName');
+    console.group("getLabelbyName");
     const labelsOpt = await API.graphql({
       query: listLabels,
       variables: {
@@ -364,6 +366,7 @@ export default function FileBucket() {
         }
       }
     );
+    console.groupEnd();
     return final[0]; //get the First result // if any duplicates, we don't have a label delete mutation
   };
 
@@ -394,8 +397,8 @@ export default function FileBucket() {
   };
 
   const getBriefByName = async (target) => {
-    console.log('getBriefByName');
-    console.log('TARGET', target);
+    console.group("getBriefByName");
+    console.log("TARGET", target);
     const request = await API.graphql({
       query: qBriefByName,
       variables: {
@@ -403,26 +406,15 @@ export default function FileBucket() {
         name: target,
       },
     });
-    console.log('getBriefs', request);
-
+    console.log("getBriefs", request);
+    console.groupEnd();
     return request.data?.briefByName?.id;
   };
 
-  const bindMatterToDefaultLabel = async (matterid, brief, label) => {
-    console.group('bindMatterToDefaultLabel');
-    console.log('matterid', matterid);
-    console.log('files', files);
+  const bindMatterToDefaultLabel = async (matterid, brief) => {
+    console.group("bindMatterToDefaultLabel");
+    console.log("matterid", matterid);
 
-    const updateBrief = await API.graphql({
-      query: mUpdateBrief,
-      variables: {
-        id: brief,
-        labelId: label.id,
-      },
-    });
-
-    console.log('updateBrief', updateBrief);
-    console.log('abea7a1b-d230-4255-aa6d-dd7fd6e56864');
     /*
     const updateBackground = await API.graphql({
       query: mUpdateBackgroundFile,
@@ -441,8 +433,10 @@ export default function FileBucket() {
       },
     });
 
-    console.log('createBackground', createBackground);
-
+    console.log("createBackground", createBackground);
+    if (createBackground.data == null) {
+      console.error("Failed to createBackground");
+    }
     const updateBackground = await API.graphql({
       query: mUpdateBackgroundFile,
       variables: {
@@ -451,7 +445,10 @@ export default function FileBucket() {
       },
     });
 
-    console.log('updateBackground', updateBackground);
+    console.log("updateBackground", updateBackground);
+    if (updateBackground.data == null) {
+      console.error("Failed to updateBackground");
+    }
     console.groupEnd();
   };
 
@@ -492,13 +489,17 @@ export default function FileBucket() {
           name: 'Background',
         },
       });
+
+      console.log("createLabel", createLabel);
+      if (createLabel.data == null) {
+        console.error("Failed to create label");
+      }
       console.groupEnd();
-      console.log('createLabel', createLabel);
     }
 
-    if (!(await isBackgroundBriefNameExist('Background'))) {
-      console.group('No Background Brief Exist, Creating Label');
-      const label = await getLabelbyName('Background');
+    if (!(await isBackgroundBriefNameExist("Background"))) {
+      console.group("No Background Brief Exist, Creating Brief");
+      const label = await getLabelbyName("Background");
 
       const params = {
         clientMatterId: matter_id,
@@ -524,17 +525,61 @@ export default function FileBucket() {
         },
       });
 
-      console.log('createBackground', createBackground);
+      console.log("createBackground", createBackground);
+      if (createBackground.data == null) {
+        console.error("Failed to create background");
+      }
       console.groupEnd();
     }
 
-    const brief = await getBriefByName('Background');
+    const brief = await getBriefByName("Background");
+    if (brief === null || brief === undefined || brief === "") {
+      alert("534: Brief not found!");
+    }
     //const background = await getBackgroundByBriefName("Background", brief);
-    const label = await getLabelbyName('Background');
+    const label = await getLabelbyName("Background");
+    if (label === null || label === undefined || label === "") {
+      alert("539: Label not found!");
+    }
     //const files = await getOrigFiles("Background", background);
-    request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
-      console.log('Binding File', matterFile.name, " to a 'Background' label");
+
+    console.log("brief", brief);
+    console.log("label", label);
+    const updateBrief = await API.graphql({
+      query: mUpdateBrief,
+      variables: {
+        id: brief,
+        labelId: label.id,
+      },
+    });
+
+    console.log("updateBrief", updateBrief);
+
+    /* 
+    for (const matterFile of request?.data?.matterFileBulkCreate) {
+        console.log("Binding File", matterFile.name, " to a 'Background' label");
+        await bindMatterToDefaultLabel(matterFile.id, brief);
+    }
+    */
+
+    request?.data?.matterFileBulkCreate.forEach(async (matterFile, idx) => {
+      console.log("Binding File", matterFile.name, " to a 'Background' label");
       await bindMatterToDefaultLabel(matterFile.id, brief, label);
+
+      if (idx === request?.data?.matterFileBulkCreate.length - 1) {
+        console.log(
+          "Last callback call at index " +
+            idx +
+            " with value " +
+            matterFile.name
+        );
+
+        //making sure to refresh matterfiles when file upload is longer at last index
+        setTimeout(() => {
+          console.log("Refreshing Matter Files");
+          getMatterFiles(1);
+        }, 3000);
+      }
     });
 
     //var labelsList = [];
@@ -993,8 +1038,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         isDeleted: false,
         //limit: 50,
         //nextToken: next === 1 ? null : vNextToken,
-        limit: 100,
-        nextToken: null,
         sortOrder: sortOrder,
       },
     };
@@ -2731,6 +2774,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   const createBackgroundFromLabel = async (row_id, label, isNew) => {
     console.log('ROW_ID', row_id, 'INSIDE FROM LABEL', label);
 
+    const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
     // check if brief already exists
     let briefNameExists = false;
     const getBriefByName = await API.graphql({
@@ -2781,8 +2825,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       }
 
       const fileId = row_id,
-        fileDetails = '',
-        fileDate = null;
+        fileDetails = mf[0].details,
+        fileDate =
+          mf[0].date != null
+            ? moment
+                .utc(moment(new Date(mf[0].date), "YYYY-MM-DD"))
+                .toISOString()
+            : null;
 
       // Create Background
       const createBackground = await API.graphql({
@@ -2806,8 +2855,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         });
       }
     } else {
-      const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
-
       if (!briefNameExists) {
         const params = {
           clientMatterId: matter_id,
