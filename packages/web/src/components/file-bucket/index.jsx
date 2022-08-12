@@ -275,12 +275,11 @@ export default function FileBucket() {
 
     console.log("Uploaded Files", sortedFiles);
 
-    createMatterFile(sortedFiles);
+    await createMatterFile(sortedFiles);
 
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
     handleModalClose();
-    await getMatterFiles();
     setTimeout(() => {
       setShowToast(false);
       getMatterFiles(1);
@@ -347,7 +346,7 @@ export default function FileBucket() {
   };
 
   const getLabelbyName = async (target) => {
-    console.log("getLabelbyName");
+    console.group("getLabelbyName");
     const labelsOpt = await API.graphql({
       query: listLabels,
       variables: {
@@ -364,6 +363,7 @@ export default function FileBucket() {
         }
       }
     );
+    console.groupEnd();
     return final[0]; //get the First result // if any duplicates, we don't have a label delete mutation
   };
 
@@ -394,7 +394,7 @@ export default function FileBucket() {
   };
 
   const getBriefByName = async (target) => {
-    console.log("getBriefByName");
+    console.group("getBriefByName");
     console.log("TARGET", target);
     const request = await API.graphql({
       query: qBriefByName,
@@ -404,18 +404,26 @@ export default function FileBucket() {
       },
     });
     console.log("getBriefs", request);
-
+    console.groupEnd();
     return request.data?.briefByName?.id;
   };
 
-  const bindMatterToDefaultLabel = async (matterid, brief, label) => {
+  const bindMatterToDefaultLabel = async (matterid, brief) => {
     console.group("bindMatterToDefaultLabel");
     console.log("matterid", matterid);
-    console.log("files", files);
-    console.log("brief", brief);
-    console.log("label", label);
 
     /*
+    const updateBrief = await API.graphql({
+      query: mUpdateBrief,
+      variables: {
+        id: brief,
+        labelId: label.id,
+      },
+    });
+
+    console.log("updateBrief", updateBrief);
+
+    
     const updateBackground = await API.graphql({
       query: mUpdateBackgroundFile,
       variables: {
@@ -484,12 +492,16 @@ export default function FileBucket() {
           name: "Background",
         },
       });
-      console.groupEnd();
+
       console.log("createLabel", createLabel);
+      if (createLabel.data === null) {
+        console.log("Failed to create label");
+      }
+      console.groupEnd();
     }
 
     if (!(await isBackgroundBriefNameExist("Background"))) {
-      console.group("No Background Brief Exist, Creating Label");
+      console.group("No Background Brief Exist, Creating Brief");
       const label = await getLabelbyName("Background");
 
       const params = {
@@ -517,14 +529,25 @@ export default function FileBucket() {
       });
 
       console.log("createBackground", createBackground);
+      if (createBackground.data === null) {
+        console.log("Failed to create background");
+      }
       console.groupEnd();
     }
 
     const brief = await getBriefByName("Background");
+    if (brief === null || brief === undefined || brief === "") {
+      alert("534: Brief not found!");
+    }
     //const background = await getBackgroundByBriefName("Background", brief);
     const label = await getLabelbyName("Background");
+    if (label === null || label === undefined || label === "") {
+      alert("539: Label not found!");
+    }
     //const files = await getOrigFiles("Background", background);
 
+    console.log("brief", brief);
+    console.log("label", label);
     const updateBrief = await API.graphql({
       query: mUpdateBrief,
       variables: {
@@ -534,6 +557,13 @@ export default function FileBucket() {
     });
 
     console.log("updateBrief", updateBrief);
+
+    /* 
+    for (const matterFile of request?.data?.matterFileBulkCreate) {
+        console.log("Binding File", matterFile.name, " to a 'Background' label");
+        await bindMatterToDefaultLabel(matterFile.id, brief);
+    }
+    */
 
     request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
       console.log("Binding File", matterFile.name, " to a 'Background' label");
@@ -996,8 +1026,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         isDeleted: false,
         //limit: 50,
         //nextToken: next === 1 ? null : vNextToken,
-        limit: 100,
-        nextToken: null,
         sortOrder: sortOrder,
       },
     };
@@ -1161,8 +1189,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }
       }
     }
-
-    tagFileLabel(id, labelsList);
  */
 
     if (e.label) {
