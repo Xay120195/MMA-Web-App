@@ -155,11 +155,89 @@ export async function listUserClientMatter(ctx) {
       };
     }
   } catch (e) {
-    response = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
     };
-    console.log(response);
+    console.log(resp);
+  }
+  return response;
+}
+export async function listUserTeams(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+
+  try {
+    const userTeamsParam = {
+      TableName: "TeamMemberTable",
+      IndexName: "byMember",
+      KeyConditionExpression: "memberId = :memberId",
+      ExpressionAttributeValues: marshall({
+        ":memberId": id,
+      }),
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      userTeamsParam.Limit = limit;
+    }
+
+    const userTeamsCmd = new QueryCommand(userTeamsParam);
+    const userTeamsResult = await ddbClient.send(userTeamsCmd);
+    const teamIds = userTeamsResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.teamId })
+    );
+
+    if (teamIds.length !== 0) {
+      const teamsParam = {
+        RequestItems: {
+          TeamTable: {
+            Keys: teamIds,
+          },
+        },
+      };
+
+      const teamsCmd = new BatchGetItemCommand(teamsParam);
+      const teamsResult = await ddbClient.send(teamsCmd);
+
+      const objTeams = teamsResult.Responses.TeamTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCompTeams = userTeamsResult.Items.map((i) => unmarshall(i));
+
+      const response = objCompTeams
+        .map((item) => {
+          const filterTeam = objTeams.find((u) => u.id === item.teamId);
+
+          if (filterTeam !== undefined) {
+            return { ...item, ...filterTeam };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: userTeamsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(userTeamsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
   }
   return response;
 }

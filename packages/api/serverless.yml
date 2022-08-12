@@ -182,6 +182,11 @@ custom:
         response: false
       - dataSource: LambdaUserDS
         type: User
+        field: teams
+        request: false
+        response: false
+      - dataSource: LambdaUserDS
+        type: User
         field: customUserType
         request: false
         response: false

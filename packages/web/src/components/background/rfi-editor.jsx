@@ -56,6 +56,8 @@ const RFIEditor = ({ item }) => {
       name: `${firstName} ${lastName}`,
       color: testColors[Math.floor(Math.random() * testColors.length)],
     });
+
+    return () => provider.disconnect();
   }, []);
 
   return <Remirror manager={manager} autoFocus autoRender="end" />;
