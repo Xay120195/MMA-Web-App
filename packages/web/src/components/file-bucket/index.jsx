@@ -1179,11 +1179,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       //clear first
       console.log("Clearing cache");
       cache?.current.clearAll();
-      console.log(
-        "Current row cache",
-  cache.current._rowHeightCache
-      );
+      console.log("Current row cache", cache.current._rowHeightCache);
       console.log("Recomputing Row Heights");
+      console.log("ALL ROWS:", bindList?.current?.measureAllRows());
       bindList?.current?.recomputeRowHeights();
       console.log("Current row cache", cache.current._rowHeightCache);
       console.log("forcing Update grid");
