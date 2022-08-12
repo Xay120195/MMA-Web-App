@@ -153,6 +153,7 @@ export default function FileBucket() {
   const itemsRef = useRef([]);
   const bool = useRef(false);
   let history = useHistory();
+  const bindList = useRef(null);
 
   const [briefNames, setBriefNames] = useState(null);
   const [ShowLabel, setShowLabel] = useState([{ index: -1 }]);
@@ -1014,6 +1015,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     console.log("matterFiles", matterFiles);
   }, [searchFile]);
 
+  useEffect(() => {
+    console.log("BINDLIST:", bindList?.current?.forceUpdateGrid);
+    console.log("cache", cache.current);
+  }, [bindList.current, cache?.current]);
+
   let getMatterFiles = async (next) => {
     // const mInitializeOrders = `
     //   mutation initializeOrder($clientMatterId: ID) {
@@ -1162,6 +1168,41 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     gridtemplatecolumn: "1fr auto",
     position: "sticky",
     top: 0,
+  };
+
+  const autoAdjustRowHeight = (index) => {
+    console.group("autoAdjustRowHeight");
+
+    //bindList and cache must not be null
+    if (bindList && cache) {
+      console.log("current Index", index);
+      //clear first
+      console.log("Clearing cache");
+      cache?.current.clearAll();
+      bindList?.current?.recomputeRowHeights();
+      bindList?.current?.forceUpdateGrid();
+    } else {
+      alert("List reference not found || cache not found!");
+    }
+
+    /* 
+    console.log("cache now:");
+    console.log(
+      Object.keys(cache?.current?._cellHeightCache).map((key, index) => {
+        return {
+          [key]: cache?.current?._cellHeightCache[key] + 50,
+        };
+      })
+    );
+    */
+    /* 
+    console.log("Recomputing height");
+    cache.current._rowHeightCache = { "0-0": 1000 };
+    bindList?.current?.recomputeRowHeights();
+    console.log(cache?.current?._cellHeightCache);
+    //console.log("ROWHEIGHT", cache?.current?.rowHeight);
+    bindList?.current?.forceUpdateGrid();
+    */
   };
 
   const handleLabelChanged = async (id, e, existingLabels) => {
@@ -3474,6 +3515,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <AutoSizer disableHeight>
                                               {({ width }) => (
                                                 <List
+                                                  ref={bindList}
                                                   autoHeight
                                                   scrollTop={scrollTop}
                                                   width={width}
