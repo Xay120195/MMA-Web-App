@@ -6,6 +6,7 @@ const {
   UpdateItemCommand,
   QueryCommand,
   DeleteItemCommand,
+  BatchGetItemCommand,
   BatchWriteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import { v4 } from "uuid";
@@ -189,12 +190,9 @@ export async function deleteTeam(id) {
 export async function tagTeamMember(data) {
   let resp = {};
 
-  console.log(data);
   try {
-    const arrItems = [],
-      arrIDs = [];
+    const arrItems = [];
 
-    // Delete Existing
     const teamMembersParams = {
       TableName: "TeamMemberTable",
       IndexName: "byTeam",
@@ -261,8 +259,6 @@ export async function tagTeamMember(data) {
       batches.push(current_batch);
     }
 
-    console.log("batches", JSON.stringify(batches));
-
     batches.forEach(async (data) => {
       const teamMemberParams = {
         RequestItems: {
@@ -284,6 +280,88 @@ export async function tagTeamMember(data) {
   }
 
   return resp;
+}
+
+export async function listTeamMembers(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+
+  try {
+    const teamMembersParams = {
+      TableName: "TeamMemberTable",
+      IndexName: "byTeam",
+      KeyConditionExpression: "teamId = :teamId",
+      ExpressionAttributeValues: marshall({
+        ":teamId": id,
+      }),
+
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      teamMembersParams.Limit = limit;
+    }
+
+    const teamMembersCmd = new QueryCommand(teamMembersParams);
+    const teamMembersResult = await ddbClient.send(teamMembersCmd);
+
+    const userIds = teamMembersResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.memberId })
+    );
+
+    if (userIds.length !== 0) {
+      const membersParam = {
+        RequestItems: {
+          UserTable: {
+            Keys: userIds,
+          },
+        },
+      };
+
+      const membersCmd = new BatchGetItemCommand(membersParam);
+      const membersResult = await ddbClient.send(membersCmd);
+
+      const objMembers = membersResult.Responses.UserTable.map((i) =>
+        unmarshall(i)
+      );
+
+      const objTeamMembers = teamMembersResult.Items.map((i) => unmarshall(i));
+
+      const response = objTeamMembers
+        .map((item) => {
+          const filterMember = objMembers.find((u) => u.id === item.memberId);
+
+          if (filterMember !== undefined) {
+            return { ...item, ...{ user: filterMember } };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: teamMembersResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(teamMembersResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    res = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(res);
+  }
+  return response;
 }
 
 export function getUpdateExpressions(data) {

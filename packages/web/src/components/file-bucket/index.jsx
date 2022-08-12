@@ -308,7 +308,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in briefs
     let backgroundExist = false;
     request.data.clientMatter.briefs.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -334,7 +336,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in labels
     let backgroundExist = false;
     labelsOpt.data.clientMatter.labels.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -558,9 +562,24 @@ export default function FileBucket() {
     }
     */
 
-    request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
+    request?.data?.matterFileBulkCreate.forEach(async (matterFile, idx) => {
       console.log("Binding File", matterFile.name, " to a 'Background' label");
       await bindMatterToDefaultLabel(matterFile.id, brief, label);
+
+      if (idx === request?.data?.matterFileBulkCreate.length - 1) {
+        console.log(
+          "Last callback call at index " +
+            idx +
+            " with value " +
+            matterFile.name
+        );
+
+        //making sure to refresh matterfiles when file upload is longer at last index
+        setTimeout(() => {
+          console.log("Refreshing Matter Files");
+          getMatterFiles(1);
+        }, 3000);
+      }
     });
 
     //var labelsList = [];
