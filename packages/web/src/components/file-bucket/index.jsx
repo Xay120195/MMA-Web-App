@@ -1179,8 +1179,17 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       //clear first
       console.log("Clearing cache");
       cache?.current.clearAll();
+      console.log(
+        "Current row cache",
+  cache.current._rowHeightCache
+      );
+      console.log("Recomputing Row Heights");
       bindList?.current?.recomputeRowHeights();
+      console.log("Current row cache", cache.current._rowHeightCache);
+      console.log("forcing Update grid");
       bindList?.current?.forceUpdateGrid();
+      console.log("Current row cache", cache.current._rowHeightCache);
+      console.groupEnd();
     } else {
       alert("List reference not found || cache not found!");
     }
@@ -1206,7 +1215,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleLabelChanged = async (id, e, existingLabels) => {
-    console.log('event', e, 'id', id);
+    console.log("event", e, "id", id);
 
     var labelsList = [];
 
@@ -1253,13 +1262,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             name: e.label,
           },
         }).then((r) => {
-          console.log('createLabel', r);
+          console.log("createLabel", r);
 
           const newLabelId = r.data.labelCreate.id,
             newLabelName = r.data.labelCreate.name;
 
-          console.log('newLabelId', newLabelId);
-          console.log('newLabelName', newLabelName);
+          console.log("newLabelId", newLabelId);
+          console.log("newLabelName", newLabelName);
 
           let updateLabel = labels;
           updateLabel.push({
@@ -1295,12 +1304,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     // if (request) {
     setDisableSelect(true);
     setShowLabel([{ index: -1 }]);
-    setResultMessage('Creating Background..');
+    setResultMessage("Creating Background..");
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
       setDisableSelect(false);
       getMatterFiles(1);
+      autoAdjustRowHeight(0);
     }, 2000);
     // }
   };
