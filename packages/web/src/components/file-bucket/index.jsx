@@ -538,7 +538,7 @@ export default function FileBucket() {
       alert("539: Label not found!");
     }
     //const files = await getOrigFiles("Background", background);
-
+    //test
     console.log("brief", brief);
     console.log("label", label);
     const updateBrief = await API.graphql({
