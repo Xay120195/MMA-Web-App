@@ -151,6 +151,7 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const itemsRef = useRef([]);
+  const bindListRef = useRef(null);
   const bool = useRef(false);
   let history = useHistory();
 
@@ -538,7 +539,7 @@ export default function FileBucket() {
       alert("539: Label not found!");
     }
     //const files = await getOrigFiles("Background", background);
-
+    //test
     console.log("brief", brief);
     console.log("label", label);
     const updateBrief = await API.graphql({
@@ -550,6 +551,9 @@ export default function FileBucket() {
     });
 
     console.log("updateBrief", updateBrief);
+    if (updateBrief.data == null) {
+      console.error("Update Brief failed");
+    }
 
     /* 
     for (const matterFile of request?.data?.matterFileBulkCreate) {
@@ -558,9 +562,24 @@ export default function FileBucket() {
     }
     */
 
-    request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
+    request?.data?.matterFileBulkCreate.forEach(async (matterFile, idx) => {
       console.log("Binding File", matterFile.name, " to a 'Background' label");
       await bindMatterToDefaultLabel(matterFile.id, brief, label);
+
+      if (idx === request?.data?.matterFileBulkCreate.length - 1) {
+        console.log(
+          "Last callback call at index " +
+            idx +
+            " with value " +
+            matterFile.name
+        );
+
+        //making sure to refresh matterfiles when file upload is longer at last index
+        setTimeout(() => {
+          console.log("Refreshing Matter Files");
+          getMatterFiles(1);
+        }, 3000);
+      }
     });
 
     //var labelsList = [];
@@ -1236,6 +1255,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setDisableSelect(true);
     setShowLabel([{ index: -1 }]);
     setResultMessage("Creating Background..");
+
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -3455,6 +3475,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <AutoSizer disableHeight>
                                               {({ width }) => (
                                                 <List
+                                                  ref={bindListRef}
                                                   autoHeight
                                                   scrollTop={scrollTop}
                                                   width={width}
