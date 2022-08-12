@@ -482,7 +482,7 @@ export default function FileBucket() {
       });
 
       console.log("createLabel", createLabel);
-      if (createLabel.data === null) {
+      if (createLabel.data == null) {
         console.log("Failed to create label");
       }
       console.groupEnd();
@@ -517,7 +517,7 @@ export default function FileBucket() {
       });
 
       console.log("createBackground", createBackground);
-      if (createBackground.data === null) {
+      if (createBackground.data == null) {
         console.log("Failed to create background");
       }
       console.groupEnd();
