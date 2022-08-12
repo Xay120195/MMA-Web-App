@@ -355,11 +355,11 @@ export async function listTeamMembers(ctx) {
       };
     }
   } catch (e) {
-    res = {
+    resp = {
       error: e.message,
       errorStack: e.stack,
     };
-    console.log(res);
+    console.log(resp);
   }
   return response;
 }
