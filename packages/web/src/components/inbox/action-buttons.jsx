@@ -13,6 +13,7 @@ const ActionButtons = ({
   setSelectedUnsavedItems,
   setSelectedSavedItems,
   openTab,
+  setOpenTab,
   getUnSavedEmails,
   getSavedEmails,
   unSavedEmails,
@@ -147,11 +148,11 @@ const ActionButtons = ({
 
   const handleEmails = async (status) => {
     setSaveLoading(true);
+    setOpenTab(2);
     // Soon will change this to bulk mutation 
     if(status) {
       var clientMatterId = "";
       var emailList = "";
-      setSaveLoading(true);
 
       /*const params = {
         query: qGmailMessagesbyCompany,
@@ -193,8 +194,11 @@ const ActionButtons = ({
 
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
           console.log("PAYLOAD:", payload);
-
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
+          
+          setTimeout(() => {
+            handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
+          }, 500);
+          
           
           item.attachments.items.map(attachment => {
             if(attachment.isDeleted !== true) {
@@ -245,8 +249,6 @@ const ActionButtons = ({
       });
 
     } else {
-      setSaveLoading(true);
-
       selectedSavedItems.map((obj) => {
         API.graphql({
           query: mSaveUnsavedEmails,
@@ -397,6 +399,13 @@ const ActionButtons = ({
       return new Blob([ia], {type:mimeString});
   }
 
+  function savingEmails(){
+    setSaveLoading(true);
+    setTimeout(() => {
+      handleEmails(true);
+    }, 1000);
+  }
+
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5" style={{ position: "sticky", top: "20px" }} >
@@ -413,7 +422,7 @@ const ActionButtons = ({
             <>
               <button
                 type="button"
-                onClick={() => handleEmails(true)}
+                onClick={() => {savingEmails()}}
                 className={saveLoading ?
                   "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
                   : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
@@ -431,7 +440,7 @@ const ActionButtons = ({
             <>
               <button
                 type="button"
-                onClick={() => handleEmails(false)}
+                onClick={() => {handleEmails(false)}}
                 className={saveLoading ?
                   "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
                   : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}

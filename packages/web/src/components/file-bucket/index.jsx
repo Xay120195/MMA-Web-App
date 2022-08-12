@@ -275,12 +275,11 @@ export default function FileBucket() {
 
     console.log("Uploaded Files", sortedFiles);
 
-    createMatterFile(sortedFiles);
+    await createMatterFile(sortedFiles);
 
     setResultMessage(`File successfully uploaded!`);
     setShowToast(true);
     handleModalClose();
-    await getMatterFiles();
     setTimeout(() => {
       setShowToast(false);
       getMatterFiles(1);
@@ -300,7 +299,6 @@ export default function FileBucket() {
       query: getName,
       variables: {
         id: matter_id,
-        limit: 50,
         nextToken: null,
       },
     };
@@ -310,7 +308,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in briefs
     let backgroundExist = false;
     request.data.clientMatter.briefs.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -336,7 +336,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in labels
     let backgroundExist = false;
     labelsOpt.data.clientMatter.labels.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -347,7 +349,7 @@ export default function FileBucket() {
   };
 
   const getLabelbyName = async (target) => {
-    console.log("getLabelbyName");
+    console.group("getLabelbyName");
     const labelsOpt = await API.graphql({
       query: listLabels,
       variables: {
@@ -364,6 +366,7 @@ export default function FileBucket() {
         }
       }
     );
+    console.groupEnd();
     return final[0]; //get the First result // if any duplicates, we don't have a label delete mutation
   };
 
@@ -394,7 +397,7 @@ export default function FileBucket() {
   };
 
   const getBriefByName = async (target) => {
-    console.log("getBriefByName");
+    console.group("getBriefByName");
     console.log("TARGET", target);
     const request = await API.graphql({
       query: qBriefByName,
@@ -404,29 +407,15 @@ export default function FileBucket() {
       },
     });
     console.log("getBriefs", request);
-
+    console.groupEnd();
     return request.data?.briefByName?.id;
   };
 
-  const bindMatterToDefaultLabel = async (matterid, brief, label) => {
+  const bindMatterToDefaultLabel = async (matterid, brief) => {
     console.group("bindMatterToDefaultLabel");
     console.log("matterid", matterid);
-    console.log("files", files);
-    console.log("brief", brief);
-    console.log("label", label);
 
-    if (brief !== "") {
-      const updateBrief = await API.graphql({
-        query: mUpdateBrief,
-        variables: {
-          id: brief,
-          labelId: label.id,
-        },
-      });
-
-      console.log("updateBrief", updateBrief);
-
-      /*
+    /*
     const updateBackground = await API.graphql({
       query: mUpdateBackgroundFile,
       variables: {
@@ -435,28 +424,32 @@ export default function FileBucket() {
       },
     });
     */
-      const createBackground = await API.graphql({
-        query: mCreateBackground,
-        variables: {
-          briefId: brief,
-          description: "",
-          date: null,
-        },
-      });
+    const createBackground = await API.graphql({
+      query: mCreateBackground,
+      variables: {
+        briefId: brief,
+        description: "",
+        date: null,
+      },
+    });
 
-      console.log("createBackground", createBackground);
-
-      const updateBackground = await API.graphql({
-        query: mUpdateBackgroundFile,
-        variables: {
-          backgroundId: createBackground.data.backgroundCreate.id,
-          files: [{ id: matterid }],
-        },
-      });
-
-      console.log("updateBackground", updateBackground);
-      console.groupEnd();
+    console.log("createBackground", createBackground);
+    if (createBackground.data == null) {
+      console.error("Failed to createBackground");
     }
+    const updateBackground = await API.graphql({
+      query: mUpdateBackgroundFile,
+      variables: {
+        backgroundId: createBackground.data.backgroundCreate.id,
+        files: [{ id: matterid }],
+      },
+    });
+
+    console.log("updateBackground", updateBackground);
+    if (updateBackground.data == null) {
+      console.error("Failed to updateBackground");
+    }
+    console.groupEnd();
   };
 
   const getOrigFiles = async (target, backgroundid) => {
@@ -496,12 +489,16 @@ export default function FileBucket() {
           name: "Background",
         },
       });
-      console.groupEnd();
+
       console.log("createLabel", createLabel);
+      if (createLabel.data == null) {
+        console.error("Failed to create label");
+      }
+      console.groupEnd();
     }
 
     if (!(await isBackgroundBriefNameExist("Background"))) {
-      console.group("No Background Brief Exist, Creating Label");
+      console.group("No Background Brief Exist, Creating Brief");
       const label = await getLabelbyName("Background");
 
       const params = {
@@ -529,16 +526,60 @@ export default function FileBucket() {
       });
 
       console.log("createBackground", createBackground);
+      if (createBackground.data == null) {
+        console.error("Failed to create background");
+      }
       console.groupEnd();
     }
 
     const brief = await getBriefByName("Background");
+    if (brief === null || brief === undefined || brief === "") {
+      alert("534: Brief not found!");
+    }
     //const background = await getBackgroundByBriefName("Background", brief);
     const label = await getLabelbyName("Background");
+    if (label === null || label === undefined || label === "") {
+      alert("539: Label not found!");
+    }
     //const files = await getOrigFiles("Background", background);
-    request?.data?.matterFileBulkCreate.forEach(async (matterFile) => {
+
+    console.log("brief", brief);
+    console.log("label", label);
+    const updateBrief = await API.graphql({
+      query: mUpdateBrief,
+      variables: {
+        id: brief,
+        labelId: label.id,
+      },
+    });
+
+    console.log("updateBrief", updateBrief);
+
+    /* 
+    for (const matterFile of request?.data?.matterFileBulkCreate) {
+        console.log("Binding File", matterFile.name, " to a 'Background' label");
+        await bindMatterToDefaultLabel(matterFile.id, brief);
+    }
+    */
+
+    request?.data?.matterFileBulkCreate.forEach(async (matterFile, idx) => {
       console.log("Binding File", matterFile.name, " to a 'Background' label");
       await bindMatterToDefaultLabel(matterFile.id, brief, label);
+
+      if (idx === request?.data?.matterFileBulkCreate.length - 1) {
+        console.log(
+          "Last callback call at index " +
+            idx +
+            " with value " +
+            matterFile.name
+        );
+
+        //making sure to refresh matterfiles when file upload is longer at last index
+        setTimeout(() => {
+          console.log("Refreshing Matter Files");
+          getMatterFiles(1);
+        }, 3000);
+      }
     });
 
     //var labelsList = [];
@@ -997,8 +1038,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         isDeleted: false,
         //limit: 50,
         //nextToken: next === 1 ? null : vNextToken,
-        limit: 100,
-        nextToken: null,
         sortOrder: sortOrder,
       },
     };
@@ -1130,7 +1169,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     var labelsList = [];
 
-    
+    /*
     for (var i = 0; i < e.length; i++) {
       if (e[i].__isNew__) {
         const createLabel = await API.graphql({
@@ -1162,62 +1201,60 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }
       }
     }
+ */
 
-    tagFileLabel(id, labelsList);
+    if (e.label) {
+      if (e.__isNew__) {
+        await API.graphql({
+          query: mCreateLabel,
+          variables: {
+            clientMatterId: matter_id,
+            name: e.label,
+          },
+        }).then((r) => {
+          console.log("createLabel", r);
 
+          const newLabelId = r.data.labelCreate.id,
+            newLabelName = r.data.labelCreate.name;
 
-    // if (e.label) {
-    //   if (e.__isNew__) {
-    //     await API.graphql({
-    //       query: mCreateLabel,
-    //       variables: {
-    //         clientMatterId: matter_id,
-    //         name: e.label,
-    //       },
-    //     }).then((r) => {
-    //       console.log("createLabel", r);
+          console.log("newLabelId", newLabelId);
+          console.log("newLabelName", newLabelName);
 
-    //       const newLabelId = r.data.labelCreate.id,
-    //         newLabelName = r.data.labelCreate.name;
+          let updateLabel = labels;
+          updateLabel.push({
+            value: newLabelId,
+            label: newLabelName,
+          });
 
-    //       console.log("newLabelId", newLabelId);
-    //       console.log("newLabelName", newLabelName);
+          setLabels(updateLabel);
 
-    //       let updateLabel = labels;
-    //       updateLabel.push({
-    //         value: newLabelId,
-    //         label: newLabelName,
-    //       });
+          labelsList = [
+            ...labelsList,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+          ];
+          createBackgroundFromLabel(
+            id,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+            true
+          );
+        });
+      } else {
+        labelsList = [...labelsList, { id: e.value, name: e.label }];
 
-    //       setLabels(updateLabel);
-
-    //       labelsList = [
-    //         ...labelsList,
-    //         {
-    //           id: newLabelId,
-    //           name: newLabelName,
-    //         },
-    //       ];
-    //       createBackgroundFromLabel(
-    //         id,
-    //         {
-    //           id: newLabelId,
-    //           name: newLabelName,
-    //         },
-    //         true
-    //       );
-    //     });
-    //   } else {
-    //     labelsList = [...labelsList, { id: e.value, name: e.label }];
-
-    //     createBackgroundFromLabel(id, { id: e.value, name: e.label });
-    //   }
-    // }
+        createBackgroundFromLabel(id, { id: e.value, name: e.label });
+      }
+    }
 
     // if (request) {
     setDisableSelect(true);
     setShowLabel([{ index: -1 }]);
-    setResultMessage("Updating labels..");
+    setResultMessage("Creating Background..");
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -3984,7 +4021,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 >
                                                                   {/*New label starts here*/}
 
-                                                                  {/* <button
+                                                                  <button
                                                                     onClick={() => {
                                                                       if (
                                                                         ShowLabel[0]
@@ -4083,9 +4120,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       placeholder="Labels"
                                                                       className="mt-2 -mb-2 absolute w-full placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                                                     />
-                                                                  )} */}
-{/* 
-                                                                  Old Label starts here */}
+                                                                  )}
+
+                                                                  {/*Old Label starts here
                                                                   <CreatableSelect
                                                                     defaultValue={() =>
                                                                       defaultOptions(
@@ -4116,10 +4153,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     }
                                                                     placeholder="Labels"
                                                                     className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                                                  />
+                                                                  />*/}
                                                                   <div className="grid grid-cols-1">
-                                                                    {/* <div className="flex mb-14"></div> */}
-{/* 
+                                                                    <div className="flex mb-14"></div>
+
                                                                     {sortByOrder(
                                                                       data
                                                                         .backgrounds
@@ -4174,7 +4211,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                             </b>
                                                                           </div>
                                                                         )
-                                                                    )} */}
+                                                                    )}
                                                                   </div>
                                                                 </td>
                                                                 <td
@@ -4229,18 +4266,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                 }
                                                                               >
                                                                                 <b>
-                                                                                  {/* {"Row" +
+                                                                                  {"Row" +
                                                                                     " " +
-                                                                                    background.order + 
-                                                                                    " " +  */}
-                                                                                    {
-                                                                                    background
-                                                                                    .briefs
-                                                                                    .items[0]
-                                                                                    .name}
+                                                                                    background.order}
                                                                                 </b>
                                                                               </div>
-                                                                              {/* <div
+                                                                              <div
                                                                                 className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
                                                                                 index={
                                                                                   index
@@ -4256,7 +4287,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                 <b>
                                                                                   <CgTrash className="" />
                                                                                 </b>
-                                                                              </div> */}
+                                                                              </div>
                                                                             </div>
                                                                           </>
                                                                         )
