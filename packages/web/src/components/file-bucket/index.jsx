@@ -1130,7 +1130,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     var labelsList = [];
 
-    
+    /*
     for (var i = 0; i < e.length; i++) {
       if (e[i].__isNew__) {
         const createLabel = await API.graphql({
@@ -1164,60 +1164,60 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
 
     tagFileLabel(id, labelsList);
+ */
 
+    if (e.label) {
+      if (e.__isNew__) {
+        await API.graphql({
+          query: mCreateLabel,
+          variables: {
+            clientMatterId: matter_id,
+            name: e.label,
+          },
+        }).then((r) => {
+          console.log("createLabel", r);
 
-    // if (e.label) {
-    //   if (e.__isNew__) {
-    //     await API.graphql({
-    //       query: mCreateLabel,
-    //       variables: {
-    //         clientMatterId: matter_id,
-    //         name: e.label,
-    //       },
-    //     }).then((r) => {
-    //       console.log("createLabel", r);
+          const newLabelId = r.data.labelCreate.id,
+            newLabelName = r.data.labelCreate.name;
 
-    //       const newLabelId = r.data.labelCreate.id,
-    //         newLabelName = r.data.labelCreate.name;
+          console.log("newLabelId", newLabelId);
+          console.log("newLabelName", newLabelName);
 
-    //       console.log("newLabelId", newLabelId);
-    //       console.log("newLabelName", newLabelName);
+          let updateLabel = labels;
+          updateLabel.push({
+            value: newLabelId,
+            label: newLabelName,
+          });
 
-    //       let updateLabel = labels;
-    //       updateLabel.push({
-    //         value: newLabelId,
-    //         label: newLabelName,
-    //       });
+          setLabels(updateLabel);
 
-    //       setLabels(updateLabel);
+          labelsList = [
+            ...labelsList,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+          ];
+          createBackgroundFromLabel(
+            id,
+            {
+              id: newLabelId,
+              name: newLabelName,
+            },
+            true
+          );
+        });
+      } else {
+        labelsList = [...labelsList, { id: e.value, name: e.label }];
 
-    //       labelsList = [
-    //         ...labelsList,
-    //         {
-    //           id: newLabelId,
-    //           name: newLabelName,
-    //         },
-    //       ];
-    //       createBackgroundFromLabel(
-    //         id,
-    //         {
-    //           id: newLabelId,
-    //           name: newLabelName,
-    //         },
-    //         true
-    //       );
-    //     });
-    //   } else {
-    //     labelsList = [...labelsList, { id: e.value, name: e.label }];
-
-    //     createBackgroundFromLabel(id, { id: e.value, name: e.label });
-    //   }
-    // }
+        createBackgroundFromLabel(id, { id: e.value, name: e.label });
+      }
+    }
 
     // if (request) {
     setDisableSelect(true);
     setShowLabel([{ index: -1 }]);
-    setResultMessage("Updating labels..");
+    setResultMessage("Creating Background..");
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -3984,7 +3984,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                 >
                                                                   {/*New label starts here*/}
 
-                                                                  {/* <button
+                                                                  <button
                                                                     onClick={() => {
                                                                       if (
                                                                         ShowLabel[0]
@@ -4083,9 +4083,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       placeholder="Labels"
                                                                       className="mt-2 -mb-2 absolute w-full placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                                                     />
-                                                                  )} */}
-{/* 
-                                                                  Old Label starts here */}
+                                                                  )}
+
+                                                                  {/*Old Label starts here
                                                                   <CreatableSelect
                                                                     defaultValue={() =>
                                                                       defaultOptions(
@@ -4116,10 +4116,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     }
                                                                     placeholder="Labels"
                                                                     className="w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                                                  />
+                                                                  />*/}
                                                                   <div className="grid grid-cols-1">
-                                                                    {/* <div className="flex mb-14"></div> */}
-{/* 
+                                                                    <div className="flex mb-14"></div>
+
                                                                     {sortByOrder(
                                                                       data
                                                                         .backgrounds
@@ -4174,7 +4174,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                             </b>
                                                                           </div>
                                                                         )
-                                                                    )} */}
+                                                                    )}
                                                                   </div>
                                                                 </td>
                                                                 <td
@@ -4229,18 +4229,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                 }
                                                                               >
                                                                                 <b>
-                                                                                  {/* {"Row" +
+                                                                                  {"Row" +
                                                                                     " " +
-                                                                                    background.order + 
-                                                                                    " " +  */}
-                                                                                    {
-                                                                                    background
-                                                                                    .briefs
-                                                                                    .items[0]
-                                                                                    .name}
+                                                                                    background.order}
                                                                                 </b>
                                                                               </div>
-                                                                              {/* <div
+                                                                              <div
                                                                                 className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
                                                                                 index={
                                                                                   index
@@ -4256,7 +4250,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                 <b>
                                                                                   <CgTrash className="" />
                                                                                 </b>
-                                                                              </div> */}
+                                                                              </div>
                                                                             </div>
                                                                           </>
                                                                         )
