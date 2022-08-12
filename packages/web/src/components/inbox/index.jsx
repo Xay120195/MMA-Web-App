@@ -529,6 +529,7 @@ const Inbox = () => {
               selectedSavedItems={selectedSavedItems}
               setSelectedSavedItems={setSelectedSavedItems}
               openTab={openTab}
+              setOpenTab={setOpenTab}
               getUnSavedEmails={getUnSavedEmails}
               getSavedEmails={getSavedEmails}
               unSavedEmails={unSavedEmails}
