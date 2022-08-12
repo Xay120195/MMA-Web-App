@@ -222,10 +222,10 @@ const ActionButtons = ({
 
                 attachment.labels.items.map(labels => {
                   console.log("ID NOW", result.id);
-                  /*createBackgroundFromLabel(clientMatterId, result.data.matterFileCreate.id, attachment.details, item.date, {
+                  createBackgroundFromLabel(clientMatterId, result.data.matterFileCreate.id, attachment.details, item.date, {
                     id: labels.id,
                     name: labels.name,
-                  });*/
+                  });
                 });
                 
                 const tagAttachment = API.graphql({
@@ -368,10 +368,10 @@ const ActionButtons = ({
                 console.log("labels",labels);
 
                 labels.items.map(label => {
-                  /*createBackgroundFromLabel(matterId, result.data.matterFileCreate.id, description, dateEmail, {
+                  createBackgroundFromLabel(matterId, result.data.matterFileCreate.id, description, dateEmail, {
                     id: label.id,
                     name: label.name,
-                  });*/
+                  });
                 });
 
                 const request1 = API.graphql({

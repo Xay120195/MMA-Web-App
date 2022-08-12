@@ -62,6 +62,8 @@ functions:
     handler: src/functions/graphql/rfi/index.handler
   user-fn:
     handler: src/functions/graphql/user/index.handler
+  team-fn:
+    handler: src/functions/graphql/team/index.handler
   gmailmessage-fn:
     handler: src/functions/graphql/gmailMessage/index.handler
   gmail-attachment-fn:
@@ -176,6 +178,11 @@ custom:
       - dataSource: LambdaUserDS
         type: User
         field: clientMatters
+        request: false
+        response: false
+      - dataSource: LambdaUserDS
+        type: User
+        field: teams
         request: false
         response: false
       - dataSource: LambdaUserDS
@@ -802,6 +809,11 @@ custom:
         field: teamMemberTag
         request: false
         response: false
+      - dataSource: LambdaTeamDS
+        type: Team
+        field: members
+        request: false
+        response: false
 
     # Data Sources
     dataSources:
@@ -849,6 +861,10 @@ custom:
         name: LambdaUserDS
         config:
           functionName: user-fn
+      - type: AWS_LAMBDA
+        name: LambdaTeamDS
+        config:
+          functionName: team-fn
       - type: AWS_LAMBDA
         name: LambdaGmailMessageDS
         config:
