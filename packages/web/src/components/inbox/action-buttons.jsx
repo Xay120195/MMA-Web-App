@@ -3,6 +3,7 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
+import googleLogin from "../../assets/images/gmail-print.png";
 //import { useWorker, WORKER_STATUS } from "@koale/useworker";
 
 var moment = require("moment");
@@ -195,7 +196,7 @@ const ActionButtons = ({
           console.log("PAYLOAD:", payload);
           
           
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
+          handleUploadGmailEmail(item.id, item.description, item.subject, item.from, item.to, item.cc, item.date, clientMatterId, payload, item.labels);
           
           
           item.attachments.items.map(attachment => {
@@ -217,15 +218,23 @@ const ActionButtons = ({
                 },
               }).then((result)=>{
                 // console.log("requestattachment", result.data.matterFileCreate.id);
-                // console.log("attachmentlabels", attachment.labels.items);
+                console.log("attachmentlabels", attachment.labels.items);
 
+                attachment.labels.items.map(labels => {
+                  console.log("ID NOW", result.id);
+                  /*createBackgroundFromLabel(clientMatterId, result.data.matterFileCreate.id, attachment.details, item.date, {
+                    id: labels.id,
+                    name: labels.name,
+                  });*/
+                });
+                
                 const tagAttachment = API.graphql({
                   query: mTagFile,
                   variables: {
                     fileId: result.data.matterFileCreate.id,
                     labels: attachment.labels.items,
                   },
-                })
+                });
               });
             }
           });
@@ -294,7 +303,7 @@ const ActionButtons = ({
       }
     }`;
 
-  const handleUploadGmailEmail = (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent, labels) => {
+  const handleUploadGmailEmail = (gmailMessageId, description, fileName, from, to, cc, dateEmail, matterId, htmlContent, labels) => {
     
     setTimeout( async () => {
       var opt = {
@@ -305,7 +314,11 @@ const ActionButtons = ({
         jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
         pagebreak: { before: '.page-break', avoid: 'img' }
       };
-      var content = document.getElementById("preview_"+gmailMessageId);
+      //var content = document.getElementById("preview_"+gmailMessageId);
+      //var content = <span><img src={googleLogin} alt="" /><hr></hr><h2><b>{fileName}</b></h2><hr></hr><br /><p>From : {from}</p><p>Date :{" "}{moment(dateEmail).format("DD MMM YYYY, hh:mm A")}</p><p>To : {to}</p><p>CC: {cc}</p></span>;
+
+      var content = `<span><img src=${googleLogin} alt="" /><hr></hr><h2><b>${fileName}</b></h2><hr></hr><br /><p>From : ${from}</p><p>Date :${" "}${moment(dateEmail).format("DD MMM YYYY, hh:mm A")}</p><p>To : ${to}</p><p>CC: ${cc}</p></span>`;
+
       content += Base64.decode(htmlContent).replace("body{color:", "");
 
       await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
@@ -353,6 +366,13 @@ const ActionButtons = ({
               API.graphql(params).then((result) => {
                 console.log("res arrray",result.data.matterFileCreate.id);
                 console.log("labels",labels);
+
+                labels.items.map(label => {
+                  /*createBackgroundFromLabel(matterId, result.data.matterFileCreate.id, description, dateEmail, {
+                    id: label.id,
+                    name: label.name,
+                  });*/
+                });
 
                 const request1 = API.graphql({
                   query: mTagFile,
@@ -406,6 +426,196 @@ const ActionButtons = ({
       handleEmails(true);
     }, 1000);
   }
+
+  const qBriefByName = `
+  query getBriefByName($clientMatterId: ID, $name: String) {
+    briefByName(clientMatterId: $clientMatterId, name: $name) {
+      id
+      labelId
+    }
+  }
+  `;
+
+  const mCreateBrief = `
+  mutation createBrief($clientMatterId: String, $date: AWSDateTime, $name: String, $order: Int) {
+    briefCreate(clientMatterId: $clientMatterId, date: $date, name: $name, order: $order) {
+      id
+      name
+      date
+      createdAt
+    }
+  }
+  `;
+
+  const mUpdateBrief = `
+  mutation updateBrief($id: ID, $labelId: ID) {
+    briefUpdate(id: $id, labelId: $labelId) {
+      id
+    }
+  }
+  `;
+
+  const mCreateBackground = `
+    mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+      backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+        id
+      }
+    }
+  `;
+
+  const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+
+
+  const createBackgroundFromLabel = async (matter_id, row_id, attachDetails, attachDate, label, isNew) => {
+    // check if brief already exists
+    let briefNameExists = false;
+    const getBriefByName = await API.graphql({
+      query: qBriefByName,
+      variables: {
+        clientMatterId: matter_id,
+        name: label.name,
+      },
+    });
+
+    let briefId = getBriefByName.data.briefByName.id,
+      existingBriefNameLabel = getBriefByName.data.briefByName.labelId;
+
+    if (briefId !== "" && briefId !== null) {
+      briefNameExists = true;
+    }
+
+    if (isNew) {
+      if (!briefNameExists) {
+        const params = {
+          clientMatterId: matter_id,
+          name: label.name,
+          date: null,
+          order: 0,
+          labelId: label.id,
+        };
+
+        const createBrief = await API.graphql({
+          query: mCreateBrief,
+          variables: params,
+        });
+
+        console.log("createBrief", createBrief);
+        briefId = createBrief.data.briefCreate.id;
+      } else {
+        console.log("existingBriefNameLabel", existingBriefNameLabel);
+        if (existingBriefNameLabel === null) {
+          const params = {
+            id: briefId,
+            labelId: label.id,
+          };
+
+          await API.graphql({
+            query: mUpdateBrief,
+            variables: params,
+          });
+        }
+      }
+
+      const fileId = row_id,
+        fileDetails = attachDetails,
+        fileDate =
+          attachDate != null
+            ? moment
+                .utc(moment(new Date(attachDate), "YYYY-MM-DD"))
+                .toISOString()
+            : null;
+
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
+        },
+      });
+
+      console.log("createBackground", createBackground);
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
+    } else {
+      if (!briefNameExists) {
+        const params = {
+          clientMatterId: matter_id,
+          name: label.name,
+          date: null,
+          order: 0,
+          labelId: label.id,
+        };
+
+        // Create Brief
+        const createBrief = await API.graphql({
+          query: mCreateBrief,
+          variables: params,
+        });
+
+        console.log("createBrief", createBrief);
+        briefId = createBrief.data.briefCreate.id;
+      } else {
+        if (existingBriefNameLabel === null) {
+          // Tag Label to Brief
+          await API.graphql({
+            query: mUpdateBrief,
+            variables: {
+              id: briefId,
+              labelId: label.id,
+            },
+          });
+        }
+      }
+
+      const fileId = row_id,
+        fileDetails = attachDetails,
+        fileDate =
+          attachDate != null
+            ? moment
+                .utc(moment(new Date(attachDate), "YYYY-MM-DD"))
+                .toISOString()
+            : null;
+
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
+        },
+      });
+
+      console.log("createBackground", createBackground);
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
+    }
+  };
 
   return (
     <>
