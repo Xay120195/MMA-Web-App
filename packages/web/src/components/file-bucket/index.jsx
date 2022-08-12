@@ -430,7 +430,9 @@ export default function FileBucket() {
     });
 
     console.log("createBackground", createBackground);
-
+    if (createBackground.data == null) {
+      console.error("Failed to createBackground");
+    }
     const updateBackground = await API.graphql({
       query: mUpdateBackgroundFile,
       variables: {
@@ -440,6 +442,9 @@ export default function FileBucket() {
     });
 
     console.log("updateBackground", updateBackground);
+    if (updateBackground.data == null) {
+      console.error("Failed to updateBackground");
+    }
     console.groupEnd();
   };
 
@@ -483,7 +488,7 @@ export default function FileBucket() {
 
       console.log("createLabel", createLabel);
       if (createLabel.data == null) {
-        console.log("Failed to create label");
+        console.error("Failed to create label");
       }
       console.groupEnd();
     }
@@ -518,7 +523,7 @@ export default function FileBucket() {
 
       console.log("createBackground", createBackground);
       if (createBackground.data == null) {
-        console.log("Failed to create background");
+        console.error("Failed to create background");
       }
       console.groupEnd();
     }
