@@ -151,7 +151,6 @@ export default function FileBucket() {
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const itemsRef = useRef([]);
-  const bindListRef = useRef(null);
   const bool = useRef(false);
   let history = useHistory();
 
@@ -309,7 +308,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in briefs
     let backgroundExist = false;
     request.data.clientMatter.briefs.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -335,7 +336,9 @@ export default function FileBucket() {
     //Check if 'background' is existing in labels
     let backgroundExist = false;
     labelsOpt.data.clientMatter.labels.items.map((item) => {
-      if (item.name.toLowerCase().includes(target.toLowerCase())) {
+      if (
+        String(item.name.toLowerCase().trim()) === String(target.toLowerCase())
+      ) {
         backgroundExist = true;
       }
     });
@@ -539,7 +542,7 @@ export default function FileBucket() {
       alert("539: Label not found!");
     }
     //const files = await getOrigFiles("Background", background);
-    //test
+
     console.log("brief", brief);
     console.log("label", label);
     const updateBrief = await API.graphql({
@@ -551,9 +554,6 @@ export default function FileBucket() {
     });
 
     console.log("updateBrief", updateBrief);
-    if (updateBrief.data == null) {
-      console.error("Update Brief failed");
-    }
 
     /* 
     for (const matterFile of request?.data?.matterFileBulkCreate) {
@@ -1255,7 +1255,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setDisableSelect(true);
     setShowLabel([{ index: -1 }]);
     setResultMessage("Creating Background..");
-
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -3475,7 +3474,6 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             <AutoSizer disableHeight>
                                               {({ width }) => (
                                                 <List
-                                                  ref={bindListRef}
                                                   autoHeight
                                                   scrollTop={scrollTop}
                                                   width={width}
