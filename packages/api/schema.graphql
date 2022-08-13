@@ -1,8 +1,3 @@
-schema {
-  query: Query
-  mutation: Mutation
-}
-
 # Objects
 type Address {
   id: ID!
@@ -651,7 +646,13 @@ type Mutation {
   briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
   briefSoftDelete(id: ID): Brief
-  briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int, labelId: ID): Brief
+  briefUpdate(
+    id: ID
+    name: String
+    date: AWSDateTime
+    order: Int
+    labelId: ID
+  ): Brief
   clientCreate(name: String, companyId: String): Client
   clientMatterCreate(
     companyId: String
@@ -820,4 +821,9 @@ type Mutation {
   teamUpdate(id: ID, name: String): Team
   teamDelete(id: ID): Team
   teamMemberTag(teamId: ID, members: [MemberInput]): Team
+}
+
+schema {
+  query: Query
+  mutation: Mutation
 }
