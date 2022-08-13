@@ -31,7 +31,7 @@ const {
   createTeam,
   updateTeam,
   deleteTeam,
-  tagTeamMember
+  tagTeamMember,
 } = require("../../../services/TeamService");
 
 const {
@@ -41,6 +41,7 @@ const {
   bulkUpdateMatterFileOrders,
   bulkCreateMatterFile,
   bulkSoftDeleteMatterFile,
+  tagFileLabel,
 } = require("../../../services/MatterFileService");
 
 import { addToken } from "../../../services/gmail/addToken";
@@ -413,87 +414,6 @@ async function bulkCreateLabel(clientMatterId, labels) {
     };
     console.log(resp);
   }
-  return resp;
-}
-
-async function tagFileLabel(data) {
-  let resp = {};
-  try {
-    const arrItems = [];
-
-    const fileLabelIdParams = {
-      TableName: "FileLabelTable",
-      IndexName: "byFile",
-      KeyConditionExpression: "fileId = :fileId",
-      ExpressionAttributeValues: marshall({
-        ":fileId": data.file.id,
-      }),
-    };
-
-    const fileLabelIdCmd = new QueryCommand(fileLabelIdParams);
-    const fileLabelIdRes = await ddbClient.send(fileLabelIdCmd);
-
-    for (var a = 0; a < fileLabelIdRes.Items.length; a++) {
-      var fileLabelId = { id: fileLabelIdRes.Items[a].id };
-      arrItems.push({
-        DeleteRequest: {
-          Key: fileLabelId,
-        },
-      });
-    }
-
-    for (var i = 0; i < data.label.length; i++) {
-      arrItems.push({
-        PutRequest: {
-          Item: marshall({
-            id: v4(),
-            fileId: data.file.id,
-            labelId: data.label[i].id,
-          }),
-        },
-      });
-    }
-
-    let batches = [],
-      current_batch = [],
-      item_count = 0;
-
-    arrItems.forEach((data) => {
-      item_count++;
-      current_batch.push(data);
-
-      // Chunk items to 25
-      if (item_count % 25 == 0) {
-        batches.push(current_batch);
-        current_batch = [];
-      }
-    });
-
-    // Add the last batch if it has records and is not equal to 25
-    if (current_batch.length > 0 && current_batch.length != 25) {
-      batches.push(current_batch);
-    }
-
-    batches.forEach(async (data) => {
-      const fileLabelParams = {
-        RequestItems: {
-          FileLabelTable: data,
-        },
-      };
-
-      const fileLabelCmd = new BatchWriteItemCommand(fileLabelParams);
-      await ddbClient.send(fileLabelCmd);
-    });
-
-    resp = { file: { id: data.file.id } };
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-
   return resp;
 }
 
@@ -1425,25 +1345,6 @@ async function bulkUpdateBackgroundOrders(data) {
   }
 
   return resp;
-}
-
-export function getUpdateExpressions(data) {
-  const values = {};
-  const names = {};
-  let updateExp = "set ";
-  const dataFlatkeys = Object.keys(data);
-  for (let i = 0; i < dataFlatkeys.length; i++) {
-    names[`#${dataFlatkeys[i]}`] = dataFlatkeys[i];
-    values[`:${dataFlatkeys[i]}Val`] = data[dataFlatkeys[i]];
-
-    let separator = i == dataFlatkeys.length - 1 ? "" : ", ";
-    updateExp += `#${dataFlatkeys[i]} = :${dataFlatkeys[i]}Val${separator}`;
-  }
-  return {
-    UpdateExpression: updateExp,
-    ExpressionAttributeNames: names,
-    ExpressionAttributeValues: marshall(values),
-  };
 }
 
 async function deleteBackground(id) {
@@ -3091,9 +2992,27 @@ const resolvers = {
     teamMemberTag: async (ctx) => {
       return await tagTeamMember(ctx.arguments);
     },
-    
   },
 };
+
+export function getUpdateExpressions(data) {
+  const values = {};
+  const names = {};
+  let updateExp = "set ";
+  const dataFlatkeys = Object.keys(data);
+  for (let i = 0; i < dataFlatkeys.length; i++) {
+    names[`#${dataFlatkeys[i]}`] = dataFlatkeys[i];
+    values[`:${dataFlatkeys[i]}Val`] = data[dataFlatkeys[i]];
+
+    let separator = i == dataFlatkeys.length - 1 ? "" : ", ";
+    updateExp += `#${dataFlatkeys[i]} = :${dataFlatkeys[i]}Val${separator}`;
+  }
+  return {
+    UpdateExpression: updateExp,
+    ExpressionAttributeNames: names,
+    ExpressionAttributeValues: marshall(values),
+  };
+}
 
 exports.handler = async (ctx) => {
   console.log(
