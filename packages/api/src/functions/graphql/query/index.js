@@ -6,7 +6,6 @@ const {
   BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
-
 const { getUser, listUsers } = require("../../../services/UserService");
 const { getRFI, listRFIs } = require("../../../services/RFIService");
 const {
@@ -22,6 +21,7 @@ const {
 const {
   getFile,
   getMatterFiles,
+  listFiles,
 } = require("../../../services/MatterFileService");
 
 async function getCompany(data) {
@@ -198,26 +198,6 @@ async function listBackgrounds() {
     const param = {
       TableName: "BackgroundsTable",
       ScanIndexForward: false,
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function listFiles() {
-  try {
-    const param = {
-      TableName: "MatterFileTable",
     };
 
     const cmd = new ScanCommand(param);
@@ -799,9 +779,6 @@ const resolvers = {
     files: async () => {
       return listFiles();
     },
-    // matterFile: async (ctx) => {
-    //   return getMatterFile(ctx.arguments);
-    // },
     matterFiles: async (ctx) => {
       return getMatterFiles(ctx.arguments);
     },
