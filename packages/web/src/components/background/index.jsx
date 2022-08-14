@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { MdArrowBackIos } from "react-icons/md";
 import { useIdleTimer } from "react-idle-timer";
 import BreadCrumb from "../breadcrumb/breadcrumb";
-import { AiOutlineFolderOpen, AiOutlineDownload} from "react-icons/ai";
+import { AiOutlineFolderOpen, AiOutlineDownload } from "react-icons/ai";
 import TableInfo from "./table-info";
 import ActionButtons from "./action-buttons";
 import ToastNotification from "../toast-notification";
@@ -17,9 +17,9 @@ import "../../assets/styles/Mobile.css";
 import { API } from "aws-amplify";
 import SessionTimeout from "../session-timeout/session-timeout-modal";
 import { Auth } from "aws-amplify";
-import { Redirect, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import useWindowDimensions from "../../shared/windowDimensions";
-import {FiChevronDown, FiChevronUp} from "react-icons/fi";
+// import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import dateFormat from "dateformat";
 import "../../assets/styles/BlankState.css";
 import BlankStateMobile from "../mobile-blank-state";
@@ -34,7 +34,7 @@ import Illustration from "../../assets/images/no-data.svg";
 //   display: "grid",
 //   gridtemplatecolumn: "1fr auto",
 // };
-  
+
 const Background = () => {
   //const [matterList, setClientMattersList] = useState([]);
   const [background, setBackground] = useState([]);
@@ -97,7 +97,80 @@ const Background = () => {
   const check = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
 
+  // GraphQL queries and mutations
+  const qGetFileDownloadLink = `query getFileDownloadLink($id: ID) {
+    file(id: $id) {
+      downloadURL
+    }
+  }`;
+
+  const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
+    briefUpdate(id: $id, name: $name) {
+      id
+    }
+  }`;
+
+  const qGetName = `query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
+    clientMatter(id: $id) {
+      briefs(limit: $limit, nextToken: $nextToken) {
+        items {
+          id
+          name
+          date
+          order
+        }
+      }
+    }
+  }`;
+
+  const qListBackground = `query listBackground($id: ID, $limit: Int, $nextToken: String, $sortOrder: OrderBy) {
+    clientMatter(id: $id) {
+      id
+      backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:$sortOrder) {
+        items {
+          id
+          description
+          date
+          createdAt
+          order
+          files {
+            items {
+              id
+              details
+              name
+              type
+            }
+          }
+        }
+        nextToken
+      }
+    }
+  }`;
+
+  const qBriefBackgroundList = `query getBriefByID($limit: Int, $nextToken: String, $id: ID, $sortOrder: OrderBy) {
+    brief(id: $id) {
+      id
+      backgrounds(limit: $limit, nextToken: $nextToken, sortOrder: $sortOrder) {
+        items {
+          id
+          description
+          date
+          createdAt
+          order
+          files {
+            items {
+              id
+              name
+            }
+          }
+        }
+        nextToken
+      }
+    }
+  }`;
+
   useEffect(() => {
+    console.log("useEffect()");
     getBackground();
 
     if (bgName === null) {
@@ -110,72 +183,7 @@ const Background = () => {
     setShowToast(false);
   };
 
-  const getName = `
-  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
-    clientMatter(id: $id) {
-      briefs(limit: $limit, nextToken: $nextToken) {
-        items {
-          id
-          name
-          date
-          order
-        }
-      }
-    }
-  }
-  `;
-
   const [bgName, setBGName] = useState(null);
-
-  const qListBackground = `
-    query listBackground($id: ID, $limit: Int, $nextToken: String, $sortOrder: OrderBy) {
-      clientMatter(id: $id) {
-        id
-        backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:$sortOrder) {
-          items {
-            id
-            description
-            date
-            createdAt
-            order
-            files {
-              items {
-                id
-                details
-                name
-                type
-              }
-            }
-          }
-          nextToken
-        }
-      }
-    }
-  `;
-
-  const qBriefBackgroundList = `
-    query getBriefByID($limit: Int, $nextToken: String, $id: ID, $sortOrder: OrderBy) {
-      brief(id: $id) {
-        id
-        backgrounds(limit: $limit, nextToken: $nextToken, sortOrder: $sortOrder) {
-          items {
-            id
-            description
-            date
-            createdAt
-            order
-            files {
-              items {
-                id
-                name
-              }
-            }
-          }
-          nextToken
-        }
-      }
-    }  
-  `;
 
   const getBackground = async () => {
     console.log("getBackground()");
@@ -214,17 +222,17 @@ const Background = () => {
     //   }
     // } else {
     var backgroundOpt;
-    if(width < 640){
+    if (width < 640) {
       backgroundOpt = await API.graphql({
         query: qBriefBackgroundList,
         variables: {
           id: background_id,
           nextToken: null,
           sortOrder: "ORDER_ASC",
-          limit: 50
+          limit: 50,
         },
       });
-    }else{
+    } else {
       setWait(true);
 
       backgroundOpt = await API.graphql({
@@ -236,14 +244,15 @@ const Background = () => {
         },
       });
     }
-    
 
     var arrConcatPrevToken = vPrevToken.concat(vNextToken);
     setVprevToken([...new Set(arrConcatPrevToken)]);
     console.log("PREV TOKEN: ", arrConcatPrevToken);
 
-    setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
-    console.log("InitialLoad If NextToken: ", backgroundOpt.data.brief.backgrounds.nextToken);
+    var nextToken = backgroundOpt.data.brief.backgrounds.nextToken;
+
+    setVnextToken(nextToken);
+    console.log("InitialLoad If NextToken: ", nextToken);
 
     if (backgroundOpt.data.brief.backgrounds.items !== null) {
       result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -274,7 +283,7 @@ const Background = () => {
   const getBriefs = async () => {
     console.log("matterid", matter_id);
     const params = {
-      query: getName,
+      query: qGetName,
       variables: {
         id: matter_id,
         limit: 50,
@@ -310,7 +319,10 @@ const Background = () => {
 
         setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
-        console.log("Loadmore If NextToken: ", backgroundOpt.data.clientMatter.backgrounds.nextToken);
+        console.log(
+          "Loadmore If NextToken: ",
+          backgroundOpt.data.clientMatter.backgrounds.nextToken
+        );
 
         if (backgroundOpt.data.clientMatter.backgrounds.items !== null) {
           result = backgroundOpt.data.clientMatter.backgrounds.items.map(
@@ -331,7 +343,7 @@ const Background = () => {
 
               let arrConcat = background.concat(result);
               setBackground([...new Set(sortByOrder(arrConcat))]);
-             
+
               // setBackground(result);
             }, 1000);
           }
@@ -359,9 +371,11 @@ const Background = () => {
         setVprevToken([...new Set(arrConcatPrevToken)]);
         console.log("PREV TOKEN: ", arrConcatPrevToken);
 
-        setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+        var nextToken = backgroundOpt.data.brief.backgrounds.nextToken;
 
-        //console.log("Loadmore If NextToken: ", backgroundOpt.data.brief.backgrounds.nextToken);
+        setVnextToken(nextToken);
+
+        //console.log("Loadmore If NextToken: ", nextToken);
 
         if (backgroundOpt.data.brief.backgrounds.items !== null) {
           result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -376,76 +390,14 @@ const Background = () => {
           );
 
           if (background !== "") {
-              setLoading(false);
-              setMaxLoading(false);
-
-              var arrConcat = background.concat(result);
-
-              if (searchDescription !== "") {
-                arrConcat = background
-                  .concat(result)
-                  .filter((x) =>
-                    x.description
-                      .toLowerCase()
-                      .includes(searchDescription.toLowerCase())
-                  );
-              }
-             
-              setBackground([...new Set(sortByOrder(arrConcat))]);
-             
-              //setBackground(result);
-          }
-        }
-      } else {
-        console.log("Last Result!- NEW");
-        setMaxLoading(true);
-      }
-    }
-  };
-
-  const loadPrevBackground = async () => {
-    if (vPrevToken.length > 1 && !loading) {
-      setLoading(true);
-      let result = [];
-
-      const lastTokenFrom = vPrevToken.slice(-1);
-
-      const updatedToken = vPrevToken.filter(x => !new Set(lastTokenFrom).has(x));
-
-      const lastTokenQuery = updatedToken.slice(-1);
-
-      const backgroundOpt = await API.graphql({
-        query: qBriefBackgroundList,
-        variables: {
-          id: background_id,
-          limit: 50,
-          nextToken: lastTokenQuery[0],
-          sortOrder: "ORDER_ASC",
-        },
-      });
-
-      setVprevToken(updatedToken);
-      setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
-
-      if (backgroundOpt.data.brief.backgrounds.items !== null) {
-        result = backgroundOpt.data.brief.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
-
-        if (background !== "") {
             setLoading(false);
             setMaxLoading(false);
 
             var arrConcat = background.concat(result);
 
             if (searchDescription !== "") {
+              console.log("searchDescription", searchDescription);
+
               arrConcat = background
                 .concat(result)
                 .filter((x) =>
@@ -455,19 +407,87 @@ const Background = () => {
                 );
             }
 
-            setBackground(result);
+            setBackground([...new Set(sortByOrder(arrConcat))]);
+
+            //setBackground(result);
+          }
         }
+      } else {
+        console.log("Last Result!- NEW");
+        setMaxLoading(true);
       }
-    } else {
-      console.log("Last Result!- NEW");
-      setMaxLoading(true);
     }
-  }
+  };
+
+  // const loadPrevBackground = async () => {
+  //   if (vPrevToken.length > 1 && !loading) {
+  //     setLoading(true);
+  //     let result = [];
+
+  //     const lastTokenFrom = vPrevToken.slice(-1);
+
+  //     const updatedToken = vPrevToken.filter(
+  //       (x) => !new Set(lastTokenFrom).has(x)
+  //     );
+
+  //     const lastTokenQuery = updatedToken.slice(-1);
+
+  //     const backgroundOpt = await API.graphql({
+  //       query: qBriefBackgroundList,
+  //       variables: {
+  //         id: background_id,
+  //         limit: 50,
+  //         nextToken: lastTokenQuery[0],
+  //         sortOrder: "ORDER_ASC",
+  //       },
+  //     });
+
+  //     setVprevToken(updatedToken);
+  //     setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+
+  //     if (backgroundOpt.data.brief.backgrounds.items !== null) {
+  //       result = backgroundOpt.data.brief.backgrounds.items.map(
+  //         ({ id, description, date, createdAt, order, files }) => ({
+  //           createdAt: createdAt,
+  //           id: id,
+  //           description: description,
+  //           date: date,
+  //           order: order,
+  //           files: files,
+  //         })
+  //       );
+
+  //       if (background !== "") {
+  //         setLoading(false);
+  //         setMaxLoading(false);
+
+  //         var arrConcat = background.concat(result);
+
+  //         if (searchDescription !== "") {
+  //           console.log("searchDescription", searchDescription);
+
+  //           arrConcat = background
+  //             .concat(result)
+  //             .filter((x) =>
+  //               x.description
+  //                 .toLowerCase()
+  //                 .includes(searchDescription.toLowerCase())
+  //             );
+  //         }
+
+  //         setBackground(result);
+  //       }
+  //     }
+  //   } else {
+  //     console.log("Last Result!- NEW");
+  //     setMaxLoading(true);
+  //   }
+  // };
 
   var timeoutId;
 
   const handleOnAction = (event) => {
-    if(width < 640){
+    if (width < 640) {
       loadMoreBackground();
     }
 
@@ -499,10 +519,9 @@ const Background = () => {
   };
 
   const handleOnIdle = (event) => {
-    if(width < 640){
+    if (width < 640) {
       loadMoreBackground();
     }
-    
 
     //function for detecting if user is on idle.
     //after 30 mins, session-timeout modal will show
@@ -510,7 +529,6 @@ const Background = () => {
     timeoutId = setTimeout(() => {
       setShowSessionTimeout(true);
     }, 60000 * 60);
-
   };
 
   useIdleTimer({
@@ -521,6 +539,7 @@ const Background = () => {
   });
 
   const SortBydate = async () => {
+    console.group("SortBydate()");
     let result = [];
     setWait(false); // trigger loading ...
     setLoading(false);
@@ -609,15 +628,6 @@ const Background = () => {
   };
 
   function sortByOrder(arr) {
-    // const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
-    // if (isAllZero) {
-    //   sort = arr.sort(
-    //     (a, b) =>
-    //       a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-    //   );
-    // } else {
-    //   sort = arr;
-    // }
     let sort;
 
     if (arr) {
@@ -634,10 +644,10 @@ const Background = () => {
   }
 
   const handleManageFiles = () => {
-      setPastedRows([]);
-      setCheckedRows([]);
-      setSelectedRowsBGFiles([]);
-      setActivateButton(!activateButton);
+    setPastedRows([]);
+    setCheckedRows([]);
+    setSelectedRowsBGFiles([]);
+    setActivateButton(!activateButton);
   };
 
   let pageSizeConst = pageSize >= pageTotal ? pageTotal : pageSize;
@@ -688,11 +698,6 @@ const Background = () => {
   };
 
   //Updating brief name
-  const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
-    briefUpdate(id: $id, name: $name) {
-      id
-    }
-  }`;
 
   const handleOnChangeBiefName = (e) => {
     setBriefName(e.currentTarget.textContent);
@@ -758,6 +763,7 @@ const Background = () => {
   }
 
   useEffect(() => {
+    console.log("useEffect()");
     if (searchDescription !== undefined) {
       filterRecord(searchDescription);
     }
@@ -768,14 +774,15 @@ const Background = () => {
   };
 
   const filterRecord = (v) => {
+    console.log("filterRecord", v);
     if (v === "") {
       // Refresh page if necessary
       setVnextToken(null);
       getBackground();
     } else {
-      const filterRecord = background.filter((x) =>
-        x.description.toLowerCase().includes(v.toLowerCase())
-      );
+      const filterRecord = background.filter((x) => {
+        return x.description?.toLowerCase().includes(v.toLowerCase());
+      });
       console.log("filterRecord:", filterRecord);
       // setBackground(sortByOrder(filterRecord));
       setBackground(filterRecord);
@@ -794,12 +801,6 @@ const Background = () => {
     setShareLink(result.url);
   }
   */
-  const qGetFileDownloadLink = `
-  query getFileDownloadLink($id: ID) {
-    file(id: $id) {
-      downloadURL
-    }
-  }`;
 
   const previewAndDownloadFile = async (id) => {
     const params = {
@@ -827,39 +828,44 @@ const Background = () => {
   function utf8_to_b64(str) {
     return window.btoa(unescape(encodeURIComponent(str)));
   }
-  {/* MOBILE CONST */}
+  {
+    /* MOBILE CONST */
+  }
   const [contentHeight, setContentHeight] = useState();
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] = useState(true);
-  const {height, width} = useWindowDimensions();
+  const [isAllFilesSelectedButton, setIsAllFilesSelectedButton] =
+    useState(true);
+  const { height, width } = useWindowDimensions();
   const [readMoreState, setReadMoreState] = useState([]);
 
   function countLines(tag) {
-    var divHeight = tag.offsetHeight
-    var lineHeight = parseInt(window.getComputedStyle(tag).getPropertyValue("line-height"));
+    var divHeight = tag.offsetHeight;
+    var lineHeight = parseInt(
+      window.getComputedStyle(tag).getPropertyValue("line-height")
+    );
     var lines = Math.round(divHeight / lineHeight);
     return lines;
   }
 
-  useEffect(()=> {
-    if(background!=null) {
-      background.map((data)=>{
-        var descTag = document.getElementById(data.id+".desc");
-        var fileTag = document.getElementById(data.id+".files");
-        if(descTag!== null) {
+  useEffect(() => {
+    console.log("useEffect()");
+    if (background != null) {
+      background.map((data) => {
+        var descTag = document.getElementById(data.id + ".desc");
+        var fileTag = document.getElementById(data.id + ".files");
+        if (descTag !== null) {
           var descLines = countLines(descTag);
           var fileLines = countLines(fileTag);
-          var descButtonTag = document.getElementById(data.id+".descButton");
-          if(descLines > 6 || fileLines > 1) {
+          var descButtonTag = document.getElementById(data.id + ".descButton");
+          if (descLines > 6 || fileLines > 1) {
             descButtonTag.style.display = "inline-block";
           } else {
-            descButtonTag.style.display = 'none';
+            descButtonTag.style.display = "none";
           }
         }
-      })
+      });
     }
-    
-  }, [background, readMoreState, width])
+  }, [background, readMoreState, width]);
 
   function handleScrollEvent(e) {
     const top = e.target.scrollTop > 20;
@@ -869,34 +875,41 @@ const Background = () => {
       setShowScrollButton(false);
     }
   }
-  function handleScrollToTop () {
+  function handleScrollToTop() {
     let d = document.getElementById("mobileContent");
     d.scrollTo(0, 0);
   }
 
   function handleReadMoreState(fileId) {
-    if(readMoreState.find((temp)=>{
-      return temp === fileId;
-    }) === undefined) {
+    if (
+      readMoreState.find((temp) => {
+        return temp === fileId;
+      }) === undefined
+    ) {
       setReadMoreState([...readMoreState, fileId]);
     } else {
-      setReadMoreState(current => current.filter((id)=> {
-        return id !== fileId;
-      }));
+      setReadMoreState((current) =>
+        current.filter((id) => {
+          return id !== fileId;
+        })
+      );
     }
   }
 
   function isReadMoreExpanded(fileId) {
-    return readMoreState.find((temp)=>{
-      return temp === fileId;
-    }) !== undefined;
+    return (
+      readMoreState.find((temp) => {
+        return temp === fileId;
+      }) !== undefined
+    );
   }
-
 
   return (
     <>
       <div
-        className={"sm: shadow-lg sm:rounded bg-gray-100 sm:bg-white z-30 p-5 sm:p-0 contentDiv"}
+        className={
+          "sm: shadow-lg sm:rounded bg-gray-100 sm:bg-white z-30 p-5 sm:p-0 contentDiv"
+        }
       >
         <div className="hidden sm:block px-6 mt-5 -ml-1">
           <Link
@@ -917,50 +930,47 @@ const Background = () => {
           className="py-5 z-30 ml-4 sbg-gray-100 sm:bg-white hidden sm:block"
         >
           <div className="flex font-bold text-xl">
-
-              <p
-                className="px-1 text-xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
-                dangerouslySetInnerHTML={{
-                  __html: bgName,
-                }}
-              />
-              &nbsp;<span className="text-xl">of</span>&nbsp;
-              <span className="font-semibold text-xl">
-                {client_name}/{matter_name}
-              </span>
-            
+            <p
+              className="px-1 text-xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
+              dangerouslySetInnerHTML={{
+                __html: bgName,
+              }}
+            />
+            &nbsp;<span className="text-xl">of</span>&nbsp;
+            <span className="font-semibold text-xl">
+              {client_name}/{matter_name}
+            </span>
           </div>
         </div>
         <div className="hidden sm:block py-5 bg-gray-100 sm:bg-white z-40 absolute -mt-20 ml-5">
           <div className="flex font-bold text-3xl">
-              <p
-                suppressContentEditableWarning={true}
-                style={{
-                  cursor: "auto",
-                  outlineColor: "rgb(204, 204, 204, 0.5)",
-                  outlineWidth: "thin",
-                }}
-                onClick={(e) => handleNameContent(e, bgName, background_id)}
-                contentEditable={true}
-                tabIndex="0"
-                onInput={(e) => handleOnChangeBiefName(e)}
-                onBlur={(e) => handleSaveBriefName(e, bgName, background_id)}
-                className="px-1 text-3xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
-                dangerouslySetInnerHTML={{
-                  __html: bgName,
-                }}
-              />
-              &nbsp;<span className="text-3xl">of</span>&nbsp;
-              <span className="font-semibold text-3xl">
-                {client_name}/{matter_name}
-              </span>
-            
+            <p
+              suppressContentEditableWarning={true}
+              style={{
+                cursor: "auto",
+                outlineColor: "rgb(204, 204, 204, 0.5)",
+                outlineWidth: "thin",
+              }}
+              onClick={(e) => handleNameContent(e, bgName, background_id)}
+              contentEditable={true}
+              tabIndex="0"
+              onInput={(e) => handleOnChangeBiefName(e)}
+              onBlur={(e) => handleSaveBriefName(e, bgName, background_id)}
+              className="px-1 text-3xl focus:outline-none text-gray-800 dark:text-gray-100 font-bold mb-1 min-w-min"
+              dangerouslySetInnerHTML={{
+                __html: bgName,
+              }}
+            />
+            &nbsp;<span className="text-3xl">of</span>&nbsp;
+            <span className="font-semibold text-3xl">
+              {client_name}/{matter_name}
+            </span>
           </div>
         </div>
         <div
           className="bg-gray-100 sm:bg-white z-30 sm:ml-4 static sm:sticky"
-          style={{top: "72px" }}
-        > 
+          style={{ top: "72px" }}
+        >
           <div className="hidden sm:block">
             <BreadCrumb
               matterId={matter_id}
@@ -972,14 +982,18 @@ const Background = () => {
           <div className="pt-3 sm:hidden">
             {/* MOBILE VIEW OF HEADER */}
             <MobileHeader
-              height = {height}
-              width = {width}
-              matter_name = {matter_name}
-              client_name = {client_name}
-              setContentHeight = {setContentHeight}
+              height={height}
+              width={width}
+              matter_name={matter_name}
+              client_name={client_name}
+              setContentHeight={setContentHeight}
             />
             <div className="sm:px-0">
-              <nav aria-label="Breadcrumb" style={style} className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4">
+              <nav
+                aria-label="Breadcrumb"
+                style={style}
+                className="ml-14 mb-5 sm:mb-0 sm:ml-0 sm:mt-4"
+              >
                 <ol
                   role="list"
                   className="px-0 flex items-left sm:space-x-2 lg:px-6 lg:max-w-7xl lg:px-8"
@@ -1005,10 +1019,12 @@ const Background = () => {
                   </svg>
                   <li className="text-sm">
                     <span className="text-xs sm:px-1 sm:flex uppercase sm:normal-case sm:text-sm underline underline-offset-4 sm:no-underline font-medium text-gray-700 sm:text-gray-500">
-                      <AiOutlineFolderOpen className="hidden sm:inline-block"/> 
+                      <AiOutlineFolderOpen className="hidden sm:inline-block" />
                       <span className="sm:inline hidden">&nbsp;&nbsp;</span>
                       Background
-                      <span className="sm:inline hidden font-medium">&nbsp;Page</span>{" "}
+                      <span className="sm:inline hidden font-medium">
+                        &nbsp;Page
+                      </span>{" "}
                     </span>
                   </li>
                   <svg
@@ -1031,7 +1047,7 @@ const Background = () => {
                       }/${matter_id}/000/?matter_name=${utf8_to_b64(
                         matter_name
                       )}&client_name=${utf8_to_b64(client_name)}`}
-                      >
+                    >
                       File Bucket
                     </Link>
                   </li>
@@ -1138,181 +1154,234 @@ const Background = () => {
         {/* DESKTOP VIEW OF CONTENTS */}
         {width > 640 ? (
           <TableInfo
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-          client_name={client_name}
-          matter_name={matter_name}
-          wait={wait}
-          setPasteButton={setPasteButton}
-          setIdList={setIdList}
-          background={background}
-          ShowModalParagraph={ShowModalParagraph}
-          setShowModalParagraph={setShowModalParagraph}
-          fileMatter={fileMatter}
-          setFileMatter={setFileMatter}
-          files={files}
-          setFiles={setFiles}
-          setBackground={setBackground}
-          checkAllState={checkAllState}
-          setcheckAllState={setcheckAllState}
-          checkedState={checkedState}
-          setCheckedState={setCheckedState}
-          totalChecked={totalChecked}
-          settotalChecked={settotalChecked}
-          setId={setId}
-          getId={getId}
-          search={search}
-          matterId={matter_id}
-          getBackground={getBackground}
-          selectedRowsBG={selectedRowsBG}
-          setSelectedRowsBG={setSelectedRowsBG}
-          paragraph={paragraph}
-          setParagraph={setParagraph}
-          showDeleteButton={showDeleteButton}
-          setShowDeleteButton={setShowDeleteButton}
-          handleManageFiles={handleManageFiles}
-          setActivateButton={setActivateButton}
-          activateButton={activateButton}
-          setAscDesc={setAscDesc}
-          ascDesc={ascDesc}
-          setSelectedRowsBGFiles={setSelectedRowsBGFiles}
-          selectedRowsBGFiles={selectedRowsBGFiles}
-          setSelectedId={setSelectedId}
-          selectedId={selectedId}
-          pasteButton={pasteButton}
-          checkNo={checkNo}
-          checkDate={checkDate}
-          checkDesc={checkDesc}
-          checkDocu={checkDocu}
-          checkedStateShowHide={checkedStateShowHide}
-          setCheckedStateShowHide={setCheckedStateShowHide}
-          pageTotal={pageTotal}
-          pageIndex={pageIndex}
-          pageSize={pageSize}
-          pageSizeConst={pageSizeConst}
-          loadMoreBackground={loadMoreBackground}
-          selectRow={selectRow}
-          setSelectRow={setSelectRow}
-          setSrcIndex={setSrcIndex}
-          srcIndex={srcIndex}
-          newRow={newRow}
-          setNewRow={setNewRow}
-          loading={loading}
-          setLoading={setLoading}
-          setMaxLoading={setMaxLoading}
-          maxLoading={maxLoading}
-          sortByOrder={sortByOrder}
-          SortBydate={SortBydate}
-          briefId={background_id}
-          searchDescription={searchDescription}
-          holdDelete={holdDelete}
-          setHoldDelete={setHoldDelete}
-          setTargetRow={setTargetRow}
-          targetRow={targetRow}
-          highlightRow={highlightRow}
-          setHighlightRow={setHighlightRow}
-          pastedRows={pastedRows}
-          setPastedRows={setPastedRows}
-          checkedRows={checkedRows}
-          setCheckedRows={setCheckedRows}
-        />
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            client_name={client_name}
+            matter_name={matter_name}
+            wait={wait}
+            setPasteButton={setPasteButton}
+            setIdList={setIdList}
+            background={background}
+            ShowModalParagraph={ShowModalParagraph}
+            setShowModalParagraph={setShowModalParagraph}
+            fileMatter={fileMatter}
+            setFileMatter={setFileMatter}
+            files={files}
+            setFiles={setFiles}
+            setBackground={setBackground}
+            checkAllState={checkAllState}
+            setcheckAllState={setcheckAllState}
+            checkedState={checkedState}
+            setCheckedState={setCheckedState}
+            totalChecked={totalChecked}
+            settotalChecked={settotalChecked}
+            setId={setId}
+            getId={getId}
+            search={search}
+            matterId={matter_id}
+            getBackground={getBackground}
+            selectedRowsBG={selectedRowsBG}
+            setSelectedRowsBG={setSelectedRowsBG}
+            paragraph={paragraph}
+            setParagraph={setParagraph}
+            showDeleteButton={showDeleteButton}
+            setShowDeleteButton={setShowDeleteButton}
+            handleManageFiles={handleManageFiles}
+            setActivateButton={setActivateButton}
+            activateButton={activateButton}
+            setAscDesc={setAscDesc}
+            ascDesc={ascDesc}
+            setSelectedRowsBGFiles={setSelectedRowsBGFiles}
+            selectedRowsBGFiles={selectedRowsBGFiles}
+            setSelectedId={setSelectedId}
+            selectedId={selectedId}
+            pasteButton={pasteButton}
+            checkNo={checkNo}
+            checkDate={checkDate}
+            checkDesc={checkDesc}
+            checkDocu={checkDocu}
+            checkedStateShowHide={checkedStateShowHide}
+            setCheckedStateShowHide={setCheckedStateShowHide}
+            pageTotal={pageTotal}
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            pageSizeConst={pageSizeConst}
+            loadMoreBackground={loadMoreBackground}
+            selectRow={selectRow}
+            setSelectRow={setSelectRow}
+            setSrcIndex={setSrcIndex}
+            srcIndex={srcIndex}
+            newRow={newRow}
+            setNewRow={setNewRow}
+            loading={loading}
+            setLoading={setLoading}
+            setMaxLoading={setMaxLoading}
+            maxLoading={maxLoading}
+            sortByOrder={sortByOrder}
+            SortBydate={SortBydate}
+            briefId={background_id}
+            searchDescription={searchDescription}
+            holdDelete={holdDelete}
+            setHoldDelete={setHoldDelete}
+            setTargetRow={setTargetRow}
+            targetRow={targetRow}
+            highlightRow={highlightRow}
+            setHighlightRow={setHighlightRow}
+            pastedRows={pastedRows}
+            setPastedRows={setPastedRows}
+            checkedRows={checkedRows}
+            setCheckedRows={setCheckedRows}
+          />
         ) : (
-        <>
-        {/* MOBILE VIEW OF CONTENTS */}
-        {background=== null || background.length === 0 ? (
-        <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
-          <div className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
-          style={{height:width > 640 ?"auto": contentHeight}}>
-            <BlankStateMobile
-              header={"There are no items to show in this view."}
-              content={"Any added files in the desktop will appear here"}
-              svg={Illustration}
-            />
-          </div>
-        </div>
-        ): (
-          <div className="bg-white rounded-lg py-5 flex" style={{height:contentHeight}}>
+          <>
+            {/* MOBILE VIEW OF CONTENTS */}
+            {background === null || background.length === 0 ? (
+              <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
+                <div
+                  className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
+                  style={{ height: width > 640 ? "auto" : contentHeight }}
+                >
+                  <BlankStateMobile
+                    header={"There are no items to show in this view."}
+                    content={"Any added files in the desktop will appear here"}
+                    svg={Illustration}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div
+                className="bg-white rounded-lg py-5 flex"
+                style={{ height: contentHeight }}
+              >
                 <div
                   id="mobileContent"
                   onScroll={(e) => handleScrollEvent(e)}
                   className="relative flex flex-col overflow-y-auto h-min w-full"
                   style={{ scrollBehavior: "smooth" }}
                 >
-                  {showScrollButton ? (<>
-                <div className="scrollButtonInner flex" onClick={() => handleScrollToTop()}>
-                  <BiArrowToTop style={{color:"white", display:"block", margin:"auto"}}/>
-                </div>
-                </>) : (<></>)}
-              {background.map((item, index,arr)=>(
-                <div className="w-full px-5" key={item.id}>
-                  <div className="flex flex-row" style={{
-                    borderBottomWidth: index+1 !== arr.length ? 2 : 0, 
-                    borderBottomStyle:"dashed",
-                    paddingTop:index===0 ? 0 : 20,
-                    paddingBottom:  20 }}>
-                    <p className="font-semibold text-cyan-400">{index +1}</p>
-                    <div className="ml-2">
-                      <p className="font-medium text-cyan-400">
-                        {item.date !== null && item.date !== "" ? dateFormat(item.date,"dd mmmm yyyy") : "No date"}
-                      </p>
-                      {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
-                      <p 
-                        id={item.id+".desc"}
-                        className="absolute text-red-200 invisible pointer-events-none opacity-0" 
-                        style={{top:-10000, zIndex:-1000, marginRight:'20px',wordBreak:"break-word"}}
-                        dangerouslySetInnerHTML={{__html:item.description}}
-                        >
-                      </p>
-                      <p 
-                        className={(isReadMoreExpanded(item.id)? "" : "line-clamp-6")}
-                        dangerouslySetInnerHTML={{__html:item.description}}
-                        style={{wordBreak:"break-word"}}
-                        >
-                      </p>
-                      <button id={item.id+".descButton"} className="text-cyan-400 mb-2" onClick={()=>handleReadMoreState(item.id)}>
-                      {(isReadMoreExpanded(item.id) ? "read less...": "read more...")}
-                      </button>
-                        {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
-                        <p 
-                          id={item.id+".files"} 
-                          className="absolute text-red-200 invisible pointer-events-none opacity-0 break-words" 
-                          style={{top:-10000, zIndex:-1000, marginRight:'20px',lineHeight:"30px", wordBreak:"break-word"}}>
-                          {item.files.items.map((file) => (
-                            <button 
-                              key={file.id} 
-                              className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1"
-                              onClick={() =>previewAndDownloadFile(file.id)}>
-                              {file.name}&nbsp;
-                              <AiOutlineDownload
-                                className="text-gray-400 text-sm cursor-pointer inline-block"
-                              />
-                            </button>
-                          ))}
+                  {showScrollButton ? (
+                    <>
+                      <div
+                        className="scrollButtonInner flex"
+                        onClick={() => handleScrollToTop()}
+                      >
+                        <BiArrowToTop
+                          style={{
+                            color: "white",
+                            display: "block",
+                            margin: "auto",
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                  {background.map((item, index, arr) => (
+                    <div className="w-full px-5" key={item.id}>
+                      <div
+                        className="flex flex-row"
+                        style={{
+                          borderBottomWidth: index + 1 !== arr.length ? 2 : 0,
+                          borderBottomStyle: "dashed",
+                          paddingTop: index === 0 ? 0 : 20,
+                          paddingBottom: 20,
+                        }}
+                      >
+                        <p className="font-semibold text-cyan-400">
+                          {index + 1}
                         </p>
-                        <p 
-                          className={(isReadMoreExpanded(item.id)? "" : "line-clamp-1") + " break-words"} 
-                          style={{lineHeight:"30px", wordBreak:"break-word"}}>
-                          {item.files.items.map((file) => (
-                            <button 
-                              key={file.id} 
-                              className="font-extralight text-sm focus:text-cyan-400 focus:border-cyan-400 text-gray-400 border rounded-lg px-2 mr-2 my-1" 
-                              onClick={() => previewAndDownloadFile(file.id)}>
-                              {file.name}&nbsp;
-                              <AiOutlineDownload
-                                className="text-sm cursor-pointer inline-block"
-                              />
-                            </button>
-                          ))}
-                        </p>
-
+                        <div className="ml-2">
+                          <p className="font-medium text-cyan-400">
+                            {item.date !== null && item.date !== ""
+                              ? dateFormat(item.date, "dd mmmm yyyy")
+                              : "No date"}
+                          </p>
+                          {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
+                          <p
+                            id={item.id + ".desc"}
+                            className="absolute text-red-200 invisible pointer-events-none opacity-0"
+                            style={{
+                              top: -10000,
+                              zIndex: -1000,
+                              marginRight: "20px",
+                              wordBreak: "break-word",
+                            }}
+                            dangerouslySetInnerHTML={{
+                              __html: item.description,
+                            }}
+                          ></p>
+                          <p
+                            className={
+                              isReadMoreExpanded(item.id) ? "" : "line-clamp-6"
+                            }
+                            dangerouslySetInnerHTML={{
+                              __html: item.description,
+                            }}
+                            style={{ wordBreak: "break-word" }}
+                          ></p>
+                          <button
+                            id={item.id + ".descButton"}
+                            className="text-cyan-400 mb-2"
+                            onClick={() => handleReadMoreState(item.id)}
+                          >
+                            {isReadMoreExpanded(item.id)
+                              ? "read less..."
+                              : "read more..."}
+                          </button>
+                          {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
+                          <p
+                            id={item.id + ".files"}
+                            className="absolute text-red-200 invisible pointer-events-none opacity-0 break-words"
+                            style={{
+                              top: -10000,
+                              zIndex: -1000,
+                              marginRight: "20px",
+                              lineHeight: "30px",
+                              wordBreak: "break-word",
+                            }}
+                          >
+                            {item.files.items.map((file) => (
+                              <button
+                                key={file.id}
+                                className="font-extralight text-sm text-red-400 border rounded-lg px-2 mr-2 my-1"
+                                onClick={() => previewAndDownloadFile(file.id)}
+                              >
+                                {file.name}&nbsp;
+                                <AiOutlineDownload className="text-gray-400 text-sm cursor-pointer inline-block" />
+                              </button>
+                            ))}
+                          </p>
+                          <p
+                            className={
+                              (isReadMoreExpanded(item.id)
+                                ? ""
+                                : "line-clamp-1") + " break-words"
+                            }
+                            style={{
+                              lineHeight: "30px",
+                              wordBreak: "break-word",
+                            }}
+                          >
+                            {item.files.items.map((file) => (
+                              <button
+                                key={file.id}
+                                className="font-extralight text-sm focus:text-cyan-400 focus:border-cyan-400 text-gray-400 border rounded-lg px-2 mr-2 my-1"
+                                onClick={() => previewAndDownloadFile(file.id)}
+                              >
+                                {file.name}&nbsp;
+                                <AiOutlineDownload className="text-sm cursor-pointer inline-block" />
+                              </button>
+                            ))}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        </>
+              </div>
+            )}
+          </>
         )}
         {showToast && (
           <ToastNotification title={alertMessage} hideToast={hideToast} />
