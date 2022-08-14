@@ -7,7 +7,7 @@ const {
   DeleteItemCommand,
   UpdateItemCommand,
 } = require("@aws-sdk/client-dynamodb");
-import { v4 } from "uuid";
+const { v4 } = require("uuid");
 const { toUTC } = require("../shared/toUTC");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 

@@ -13,7 +13,6 @@ const {
   listCustomUserTypes,
 } = require("../../../services/CustomUserTypeService");
 const { getTeam, listTeams } = require("../../../services/TeamService");
-
 const {
   getRequest,
   listRequests,
@@ -35,15 +34,15 @@ async function getCompany(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function listPages() {
@@ -234,15 +233,14 @@ async function getCompanyAccessType(data) {
         (userType) => userType.userType === data.userType
       );
     }
-    resp = request ? parseResponse : {};
+    return parseResponse;
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getFeature(data) {
@@ -256,15 +254,14 @@ async function getFeature(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getPage(data) {
@@ -278,15 +275,14 @@ async function getPage(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getClient(data) {
@@ -300,15 +296,14 @@ async function getClient(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getMatter(data) {
@@ -322,15 +317,14 @@ async function getMatter(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getLabel(data) {
@@ -344,15 +338,14 @@ async function getLabel(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function bulkGetLabels(data) {
@@ -381,16 +374,15 @@ async function bulkGetLabels(data) {
         unmarshall(i)
       );
 
-      resp = objLabels;
+      return objLabels;
     }
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function listColumnSettingsByTable(data) {
@@ -431,15 +423,14 @@ async function getBackground(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getClientMatter(data) {
@@ -456,15 +447,14 @@ async function getClientMatter(data) {
 
     const { Item } = await ddbClient.send(cmd);
 
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getUserColumnSettings(data) {
@@ -551,15 +541,14 @@ async function getBrief(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getBriefByName(data) {
@@ -664,15 +653,14 @@ async function getGmailMessage(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getAttachment(data) {
@@ -686,15 +674,14 @@ async function getAttachment(data) {
     };
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function listGmailMessages() {
