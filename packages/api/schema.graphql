@@ -113,6 +113,7 @@ type CompanyAccessType {
   id: ID
   companyId: ID
   userType: UserType
+  customUserType: CustomUserType
   access: [Page]
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -668,9 +669,15 @@ type Mutation {
   companyAccessTypeCreate(
     companyId: String
     userType: [UserType]
+    customUserType: CustomUserTypeInput
     access: [AccessInput]
   ): [CompanyAccessType]
-  companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
+  companyAccessTypeUpdate(
+    id: String
+    userType: UserType
+    customUserType: CustomUserTypeInput
+    access: [AccessInput]
+  ): CompanyAccessType
   companyCreate(name: String, representative: RepresentativeInput): Company
   featureCreate(name: String, label: String, page: PageInput): Feature
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
