@@ -1,3 +1,4 @@
+import ddbClient from "../lib/dynamodb-client";
 const {
   PutItemCommand,
   GetItemCommand,
@@ -12,12 +13,12 @@ import {
   AdminDeleteUserCommand,
   AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import ddbClient from "../lib/dynamodb-client";
+
 import identityClient from "../lib/cognito-identity-provider-client";
 import randomString from "../shared/randomString";
-import { v4 } from "uuid";
+const { v4 } = require("uuid");
 const { toUTC } = require("../shared/toUTC");
+const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 export async function getUser(data) {
   let resp = {};
