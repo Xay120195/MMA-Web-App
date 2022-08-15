@@ -361,7 +361,6 @@ const TableUnsavedInfo = ({
   }`;
 
   const handleAddLabel = async (e, gmid, index) => {
-    
     var selectedLabels = [];
     var taggedLabels = [];
 
@@ -404,7 +403,7 @@ const TableUnsavedInfo = ({
     autoAdjustRowHeight(index);
   };
 
-  const handleAddEmailAttachmentLabel = async (e, atid, rowId) => {
+  const handleAddEmailAttachmentLabel = async (e, atid, rowId, index) => {
     var selectedLabels = [];
     var taggedLabels = [];
 
@@ -449,6 +448,7 @@ const TableUnsavedInfo = ({
     console.log("updateArr", updateArrAttachment);
 
     setUnsavedEmails(updateArrAttachment);
+    autoAdjustRowHeight(index);
   };
 
   const defaultLabels = (items) => {
@@ -532,6 +532,7 @@ const TableUnsavedInfo = ({
 
   const autoAdjustRowHeight = (index) => {
     //bindList and cache must not be null
+    console.log("Items", bindList);
     if (bindList && cache) {
       //clear first
       cache?.current.clearAll();
@@ -1158,7 +1159,8 @@ const TableUnsavedInfo = ({
                                         handleAddEmailAttachmentLabel(
                                           e,
                                           item_attach.id,
-                                          item.id
+                                          item.id,
+                                          index
                                         )
                                       }
                                       placeholder="Labels"
