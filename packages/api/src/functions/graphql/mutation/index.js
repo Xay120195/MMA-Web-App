@@ -26,14 +26,12 @@ const {
   updateCustomUserType,
   deleteCustomUserType,
 } = require("../../../services/CustomUserTypeService");
-
 const {
   createTeam,
   updateTeam,
   deleteTeam,
   tagTeamMember,
 } = require("../../../services/TeamService");
-
 const {
   createMatterFile,
   updateMatterFile,
