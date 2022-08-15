@@ -574,7 +574,7 @@ type Query {
   columnSettings(tableName: ViewTable): [ColumnSettings]
   companies: [Company]
   company(id: String): Company
-  companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
+  companyAccessType(companyId: String, userType: UserType, customUserType: CustomUserTypeInput): [CompanyAccessType]
   feature(id: String): Feature
   features: [Feature]
   file(id: ID): File
