@@ -541,8 +541,6 @@ const TableUnsavedInfo = ({
       });
 
       setUnsavedEmails(updateArrAttachment);
-
-      //getUnSavedEmails(emailFilters)
     });
   }
 
