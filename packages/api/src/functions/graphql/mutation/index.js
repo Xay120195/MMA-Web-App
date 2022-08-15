@@ -26,14 +26,12 @@ const {
   updateCustomUserType,
   deleteCustomUserType,
 } = require("../../../services/CustomUserTypeService");
-
 const {
   createTeam,
   updateTeam,
   deleteTeam,
   tagTeamMember,
 } = require("../../../services/TeamService");
-
 const {
   createMatterFile,
   updateMatterFile,
@@ -191,33 +189,55 @@ async function createCompanyAccessType(data) {
   try {
     const arrItems = [];
 
-    for (var i = 0; i < data.userType.length; i++) {
-      arrItems.push({
-        PutRequest: {
-          Item: marshall({
-            id: v4(),
-            companyId: data.companyId,
-            userType: data.userType[i],
-            access: data.access,
-            createdAt: toUTC(new Date()),
-          }),
+    if (data.userType) {
+      for (var i = 0; i < data.userType.length; i++) {
+        arrItems.push({
+          PutRequest: {
+            Item: marshall({
+              id: v4(),
+              companyId: data.companyId,
+              userType: data.userType[i],
+              access: data.access,
+              createdAt: toUTC(new Date()),
+            }),
+          },
+        });
+      }
+
+      const param = {
+        RequestItems: {
+          CompanyAccessTypeTable: arrItems,
         },
+      };
+
+      console.log(JSON.stringify(param));
+
+      const cmd = new BatchWriteItemCommand(param);
+      const request = await ddbClient.send(cmd);
+
+      if (request) {
+        resp = arrItems.map((i) => {
+          return unmarshall(i.PutRequest.Item);
+        });
+      }
+    } else {
+      const rawParams = {
+        id: v4(),
+        companyId: data.companyId,
+        customUserType: data.customUserType,
+        access: data.access,
+        createdAt: toUTC(new Date()),
+      };
+
+      const param = marshall(rawParams);
+
+      console.log(JSON.stringify(param));
+      const cmd = new PutItemCommand({
+        TableName: "CompanyAccessTypeTable",
+        Item: param,
       });
-    }
-
-    const param = {
-      RequestItems: {
-        CompanyAccessTypeTable: arrItems,
-      },
-    };
-
-    const cmd = new BatchWriteItemCommand(param);
-    const request = await ddbClient.send(cmd);
-
-    if (request) {
-      resp = arrItems.map((i) => {
-        return unmarshall(i.PutRequest.Item);
-      });
+      const request = await ddbClient.send(cmd);
+      return [rawParams];
     }
   } catch (e) {
     resp = {
@@ -2715,11 +2735,13 @@ const resolvers = {
       return await createCompanyAccessType(ctx.arguments);
     },
     companyAccessTypeUpdate: async (ctx) => {
-      const { id, access } = ctx.arguments;
+      const { id, access, userType, customUserType } = ctx.arguments;
       const data = {
         updatedAt: toUTC(new Date()),
       };
 
+      if (userType !== undefined) data.userType = userType;
+      if (customUserType !== undefined) data.customUserType = customUserType;
       if (access !== undefined) data.access = access;
 
       return await updateCompanyAccessType(id, data);

@@ -1,34 +1,30 @@
-import '../../assets/styles/BackgroundPage.css';
-import '../../assets/styles/Mobile.css';
-import '../../assets/styles/BlankState.css';
-
-import * as IoIcons from 'react-icons/io';
-
-import { AiOutlineDownload, AiOutlineFolderOpen } from 'react-icons/ai';
-import React, { useEffect, useRef, useState } from 'react';
-
-import { API } from 'aws-amplify';
-import ActionButtons from './action-buttons';
-import { AppRoutes } from '../../constants/AppRoutes';
-import { Auth } from 'aws-amplify';
-import { BiArrowToTop } from 'react-icons/bi';
-import { BitlyClient } from 'bitly-react';
-import BlankStateMobile from '../mobile-blank-state';
-import BreadCrumb from '../breadcrumb/breadcrumb';
-import Illustration from '../../assets/images/no-data.svg';
-import { Link } from 'react-router-dom';
-import { MdArrowBackIos } from 'react-icons/md';
-import MobileHeader from '../mobile-header';
-import SessionTimeout from '../session-timeout/session-timeout-modal';
-import TableInfo from './table-info';
-import ToastNotification from '../toast-notification';
-import dateFormat from 'dateformat';
-import { useHistory } from 'react-router-dom';
-import { useIdleTimer } from 'react-idle-timer';
-import { useParams } from 'react-router-dom';
-import useWindowDimensions from '../../shared/windowDimensions';
-
+import React, { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
+import { AppRoutes } from "../../constants/AppRoutes";
+import { useParams } from "react-router-dom";
+import { MdArrowBackIos } from "react-icons/md";
+import { useIdleTimer } from "react-idle-timer";
+import BreadCrumb from "../breadcrumb/breadcrumb";
+import { AiOutlineFolderOpen, AiOutlineDownload } from "react-icons/ai";
+import TableInfo from "./table-info";
+import ActionButtons from "./action-buttons";
+import ToastNotification from "../toast-notification";
+import * as IoIcons from "react-icons/io";
+import { BiArrowToTop } from "react-icons/bi";
+import { BitlyClient } from "bitly-react";
+import "../../assets/styles/BackgroundPage.css";
+import "../../assets/styles/Mobile.css";
+import { API } from "aws-amplify";
+import SessionTimeout from "../session-timeout/session-timeout-modal";
+import { Auth } from "aws-amplify";
+import { useHistory } from "react-router-dom";
+import useWindowDimensions from "../../shared/windowDimensions";
 // import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import dateFormat from "dateformat";
+import "../../assets/styles/BlankState.css";
+import BlankStateMobile from "../mobile-blank-state";
+import MobileHeader from "../mobile-header";
+import Illustration from "../../assets/images/no-data.svg";
 
 // const contentDiv = {
 //   margin: "0 0 0 65px",
@@ -174,7 +170,7 @@ const Background = () => {
   }`;
 
   useEffect(() => {
-    console.log('useEffect()');
+    console.log("useEffect()");
     getBackground();
 
     if (bgName === null) {
@@ -232,7 +228,7 @@ const Background = () => {
         variables: {
           id: background_id,
           nextToken: null,
-          sortOrder: 'ORDER_ASC',
+          sortOrder: "ORDER_ASC",
           limit: 50,
         },
       });
@@ -256,7 +252,7 @@ const Background = () => {
     var nextToken = backgroundOpt.data.brief.backgrounds.nextToken;
 
     setVnextToken(nextToken);
-    console.log('InitialLoad If NextToken: ', nextToken);
+    console.log("InitialLoad If NextToken: ", nextToken);
 
     if (backgroundOpt.data.brief.backgrounds.items !== null) {
       result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -324,7 +320,7 @@ const Background = () => {
         setVnextToken(backgroundOpt.data.clientMatter.backgrounds.nextToken);
 
         console.log(
-          'Loadmore If NextToken: ',
+          "Loadmore If NextToken: ",
           backgroundOpt.data.clientMatter.backgrounds.nextToken
         );
 
@@ -393,14 +389,14 @@ const Background = () => {
             })
           );
 
-          if (background !== '') {
+          if (background !== "") {
             setLoading(false);
             setMaxLoading(false);
 
             var arrConcat = background.concat(result);
 
-            if (searchDescription !== '') {
-              console.log('searchDescription', searchDescription);
+            if (searchDescription !== "") {
+              console.log("searchDescription", searchDescription);
 
               arrConcat = background
                 .concat(result)
@@ -417,7 +413,7 @@ const Background = () => {
           }
         }
       } else {
-        console.log('Last Result!- NEW');
+        console.log("Last Result!- NEW");
         setMaxLoading(true);
       }
     }
@@ -543,7 +539,7 @@ const Background = () => {
   });
 
   const SortBydate = async () => {
-    console.group('SortBydate()');
+    console.group("SortBydate()");
     let result = [];
     setWait(false); // trigger loading ...
     setLoading(false);
@@ -767,7 +763,7 @@ const Background = () => {
   }
 
   useEffect(() => {
-    console.log('useEffect()');
+    console.log("useEffect()");
     if (searchDescription !== undefined) {
       filterRecord(searchDescription);
     }
@@ -778,8 +774,8 @@ const Background = () => {
   };
 
   const filterRecord = (v) => {
-    console.log('filterRecord', v);
-    if (v === '') {
+    console.log("filterRecord", v);
+    if (v === "") {
       // Refresh page if necessary
       setVnextToken(null);
       getBackground();
@@ -787,7 +783,7 @@ const Background = () => {
       const filterRecord = background.filter((x) => {
         return x.description?.toLowerCase().includes(v.toLowerCase());
       });
-      console.log('filterRecord:', filterRecord);
+      console.log("filterRecord:", filterRecord);
       // setBackground(sortByOrder(filterRecord));
       setBackground(filterRecord);
     }
@@ -845,26 +841,26 @@ const Background = () => {
   function countLines(tag) {
     var divHeight = tag.offsetHeight;
     var lineHeight = parseInt(
-      window.getComputedStyle(tag).getPropertyValue('line-height')
+      window.getComputedStyle(tag).getPropertyValue("line-height")
     );
     var lines = Math.round(divHeight / lineHeight);
     return lines;
   }
 
   useEffect(() => {
-    console.log('useEffect()');
+    console.log("useEffect()");
     if (background != null) {
       background.map((data) => {
-        var descTag = document.getElementById(data.id + '.desc');
-        var fileTag = document.getElementById(data.id + '.files');
+        var descTag = document.getElementById(data.id + ".desc");
+        var fileTag = document.getElementById(data.id + ".files");
         if (descTag !== null) {
           var descLines = countLines(descTag);
           var fileLines = countLines(fileTag);
-          var descButtonTag = document.getElementById(data.id + '.descButton');
+          var descButtonTag = document.getElementById(data.id + ".descButton");
           if (descLines > 6 || fileLines > 1) {
-            descButtonTag.style.display = 'inline-block';
+            descButtonTag.style.display = "inline-block";
           } else {
-            descButtonTag.style.display = 'none';
+            descButtonTag.style.display = "none";
           }
         }
       });
@@ -880,7 +876,7 @@ const Background = () => {
     }
   }
   function handleScrollToTop() {
-    let d = document.getElementById('mobileContent');
+    let d = document.getElementById("mobileContent");
     d.scrollTo(0, 0);
   }
 
@@ -912,7 +908,7 @@ const Background = () => {
     <>
       <div
         className={
-          'sm: shadow-lg sm:rounded bg-gray-100 sm:bg-white z-30 p-5 sm:p-0 contentDiv'
+          "sm: shadow-lg sm:rounded bg-gray-100 sm:bg-white z-30 p-5 sm:p-0 contentDiv"
         }
       >
         <div className="hidden sm:block px-6 mt-5 -ml-1">
@@ -951,9 +947,9 @@ const Background = () => {
             <p
               suppressContentEditableWarning={true}
               style={{
-                cursor: 'auto',
-                outlineColor: 'rgb(204, 204, 204, 0.5)',
-                outlineWidth: 'thin',
+                cursor: "auto",
+                outlineColor: "rgb(204, 204, 204, 0.5)",
+                outlineWidth: "thin",
               }}
               onClick={(e) => handleNameContent(e, bgName, background_id)}
               contentEditable={true}
@@ -973,7 +969,7 @@ const Background = () => {
         </div>
         <div
           className="bg-gray-100 sm:bg-white z-30 sm:ml-4 static sm:sticky"
-          style={{ top: '72px' }}
+          style={{ top: "72px" }}
         >
           <div className="hidden sm:block">
             <BreadCrumb
@@ -1028,7 +1024,7 @@ const Background = () => {
                       Background
                       <span className="sm:inline hidden font-medium">
                         &nbsp;Page
-                      </span>{' '}
+                      </span>{" "}
                     </span>
                   </li>
                   <svg
@@ -1243,11 +1239,12 @@ const Background = () => {
               <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
                 <div
                   className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
-                  style={{ height: width > 640 ? 'auto' : contentHeight }}
+
+                  style={{ height: width > 640 ? "auto" : contentHeight }}
                 >
                   <BlankStateMobile
-                    header={'There are no items to show in this view.'}
-                    content={'Any added files in the desktop will appear here'}
+                    header={"There are no items to show in this view."}
+                    content={"Any added files in the desktop will appear here"}
                     svg={Illustration}
                   />
                 </div>
@@ -1271,9 +1268,9 @@ const Background = () => {
                       >
                         <BiArrowToTop
                           style={{
-                            color: 'white',
-                            display: 'block',
-                            margin: 'auto',
+                            color: "white",
+                            display: "block",
+                            margin: "auto",
                           }}
                         />
                       </div>
@@ -1287,7 +1284,7 @@ const Background = () => {
                         className="flex flex-row"
                         style={{
                           borderBottomWidth: index + 1 !== arr.length ? 2 : 0,
-                          borderBottomStyle: 'dashed',
+                          borderBottomStyle: "dashed",
                           paddingTop: index === 0 ? 0 : 20,
                           paddingBottom: 20,
                         }}
@@ -1297,19 +1294,19 @@ const Background = () => {
                         </p>
                         <div className="ml-2">
                           <p className="font-medium text-cyan-400">
-                            {item.date !== null && item.date !== ''
-                              ? dateFormat(item.date, 'dd mmmm yyyy')
-                              : 'No date'}
+                            {item.date !== null && item.date !== ""
+                              ? dateFormat(item.date, "dd mmmm yyyy")
+                              : "No date"}
                           </p>
                           {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
                           <p
-                            id={item.id + '.desc'}
+                            id={item.id + ".desc"}
                             className="absolute text-red-200 invisible pointer-events-none opacity-0"
                             style={{
                               top: -10000,
                               zIndex: -1000,
-                              marginRight: '20px',
-                              wordBreak: 'break-word',
+                              marginRight: "20px",
+                              wordBreak: "break-word",
                             }}
                             dangerouslySetInnerHTML={{
                               __html: item.description,
@@ -1317,32 +1314,32 @@ const Background = () => {
                           ></p>
                           <p
                             className={
-                              isReadMoreExpanded(item.id) ? '' : 'line-clamp-6'
+                              isReadMoreExpanded(item.id) ? "" : "line-clamp-6"
                             }
                             dangerouslySetInnerHTML={{
                               __html: item.description,
                             }}
-                            style={{ wordBreak: 'break-word' }}
+                            style={{ wordBreak: "break-word" }}
                           ></p>
                           <button
-                            id={item.id + '.descButton'}
+                            id={item.id + ".descButton"}
                             className="text-cyan-400 mb-2"
                             onClick={() => handleReadMoreState(item.id)}
                           >
                             {isReadMoreExpanded(item.id)
-                              ? 'read less...'
-                              : 'read more...'}
+                              ? "read less..."
+                              : "read more..."}
                           </button>
                           {/* INVISIBLE DIV TO GET INITIAL DIV HEIGHT */}
                           <p
-                            id={item.id + '.files'}
+                            id={item.id + ".files"}
                             className="absolute text-red-200 invisible pointer-events-none opacity-0 break-words"
                             style={{
                               top: -10000,
                               zIndex: -1000,
-                              marginRight: '20px',
-                              lineHeight: '30px',
-                              wordBreak: 'break-word',
+                              marginRight: "20px",
+                              lineHeight: "30px",
+                              wordBreak: "break-word",
                             }}
                           >
                             {item.files.items.map((file) => (
@@ -1359,12 +1356,12 @@ const Background = () => {
                           <p
                             className={
                               (isReadMoreExpanded(item.id)
-                                ? ''
-                                : 'line-clamp-1') + ' break-words'
+                                ? ""
+                                : "line-clamp-1") + " break-words"
                             }
                             style={{
-                              lineHeight: '30px',
-                              wordBreak: 'break-word',
+                              lineHeight: "30px",
+                              wordBreak: "break-word",
                             }}
                           >
                             {item.files.items.map((file) => (

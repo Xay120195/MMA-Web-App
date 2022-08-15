@@ -1,8 +1,3 @@
-schema {
-  query: Query
-  mutation: Mutation
-}
-
 # Objects
 type Address {
   id: ID!
@@ -118,6 +113,7 @@ type CompanyAccessType {
   id: ID
   companyId: ID
   userType: UserType
+  customUserType: CustomUserType
   access: [Page]
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -578,7 +574,7 @@ type Query {
   columnSettings(tableName: ViewTable): [ColumnSettings]
   companies: [Company]
   company(id: String): Company
-  companyAccessType(companyId: String, userType: UserType): [CompanyAccessType]
+  companyAccessType(companyId: String, userType: UserType, customUserType: CustomUserTypeInput): [CompanyAccessType]
   feature(id: String): Feature
   features: [Feature]
   file(id: ID): File
@@ -651,7 +647,13 @@ type Mutation {
   briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
   briefSoftDelete(id: ID): Brief
-  briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int, labelId: ID): Brief
+  briefUpdate(
+    id: ID
+    name: String
+    date: AWSDateTime
+    order: Int
+    labelId: ID
+  ): Brief
   clientCreate(name: String, companyId: String): Client
   clientMatterCreate(
     companyId: String
@@ -667,9 +669,15 @@ type Mutation {
   companyAccessTypeCreate(
     companyId: String
     userType: [UserType]
+    customUserType: CustomUserTypeInput
     access: [AccessInput]
   ): [CompanyAccessType]
-  companyAccessTypeUpdate(id: String, access: [AccessInput]): CompanyAccessType
+  companyAccessTypeUpdate(
+    id: String
+    userType: UserType
+    customUserType: CustomUserTypeInput
+    access: [AccessInput]
+  ): CompanyAccessType
   companyCreate(name: String, representative: RepresentativeInput): Company
   featureCreate(name: String, label: String, page: PageInput): Feature
   fileLabelTag(file: FileInput, label: [LabelInput]): FileLabel
@@ -820,4 +828,9 @@ type Mutation {
   teamUpdate(id: ID, name: String): Team
   teamDelete(id: ID): Team
   teamMemberTag(teamId: ID, members: [MemberInput]): Team
+}
+
+schema {
+  query: Query
+  mutation: Mutation
 }
