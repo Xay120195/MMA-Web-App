@@ -4288,9 +4288,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ></div>
                                                                         ) : (
                                                                           <>
-                                                                            <div className="flex">
+                                                                            <div className="flex mb-1.5 h-10.5">
                                                                               <div
-                                                                                className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                                className="h-10 items-center w-24 p-1 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-md cursor-pointer flex"
                                                                                 index={
                                                                                   index
                                                                                 }
@@ -4310,7 +4310,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                 </b>
                                                                               </div>
                                                                               <div
-                                                                                className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
+                                                                                className="ml-2 mr-2 h-10 items-center w-6 p-1 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-md cursor-pointer flex justify-center"
                                                                                 index={
                                                                                   index
                                                                                 }
