@@ -617,8 +617,7 @@ const TableUnsavedInfo = ({
                       > */}
                             {/* {({ registerChild }) => ( */}
                             <tr
-                              style=
-                              /*{lastCounter === index+1 ? 
+                              style /*{lastCounter === index+1 ? 
                                 {
                                   ...style,
                                   width: "100%",
@@ -631,14 +630,15 @@ const TableUnsavedInfo = ({
                                   height: "100%",
                                   border: "1px solid #f0f0f0",
                                 }
-                              }*/
-                              {{
+                              }*/={{
                                 ...style,
                                 width: "100%",
                                 height: "100%",
                                 border: "1px solid #f0f0f0",
                               }}
-                              className={lastCounter === index+1 ? "tr-child" : ""}
+                              className={
+                                lastCounter === index + 1 ? "tr-child" : ""
+                              }
                               key={key}
                             >
                               <td className="p-2 align-top h-full w-10">
@@ -659,7 +659,7 @@ const TableUnsavedInfo = ({
                                   )}
                                 />
                               </td>
-                              <td className="p-2 align-top w-1/4">
+                              <td className="p-2 align-top w-2/8 h-full">
                                 <div className="w-96">
                                   <p className="text-sm font-medium">
                                     {item.subject}
@@ -757,25 +757,61 @@ const TableUnsavedInfo = ({
                                   </div>
                                 </div>
                               </td>
-                              <td className="p-2 align-top w-2/5">
-                                <p
-                                  className="p-2 w-full font-poppins rounded-sm"
-                                  style={{
-                                    border: "solid 1px #c4c4c4",
-                                    cursor: "auto",
-                                    outlineColor: "rgb(204, 204, 204, 0.5)",
-                                    outlineWidth: "thin",
-                                    minHeight: "35px",
-                                    maxHeight: "35px",
-                                    overflow: "auto",
-                                  }}
-                                  suppressContentEditableWarning
-                                  dangerouslySetInnerHTML={{
-                                    __html: item.description,
-                                  }}
-                                  onBlur={(e) => handleSaveMainDesc(e, item.id)}
-                                  contentEditable={true}
-                                ></p>
+                              <td
+                                className="p-2 align-top w-2/8"
+                                colspan={2}
+                                style={{ minWidth: "1000px" }}
+                              >
+                                <div class="flex inline-flex w-full">
+                                  <div className="flex items-start mt-2 h-full w-full">
+                                    <p
+                                      className="p-2 w-full h-full font-poppins rounded-sm"
+                                      style={{
+                                        border: "solid 1px #c4c4c4",
+                                        cursor: "auto",
+                                        outlineColor: "rgb(204, 204, 204, 0.5)",
+                                        outlineWidth: "thin",
+                                        minHeight: "35px",
+                                        maxHeight: "35px",
+                                        overflow: "auto",
+                                      }}
+                                      suppressContentEditableWarning
+                                      dangerouslySetInnerHTML={{
+                                        __html: item.description,
+                                      }}
+                                      onBlur={(e) =>
+                                        handleSaveMainDesc(e, item.id)
+                                      }
+                                      contentEditable={true}
+                                    ></p>
+                                  </div>
+                                  <div className="ml-8 mt-2 w-80 inline-flex flex-wrap ">
+                                    <CreatableSelect
+                                      defaultValue={() =>
+                                        defaultLabels(item.labels.items)
+                                      }
+                                      isMulti
+                                      isClearable
+                                      options={getOptions(
+                                        item.clientMatters.items
+                                      )}
+                                      isSearchable
+                                      openMenuOnClick={true}
+                                      isDisabled={
+                                        checkArrLength(
+                                          item.clientMatters.items.length
+                                        ) || checkEnable(item.id)
+                                          ? false
+                                          : true
+                                      }
+                                      onChange={(e) =>
+                                        handleAddLabel(e, item.id, index)
+                                      }
+                                      placeholder="Labels"
+                                      className="w-64 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                    />
+                                  </div>
+                                </div>
                                 {item.attachments.items.map(
                                   (item_attach, index) => (
                                     <React.Fragment key={item_attach.id}>
@@ -798,11 +834,11 @@ const TableUnsavedInfo = ({
                                             : ""}
                                         </p>
                                         <div
-                                          className=
-                                          {!item_attach.isDeleted || item_attach.isDeleted === null ?
-                                            "p-2 w-full h-full font-poppins rounded-sm float-right"
-                                            :
-                                            "p-2 w-full h-full font-poppins rounded-sm float-right bg-gray-300"
+                                          className={
+                                            !item_attach.isDeleted ||
+                                            item_attach.isDeleted === null
+                                              ? "p-2 w-full h-full font-poppins rounded-sm float-right"
+                                              : "p-2 w-full h-full font-poppins rounded-sm float-right bg-gray-300"
                                           }
                                           style={{
                                             border: "solid 1px #c4c4c4",
@@ -825,14 +861,17 @@ const TableUnsavedInfo = ({
                                               item.id
                                             )
                                           }
-                                          contentEditable=
-                                            {!item_attach.isDeleted || item_attach.isDeleted === null ? 
-                                              true : false
-                                            }
+                                          contentEditable={
+                                            !item_attach.isDeleted ||
+                                            item_attach.isDeleted === null
+                                              ? true
+                                              : false
+                                          }
                                         ></div>
-                                        {!item_attach.isDeleted || item_attach.isDeleted === null ? 
-                                          <span 
-                                            className="mt-2 ml-2 cursor-pointer hover:text-red-700 font-bold" 
+                                        {!item_attach.isDeleted ||
+                                        item_attach.isDeleted === null ? (
+                                          <span
+                                            className="mt-2 ml-2 mr-2 cursor-pointer hover:text-red-700 font-bold p-2"
                                             onClick={(e) =>
                                               handleDeleteAttachment(
                                                 item_attach.id,
@@ -844,167 +883,54 @@ const TableUnsavedInfo = ({
                                           >
                                             X
                                           </span>
-                                          :
+                                        ) : (
                                           <button
-                                          className="bg-white-500 hover:bg-gray-700 hover:text-white text-gray font-bold py-2 px-1 rounded ml-2 cursor-pointer"
-                                          onClick={(e) =>
-                                            handleDeleteAttachment(
-                                              item_attach.id,
-                                              index,
-                                              false,
-                                              e
+                                            className="bg-white-500 hover:bg-gray-700 hover:text-white text-gray font-bold py-2 px-1 rounded ml-2 cursor-pointer"
+                                            onClick={(e) =>
+                                              handleDeleteAttachment(
+                                                item_attach.id,
+                                                index,
+                                                false,
+                                                e
+                                              )
+                                            }
+                                          >
+                                            Cancel
+                                          </button>
+                                        )}
+                                        <CreatableSelect
+                                          defaultValue={() =>
+                                            defaultLabels(
+                                              item_attach.labels.items
                                             )
                                           }
-                                          >Cancel</button>
-                                        }
+                                          isMulti
+                                          isClearable
+                                          options={getOptions(
+                                            item.clientMatters.items
+                                          )}
+                                          openMenuOnClick={true}
+                                          isDisabled={
+                                            checkArrLength(
+                                              item.clientMatters.items.length
+                                            ) || checkEnable(item.id)
+                                              ? false
+                                              : true
+                                          }
+                                          onChange={(e) =>
+                                            handleAddEmailAttachmentLabel(
+                                              e,
+                                              item_attach.id,
+                                              item.id,
+                                              index
+                                            )
+                                          }
+                                          placeholder="Labels"
+                                          className="w-96 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                        />
                                       </div>
-                                    </React.Fragment>
-                                  )
-                                )}
-                              </td>
-                              <td className="p-2 align-top w-1/6">
-                                <div className="relative mt-4" disabled={true}>
-                                  {/*mt-2 new version mt-4 old version*/}
-                                  {/* <button
-                                className="
-                              text-opacity-90 1
-                              textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-                                id="headlessui-popover-button-87"
-                                type="button"
-                                aria-expanded="false"
-                              >
-                                {item.labelIds}
-                              </button> */}
-                                  {/* --NEW LABEL DESIGN STARTS HERE-- 
-                                  <button
-                                    onClick={() => {
-                                      if (
-                                        ShowAddLabel[0].item === item.id &&
-                                        ShowAddLabel[0].isDesc === true &&
-                                        ShowAddLabel[0].show === true
-                                      ) {
-                                        setShowAddLabel((prev) => [
-                                          {
-                                            item: item.id,
-                                            index: index,
-                                            show: false,
-                                            isDesc: false,
-                                          },
-                                        ]);
-                                      } else {
-                                        setShowAddLabel((prev) => [
-                                          {
-                                            item: item.id,
-                                            index: index,
-                                            show: true,
-                                            isDesc: true,
-                                          },
-                                        ]);
-                                      }
-                                    }}
-                                    disabled={
-                                      checkArrLength(
-                                        item.clientMatters.items.length
-                                      ) || checkEnable(item.id)
-                                        ? false
-                                        : true
-                                    }
-                                    className={`flex flex-row justify-center items-center border border-gray-300 px-1 py-1 mr-2 focus:ring mt-4 shadow-md ${
-                                      checkArrLength(
-                                        item.clientMatters.items.length
-                                      ) || checkEnable(item.id)
-                                        ? "hover:border-gray-400"
-                                        : "bg-gray-200 cursor-default"
-                                    }`}
-                                    style={{ width: "110px" }}
-                                  >
-                                    <div>
-                                      {`${
-                                        ShowAddLabel[0].item === item.id &&
-                                        ShowAddLabel[0].isDesc === true &&
-                                        ShowAddLabel[0].show === true
-                                          ? "Cancel Add"
-                                          : "Add Labels"
-                                      }`}
-                                    </div>
-                                  </button>
-                                  {ShowAddLabel[0].item === item.id &&
-                                    ShowAddLabel[0].isDesc === true &&
-                                    ShowAddLabel[0].show === true && (
-                                      <CreatableSelect
-                                        defaultValue={() =>
-                                          defaultLabels(item.labels.items)
-                                        }
-                                        menuPortalTarget={document.body}
-                                        styles={{
-                                          container: (base) => ({
-                                            ...base,
-                                            zIndex: "1000",
-                                          }),
-                                          control: (base, state) => ({
-                                            ...base,
-                                            position: "fixed",
-                                            minWidth: "250px",
-                                          }),
-                                          valueContainer: (base) => ({
-                                            ...base,
-                                            width: "auto",
-                                          }),
-                                        }}
-                                        components={{
-                                          MenuList: CustomMenuList,
-                                          MultiValueContainer:
-                                            CustomValueContainer,
-                                        }}
-                                        isMulti
-                                        isClearable
-                                        options={getOptions(
-                                          item.clientMatters.items
-                                        )}
-                                        isSearchable
-                                        openMenuOnClick={true}
-                                        isDisabled={
-                                          checkArrLength(
-                                            item.clientMatters.items.length
-                                          ) || checkEnable(item.id)
-                                            ? false
-                                            : true
-                                        }
-                                        onChange={(e) =>
-                                          handleAddLabel(e, item.id)
-                                        }
-                                        placeholder="Labels"
-                                        className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                      />
-                                    )}
-                                    */}
-                                  {/*Reverted Changes STARTS HERE 1st part */}
-                                  <CreatableSelect
-                                    defaultValue={() =>
-                                      defaultLabels(item.labels.items)
-                                    }
-                                    isMulti
-                                    isClearable
-                                    options={getOptions(
-                                      item.clientMatters.items
-                                    )}
-                                    isSearchable
-                                    openMenuOnClick={true}
-                                    isDisabled={
-                                      checkArrLength(
-                                        item.clientMatters.items.length
-                                      ) || checkEnable(item.id)
-                                        ? false
-                                        : true
-                                    }
-                                    onChange={(e) => handleAddLabel(e, item.id, index)}
-                                    placeholder="Labels"
-                                    className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                  />
-                                </div>
-                                {item.attachments.items.map(
-                                  (item_attach, index) => (
-                                    /*NEW LABELS STARTS HERE PART 2 
+
+                                      {/*NEW LABELS STARTS HERE PART 2 
                                     <>
                                       
                                       <div className="flex flex-row items-center">
@@ -1136,39 +1062,157 @@ const TableUnsavedInfo = ({
                                           </div>
                                         )}
                                     </>
-                                    REVERT CHANGES START HERE*/
-
-                                    <CreatableSelect
-                                      defaultValue={() =>
-                                        defaultLabels(item_attach.labels.items)
-                                      }
-                                      isMulti
-                                      isClearable
-                                      options={getOptions(
-                                        item.clientMatters.items
-                                      )}
-                                      openMenuOnClick={true}
-                                      isDisabled={
-                                        checkArrLength(
-                                          item.clientMatters.items.length
-                                        ) || checkEnable(item.id)
-                                          ? false
-                                          : true
-                                      }
-                                      onChange={(e) =>
-                                        handleAddEmailAttachmentLabel(
-                                          e,
-                                          item_attach.id,
-                                          item.id,
-                                          index
-                                        )
-                                      }
-                                      placeholder="Labels"
-                                      className="mt-1 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
-                                    />
+                                    REVERT CHANGES START HERE*/}
+                                    </React.Fragment>
                                   )
                                 )}
                               </td>
+                              {/*<td className="p-2 align-top w-1/6">*/}
+                              {/*<div className="relative mt-4" disabled={true}>*/}
+                              {/*mt-2 new version mt-4 old version*/}
+                              {/* <button
+                                className="
+                              text-opacity-90 1
+                              textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+                                id="headlessui-popover-button-87"
+                                type="button"
+                                aria-expanded="false"
+                              >
+                                {item.labelIds}
+                              </button> */}
+                              {/* --NEW LABEL DESIGN STARTS HERE-- 
+                                  <button
+                                    onClick={() => {
+                                      if (
+                                        ShowAddLabel[0].item === item.id &&
+                                        ShowAddLabel[0].isDesc === true &&
+                                        ShowAddLabel[0].show === true
+                                      ) {
+                                        setShowAddLabel((prev) => [
+                                          {
+                                            item: item.id,
+                                            index: index,
+                                            show: false,
+                                            isDesc: false,
+                                          },
+                                        ]);
+                                      } else {
+                                        setShowAddLabel((prev) => [
+                                          {
+                                            item: item.id,
+                                            index: index,
+                                            show: true,
+                                            isDesc: true,
+                                          },
+                                        ]);
+                                      }
+                                    }}
+                                    disabled={
+                                      checkArrLength(
+                                        item.clientMatters.items.length
+                                      ) || checkEnable(item.id)
+                                        ? false
+                                        : true
+                                    }
+                                    className={`flex flex-row justify-center items-center border border-gray-300 px-1 py-1 mr-2 focus:ring mt-4 shadow-md ${
+                                      checkArrLength(
+                                        item.clientMatters.items.length
+                                      ) || checkEnable(item.id)
+                                        ? "hover:border-gray-400"
+                                        : "bg-gray-200 cursor-default"
+                                    }`}
+                                    style={{ width: "110px" }}
+                                  >
+                                    <div>
+                                      {`${
+                                        ShowAddLabel[0].item === item.id &&
+                                        ShowAddLabel[0].isDesc === true &&
+                                        ShowAddLabel[0].show === true
+                                          ? "Cancel Add"
+                                          : "Add Labels"
+                                      }`}
+                                    </div>
+                                  </button>
+                                  {ShowAddLabel[0].item === item.id &&
+                                    ShowAddLabel[0].isDesc === true &&
+                                    ShowAddLabel[0].show === true && (
+                                      <CreatableSelect
+                                        defaultValue={() =>
+                                          defaultLabels(item.labels.items)
+                                        }
+                                        menuPortalTarget={document.body}
+                                        styles={{
+                                          container: (base) => ({
+                                            ...base,
+                                            zIndex: "1000",
+                                          }),
+                                          control: (base, state) => ({
+                                            ...base,
+                                            position: "fixed",
+                                            minWidth: "250px",
+                                          }),
+                                          valueContainer: (base) => ({
+                                            ...base,
+                                            width: "auto",
+                                          }),
+                                        }}
+                                        components={{
+                                          MenuList: CustomMenuList,
+                                          MultiValueContainer:
+                                            CustomValueContainer,
+                                        }}
+                                        isMulti
+                                        isClearable
+                                        options={getOptions(
+                                          item.clientMatters.items
+                                        )}
+                                        isSearchable
+                                        openMenuOnClick={true}
+                                        isDisabled={
+                                          checkArrLength(
+                                            item.clientMatters.items.length
+                                          ) || checkEnable(item.id)
+                                            ? false
+                                            : true
+                                        }
+                                        onChange={(e) =>
+                                          handleAddLabel(e, item.id)
+                                        }
+                                        placeholder="Labels"
+                                        className="bottom-8 left-32 fixed w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                      />
+                                    )}
+                                    */}
+                              {/*Reverted Changes STARTS HERE 1st part */}
+                              {/*
+                                  <CreatableSelect
+                                    defaultValue={() =>
+                                      defaultLabels(item.labels.items)
+                                    }
+                                    isMulti
+                                    isClearable
+                                    options={getOptions(
+                                      item.clientMatters.items
+                                    )}
+                                    isSearchable
+                                    openMenuOnClick={true}
+                                    isDisabled={
+                                      checkArrLength(
+                                        item.clientMatters.items.length
+                                      ) || checkEnable(item.id)
+                                        ? false
+                                        : true
+                                    }
+                                    onChange={(e) =>
+                                      handleAddLabel(e, item.id, index)
+                                    }
+                                    placeholder="Labels"
+                                    className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
+                                  />
+                                   */}
+                              {/*</div>*/}
+
+                              {/*</td>*/}
 
                               <td className="p-2 align-top w-1/6">
                                 <React.Fragment key={item.id}>
@@ -1190,7 +1234,7 @@ const TableUnsavedInfo = ({
                                     noOptionsMessage={() => "No result found"}
                                     isValidNewOption={() => false}
                                     placeholder="Client/Matter"
-                                    className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                                    className="mt-2 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                                   />
                                 </React.Fragment>
                               </td>
