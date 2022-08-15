@@ -226,13 +226,24 @@ async function getCompanyAccessType(data) {
 
     const cmd = new QueryCommand(param);
     const request = await ddbClient.send(cmd);
-    var parseResponse = request.Items.map((data) => unmarshall(data));
+    const result = request.Items.map((data) => unmarshall(data));
+
+    var parseResponse = result;
 
     if (data.userType) {
-      parseResponse = request.Items.map((data) => unmarshall(data)).filter(
+      parseResponse = result.filter(
         (userType) => userType.userType === data.userType
       );
     }
+
+    if (data.customUserType) {
+      const { id } = data.customUserType;
+
+      parseResponse = result
+        .filter((c) => c.customUserType !== undefined)
+        .filter((c) => c.customUserType.id === id);
+    }
+
     return parseResponse;
   } catch (e) {
     const resp = {
@@ -400,16 +411,14 @@ async function listColumnSettingsByTable(data) {
     const request = await ddbClient.send(cmd);
 
     const result = request.Items.map((d) => unmarshall(d));
-
-    resp = request ? result : {};
+    return result;
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getBackground(data) {
@@ -460,8 +469,7 @@ async function getClientMatter(data) {
 async function getUserColumnSettings(data) {
   const { userId, tableName } = data;
 
-  let resp = {},
-    result = {};
+  let result = {};
   try {
     const userColumnSettingsParams = {
       TableName: "UserColumnSettingsTable",
@@ -515,19 +523,18 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    resp =
+    const resp =
       Object.keys(result).length !== 0 && result !== null && result !== {}
         ? result
         : [];
+    return resp;
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-
-  return resp;
 }
 
 async function getBrief(data) {
@@ -610,16 +617,13 @@ async function getBriefByName(data) {
         nextToken: null,
       };
     }
-
-    // resp = Item ? unmarshall(Item) : {};
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function listBriefs() {
