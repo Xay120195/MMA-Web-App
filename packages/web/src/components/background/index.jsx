@@ -1,30 +1,34 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { AppRoutes } from '../../constants/AppRoutes';
-import { useParams } from 'react-router-dom';
-import { MdArrowBackIos } from 'react-icons/md';
-import { useIdleTimer } from 'react-idle-timer';
-import BreadCrumb from '../breadcrumb/breadcrumb';
-import { AiOutlineFolderOpen, AiOutlineDownload } from 'react-icons/ai';
-import TableInfo from './table-info';
-import ActionButtons from './action-buttons';
-import ToastNotification from '../toast-notification';
-import * as IoIcons from 'react-icons/io';
-import { BiArrowToTop } from 'react-icons/bi';
-import { BitlyClient } from 'bitly-react';
 import '../../assets/styles/BackgroundPage.css';
 import '../../assets/styles/Mobile.css';
-import { API } from 'aws-amplify';
-import SessionTimeout from '../session-timeout/session-timeout-modal';
-import { Auth } from 'aws-amplify';
-import { Redirect, useHistory } from 'react-router-dom';
-import useWindowDimensions from '../../shared/windowDimensions';
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
-import dateFormat from 'dateformat';
 import '../../assets/styles/BlankState.css';
+
+import * as IoIcons from 'react-icons/io';
+
+import { AiOutlineDownload, AiOutlineFolderOpen } from 'react-icons/ai';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { API } from 'aws-amplify';
+import ActionButtons from './action-buttons';
+import { AppRoutes } from '../../constants/AppRoutes';
+import { Auth } from 'aws-amplify';
+import { BiArrowToTop } from 'react-icons/bi';
+import { BitlyClient } from 'bitly-react';
 import BlankStateMobile from '../mobile-blank-state';
-import MobileHeader from '../mobile-header';
+import BreadCrumb from '../breadcrumb/breadcrumb';
 import Illustration from '../../assets/images/no-data.svg';
+import { Link } from 'react-router-dom';
+import { MdArrowBackIos } from 'react-icons/md';
+import MobileHeader from '../mobile-header';
+import SessionTimeout from '../session-timeout/session-timeout-modal';
+import TableInfo from './table-info';
+import ToastNotification from '../toast-notification';
+import dateFormat from 'dateformat';
+import { useHistory } from 'react-router-dom';
+import { useIdleTimer } from 'react-idle-timer';
+import { useParams } from 'react-router-dom';
+import useWindowDimensions from '../../shared/windowDimensions';
+
+// import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 // const contentDiv = {
 //   margin: "0 0 0 65px",
@@ -97,7 +101,80 @@ const Background = () => {
   const check = useRef(false);
   const [showSessionTimeout, setShowSessionTimeout] = useState(false);
 
+  // GraphQL queries and mutations
+  const qGetFileDownloadLink = `query getFileDownloadLink($id: ID) {
+    file(id: $id) {
+      downloadURL
+    }
+  }`;
+
+  const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
+    briefUpdate(id: $id, name: $name) {
+      id
+    }
+  }`;
+
+  const qGetName = `query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
+    clientMatter(id: $id) {
+      briefs(limit: $limit, nextToken: $nextToken) {
+        items {
+          id
+          name
+          date
+          order
+        }
+      }
+    }
+  }`;
+
+  const qListBackground = `query listBackground($id: ID, $limit: Int, $nextToken: String, $sortOrder: OrderBy) {
+    clientMatter(id: $id) {
+      id
+      backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:$sortOrder) {
+        items {
+          id
+          description
+          date
+          createdAt
+          order
+          files {
+            items {
+              id
+              details
+              name
+              type
+            }
+          }
+        }
+        nextToken
+      }
+    }
+  }`;
+
+  const qBriefBackgroundList = `query getBriefByID($limit: Int, $nextToken: String, $id: ID, $sortOrder: OrderBy) {
+    brief(id: $id) {
+      id
+      backgrounds(limit: $limit, nextToken: $nextToken, sortOrder: $sortOrder) {
+        items {
+          id
+          description
+          date
+          createdAt
+          order
+          files {
+            items {
+              id
+              name
+            }
+          }
+        }
+        nextToken
+      }
+    }
+  }`;
+
   useEffect(() => {
+    console.log('useEffect()');
     getBackground();
 
     if (bgName === null) {
@@ -110,72 +187,7 @@ const Background = () => {
     setShowToast(false);
   };
 
-  const getName = `
-  query getBriefsByClientMatter($id: ID, $limit: Int, $nextToken: String) {
-    clientMatter(id: $id) {
-      briefs(limit: $limit, nextToken: $nextToken) {
-        items {
-          id
-          name
-          date
-          order
-        }
-      }
-    }
-  }
-  `;
-
   const [bgName, setBGName] = useState(null);
-
-  const qListBackground = `
-    query listBackground($id: ID, $limit: Int, $nextToken: String, $sortOrder: OrderBy) {
-      clientMatter(id: $id) {
-        id
-        backgrounds (limit: $limit, nextToken: $nextToken, sortOrder:$sortOrder) {
-          items {
-            id
-            description
-            date
-            createdAt
-            order
-            files {
-              items {
-                id
-                details
-                name
-                type
-              }
-            }
-          }
-          nextToken
-        }
-      }
-    }
-  `;
-
-  const qBriefBackgroundList = `
-    query getBriefByID($limit: Int, $nextToken: String, $id: ID, $sortOrder: OrderBy) {
-      brief(id: $id) {
-        id
-        backgrounds(limit: $limit, nextToken: $nextToken, sortOrder: $sortOrder) {
-          items {
-            id
-            description
-            date
-            createdAt
-            order
-            files {
-              items {
-                id
-                name
-              }
-            }
-          }
-          nextToken
-        }
-      }
-    }  
-  `;
 
   const getBackground = async () => {
     console.log('getBackground()');
@@ -241,11 +253,10 @@ const Background = () => {
     setVprevToken([...new Set(arrConcatPrevToken)]);
     console.log('PREV TOKEN: ', arrConcatPrevToken);
 
-    setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
-    console.log(
-      'InitialLoad If NextToken: ',
-      backgroundOpt.data.brief.backgrounds.nextToken
-    );
+    var nextToken = backgroundOpt.data.brief.backgrounds.nextToken;
+
+    setVnextToken(nextToken);
+    console.log('InitialLoad If NextToken: ', nextToken);
 
     if (backgroundOpt.data.brief.backgrounds.items !== null) {
       result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -276,7 +287,7 @@ const Background = () => {
   const getBriefs = async () => {
     console.log('matterid', matter_id);
     const params = {
-      query: getName,
+      query: qGetName,
       variables: {
         id: matter_id,
         limit: 50,
@@ -364,9 +375,11 @@ const Background = () => {
         setVprevToken([...new Set(arrConcatPrevToken)]);
         console.log('PREV TOKEN: ', arrConcatPrevToken);
 
-        setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+        var nextToken = backgroundOpt.data.brief.backgrounds.nextToken;
 
-        //console.log("Loadmore If NextToken: ", backgroundOpt.data.brief.backgrounds.nextToken);
+        setVnextToken(nextToken);
+
+        //console.log("Loadmore If NextToken: ", nextToken);
 
         if (backgroundOpt.data.brief.backgrounds.items !== null) {
           result = backgroundOpt.data.brief.backgrounds.items.map(
@@ -387,6 +400,8 @@ const Background = () => {
             var arrConcat = background.concat(result);
 
             if (searchDescription !== '') {
+              console.log('searchDescription', searchDescription);
+
               arrConcat = background
                 .concat(result)
                 .filter((x) =>
@@ -408,68 +423,70 @@ const Background = () => {
     }
   };
 
-  const loadPrevBackground = async () => {
-    if (vPrevToken.length > 1 && !loading) {
-      setLoading(true);
-      let result = [];
+  // const loadPrevBackground = async () => {
+  //   if (vPrevToken.length > 1 && !loading) {
+  //     setLoading(true);
+  //     let result = [];
 
-      const lastTokenFrom = vPrevToken.slice(-1);
+  //     const lastTokenFrom = vPrevToken.slice(-1);
 
-      const updatedToken = vPrevToken.filter(
-        (x) => !new Set(lastTokenFrom).has(x)
-      );
+  //     const updatedToken = vPrevToken.filter(
+  //       (x) => !new Set(lastTokenFrom).has(x)
+  //     );
 
-      const lastTokenQuery = updatedToken.slice(-1);
+  //     const lastTokenQuery = updatedToken.slice(-1);
 
-      const backgroundOpt = await API.graphql({
-        query: qBriefBackgroundList,
-        variables: {
-          id: background_id,
-          limit: 50,
-          nextToken: lastTokenQuery[0],
-          sortOrder: 'ORDER_ASC',
-        },
-      });
+  //     const backgroundOpt = await API.graphql({
+  //       query: qBriefBackgroundList,
+  //       variables: {
+  //         id: background_id,
+  //         limit: 50,
+  //         nextToken: lastTokenQuery[0],
+  //         sortOrder: "ORDER_ASC",
+  //       },
+  //     });
 
-      setVprevToken(updatedToken);
-      setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
+  //     setVprevToken(updatedToken);
+  //     setVnextToken(backgroundOpt.data.brief.backgrounds.nextToken);
 
-      if (backgroundOpt.data.brief.backgrounds.items !== null) {
-        result = backgroundOpt.data.brief.backgrounds.items.map(
-          ({ id, description, date, createdAt, order, files }) => ({
-            createdAt: createdAt,
-            id: id,
-            description: description,
-            date: date,
-            order: order,
-            files: files,
-          })
-        );
+  //     if (backgroundOpt.data.brief.backgrounds.items !== null) {
+  //       result = backgroundOpt.data.brief.backgrounds.items.map(
+  //         ({ id, description, date, createdAt, order, files }) => ({
+  //           createdAt: createdAt,
+  //           id: id,
+  //           description: description,
+  //           date: date,
+  //           order: order,
+  //           files: files,
+  //         })
+  //       );
 
-        if (background !== '') {
-          setLoading(false);
-          setMaxLoading(false);
+  //       if (background !== "") {
+  //         setLoading(false);
+  //         setMaxLoading(false);
 
-          var arrConcat = background.concat(result);
+  //         var arrConcat = background.concat(result);
 
-          if (searchDescription !== '') {
-            arrConcat = background
-              .concat(result)
-              .filter((x) =>
-                x.description
-                  .toLowerCase()
-                  .includes(searchDescription.toLowerCase())
-              );
-          }
+  //         if (searchDescription !== "") {
+  //           console.log("searchDescription", searchDescription);
 
-          setBackground(result);
-        }
-      }
-    } else {
-      console.log('Last Result!- NEW');
-      setMaxLoading(true);
-    }
-  };
+  //           arrConcat = background
+  //             .concat(result)
+  //             .filter((x) =>
+  //               x.description
+  //                 .toLowerCase()
+  //                 .includes(searchDescription.toLowerCase())
+  //             );
+  //         }
+
+  //         setBackground(result);
+  //       }
+  //     }
+  //   } else {
+  //     console.log("Last Result!- NEW");
+  //     setMaxLoading(true);
+  //   }
+  // };
 
   var timeoutId;
 
@@ -526,6 +543,7 @@ const Background = () => {
   });
 
   const SortBydate = async () => {
+    console.group('SortBydate()');
     let result = [];
     setWait(false); // trigger loading ...
     setLoading(false);
@@ -614,15 +632,6 @@ const Background = () => {
   };
 
   function sortByOrder(arr) {
-    // const isAllZero = arr.every((item) => item.order >= 0 && item.order !== 0);
-    // if (isAllZero) {
-    //   sort = arr.sort(
-    //     (a, b) =>
-    //       a.order - b.order || new Date(b.createdAt) - new Date(a.createdAt)
-    //   );
-    // } else {
-    //   sort = arr;
-    // }
     let sort;
 
     if (arr) {
@@ -693,11 +702,6 @@ const Background = () => {
   };
 
   //Updating brief name
-  const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
-    briefUpdate(id: $id, name: $name) {
-      id
-    }
-  }`;
 
   const handleOnChangeBiefName = (e) => {
     setBriefName(e.currentTarget.textContent);
@@ -763,6 +767,7 @@ const Background = () => {
   }
 
   useEffect(() => {
+    console.log('useEffect()');
     if (searchDescription !== undefined) {
       filterRecord(searchDescription);
     }
@@ -773,14 +778,15 @@ const Background = () => {
   };
 
   const filterRecord = (v) => {
+    console.log('filterRecord', v);
     if (v === '') {
       // Refresh page if necessary
       setVnextToken(null);
       getBackground();
     } else {
-      const filterRecord = background.filter((x) =>
-        x.description.toLowerCase().includes(v.toLowerCase())
-      );
+      const filterRecord = background.filter((x) => {
+        return x.description?.toLowerCase().includes(v.toLowerCase());
+      });
       console.log('filterRecord:', filterRecord);
       // setBackground(sortByOrder(filterRecord));
       setBackground(filterRecord);
@@ -799,12 +805,6 @@ const Background = () => {
     setShareLink(result.url);
   }
   */
-  const qGetFileDownloadLink = `
-  query getFileDownloadLink($id: ID) {
-    file(id: $id) {
-      downloadURL
-    }
-  }`;
 
   const previewAndDownloadFile = async (id) => {
     const params = {
@@ -852,6 +852,7 @@ const Background = () => {
   }
 
   useEffect(() => {
+    console.log('useEffect()');
     if (background != null) {
       background.map((data) => {
         var descTag = document.getElementById(data.id + '.desc');
@@ -1125,7 +1126,7 @@ const Background = () => {
             />
           </div>
           {/* {background !== null && background.length !== 0 && ( */}
-          <div className="sm:block pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
+          <div className="pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
             <div className="col-span-12">
               <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
                 <IoIcons.IoIosSearch />
