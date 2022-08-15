@@ -107,6 +107,8 @@ const TableUnsavedInfo = ({
   const [options, setOptions] = useState(null);
   const [ShowAddLabel, setShowAddLabel] = useState([{ index: 0, show: false }]);
   const [ShowLabelDescription, setShowLabelDescription] = useState(false);
+  const bindList = useRef(null);
+
   const cache = useRef(
     new CellMeasurerCache({
       fixedWidth: true,
@@ -358,8 +360,7 @@ const TableUnsavedInfo = ({
     }
   }`;
 
-  const handleAddLabel = async (e, gmid) => {
-    
+  const handleAddLabel = async (e, gmid, index) => {
     var selectedLabels = [];
     var taggedLabels = [];
 
@@ -398,9 +399,11 @@ const TableUnsavedInfo = ({
 
     console.log("updated", newArrLabels);
     setUnsavedEmails(newArrLabels);
+
+    autoAdjustRowHeight(index);
   };
 
-  const handleAddEmailAttachmentLabel = async (e, atid, rowId) => {
+  const handleAddEmailAttachmentLabel = async (e, atid, rowId, index) => {
     var selectedLabels = [];
     var taggedLabels = [];
 
@@ -445,6 +448,7 @@ const TableUnsavedInfo = ({
     console.log("updateArr", updateArrAttachment);
 
     setUnsavedEmails(updateArrAttachment);
+    autoAdjustRowHeight(index);
   };
 
   const defaultLabels = (items) => {
@@ -526,6 +530,19 @@ const TableUnsavedInfo = ({
     });
   }
 
+  const autoAdjustRowHeight = (index) => {
+    //bindList and cache must not be null
+    console.log("Items", bindList);
+    if (bindList && cache) {
+      //clear first
+      cache?.current.clearAll();
+      bindList?.current?.recomputeRowHeights(index);
+      bindList?.current?.forceUpdateGrid(index);
+    } else {
+      console("List reference not found || cache not found!");
+    }
+  };
+
   return (
     <>
       <table
@@ -569,6 +586,7 @@ const TableUnsavedInfo = ({
                 <AutoSizer disableHeight>
                   {({ width }) => (
                     <List
+                      ref={bindList}
                       autoHeight
                       scrollTop={scrollTop}
                       width={width}
@@ -979,7 +997,7 @@ const TableUnsavedInfo = ({
                                         ? false
                                         : true
                                     }
-                                    onChange={(e) => handleAddLabel(e, item.id)}
+                                    onChange={(e) => handleAddLabel(e, item.id, index)}
                                     placeholder="Labels"
                                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                   />
@@ -1141,7 +1159,8 @@ const TableUnsavedInfo = ({
                                         handleAddEmailAttachmentLabel(
                                           e,
                                           item_attach.id,
-                                          item.id
+                                          item.id,
+                                          index
                                         )
                                       }
                                       placeholder="Labels"
