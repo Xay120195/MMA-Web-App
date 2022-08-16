@@ -1,4 +1,7 @@
-const { listUserClientMatter, listUserTeams } = require("../../../services/UserService");
+const {
+  listUserClientMatter,
+  listUserTeams,
+} = require("../../../services/UserService");
 const {
   getCustomUserType,
 } = require("../../../services/CustomUserTypeService");

@@ -1,18 +1,19 @@
+import ddbClient from "../lib/dynamodb-client";
 const {
   PutItemCommand,
   GetItemCommand,
   UpdateItemCommand,
   QueryCommand,
   BatchWriteItemCommand,
+  BatchGetItemCommand,
+  ScanCommand,
 } = require("@aws-sdk/client-dynamodb");
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-const { v4 } = require("uuid");
-import ddbClient from "../lib/dynamodb-client";
-
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const s3Client = require("../lib/s3-client");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { v4 } = require("uuid");
 const { toUTC } = require("../shared/toUTC");
+const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 export async function generatePresignedUrl(Key, src, origin) {
   // console.log("generatePresignedUrl", src);
@@ -179,6 +180,206 @@ export async function getFile(data) {
     console.log(resp);
   }
   return resp;
+}
+
+export async function listFiles() {
+  try {
+    const param = {
+      TableName: "MatterFileTable",
+    };
+
+    const cmd = new ScanCommand(param);
+    const request = await ddbClient.send(cmd);
+    const parseResponse = request.Items.map((data) => unmarshall(data));
+    resp = request ? parseResponse : {};
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return resp;
+}
+
+export async function listFileLabels(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+  try {
+    const fileLabelsParams = {
+      TableName: "FileLabelTable",
+      IndexName: "byFile",
+      KeyConditionExpression: "fileId = :fileId",
+      ExpressionAttributeValues: marshall({
+        ":fileId": id,
+      }),
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      fileLabelsParams.Limit = limit;
+    }
+
+    const fileLabelsCommand = new QueryCommand(fileLabelsParams);
+    const fileLabelsResult = await ddbClient.send(fileLabelsCommand);
+
+    const labelIds = fileLabelsResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.labelId })
+    );
+
+    if (labelIds.length !== 0) {
+      labelIds.filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
+      const labelsParams = {
+        RequestItems: {
+          LabelsTable: {
+            Keys: labelIds,
+          },
+        },
+      };
+
+      const labelsCommand = new BatchGetItemCommand(labelsParams);
+      const labelsResult = await ddbClient.send(labelsCommand);
+
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
+        unmarshall(i)
+      );
+      const objFileLabels = fileLabelsResult.Items.map((i) => unmarshall(i));
+
+      // const response = objFileLabels.map((item) => {
+      //   const filterLabel = objLabels.find((u) => u.id === item.labelId);
+      //   return { ...item, ...filterLabel };
+      // });
+
+      const response = objFileLabels
+        .map((item) => {
+          const filterLabel = objLabels.find((u) => u.id === item.labelId);
+
+          if (filterLabel !== undefined) {
+            return { ...item, ...filterLabel };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: fileLabelsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(fileLabelsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
+}
+
+export async function listFileBackgrounds(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+  try {
+    const fileBackgroundsParams = {
+      TableName: "BackgroundFileTable",
+      IndexName: "byFile",
+      KeyConditionExpression: "fileId = :fileId",
+      ExpressionAttributeValues: marshall({
+        ":fileId": id,
+      }),
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      fileBackgroundsParams.Limit = limit;
+    }
+
+    const fileBackgroundsCommand = new QueryCommand(fileBackgroundsParams);
+    const fileBackgroundsResult = await ddbClient.send(fileBackgroundsCommand);
+
+    const backgroundIds = fileBackgroundsResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.backgroundId }));
+
+    if (backgroundIds.length !== 0) {
+      backgroundIds.filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
+      const backgroundsParams = {
+        RequestItems: {
+          BackgroundsTable: {
+            Keys: backgroundIds,
+          },
+        },
+      };
+
+      const backgroundsCommand = new BatchGetItemCommand(backgroundsParams);
+      const backgroundsResult = await ddbClient.send(backgroundsCommand);
+
+      const objBackgrounds = backgroundsResult.Responses.BackgroundsTable.map(
+        (i) => unmarshall(i)
+      );
+      const objFileBackgrounds = fileBackgroundsResult.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      // const response = objFileBackgrounds.map((item) => {
+      //   const filterBackground = objBackgrounds.find(
+      //     (u) => u.id === item.backgroundId
+      //   );
+      //   return { ...item, ...filterBackground };
+      // });
+
+      const response = objFileBackgrounds
+        .map((item) => {
+          const filterBackground = objBackgrounds.find(
+            (u) => u.id === item.backgroundId
+          );
+
+          if (filterBackground !== undefined) {
+            return { ...item, ...filterBackground };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: fileBackgroundsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(fileBackgroundsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    response = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(response);
+  }
+  return response;
 }
 
 export async function createMatterFile(data) {
@@ -422,6 +623,88 @@ export async function bulkUpdateMatterFileOrders(data) {
 
       return exec;
     });
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function tagFileLabel(data) {
+  let resp = {};
+  try {
+    const arrItems = [];
+
+    const fileLabelIdParams = {
+      TableName: "FileLabelTable",
+      IndexName: "byFile",
+      KeyConditionExpression: "fileId = :fileId",
+      ExpressionAttributeValues: marshall({
+        ":fileId": data.file.id,
+      }),
+    };
+
+    const fileLabelIdCmd = new QueryCommand(fileLabelIdParams);
+    const fileLabelIdRes = await ddbClient.send(fileLabelIdCmd);
+
+    for (var a = 0; a < fileLabelIdRes.Items.length; a++) {
+      var fileLabelId = { id: fileLabelIdRes.Items[a].id };
+      arrItems.push({
+        DeleteRequest: {
+          Key: fileLabelId,
+        },
+      });
+    }
+
+    for (var i = 0; i < data.label.length; i++) {
+      arrItems.push({
+        PutRequest: {
+          Item: marshall({
+            id: v4(),
+            fileId: data.file.id,
+            labelId: data.label[i].id,
+          }),
+        },
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const fileLabelParams = {
+        RequestItems: {
+          FileLabelTable: data,
+        },
+      };
+
+      const fileLabelCmd = new BatchWriteItemCommand(fileLabelParams);
+      const req = await ddbClient.send(fileLabelCmd);
+      console.log(req);
+    });
+
+    resp = { file: { id: data.file.id } };
   } catch (e) {
     resp = {
       error: e.message,
