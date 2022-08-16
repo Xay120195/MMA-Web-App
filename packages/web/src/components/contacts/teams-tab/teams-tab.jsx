@@ -93,101 +93,103 @@ export default function TeamsTab({
       {TeamList.length === 0 ? (
         <BlankStateTeams />
       ) : (
-        <table className="w-full text-left">
-          {/* headers */}
-          <thead className="sticky top-20 bg-white z-10">
-            <tr>
-              <th className="p-2">
-                <div className="flex items-center gap-x-2">
-                  Name {<RenderSort sortBy="name" />}
-                </div>
-              </th>
-              <th className="p-2 text-right">Members</th>
-              <th className="p-2 w-20 " />
-            </tr>
-          </thead>
-          {/* content */}
-          <tbody className="relative">
-            {Alphabets.map((letter, idx) => (
-              <>
-                <tr
-                  ref={(el) => (refLetters.current[idx] = el)}
-                  id={letter}
-                  key={letter}
-                  className=""
-                >
-                  <td className="pt-4 px-2">
-                    <div className="flex items-center gap-x-2">
-                      <p
-                        className={`${
-                          shortcutSelected === letter
-                            ? "text-cyan-500 font-bold"
-                            : "text-gray-700 font-semibold"
-                        }  text-lg `}
-                      >
-                        {letter}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-                {TeamList &&
-                  TeamList.map(
-                    (team, index) =>
-                      team.teamName.charAt(0) === letter && (
-                        <tr key={team.id} className={"stripe opacity-100"}>
-                          <td className="p-2">
-                            <div className="flex items-center gap-x-2 ">
-                              <span>{team.teamName}'s Team</span>
-                              <span className="text-xs rounded-full bg-gray-200 font-medium p-1">
-                                {team.members.length} members
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-2 text-right">
-                            <div className="relative text-right left-0">
-                              <span>
-                                {team.members.map((x, i) => (
-                                  <img
-                                    alt={``}
-                                    className="absolute rounded-full w-8 h-8 border-2 border-white"
-                                    style={{
-                                      zIndex: i,
-                                      right: `${i * 25}px`,
-                                      top: "-15px",
+        <div className="w-full py-2">
+          <table className="w-full text-left">
+            {/* headers */}
+            <thead className="sticky top-20 bg-white z-10">
+              <tr>
+                <th className="p-2">
+                  <div className="flex items-center gap-x-2">
+                    Name {<RenderSort sortBy="name" />}
+                  </div>
+                </th>
+                <th className="p-2 text-right">Members</th>
+                <th className="p-2 w-20 " />
+              </tr>
+            </thead>
+            {/* content */}
+            <tbody className="relative">
+              {Alphabets.map((letter, idx) => (
+                <>
+                  <tr
+                    ref={(el) => (refLetters.current[idx] = el)}
+                    id={letter}
+                    key={letter}
+                    className=""
+                  >
+                    <td className="pt-4 px-2">
+                      <div className="flex items-center gap-x-2">
+                        <p
+                          className={`${
+                            shortcutSelected === letter
+                              ? "text-cyan-500 font-bold"
+                              : "text-gray-700 font-semibold"
+                          }  text-lg `}
+                        >
+                          {letter}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  {TeamList &&
+                    TeamList.map(
+                      (team, index) =>
+                        team.teamName.charAt(0) === letter && (
+                          <tr key={team.id} className={"stripe opacity-100"}>
+                            <td className="p-2">
+                              <div className="flex items-center gap-x-2 ">
+                                <span>{team.teamName}'s Team</span>
+                                <span className="text-xs rounded-full bg-gray-200 font-medium p-1">
+                                  {team.members.length} members
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-2 text-right">
+                              <div className="relative text-right left-0">
+                                <span>
+                                  {team.members.map((x, i) => (
+                                    <img
+                                      alt={``}
+                                      className="absolute rounded-full w-8 h-8 border-2 border-white"
+                                      style={{
+                                        zIndex: i,
+                                        right: `${i * 25}px`,
+                                        top: "-15px",
+                                      }}
+                                      src={`https://i.pravatar.cc/70?img=${i}`}
+                                    />
+                                  ))}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-2">
+                              <div className="flex items-center gap-x-2">
+                                <button className="p-3 w-max font-semibold text-gray-500 rounded-full hover:bg-gray-200">
+                                  <FaEdit
+                                    onClick={() => {
+                                      setShowEditModal(true);
+                                      setCurrentTeam(team);
                                     }}
-                                    src={`https://i.pravatar.cc/70?img=${i}`}
                                   />
-                                ))}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-2">
-                            <div className="flex items-center gap-x-2">
-                              <button className="p-3 w-max font-semibold text-gray-500 rounded-full hover:bg-gray-200">
-                                <FaEdit
-                                  onClick={() => {
-                                    setShowEditModal(true);
-                                    setCurrentTeam(team);
-                                  }}
-                                />
-                              </button>
-                              <button className="p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200">
-                                <CgTrash
-                                  onClick={() => {
-                                    setShowDeleteModal(true);
-                                    setToDeleteID(team.id);
-                                  }}
-                                />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                  )}
-              </>
-            ))}
-          </tbody>
-        </table>
+                                </button>
+                                <button className="p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200">
+                                  <CgTrash
+                                    onClick={() => {
+                                      setShowDeleteModal(true);
+                                      setToDeleteID(team.id);
+                                    }}
+                                  />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                    )}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {ShowDeleteModal && (
         <DeleteModal

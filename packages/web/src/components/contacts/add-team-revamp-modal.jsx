@@ -31,6 +31,7 @@ export default function AddTeamModal({
   TeamList,
   getContacts,
   setShowBurst,
+  getTeams,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -115,7 +116,29 @@ export default function AddTeamModal({
     };
   };
 
-  const generateFinal = () => {
+  const handleAddTeam = async () => {
+    console.group("Handle add team");
+    const request = API.graphql({
+      query: mCreateTeam,
+      variables: {
+        //$companyId: ID, $name: String
+        companyId: localStorage.getItem("companyId"),
+        name: TeamName,
+      },
+    });
+
+    console.log("mCreateTeam", request);
+
+    setShowBurst(true);
+    setTimeout(() => {
+      setShowBurst(false);
+      getTeams();
+    }, 3000);
+
+    console.groupEnd();
+  };
+
+  const generateFinal = async () => {
     setTeamList(TeamList.concat(generateFinalObj(true)));
     setShowBurst(true);
     setTimeout(() => {

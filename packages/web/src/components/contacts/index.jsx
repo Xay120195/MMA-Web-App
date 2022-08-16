@@ -49,7 +49,7 @@ export default function Contacts() {
   const [defaultCompany, setDefaultCompany] = useState("");
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowAddTeamModal, setShowAddTeamModal] = useState(false);
-  const [TeamList, setTeamList] = useState();
+  const [TeamList, setTeamList] = useState(teamdummy);
   const [ShowBurst, setShowBurst] = useState(false);
   const hideToast = () => {
     setShowToast(false);
@@ -161,7 +161,7 @@ export default function Contacts() {
     await API.graphql(params).then((teams) => {
       console.log("teams", teams);
       if (teams.data.company == null) {
-        setTeamList([]);
+        //setTeamList([]);
         console.log(TeamList);
       } else {
         console.log("teamlist not null:", TeamList);
@@ -541,13 +541,21 @@ export default function Contacts() {
                                         onClick={() => handleEditModal(contact)}
                                       />
                                     </button>
-                                    <button className=
-                                    {contact.id === localStorage.getItem("userId") ? 
-                                    "hidden" : "p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200"}
+                                    <button
+                                      className={
+                                        contact.id ===
+                                        localStorage.getItem("userId")
+                                          ? "hidden"
+                                          : "p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200"
+                                      }
                                     >
                                       <CgTrash
                                         onClick={() =>
-                                          handleDeleteModal(contact.id, contact.email, contact.company)
+                                          handleDeleteModal(
+                                            contact.id,
+                                            contact.email,
+                                            contact.company
+                                          )
                                         }
                                       />
                                     </button>
@@ -569,6 +577,7 @@ export default function Contacts() {
               ContactList={ContactList}
               setContactList={setContactList}
               ShowBurst={ShowBurst}
+              getTeams={getTeams}
             />
           )}
         </div>
@@ -595,7 +604,6 @@ export default function Contacts() {
         )}
       </main>
 
-
       {showAddContactModal && (
         <AddContactModal
           close={() => setshowAddContactModal(false)}
@@ -618,7 +626,6 @@ export default function Contacts() {
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
-
     </>
   );
 }
