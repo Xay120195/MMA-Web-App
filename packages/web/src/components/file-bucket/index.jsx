@@ -3577,6 +3577,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         selected)
                                                                       ? "rgba(255, 255, 239, 0.767)"
                                                                       : "white",
+                                                                  top: "auto !important",
+                                                                  zIndex:
+                                                                    "1000",
                                                                 }}
                                                               >
                                                                 <td
