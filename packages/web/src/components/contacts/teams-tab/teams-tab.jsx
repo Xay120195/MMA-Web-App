@@ -8,6 +8,7 @@ import dummy from "./teams.json";
 import illustrations from "./images/illustrations.png";
 import burst from "../teams-tab/images/celebratory_burst.gif";
 import TeamsEditModal from "./teams-edit-modal";
+import { API } from "aws-amplify";
 export default function TeamsTab({
   teams,
   shortcutSelected,
@@ -23,6 +24,7 @@ export default function TeamsTab({
   const [ShowEditModal, setShowEditModal] = useState(false);
   const [CurrentTeam, setCurrentTeam] = useState();
   const [ToDeleteID, setToDeleteID] = useState();
+
 
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;

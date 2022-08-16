@@ -88,35 +88,79 @@ export default function Contacts() {
   }
   `;
 
-  function onlyUnique(value, index, self) {
-    return self.indexOf(value) === index;
+    const qGetTeams = `
+  query getTeamsByCompany($id: String) {
+  company(id: $id) {
+    teams {
+      items {
+        id
+        name
+      }
+    }
   }
-  //Added 3 seconds turning to light blue when adding an entry
-  //Added fix for scrolling issue
-  useEffect(
-    (e) => {
-      anime({
-        targets: rows.current,
-        opacity: [0.4, 1],
-        duration: 1500,
-        easing: "cubicBezier(.5, .05, .1, .3)",
-      });
+}
+  `;
 
-      refLetters.current = refLetters.current.slice(0, alphabetArray.length);
-    },
-    [ContactList]
-  );
+    function onlyUnique(value, index, self) {
+      return self.indexOf(value) === index;
+    }
+    //Added 3 seconds turning to light blue when adding an entry
+    //Added fix for scrolling issue
+    useEffect(
+      (e) => {
+        anime({
+          targets: rows.current,
+          opacity: [0.4, 1],
+          duration: 1500,
+          easing: "cubicBezier(.5, .05, .1, .3)",
+        });
 
-  let getContacts = async () => {
-    const params = {
-      query: qGetContacts,
-      variables: {
-        companyId: localStorage.getItem("companyId"),
+        refLetters.current = refLetters.current.slice(0, alphabetArray.length);
       },
+      [ContactList]
+    );
+
+    let getContacts = async () => {
+      const params = {
+        query: qGetContacts,
+        variables: {
+          companyId: localStorage.getItem("companyId"),
+        },
+      };
+
+      await API.graphql(params).then((companyUsers) => {
+        console.log("usersssss", companyUsers);
+        var temp = companyUsers.data.company.users.items;
+        temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        temp.map(
+          (x) =>
+            (x.firstName =
+              x.firstName.charAt(0).toUpperCase() +
+              x.firstName.slice(1).toLowerCase())
+        );
+        setDefaultCompany(companyUsers.data.company.name);
+        setContactList(temp);
+        //Sync the displayed letters only with the existing contacts
+        setAlphabets(
+          temp
+            .map((user) => user.firstName[0]) //get the first letter
+            .filter(onlyUnique)
+            .sort((a, b) => a.localeCompare(b))
+        );
+      });
     };
 
-    await API.graphql(params).then((companyUsers) => {
-      console.log("usersssss", companyUsers);
+    let getTeams = async () => {
+      const params = {
+        query: qGetTeams,
+        variables: {
+          companyId: localStorage.getItem("companyId"),
+        },
+      };
+
+      await API.graphql(params).then((teams) => {
+        console.log("teams", teams);
+        /* 
       var temp = companyUsers.data.company.users.items;
       temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
       temp.map(
@@ -135,8 +179,9 @@ export default function Contacts() {
           .filter(onlyUnique)
           .sort((a, b) => a.localeCompare(b))
       );
-    });
-  };
+      */
+      });
+    };
 
   const handleEditModal = (user) => {
     //Added edit modal open
@@ -225,8 +270,7 @@ export default function Contacts() {
       getContacts();
       
     }
-
-    // observe the scroll event and set the active letter
+    getTeams();
     window.addEventListener(
       "scroll",
       () => {
