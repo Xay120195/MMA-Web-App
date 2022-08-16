@@ -2,34 +2,25 @@ import React, { Component } from "react";
 import { GoogleLogin, GoogleLogout } from "react-google-login";
 import { API } from "aws-amplify";
 var momentTZ = require("moment-timezone");
-
 class GmailIntegration extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isLogined: localStorage.getItem("signInData")
-        ? JSON.parse(localStorage.getItem("signInData"))
-        : null,
+      isLogined: localStorage.getItem("signInData") || null,
+      refreshToken: props.refreshToken || null,
     };
 
     this.login = this.login.bind(this);
     this.handleLoginFailure = this.handleLoginFailure.bind(this);
     this.logout = this.logout.bind(this);
     this.handleLogoutFailure = this.handleLogoutFailure.bind(this);
+
+    console.log(this.state);
   }
 
   async login(response) {
     try {
-      setTimeout(() => {
-        const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
-        if (isSignedIn) {
-          const authCurrentUser = window.gapi.auth2
-            .getAuthInstance()
-            .currentUser.get().wt.cu;
-
-          console.log("authCurrentUser: ", authCurrentUser);
-
-          const saveRefreshToken = `
+      const saveRefreshToken = `
       mutation connectToGmail($companyId: ID, $email: String, $userId: ID, $code: String, $userTimeZone: String) {
         gmailConnectFromCode(
           email: $email
@@ -47,6 +38,15 @@ class GmailIntegration extends Component {
       }
       `;
 
+      setTimeout(() => {
+        const isSignedIn = window.gapi.auth2.getAuthInstance().isSignedIn.get();
+        if (isSignedIn) {
+          const authCurrentUser = window.gapi.auth2
+            .getAuthInstance()
+            .currentUser.get().wt.cu;
+
+          console.log("authCurrentUser: ", authCurrentUser);
+
           const params = {
             query: saveRefreshToken,
             variables: {
@@ -62,15 +62,21 @@ class GmailIntegration extends Component {
 
           API.graphql(params).then((r) => {
             console.log("Response: ", r);
-            this.setState((state) => ({
-              isLogined: response,
-            }));
-            localStorage.setItem("signInData", JSON.stringify(response));
-            localStorage.setItem("emailAddressIntegration", authCurrentUser);
-            window.location.reload();
+
+            if (r.data.gmailConnectFromCode !== null) {
+              this.setState((state) => ({
+                isLogined: response,
+                refreshToken: r.data.gmailConnectFromCode.refreshToken,
+              }));
+              localStorage.setItem("signInData", JSON.stringify(response));
+              localStorage.setItem("emailAddressIntegration", authCurrentUser);
+              window.location.reload();
+            } else {
+              console.log("MMA Error: Unable to sign in.");
+            }
           });
         } else {
-          console.log("Not signed in.");
+          console.log("API Error: Unable to sign in. Please sign in again.");
         }
       }, 1000);
     } catch (e) {
@@ -81,6 +87,7 @@ class GmailIntegration extends Component {
   logout(response) {
     this.setState((state) => ({
       isLogined: null,
+      refreshToken: null,
     }));
 
     const removeRefreshToken = `
@@ -116,7 +123,7 @@ class GmailIntegration extends Component {
   render() {
     return (
       <div>
-        {this.state.isLogined ? (
+        {this.state.isLogined && this.state.refreshToken ? (
           <GoogleLogout
             clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
             buttonText={

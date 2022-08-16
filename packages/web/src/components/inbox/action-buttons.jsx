@@ -3,6 +3,7 @@ import { API, Storage } from "aws-amplify";
 import config from "../../aws-exports";
 import html2pdf from "html2pdf.js";
 import { Base64 } from "js-base64";
+import googleLogin from "../../assets/images/gmail-print.png";
 //import { useWorker, WORKER_STATUS } from "@koale/useworker";
 
 var moment = require("moment");
@@ -13,6 +14,7 @@ const ActionButtons = ({
   setSelectedUnsavedItems,
   setSelectedSavedItems,
   openTab,
+  setOpenTab,
   getUnSavedEmails,
   getSavedEmails,
   unSavedEmails,
@@ -146,11 +148,12 @@ const ActionButtons = ({
 
 
   const handleEmails = async (status) => {
+    setSaveLoading(true);
+    setOpenTab(2);
     // Soon will change this to bulk mutation 
     if(status) {
       var clientMatterId = "";
       var emailList = "";
-      setSaveLoading(true);
 
       /*const params = {
         query: qGmailMessagesbyCompany,
@@ -170,8 +173,8 @@ const ActionButtons = ({
       let  arrSavedEmails = unSavedEmails.filter(function(item){
         return selectedUnsavedItems.indexOf(item.id) !== -1;
       });
+      console.log("GET FILES:", arrSavedEmails);
       var arrByDates = sortByDate(savedEmails.concat(arrSavedEmails));
-      console.log(arrByDates);
       setSavedEmails(arrByDates);
 
       // Remove from Unsaved Emails
@@ -191,37 +194,49 @@ const ActionButtons = ({
 
           const payload = item.payload.map((email) => email.content).join('').split('data":"').pop().split('"}')[0];
           console.log("PAYLOAD:", payload);
-
-          handleUploadGmailEmail(item.id, item.description, item.subject, item.date, clientMatterId, payload, item.labels);
-        
+          
+          
+          handleUploadGmailEmail(item.id, item.description, item.subject, item.from, item.to, item.cc, item.date, clientMatterId, payload, item.labels);
+          
+          
           item.attachments.items.map(attachment => {
-            API.graphql({
-              query: mSaveAttachmentEmailsToMatter,
-              variables: {
-                matterId: clientMatterId,
-                s3ObjectKey: attachment.s3ObjectKey,
-                size: attachment.size,
-                name: attachment.name,
-                type: attachment.type,
-                order: 0,
-                isGmailAttachment: true,
-                isGmailPDF: false,
-                gmailMessageId: item.id,
-                details: attachment.details,
-                date: new Date(item.date).toISOString(),
-              },
-            }).then((result)=>{
-              // console.log("requestattachment", result.data.matterFileCreate.id);
-              // console.log("attachmentlabels", attachment.labels.items);
-
-              const tagAttachment = API.graphql({
-                query: mTagFile,
+            if(attachment.isDeleted !== true) {
+              API.graphql({
+                query: mSaveAttachmentEmailsToMatter,
                 variables: {
-                  fileId: result.data.matterFileCreate.id,
-                  labels: attachment.labels.items,
+                  matterId: clientMatterId,
+                  s3ObjectKey: attachment.s3ObjectKey,
+                  size: attachment.size,
+                  name: attachment.name,
+                  type: attachment.type,
+                  order: 0,
+                  isGmailAttachment: true,
+                  isGmailPDF: false,
+                  gmailMessageId: item.id,
+                  details: attachment.details,
+                  date: new Date(item.date).toISOString(),
                 },
-              })
-            });
+              }).then((result)=>{
+                // console.log("requestattachment", result.data.matterFileCreate.id);
+                console.log("attachmentlabels", attachment.labels.items);
+
+                attachment.labels.items.map(labels => {
+                  console.log("ID NOW", result.id);
+                  createBackgroundFromLabel(clientMatterId, result.data.matterFileCreate.id, attachment.details, item.date, {
+                    id: labels.id,
+                    name: labels.name,
+                  });
+                });
+                
+                const tagAttachment = API.graphql({
+                  query: mTagFile,
+                  variables: {
+                    fileId: result.data.matterFileCreate.id,
+                    labels: attachment.labels.items,
+                  },
+                });
+              });
+            }
           });
         });
 
@@ -241,8 +256,6 @@ const ActionButtons = ({
       });
 
     } else {
-      setSaveLoading(true);
-
       selectedSavedItems.map((obj) => {
         API.graphql({
           query: mSaveUnsavedEmails,
@@ -290,88 +303,102 @@ const ActionButtons = ({
       }
     }`;
 
-  const handleUploadGmailEmail = async (gmailMessageId, description, fileName, dateEmail, matterId, htmlContent, labels) => {
-    var opt = {
-      margin:       [30, 30, 30, 30],
-      filename:     fileName,
-      image:        { type: 'jpeg',quality: 0.98 },
-      html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
-      jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
-      pagebreak: { before: '.page-break', avoid: 'img' }
-    };
-    var content = document.getElementById("preview_"+gmailMessageId);
-    content += Base64.decode(htmlContent).replace("body{color:", "");
+  const handleUploadGmailEmail = (gmailMessageId, description, fileName, from, to, cc, dateEmail, matterId, htmlContent, labels) => {
+    
+    setTimeout( async () => {
+      var opt = {
+        margin:       [30, 30, 30, 30],
+        filename:     fileName,
+        image:        { type: 'jpeg',quality: 0.98 },
+        html2canvas:  { dpi: 96, scale: 1, scrollX: 0, scrollY: 0, backgroundColor: '#FFF' },
+        jsPDF:        { unit: 'pt', format: 'a4', orientation: 'p' },
+        pagebreak: { before: '.page-break', avoid: 'img' }
+      };
+      //var content = document.getElementById("preview_"+gmailMessageId);
+      //var content = <span><img src={googleLogin} alt="" /><hr></hr><h2><b>{fileName}</b></h2><hr></hr><br /><p>From : {from}</p><p>Date :{" "}{moment(dateEmail).format("DD MMM YYYY, hh:mm A")}</p><p>To : {to}</p><p>CC: {cc}</p></span>;
 
-    await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
-      const preBlob = dataURItoBlob(pdfAsString);
-      const file = new File([preBlob], fileName, {type: 'application/pdf'});
+      var content = `<span><img src=${googleLogin} alt="" /><hr></hr><h2><b>${fileName}</b></h2><hr></hr><br /><p>From : ${from}</p><p>Date :${" "}${moment(dateEmail).format("DD MMM YYYY, hh:mm A")}</p><p>To : ${to}</p><p>CC: ${cc}</p></span>`;
 
-      var key = `${gmailMessageId}/${Number(new Date())}${file.name
-        .replaceAll(/\s/g, "")
-        .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`,
-        type="application/pdf",
-        size=file.size;
+      content += Base64.decode(htmlContent).replace("body{color:", "");
 
-      // put objects to s3
-      try {
-        Storage.put(key, file, {
-          contentType: type,
-          progressCallback(progress) {
-            console.log(progress);
-          },
-          errorCallback: (err) => {
-            console.error("204: Unexpected error while uploading", err);
-          },
-          
-        })
-          .then((fd) => {
+      await html2pdf().from(content).set(opt).toPdf().output('datauristring').then(function (pdfAsString) {
+        const preBlob = dataURItoBlob(pdfAsString);
+        const file = new File([preBlob], fileName, {type: 'application/pdf'});
 
-            // insert to file bucket
-            const params = {
-              query: mCreateMatterFile,
-              variables: {
-                matterId: matterId,
-                s3ObjectKey: fd.key,
-                size: parseInt(size),
-                name: file.name,
-                type: type,
-                order: 0,
-                isGmailPDF: true,
-                isGmailAttachment: true,
-                gmailMessageId: gmailMessageId,
-                details: description,
-                date: new Date(dateEmail).toISOString(),
-              },
-            };
-        
-            API.graphql(params).then((result) => {
-              console.log("res arrray",result.data.matterFileCreate.id);
-              console.log("labels",labels);
+        var key = `${gmailMessageId}/${Number(new Date())}${file.name
+          .replaceAll(/\s/g, "")
+          .replaceAll(/[^a-zA-Z.0-9]+|\.(?=.*\.)/g, "")}`,
+          type="application/pdf",
+          size=file.size;
 
-              const request1 = API.graphql({
-                query: mTagFile,
-                variables: {
-                  fileId: result.data.matterFileCreate.id,
-                  labels: labels.items,
-                },
-              });
-            });
-
+        // put objects to s3
+        try {
+          Storage.put(key, file, {
+            contentType: type,
+            progressCallback(progress) {
+              console.log(progress);
+            },
+            errorCallback: (err) => {
+              console.error("204: Unexpected error while uploading", err);
+            },
+            
           })
-          .catch((err) => {
-            console.error("220: Unexpected error while uploading", err);
+            .then((fd) => {
 
-          });
-              
-      } catch (e) {
-        const response = {
-          error: e.message,
-          errorStack: e.stack,
-          statusCode: 500,
-        };
-        console.error("228: Unexpected error while uploading", response);
-      }
-    });
+              // insert to file bucket
+              const params = {
+                query: mCreateMatterFile,
+                variables: {
+                  matterId: matterId,
+                  s3ObjectKey: fd.key,
+                  size: parseInt(size),
+                  name: file.name,
+                  type: type,
+                  order: 0,
+                  isGmailPDF: true,
+                  isGmailAttachment: true,
+                  gmailMessageId: gmailMessageId,
+                  details: description,
+                  date: new Date(dateEmail).toISOString(),
+                },
+              };
+          
+              API.graphql(params).then((result) => {
+                console.log("res arrray",result.data.matterFileCreate.id);
+                console.log("labels",labels);
+
+                labels.items.map(label => {
+                  createBackgroundFromLabel(matterId, result.data.matterFileCreate.id, description, dateEmail, {
+                    id: label.id,
+                    name: label.name,
+                  });
+                });
+
+                const request1 = API.graphql({
+                  query: mTagFile,
+                  variables: {
+                    fileId: result.data.matterFileCreate.id,
+                    labels: labels.items,
+                  },
+                });
+              });
+
+            })
+            .catch((err) => {
+              console.error("220: Unexpected error while uploading", err);
+
+            });
+                
+        } catch (e) {
+          const response = {
+            error: e.message,
+            errorStack: e.stack,
+            statusCode: 500,
+          };
+          console.error("228: Unexpected error while uploading", response);
+        }
+      });
+    }, 1000);
   };
 
   function dataURItoBlob(dataURI) {
@@ -393,6 +420,203 @@ const ActionButtons = ({
       return new Blob([ia], {type:mimeString});
   }
 
+  function savingEmails(){
+    setSaveLoading(true);
+    setTimeout(() => {
+      handleEmails(true);
+    }, 1000);
+  }
+
+  const qBriefByName = `
+  query getBriefByName($clientMatterId: ID, $name: String) {
+    briefByName(clientMatterId: $clientMatterId, name: $name) {
+      id
+      labelId
+    }
+  }
+  `;
+
+  const mCreateBrief = `
+  mutation createBrief($clientMatterId: String, $date: AWSDateTime, $name: String, $order: Int) {
+    briefCreate(clientMatterId: $clientMatterId, date: $date, name: $name, order: $order) {
+      id
+      name
+      date
+      createdAt
+    }
+  }
+  `;
+
+  const mUpdateBrief = `
+  mutation updateBrief($id: ID, $labelId: ID) {
+    briefUpdate(id: $id, labelId: $labelId) {
+      id
+    }
+  }
+  `;
+
+  const mCreateBackground = `
+    mutation createBackground($briefId: ID, $description: String, $date: AWSDateTime) {
+      backgroundCreate(briefId: $briefId, description: $description, date: $date) {
+        id
+      }
+    }
+  `;
+
+  const mUpdateBackgroundFile = `
+    mutation addBackgroundFile($backgroundId: ID, $files: [FileInput]) {
+      backgroundFileTag(backgroundId: $backgroundId, files: $files) {
+        id
+      }
+    }
+  `;
+
+
+
+  const createBackgroundFromLabel = async (matter_id, row_id, attachDetails, attachDate, label, isNew) => {
+    // check if brief already exists
+    let briefNameExists = false;
+    const getBriefByName = await API.graphql({
+      query: qBriefByName,
+      variables: {
+        clientMatterId: matter_id,
+        name: label.name,
+      },
+    });
+
+    let briefId = getBriefByName.data.briefByName.id,
+      existingBriefNameLabel = getBriefByName.data.briefByName.labelId;
+
+    if (briefId !== "" && briefId !== null) {
+      briefNameExists = true;
+    }
+
+    if (isNew) {
+      if (!briefNameExists) {
+        const params = {
+          clientMatterId: matter_id,
+          name: label.name,
+          date: null,
+          order: 0,
+          labelId: label.id,
+        };
+
+        const createBrief = await API.graphql({
+          query: mCreateBrief,
+          variables: params,
+        });
+
+        console.log("createBrief", createBrief);
+        briefId = createBrief.data.briefCreate.id;
+      } else {
+        console.log("existingBriefNameLabel", existingBriefNameLabel);
+        if (existingBriefNameLabel === null) {
+          const params = {
+            id: briefId,
+            labelId: label.id,
+          };
+
+          await API.graphql({
+            query: mUpdateBrief,
+            variables: params,
+          });
+        }
+      }
+
+      const fileId = row_id,
+        fileDetails = attachDetails,
+        fileDate =
+          attachDate != null
+            ? moment
+                .utc(moment(new Date(attachDate), "YYYY-MM-DD"))
+                .toISOString()
+            : null;
+
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
+        },
+      });
+
+      console.log("createBackground", createBackground);
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
+    } else {
+      if (!briefNameExists) {
+        const params = {
+          clientMatterId: matter_id,
+          name: label.name,
+          date: null,
+          order: 0,
+          labelId: label.id,
+        };
+
+        // Create Brief
+        const createBrief = await API.graphql({
+          query: mCreateBrief,
+          variables: params,
+        });
+
+        console.log("createBrief", createBrief);
+        briefId = createBrief.data.briefCreate.id;
+      } else {
+        if (existingBriefNameLabel === null) {
+          // Tag Label to Brief
+          await API.graphql({
+            query: mUpdateBrief,
+            variables: {
+              id: briefId,
+              labelId: label.id,
+            },
+          });
+        }
+      }
+
+      const fileId = row_id,
+        fileDetails = attachDetails,
+        fileDate =
+          attachDate != null
+            ? moment
+                .utc(moment(new Date(attachDate), "YYYY-MM-DD"))
+                .toISOString()
+            : null;
+
+      // Create Background
+      const createBackground = await API.graphql({
+        query: mCreateBackground,
+        variables: {
+          briefId: briefId,
+          description: fileDetails,
+          date: fileDate,
+        },
+      });
+
+      console.log("createBackground", createBackground);
+      if (createBackground.data.backgroundCreate.id !== null) {
+        // Tag File to Background
+        await API.graphql({
+          query: mUpdateBackgroundFile,
+          variables: {
+            backgroundId: createBackground.data.backgroundCreate.id,
+            files: [{ id: fileId }],
+          },
+        });
+      }
+    }
+  };
+
   return (
     <>
       <div className="grid grid-rows grid-flow-col pt-5" style={{ position: "sticky", top: "20px" }} >
@@ -409,7 +633,7 @@ const ActionButtons = ({
             <>
               <button
                 type="button"
-                onClick={() => handleEmails(true)}
+                onClick={() => {savingEmails()}}
                 className={saveLoading ?
                   "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
                   : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}
@@ -427,7 +651,7 @@ const ActionButtons = ({
             <>
               <button
                 type="button"
-                onClick={() => handleEmails(false)}
+                onClick={() => {handleEmails(false)}}
                 className={saveLoading ?
                   "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4 disabled:opacity-25"
                   : "bg-green-400 hover:bg-green-500 text-white text-sm py-2 px-4 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring mx-4"}

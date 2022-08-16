@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { API } from "aws-amplify";
-import ActionButtons from "./action-buttons";
-import TableSavedInfo from "./table-info-saved";
-import TableUnsavedInfo from "./table-info-unsaved";
-import GmailIntegration from "../authentication/email-integration-authentication";
-import googleLogin from "../../assets/images/google-login.png";
-import TabsRender from "./tabs";
-// import { useIdleTimer } from "react-idle-timer";
-import ToastNotification from "../toast-notification";
-import FiltersModal from "./filters-modal";
-import { gapi } from "gapi-script";
+import React, { useEffect, useState } from 'react';
 
-var momentTZ = require("moment-timezone");
+import { API } from 'aws-amplify';
+import ActionButtons from './action-buttons';
+import FiltersModal from './filters-modal';
+import GmailIntegration from '../authentication/email-integration-authentication';
+import SavingModal from './saving-state';
+import TableSavedInfo from './table-info-saved';
+import TableUnsavedInfo from './table-info-unsaved';
+import TabsRender from './tabs';
+import ToastNotification from '../toast-notification';
+import { gapi } from 'gapi-script';
+import googleLogin from '../../assets/images/google-login.png';
+
+// import { useIdleTimer } from "react-idle-timer";
+
+var momentTZ = require('moment-timezone');
 const userTimeZone = momentTZ.tz.guess();
 const qGmailMessagesbyCompany = `
 query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved: Boolean, $limit: Int, $nextToken: String, $recipient: String, $startDate: String, $endDate: String, $userTimeZone: String) {
@@ -19,9 +22,6 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
     gmailToken {
       refreshToken
       id
-      userId
-      companyId
-      updatedAt
     }
     gmailMessages(
       isDeleted: $isDeleted
@@ -79,6 +79,7 @@ query gmailMessagesByCompany($id: String, $isDeleted: Boolean = false, $isSaved:
                 name
               }
             }
+            isDeleted
           }
         }
         receivedAt
@@ -123,19 +124,19 @@ const listClientMatters = `
   `;
 
 const contentDiv = {
-  margin: "0 0 0 65px",
+  margin: '0 0 0 65px',
 };
 
 const mainGrid = {
-  display: "grid",
-  gridtemplatecolumn: "1fr auto",
+  display: 'grid',
+  gridtemplatecolumn: '1fr auto',
 };
 
 const Inbox = () => {
-  const companyId = localStorage.getItem("companyId");
+  const companyId = localStorage.getItem('companyId');
   const [loginData, setLoginData] = useState(
-    localStorage.getItem("signInData")
-      ? JSON.parse(localStorage.getItem("signInData"))
+    localStorage.getItem('signInData')
+      ? JSON.parse(localStorage.getItem('signInData'))
       : null
   );
 
@@ -148,14 +149,16 @@ const Inbox = () => {
   const [selectedUnsavedItems, setSelectedUnsavedItems] = useState([]);
   const [selectedSavedItems, setSelectedSavedItems] = useState([]);
   const [showToast, setShowToast] = useState(false);
-  const [resultMessage, setResultMessage] = useState("");
+  const [resultMessage, setResultMessage] = useState('');
   const [maxLoadingSavedEmail, setMaxLoadingSavedEmail] = useState(false);
   const [maxLoadingUnSavedEmail, setMaxLoadingUnSavedEmail] = useState(false);
-  const [tokenEmail, setTokenEmail] = useState("");
-  const [refreshToken, setRefreshToken] = useState("");
+  const [refreshToken, setRefreshToken] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
   const [labelsList, setLabelsList] = useState([]);
   const [showFiltersModal, setshowFiltersModal] = useState(false);
+  const [attachmentIsDeleted, setAttachmentIsDeleted] = useState(false);
+  const [attachmentId, setAttachmentId] = useState('');
+  const [lastCounter, setLastCounter] = useState(null);
   const [emailFilters, setEmailFilters] = useState({
     startDate: new Date(),
     endDate: new Date(),
@@ -170,19 +173,21 @@ const Inbox = () => {
     function start() {
       gapi.client.init({
         clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-        scope: 'email',
+        scope:
+          'https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly openid',
       });
     }
     gapi.load('client:auth2', start);
-  }, []);
 
-  useEffect(() => {
     getUnSavedEmails(emailFilters);
     getSavedEmails(emailFilters);
     getMatterList();
+
+    console.log('UseEffect: Refresh Token', refreshToken);
+    console.log('UseEffect: Login Data', loginData);
   }, []);
 
-  var emailIntegration = localStorage.getItem("emailAddressIntegration");
+  var emailIntegration = localStorage.getItem('emailAddressIntegration');
 
   const getUnSavedEmails = async (filters) => {
     console.log(filters);
@@ -197,41 +202,41 @@ const Inbox = () => {
         // nextToken: null,
         userTimeZone: userTimeZone,
         startDate:
-        filters.startDate != null
-            ? momentTZ(filters.startDate, userTimeZone).format(
-                "YYYY-MM-DD"
-              )
-            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+          filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format('YYYY-MM-DD')
+            : momentTZ(new Date(), userTimeZone).format('YYYY-MM-DD'),
         endDate:
-        filters.endDate != null
-            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
-            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+          filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format('YYYY-MM-DD')
+            : momentTZ(new Date(), userTimeZone).format('YYYY-MM-DD'),
       },
     };
 
-    console.log("Get Messages by Company params:", params);
+    console.log('Get Messages by Company params:', params);
     await API.graphql(params).then((result) => {
       setWaitUnSaved(false);
       const emailList = result.data.company.gmailMessages.items;
       const gmailToken = result.data.company.gmailToken;
-      const gmailTokenEmail = result.data.company.gmailToken.id;
+      const gmailTokenId = result.data.company.gmailToken.id;
       const gmailRefreshToken = result.data.company.gmailToken.refreshToken;
-      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
-      setRefreshToken(gmailRefreshToken);
-      setTokenEmail(gmailTokenEmail);
-      setUnsavedEmails(emailList);
+
       if (
         gmailRefreshToken !== null &&
-        localStorage.getItem("emailAddressIntegration") === null
+        localStorage.getItem('emailAddressIntegration') === null
       ) {
-        localStorage.setItem("signInData", JSON.stringify(gmailToken));
-        localStorage.setItem("emailAddressIntegration", gmailTokenEmail);
+        localStorage.setItem('signInData', JSON.stringify(gmailToken));
+        localStorage.setItem('emailAddressIntegration', gmailTokenId);
       }
+
+      setUnsavedVnextToken(result.data.company.gmailMessages.nextToken);
+      setRefreshToken(gmailRefreshToken);
+      setUnsavedEmails(emailList);
+      setLastCounter(emailList.length);
     });
   };
 
   const handleLoadMoreUnSavedEmails = async () => {
-    console.log("handleLoadMoreUnSavedEmails()", unsavedNextToken);
+    console.log('handleLoadMoreUnSavedEmails()', unsavedNextToken);
     if (unsavedNextToken !== null) {
       const params = {
         query: qGmailMessagesbyCompany,
@@ -268,29 +273,38 @@ const Inbox = () => {
         //nextToken: null,
         userTimeZone: userTimeZone,
         startDate:
-        filters.startDate != null
-            ? momentTZ(filters.startDate, userTimeZone).format(
-                "YYYY-MM-DD"
-              )
-            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+          filters.startDate != null
+            ? momentTZ(filters.startDate, userTimeZone).format('YYYY-MM-DD')
+            : momentTZ(new Date(), userTimeZone).format('YYYY-MM-DD'),
         endDate:
-        filters.endDate != null
-            ? momentTZ(filters.endDate, userTimeZone).format("YYYY-MM-DD")
-            : momentTZ(new Date(), userTimeZone).format("YYYY-MM-DD"),
+          filters.endDate != null
+            ? momentTZ(filters.endDate, userTimeZone).format('YYYY-MM-DD')
+            : momentTZ(new Date(), userTimeZone).format('YYYY-MM-DD'),
       },
     };
 
-    console.log("params:", params);
+    console.log('params:', params);
     await API.graphql(params).then((result) => {
       setWaitSaved(false);
       const emailList = result.data.company.gmailMessages.items;
+      const gmailToken = result.data.company.gmailToken;
+      const gmailTokenId = result.data.company.gmailToken.id;
+      const gmailRefreshToken = result.data.company.gmailToken.refreshToken;
+      if (
+        gmailRefreshToken !== null &&
+        localStorage.getItem('emailAddressIntegration') === null
+      ) {
+        localStorage.setItem('signInData', JSON.stringify(gmailToken));
+        localStorage.setItem('emailAddressIntegration', gmailTokenId);
+      }
+      setRefreshToken(gmailRefreshToken);
       setSavedVnextToken(result.data.company.gmailMessages.nextToken);
       setSavedEmails(emailList);
     });
   };
 
   const handleLoadMoreSavedEmails = async () => {
-    console.log("handleLoadMoreSavedEmails()", savedNextToken);
+    console.log('handleLoadMoreSavedEmails()', savedNextToken);
     if (savedNextToken !== null) {
       const params = {
         query: qGmailMessagesbyCompany,
@@ -328,7 +342,7 @@ const Inbox = () => {
       result = clientMattersOpt.data.company.clientMatters.items.map(
         ({ id, client, matter }) => ({
           value: id,
-          label: client.name + "/" + matter.name,
+          label: client.name + '/' + matter.name,
         })
       );
 
@@ -345,11 +359,11 @@ const Inbox = () => {
         i++
       ) {
         console.log(
-          "extractedlabels",
+          'extractedlabels',
           clientMattersOpt.data.company.clientMatters.items[i].labels.items
         ); //array of options
         console.log(
-          "cmid",
+          'cmid',
           clientMattersOpt.data.company.clientMatters.items[i].client.id
         );
         store = [
@@ -363,7 +377,7 @@ const Inbox = () => {
         ];
       }
 
-      console.log("extractedlabels", store);
+      console.log('extractedlabels', store);
       setLabelsList(store);
     }
   };
@@ -420,9 +434,7 @@ const Inbox = () => {
   function sortByDate(arr) {
     let sort;
     if (arr) {
-      sort = arr.sort((a, b) =>
-        b.receivedAt - a.receivedAt
-      );
+      sort = arr.sort((a, b) => b.receivedAt - a.receivedAt);
     } else {
       sort = arr;
     }
@@ -430,37 +442,12 @@ const Inbox = () => {
     return sort;
   }
 
+  console.log('Render: refreshToken:', refreshToken);
+  console.log('Render: loginData:', loginData);
+
   return (
     <>
-      {!loginData ? (
-        <div
-          className="pl-5 relative flex flex-col min-w-0 break-words rounded bg-white"
-          style={contentDiv}
-        >
-          <div className="h-screen flex-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 relative">
-              <div className="col-span-3 pl-8 pt-20">
-                <h5 className="text-black text-2xl font-bold">
-                  AFFIDAVITS & RFI
-                </h5>
-                <div className="text-black text-xl font-normal my-5 leading-10">
-                  Looks like you're not yet connected with your Google Account
-                </div>
-                <div className="text-gray-400 text-lg font-medium">
-                  Lets make your trip fun and simple
-                </div>
-                <br />
-                <GmailIntegration />
-              </div>
-              <div className="col-span-7">
-                <div className="h-screen float-right">
-                  <img src={googleLogin} alt="" className="h-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
+      {loginData && refreshToken ? (
         <div
           className="p-5 relative flex flex-col min-w-0 break-words mb-6 shadow-lg rounded bg-white"
           style={contentDiv}
@@ -531,7 +518,7 @@ const Inbox = () => {
                 </button>
               </div>
               <div className="ml-5">
-                <GmailIntegration />
+                <GmailIntegration refreshToken={refreshToken} />
               </div>
             </div>
           </div>
@@ -543,6 +530,7 @@ const Inbox = () => {
               selectedSavedItems={selectedSavedItems}
               setSelectedSavedItems={setSelectedSavedItems}
               openTab={openTab}
+              setOpenTab={setOpenTab}
               getUnSavedEmails={getUnSavedEmails}
               getSavedEmails={getSavedEmails}
               unSavedEmails={unSavedEmails}
@@ -571,7 +559,7 @@ const Inbox = () => {
               <div className="tab-content tab-space">
                 {openTab === 1 ? (
                   <div
-                    className={openTab === 1 ? "block" : "hidden"}
+                    className={openTab === 1 ? 'block' : 'hidden'}
                     id="link1"
                   >
                     <TableUnsavedInfo
@@ -590,11 +578,16 @@ const Inbox = () => {
                       userTimeZone={userTimeZone}
                       momentTZ={momentTZ}
                       qGmailMessagesbyCompany={qGmailMessagesbyCompany}
+                      setAttachmentIsDeleted={setAttachmentIsDeleted}
+                      attachmentIsDeleted={attachmentIsDeleted}
+                      setAttachmentId={setAttachmentId}
+                      attachmentId={attachmentId}
+                      lastCounter={lastCounter}
                     />
                   </div>
                 ) : (
                   <div
-                    className={openTab === 2 ? "block" : "hidden"}
+                    className={openTab === 2 ? 'block' : 'hidden'}
                     id="link2"
                   >
                     <TableSavedInfo
@@ -605,12 +598,61 @@ const Inbox = () => {
                       maxLoadingSavedEmail={maxLoadingSavedEmail}
                       waitSaved={waitSaved}
                       sortByDate={sortByDate}
+                      setAttachmentIsDeleted={setAttachmentIsDeleted}
+                      attachmentIsDeleted={attachmentIsDeleted}
                     />
                   </div>
                 )}
               </div>
             </div>
           </div>
+        </div>
+      ) : (
+        <div
+          className="p-5 sm:pl-24 relative flex flex-col min-w-0 break-words rounded min-h-screen"
+          // style={contentDiv}
+        >
+          <img
+            src={googleLogin}
+            alt=""
+            style={{ width: '450px', height: 'auto' }}
+            className="fixed bottom-0 -right-10 object-cover opacity-40 sm:opacity-100"
+          />
+
+          <div className="flex flex-col pt-24 sm:pt-12">
+            <h5 className="text-black text-2xl font-bold">AFFIDAVITS & RFI</h5>
+            <div className="text-black text-xl font-normal my-5">
+              Looks like you're not yet connected with your Google Account
+            </div>
+            <div className="text-gray-400 text-lg font-medium">
+              Lets make your trip fun and simple
+            </div>
+            <br />
+            <GmailIntegration />
+          </div>
+
+          {/* <div className="h-screen flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 relative">
+              <div className="col-span-3 pl-8 pt-20">
+                <h5 className="text-black text-2xl font-bold">
+                  AFFIDAVITS & RFI
+                </h5>
+                <div className="text-black text-xl font-normal my-5 leading-10">
+                  Looks like you're not yet connected with your Google Account
+                </div>
+                <div className="text-gray-400 text-lg font-medium">
+                  Lets make your trip fun and simple
+                </div>
+                <br />
+                <GmailIntegration />
+              </div>
+              <div className="col-span-7">
+                <div className="h-screen float-right">
+                  <img src={googleLogin} alt="" className="h-full" />
+                </div>
+              </div>
+            </div>
+          </div> */}
         </div>
       )}
 
@@ -621,6 +663,8 @@ const Inbox = () => {
           currentFilter={emailFilters}
         />
       )}
+
+      {saveLoading && <SavingModal />}
 
       {showToast && resultMessage && (
         <ToastNotification title={resultMessage} hideToast={hideToast} />

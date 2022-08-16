@@ -7,7 +7,21 @@ const {
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
-const { getFile, getMatterFiles } = require("../../../services/MatterService");
+const { getRFI, listRFIs } = require("../../../services/RFIService");
+const {
+  getCustomUserType,
+  listCustomUserTypes,
+} = require("../../../services/CustomUserTypeService");
+const { getTeam, listTeams } = require("../../../services/TeamService");
+const {
+  getRequest,
+  listRequests,
+} = require("../../../services/RequestService");
+const {
+  getFile,
+  getMatterFiles,
+  listFiles,
+} = require("../../../services/MatterFileService");
 
 async function getCompany(data) {
   try {
@@ -20,15 +34,15 @@ async function getCompany(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function listPages() {
@@ -199,26 +213,6 @@ async function listBackgrounds() {
   return resp;
 }
 
-async function listFiles() {
-  try {
-    const param = {
-      TableName: "MatterFileTable",
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
 async function getCompanyAccessType(data) {
   try {
     const param = {
@@ -232,22 +226,32 @@ async function getCompanyAccessType(data) {
 
     const cmd = new QueryCommand(param);
     const request = await ddbClient.send(cmd);
-    var parseResponse = request.Items.map((data) => unmarshall(data));
+    const result = request.Items.map((data) => unmarshall(data));
+
+    var parseResponse = result;
 
     if (data.userType) {
-      parseResponse = request.Items.map((data) => unmarshall(data)).filter(
+      parseResponse = result.filter(
         (userType) => userType.userType === data.userType
       );
     }
-    resp = request ? parseResponse : {};
+
+    if (data.customUserType) {
+      const { id } = data.customUserType;
+
+      parseResponse = result
+        .filter((c) => c.customUserType !== undefined)
+        .filter((c) => c.customUserType.id === id);
+    }
+
+    return parseResponse;
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getFeature(data) {
@@ -261,15 +265,14 @@ async function getFeature(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getPage(data) {
@@ -283,15 +286,14 @@ async function getPage(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getClient(data) {
@@ -305,15 +307,14 @@ async function getClient(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getMatter(data) {
@@ -327,15 +328,14 @@ async function getMatter(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getLabel(data) {
@@ -349,20 +349,17 @@ async function getLabel(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function bulkGetLabels(data) {
-  console.log("bulkGetLabels", data);
-
   try {
     const { id } = data;
 
@@ -388,16 +385,15 @@ async function bulkGetLabels(data) {
         unmarshall(i)
       );
 
-      resp = objLabels;
+      return objLabels;
     }
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function listColumnSettingsByTable(data) {
@@ -415,16 +411,14 @@ async function listColumnSettingsByTable(data) {
     const request = await ddbClient.send(cmd);
 
     const result = request.Items.map((d) => unmarshall(d));
-
-    resp = request ? result : {};
+    return result;
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getBackground(data) {
@@ -438,15 +432,14 @@ async function getBackground(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getClientMatter(data) {
@@ -463,22 +456,20 @@ async function getClientMatter(data) {
 
     const { Item } = await ddbClient.send(cmd);
 
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getUserColumnSettings(data) {
   const { userId, tableName } = data;
 
-  let resp = {},
-    result = {};
+  let result = {};
   try {
     const userColumnSettingsParams = {
       TableName: "UserColumnSettingsTable",
@@ -495,8 +486,6 @@ async function getUserColumnSettings(data) {
     const userColumnSettingsRequest = await ddbClient.send(
       userColumnSettingsCommand
     );
-
-    //const userColumnSettings = userColumnSettingsRequest.Items.map((i) => unmarshall(i));
 
     const columnSettingsIds = userColumnSettingsRequest.Items.map((i) =>
       unmarshall(i)
@@ -534,105 +523,18 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    //console.log(result);
-    resp =
+    const resp =
       Object.keys(result).length !== 0 && result !== null && result !== {}
         ? result
         : [];
-    //console.log(resp);
+    return resp;
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-
-  return resp;
-}
-
-async function getRFI(data) {
-  try {
-    const param = {
-      TableName: "RFITable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const cmd = new GetItemCommand(param);
-    const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function listRFIs() {
-  try {
-    const param = {
-      TableName: "RFITable",
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function getRequest(data) {
-  try {
-    const param = {
-      TableName: "RequestTable",
-      Key: marshall({
-        id: data.id,
-      }),
-    };
-
-    const cmd = new GetItemCommand(param);
-    const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
-}
-
-async function listRequests() {
-  try {
-    const param = {
-      TableName: "RequestTable",
-    };
-
-    const cmd = new ScanCommand(param);
-    const request = await ddbClient.send(cmd);
-    const parseResponse = request.Items.map((data) => unmarshall(data));
-    resp = request ? parseResponse : {};
-  } catch (e) {
-    resp = {
-      error: e.message,
-      errorStack: e.stack,
-    };
-    console.log(resp);
-  }
-  return resp;
 }
 
 async function getBrief(data) {
@@ -646,15 +548,82 @@ async function getBrief(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
+}
+
+async function getBriefByName(data) {
+  try {
+    const { clientMatterId, name } = data;
+    const ExpressionAttributeValues = {
+      ":clientMatterId": clientMatterId,
+      ":isDeleted": false,
+    };
+
+    const cmBriefParam = {
+      TableName: "ClientMatterBriefTable",
+      IndexName: "byClientMatter",
+      KeyConditionExpression: "clientMatterId = :clientMatterId",
+      FilterExpression:
+        "isDeleted = :isDeleted OR attribute_not_exists(isDeleted)",
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
+    };
+
+    const cmBriefCmd = new QueryCommand(cmBriefParam);
+    const cmBriefResult = await ddbClient.send(cmBriefCmd);
+
+    const objCMBrief = cmBriefResult.Items.map((i) => unmarshall(i));
+
+    const briefIds = objCMBrief.map((f) => marshall({ id: f.briefId }));
+
+    if (briefIds.length !== 0) {
+      const briefParam = {
+        RequestItems: {
+          BriefTable: {
+            Keys: briefIds,
+          },
+        },
+      };
+
+      const briefCommand = new BatchGetItemCommand(briefParam);
+      const briefResult = await ddbClient.send(briefCommand);
+
+      const objBriefs = briefResult.Responses.BriefTable.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objCMBrief
+        .map((item) => {
+          const filterBrief = objBriefs.find(
+            (u) => u.id === item.briefId && u.name === name
+          );
+
+          if (filterBrief !== undefined) {
+            return { ...item, ...filterBrief };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return response[0] !== undefined ? response[0] : { id: "" };
+    } else {
+      return {
+        items: [{ id: "" }],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    const resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
 }
 
 async function listBriefs() {
@@ -688,15 +657,14 @@ async function getGmailMessage(data) {
 
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function getAttachment(data) {
@@ -710,15 +678,14 @@ async function getAttachment(data) {
     };
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
-    resp = Item ? unmarshall(Item) : {};
+    return unmarshall(Item);
   } catch (e) {
-    resp = {
+    const resp = {
       error: e.message,
       errorStack: e.stack,
     };
     console.log(resp);
   }
-  return resp;
 }
 
 async function listGmailMessages() {
@@ -803,9 +770,6 @@ const resolvers = {
     files: async () => {
       return listFiles();
     },
-    // matterFile: async (ctx) => {
-    //   return getMatterFile(ctx.arguments);
-    // },
     matterFiles: async (ctx) => {
       return getMatterFiles(ctx.arguments);
     },
@@ -836,6 +800,9 @@ const resolvers = {
     brief: async (ctx) => {
       return getBrief(ctx.arguments);
     },
+    briefByName: async (ctx) => {
+      return getBriefByName(ctx.arguments);
+    },
     briefs: async () => {
       return listBriefs();
     },
@@ -847,6 +814,19 @@ const resolvers = {
     },
     gmailAttachment: async (ctx) => {
       return getAttachment(ctx.arguments);
+    },
+    customUserTypes: async () => {
+      return listCustomUserTypes();
+    },
+    customUserType: async (ctx) => {
+      return getCustomUserType(ctx.arguments);
+    },
+
+    teams: async () => {
+      return listTeams();
+    },
+    team: async (ctx) => {
+      return getTeam(ctx.arguments);
     },
   },
 };

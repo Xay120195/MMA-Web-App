@@ -33,7 +33,8 @@ const testColors = [
 const RFIEditor = ({ item }) => {
   const ydoc = new Y.Doc();
   const provider = new WebsocketProvider(
-    'ws://122.248.246.56:4332',
+    //'wss://13.215.247.130',
+    'wss://collaboration.makemyaffidavit.com',
     item.id,
     ydoc
   );
@@ -55,6 +56,8 @@ const RFIEditor = ({ item }) => {
       name: `${firstName} ${lastName}`,
       color: testColors[Math.floor(Math.random() * testColors.length)],
     });
+
+    return () => provider.disconnect();
   }, []);
 
   return <Remirror manager={manager} autoFocus autoRender="end" />;

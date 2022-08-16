@@ -311,17 +311,21 @@ const TableSavedInfo = ({
                 scrollTop={scrollTop}
                 width={width}
                 height={height}
-                rowHeight={cache.current.rowHeight}
+                //rowHeight={cache.current.rowHeight}
+                rowHeight=/*{cache.current.rowHeight}*/
+                {savedEmails.length === 1 ?
+                  "100" : cache.current.rowHeight
+                }
                 deferredMeasurementCache={cache.current}
                 rowCount={savedEmails.length}
                 rowRenderer={({ key, index, style, parent }) => {
                   const item = savedEmails[index];
                   return (
-                    <CellMeasurer 
-                      key={item.id + "-" + index} 
-                      cache={cache.current} 
-                      parent={parent} 
-                      rowIndex={index} 
+                    <CellMeasurer
+                      key={item.id + "-" + index}
+                      cache={cache.current}
+                      parent={parent}
+                      rowIndex={index}
                       columnIndex={0}
                     >
                       {/* <div 
@@ -333,30 +337,32 @@ const TableSavedInfo = ({
                       }}
                       > */}
                       {/* {({ registerChild }) => ( */}
-                        <tr 
-                          style={{
-                            ...style,
-                            width: "100%",
-                            height: "100%",
-                            border: '1px solid #f0f0f0', 
-                          }}
-                          key={key}
-                          //ref={registerChild}
-                        >
-                          <td className="p-2 align-top w-10 ">
-                            <input
-                              key={item.id}
-                              className="cursor-pointer mr-1"
-                              onChange={handleSelectItem}
-                              type="checkbox"
-                              value={item.id}
-                              id={item.id}
-                              checked={selectedSavedItems.includes(item.id)}
-                            />
-                          </td>
-                          <td className="p-2 align-top w-1/4" >
-                            <div>
-                            <p className="text-sm font-medium">{item.subject}</p>
+                      <tr
+                        style={{
+                          ...style,
+                          width: "100%",
+                          height: "100%",
+                          border: "1px solid #f0f0f0",
+                        }}
+                        key={key}
+                        //ref={registerChild}
+                      >
+                        <td className="p-2 align-top w-10 ">
+                          <input
+                            key={item.id}
+                            className="cursor-pointer mr-1"
+                            onChange={handleSelectItem}
+                            type="checkbox"
+                            value={item.id}
+                            id={item.id}
+                            checked={selectedSavedItems.includes(item.id)}
+                          />
+                        </td>
+                        <td className="p-2 align-top w-2/8 h-full">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {item.subject}
+                            </p>
                             <p className="text-xs">
                               {item.from} at{" "}
                               {moment(item.date).format("DD MMM YYYY, hh:mm A")}
@@ -380,13 +386,15 @@ const TableSavedInfo = ({
                               {show && snippetId === item.id && (
                                 <div
                                   ref={(el) => (ref.current[index] = el)}
-                                  className=" absolute rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                  className=" fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
                                   id={item.id}
                                 >
                                   <p>From : {item.from}</p>
                                   <p>
                                     Date :{" "}
-                                    {moment(item.date).format("DD MMM YYYY, hh:mm A")}
+                                    {moment(item.date).format(
+                                      "DD MMM YYYY, hh:mm A"
+                                    )}
                                   </p>
                                   <p>Subject : {item.subject}</p>
                                   <p>To : {item.to}</p>
@@ -435,24 +443,27 @@ const TableSavedInfo = ({
                                 <br />
                                 <p>From : {item.from}</p>
                                 <p>
-                                  Date : {moment(item.date).format("DD MMM YYYY, hh:mm A")}
+                                  Date :{" "}
+                                  {moment(item.date).format(
+                                    "DD MMM YYYY, hh:mm A"
+                                  )}
                                 </p>
                                 <p>To : {item.to}</p>
                                 <p>CC: {item.cc}</p>
                               </span>
                             </div>
-                            </div>
-                          </td>
-                          <td className="p-2 align-top w-2/8 h-full" colSpan={2}>
+                          </div>
+                        </td>
+                        <td className="p-2 align-top w-2/8 h-full" colSpan={2}>
                           <div class="flex inline-flex w-full">
                             <div className="flex items-start mt-2 h-full w-full">
                               <p className="w-24 group py-1 px-2 ml-1 rounded textColor bg-white inline-flex items-center"></p>
-                              <div className="p-2 h-full font-poppins w-full rounded-sm"
-                              dangerouslySetInnerHTML={{
-                                __html: item.description,
-                              }}
-                              >
-                              </div>
+                              <div
+                                className="p-2 h-full font-poppins w-full rounded-sm"
+                                dangerouslySetInnerHTML={{
+                                  __html: item.description,
+                                }}
+                              ></div>
                             </div>
                             <div className="ml-8 mt-2 w-80 inline-flex flex-wrap ">
                               {item.labels.items.map((i, index) => (
@@ -468,24 +479,23 @@ const TableSavedInfo = ({
                                 >
                                   {i.name}
                                 </button>
-                                ))}
+                              ))}
                             </div>
                           </div>
 
                           {item.attachments.items.map((item_attach, index) => (
-                            <React.Fragment key={item_attach.id} >
-                              <div className="flex items-start mt-2 h-full w-full border-t">
+                            <React.Fragment key={item_attach.id}>
+                              {item_attach.isDeleted !== true ? (
+                                <div className="flex items-start mt-2 h-full w-full border-t">
                                   <p
                                     className="mt-1 w-24 cursor-pointer ml-5 mr-1 text-opacity-90 1
-                                    textColor  group text-xs font-semibold py-1 px-2  rounded textColor 
-                                    bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none 
-                                    focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
+                                        textColor  group text-xs font-semibold py-1 px-2  rounded textColor 
+                                        bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none 
+                                        focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 "
                                     id={item_attach.id}
                                     title={item_attach.name}
                                     onClick={() =>
-                                      previewAndDownloadFile(
-                                        item_attach.id
-                                      )
+                                      previewAndDownloadFile(item_attach.id)
                                     }
                                   >
                                     {item_attach.name.substring(0, 10)}
@@ -498,29 +508,29 @@ const TableSavedInfo = ({
                                     }}
                                   ></div>
                                   <div className="flex-wrap inline-flex ml-8 w-80 h-full">
-                                    {
-                                      item_attach.labels.items.map(
-                                        (x) =>
-                                        <button
-                                          key={x.id}
-                                          className="mt-1 mb-1 h-6 mr-1 text-opacity-90 1 group text-xs 
-                                          font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 
-                                          focus:outline-none focus-visible:ring-2 focus-visible:ring-white 
-                                          focus-visible:ring-opacity-75"
-                                          id="headlessui-popover-button-87"
-                                          type="button"
-                                          aria-expanded="false"
-                                        >
-                                          {x.name}
-                                        </button>
-                                      )
-                                    }
+                                    {item_attach.labels.items.map((x) => (
+                                      <button
+                                        key={x.id}
+                                        className="mt-1 mb-1 h-6 mr-1 text-opacity-90 1 group text-xs 
+                                              font-semibold py-1 px-2  rounded textColor bg-gray-100  hover:text-opacity-100 
+                                              focus:outline-none focus-visible:ring-2 focus-visible:ring-white 
+                                              focus-visible:ring-opacity-75"
+                                        id="headlessui-popover-button-87"
+                                        type="button"
+                                        aria-expanded="false"
+                                      >
+                                        {x.name}
+                                      </button>
+                                    ))}
                                   </div>
-                              </div>
+                                </div>
+                              ) : (
+                                ""
+                              )}
                             </React.Fragment>
                           ))}
-                          </td>
-                          {/* <td  className="p-2 align-top w-1/6" >
+                        </td>
+                        {/* <td  className="p-2 align-top w-1/6" >
                             <div className="ml-12 mt-1 w-80 inline-flex ">
                               {item.labels.items.map((i, index) => (
                                 <button
@@ -537,24 +547,27 @@ const TableSavedInfo = ({
                                 ))}
                               </div>
                           </td> */}
-                          <td className="p-2 align-top w-1/6">
-                            <div className="w-48">
-                              {item.clientMatters.items.map((item_clientMatter, index) => (
-                                <>
-                                  <span className="text-sm cursor-pointer mr-1 text-opacity-90 1 mt-2
+                        <td className="p-2 align-top w-1/6">
+                          <div className="w-48">
+                            {item.clientMatters.items.map(
+                              (item_clientMatter, index) => (
+                                <React.Fragment key={item_clientMatter.id}>
+                                  <span
+                                    className="text-sm cursor-pointer mr-1 text-opacity-90 1 mt-2
                                     textColor  group text-xs font-semibold py-1 px-2  rounded textColor bg-gray-100 inline-flex items-center  hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
                                   >
                                     {item_clientMatter.client.name +
                                       "/" +
                                       item_clientMatter.matter.name}
                                   </span>
-                                </>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
+                                </React.Fragment>
+                              )
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                       {/* )} */}
-                        {/* </div> */}
+                      {/* </div> */}
                     </CellMeasurer>
                   );
                 }}

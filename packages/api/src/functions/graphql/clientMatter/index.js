@@ -218,13 +218,23 @@ async function listClientMatterBriefs(ctx) {
   }
 
   try {
+    const FilterExpression = ["isDeleted = :isDeleted"];
+    const ExpressionAttributeValues = {
+      ":clientMatterId": id,
+      ":isDeleted": isDeleted,
+    };
+
+    if (!isDeleted) {
+      // if false, retrieve old data
+      // include isDeleted = null
+      FilterExpression.push("attribute_not_exists(isDeleted)");
+    }
     const cmBriefParam = {
       TableName: "ClientMatterBriefTable",
       IndexName: indexName,
       KeyConditionExpression: "clientMatterId = :clientMatterId",
-      ExpressionAttributeValues: marshall({
-        ":clientMatterId": id,
-      }),
+      FilterExpression: FilterExpression.join(" OR "),
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
       ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
@@ -258,20 +268,19 @@ async function listClientMatterBriefs(ctx) {
         unmarshall(i)
       );
 
-      let filterObjBrief;
+      // let filterObjBrief;
 
-      if (isDeleted === false) {
-        // for old data
-        filterObjBrief = objBriefs.filter(
-          (u) => u.isDeleted === false || u.isDeleted === undefined
-        );
-      } else {
-        filterObjBrief = objBriefs.filter((u) => u.isDeleted === isDeleted);
-      }
+      // if (isDeleted === false) {
+      //   filterObjBrief = objBriefs.filter(
+      //     (u) => u.isDeleted === false || u.isDeleted === undefined
+      //   );
+      // } else {
+      //   filterObjBrief = objBriefs.filter((u) => u.isDeleted === isDeleted);
+      // }
 
       const response = objCMBrief
         .map((item) => {
-          const filterBrief = filterObjBrief.find((u) => u.id === item.briefId);
+          const filterBrief = objBriefs.find((u) => u.id === item.briefId);
 
           if (filterBrief !== undefined) {
             return { ...item, ...filterBrief };

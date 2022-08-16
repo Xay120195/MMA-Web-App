@@ -1,3 +1,4 @@
+import ddbClient from "../lib/dynamodb-client";
 const {
   PutItemCommand,
   GetItemCommand,
@@ -5,18 +6,19 @@ const {
   QueryCommand,
   DeleteItemCommand,
   UpdateItemCommand,
+  BatchGetItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 import {
   AdminCreateUserCommand,
   AdminDeleteUserCommand,
   AdminUpdateUserAttributesCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import ddbClient from "../lib/dynamodb-client";
+
 import identityClient from "../lib/cognito-identity-provider-client";
 import randomString from "../shared/randomString";
-import { v4 } from "uuid";
+const { v4 } = require("uuid");
 const { toUTC } = require("../shared/toUTC");
+const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
 export async function getUser(data) {
   let resp = {};
@@ -63,6 +65,184 @@ export async function listUsers() {
   return resp;
 }
 
+export async function listUserClientMatter(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+
+  let indexName = "byUser",
+    isAscending = false,
+    response = {};
+
+  try {
+    const userClientMatterParams = {
+      TableName: "UserClientMatterTable",
+      IndexName: indexName,
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: marshall({
+        ":userId": id,
+      }),
+      ScanIndexForward: isAscending,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      userClientMatterParams.Limit = limit;
+    }
+
+    const userClientMatterCommand = new QueryCommand(userClientMatterParams);
+    const userClientMatterResult = await ddbClient.send(
+      userClientMatterCommand
+    );
+
+    const clientMatterIds = userClientMatterResult.Items.map((i) =>
+      unmarshall(i)
+    ).map((f) => marshall({ id: f.clientMatterId }));
+
+    if (clientMatterIds.length !== 0) {
+      let unique = clientMatterIds
+        .map((a) => unmarshall(a))
+        .map((x) => x.id)
+        .filter(function (item, i, ar) {
+          return ar.indexOf(item) === i;
+        });
+
+      const uniqueClientMatterIds = unique.map((f) => marshall({ id: f }));
+
+      const clientMattersParams = {
+        RequestItems: {
+          ClientMatterTable: {
+            Keys: uniqueClientMatterIds,
+          },
+        },
+      };
+
+      const clientMattersCommand = new BatchGetItemCommand(clientMattersParams);
+      const clientMattersResult = await ddbClient.send(clientMattersCommand);
+
+      const objClientMatters =
+        clientMattersResult.Responses.ClientMatterTable.map((i) =>
+          unmarshall(i)
+        );
+      const objUserClientMatter = userClientMatterResult.Items.map((i) =>
+        unmarshall(i)
+      );
+
+      const response = objUserClientMatter
+        .map((item) => {
+          const filterClientMatter = objClientMatters.find(
+            (u) => u.id === item.clientMatterId
+          );
+
+          if (filterClientMatter !== undefined) {
+            return { ...item, ...filterClientMatter };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: userClientMatterResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(userClientMatterResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return response;
+}
+export async function listUserTeams(ctx) {
+  const { id } = ctx.source;
+  const { limit, nextToken } = ctx.arguments;
+
+  try {
+    const userTeamsParam = {
+      TableName: "TeamMemberTable",
+      IndexName: "byMember",
+      KeyConditionExpression: "memberId = :memberId",
+      ExpressionAttributeValues: marshall({
+        ":memberId": id,
+      }),
+      ScanIndexForward: false,
+      ExclusiveStartKey: nextToken
+        ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
+        : undefined,
+    };
+
+    if (limit !== undefined) {
+      userTeamsParam.Limit = limit;
+    }
+
+    const userTeamsCmd = new QueryCommand(userTeamsParam);
+    const userTeamsResult = await ddbClient.send(userTeamsCmd);
+    const teamIds = userTeamsResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.teamId })
+    );
+
+    if (teamIds.length !== 0) {
+      const teamsParam = {
+        RequestItems: {
+          TeamTable: {
+            Keys: teamIds,
+          },
+        },
+      };
+
+      const teamsCmd = new BatchGetItemCommand(teamsParam);
+      const teamsResult = await ddbClient.send(teamsCmd);
+
+      const objTeams = teamsResult.Responses.TeamTable.map((i) =>
+        unmarshall(i)
+      );
+      const objCompTeams = userTeamsResult.Items.map((i) => unmarshall(i));
+
+      const response = objCompTeams
+        .map((item) => {
+          const filterTeam = objTeams.find((u) => u.id === item.teamId);
+
+          if (filterTeam !== undefined) {
+            return { ...item, ...filterTeam };
+          }
+        })
+        .filter((a) => a !== undefined);
+
+      return {
+        items: response,
+        nextToken: userTeamsResult.LastEvaluatedKey
+          ? Buffer.from(
+              JSON.stringify(userTeamsResult.LastEvaluatedKey)
+            ).toString("base64")
+          : null,
+      };
+    } else {
+      return {
+        items: [],
+        nextToken: null,
+      };
+    }
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack,
+    };
+    console.log(resp);
+  }
+  return response;
+}
+
 export async function createUser(data) {
   let resp = {};
   try {
@@ -71,9 +251,10 @@ export async function createUser(data) {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
-      userType: data.userType,
+      userType: data.userType ? data.userType : null,
       company: data.company,
       createdAt: toUTC(new Date()),
+      customUserType: data.customUserType ? data.customUserType : null,
     };
 
     const param = marshall(rawParams);

@@ -62,6 +62,8 @@ functions:
     handler: src/functions/graphql/rfi/index.handler
   user-fn:
     handler: src/functions/graphql/user/index.handler
+  team-fn:
+    handler: src/functions/graphql/team/index.handler
   gmailmessage-fn:
     handler: src/functions/graphql/gmailMessage/index.handler
   gmail-attachment-fn:
@@ -178,6 +180,16 @@ custom:
         field: clientMatters
         request: false
         response: false
+      - dataSource: LambdaUserDS
+        type: User
+        field: teams
+        request: false
+        response: false
+      - dataSource: LambdaUserDS
+        type: User
+        field: customUserType
+        request: false
+        response: false
       - dataSource: LambdaQueryDS
         type: Query
         field: userColumnSettings
@@ -228,6 +240,32 @@ custom:
       - dataSource: LambdaMutationDS
         type: Mutation
         field: featureCreate
+        request: false
+        response: false
+      # Feature
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: customUserType
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: customUserTypes
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: customUserTypeDelete
         request: false
         response: false
       # Matter File
@@ -420,6 +458,11 @@ custom:
         field: clients
         request: false
         response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: customUserTypes
+        request: false
+        response: false
       # Client Matter
       - dataSource: LambdaMutationDS
         type: Mutation
@@ -471,6 +514,11 @@ custom:
       - dataSource: LambdaQueryDS
         type: Query
         field: brief
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: briefByName
         request: false
         response: false
       - dataSource: LambdaQueryDS
@@ -726,6 +774,47 @@ custom:
         field: gmailAttachmentLabelUntag
         request: false
         response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: teamCreate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: teamUpdate
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: teamDelete
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: team
+        request: false
+        response: false
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: teams
+        request: false
+        response: false
+      - dataSource: LambdaCompanyDS
+        type: Company
+        field: teams
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
+        field: teamMemberTag
+        request: false
+        response: false
+      - dataSource: LambdaTeamDS
+        type: Team
+        field: members
+        request: false
+        response: false
+
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA
@@ -772,6 +861,10 @@ custom:
         name: LambdaUserDS
         config:
           functionName: user-fn
+      - type: AWS_LAMBDA
+        name: LambdaTeamDS
+        config:
+          functionName: team-fn
       - type: AWS_LAMBDA
         name: LambdaGmailMessageDS
         config:
