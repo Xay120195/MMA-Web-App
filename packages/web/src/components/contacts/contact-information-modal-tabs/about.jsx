@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import Select, { components } from "react-select";
 import { IoCaretDown } from "react-icons/io5";
 import { MdSave } from "react-icons/md";
+import { API } from "aws-amplify";
+import ToastNotification from "../../toast-notification";
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -31,6 +33,12 @@ export default function About({
   const [Mobile, setMobile] = useState(user.contactNumber ? user.contactNumber : "");
   const [Company, setCompany] = useState("LOPHILS");
   const [isDisabled, setisDisabled] = useState(true);
+
+  const [showToast, setShowToast] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+  const hideToast = () => {
+    setShowToast(false);
+  };
 
   const options = [
     { value: "OWNER", label: "Owner" },
@@ -71,6 +79,31 @@ export default function About({
     user,
   ]);
 
+  const mUpdateUser = `
+  mutation updateUser($contactNumber: String, $email: AWSEmail!, $firstName: String, $id: ID!, $lastName: String, $profilePicture: String, $userType: UserType) {
+    userUpdate(
+      contactNumber: $contactNumber
+      firstName: $firstName
+      id: $id
+      lastName: $lastName
+      profilePicture: $profilePicture
+      userType: $userType
+      email: $email
+    ) {
+      id
+    }
+  }
+  `;
+
+  async function editUser(user) {
+      const request = API.graphql({
+        query: mUpdateUser,
+        variables: user,
+      });
+
+      console.log("success", request);
+  }
+
   const SaveButton = () => {
     return (
       <button
@@ -83,15 +116,28 @@ export default function About({
             email: Email,
             // company: Company,
             // address: Address,
-            // contactNumber: Mobile,
+            contactNumber: Mobile,
             // team: ContactList[foundIndex].team,
-            type: UserType.value,
+            userType: UserType.value,
             createdAt: user.createdAt
           };
 
+
+          editUser(item);
+
+          
           ContactList[foundIndex] = item;
           setContactList(ContactList);
           close();
+
+          setResultMessage(
+            "Successfully edited the details"
+          );
+          setShowToast(true);
+
+          setTimeout(() => {
+            setShowToast(false);
+          }, 2000);
         }}
         className={
           isDisabled
@@ -166,7 +212,7 @@ export default function About({
               // readOnly={isEditing ? "" : "0"}
               disabled={isEditing ? false : true}
               name={`email`}
-              type="text"
+              type="email"
               value={Email}
               className="rounded-md p-2 border border-gray-300 outline-0 w-80"
               onChange={(e) => setEmail(e.target.value)}
@@ -202,7 +248,7 @@ export default function About({
               type="text"
               value={UserType}
               className="outline-0 w-80"
-              onChange={(e, val) => setUserType(val)}
+              onChange={(e, val) => {console.log("value", e);setUserType(e)}}
             />
           </div>
           <div className="flex flex-col p-1">
@@ -220,6 +266,12 @@ export default function About({
         </div>
       </div>
       {isEditing && <SaveButton />}
+      {showToast && resultMessage && (
+                <ToastNotification
+                  title={resultMessage}
+                  hideToast={hideToast}
+                />
+              )}
     </>
   );
 }

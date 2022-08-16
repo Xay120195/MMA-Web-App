@@ -3,6 +3,7 @@ import { CgTrash } from "react-icons/cg";
 import Select from "react-select";
 import { API, input } from "aws-amplify";
 import anime from "animejs";
+import CreatableSelect from 'react-select/creatable';
 
 const options = [
   { value: "OWNER", label: "Owner" },
@@ -276,6 +277,11 @@ export default function AddContactModal({
                     disabled={true}
                   />
                 </div>
+
+
+                
+
+
                 {/* <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`Client Name`}
@@ -312,6 +318,39 @@ export default function AddContactModal({
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
                 </div> */}
+              </div>
+
+              <div className="flex flex-row">
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Client`}
+                  </div>
+                    <CreatableSelect
+                              // options={clientsOptions}
+                      isClearable
+                      isSearchable
+                              // onChange={handleClientChanged}
+                              // value={selectedClient}
+                      placeholder="Client"
+                      className="w-56 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                    />
+              </div>
+
+              <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Matter`}
+                  </div>
+                    <CreatableSelect
+                              // options={clientsOptions}
+                      isClearable
+                      isSearchable
+                              // onChange={handleClientChanged}
+                              // value={selectedClient}
+                      placeholder="Enter Matter"
+                      className=" w-56 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                    />
+              </div>
+
               </div>
             </div>
           ))}

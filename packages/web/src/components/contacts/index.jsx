@@ -67,6 +67,21 @@ export default function Contacts() {
           createdAt
           email
           userType
+          contactNumber
+          clientMatters {
+            items {
+              id
+              createdAt
+              client {
+                id
+                name
+              }
+              matter {
+                id
+                name
+              }
+            }
+          }
         }
       }
     }
