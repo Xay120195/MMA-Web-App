@@ -5,9 +5,9 @@ const {
   ScanCommand,
   UpdateItemCommand,
   QueryCommand,
-  DeleteItemCommand
+  DeleteItemCommand,
 } = require("@aws-sdk/client-dynamodb");
-import { v4 } from "uuid";
+const { v4 } = require("uuid");
 const { toUTC } = require("../shared/toUTC");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 
@@ -153,8 +153,12 @@ export async function deleteCustomUserType(id) {
       ProjectionExpression: "id", // fetch id of CompanyCustomUserTypeTable only
     };
 
-    const companyCustomUserTypeCmd = new QueryCommand(companyCustomUserTypeParams);
-    const companyCustomUserTypeResult = await ddbClient.send(companyCustomUserTypeCmd);
+    const companyCustomUserTypeCmd = new QueryCommand(
+      companyCustomUserTypeParams
+    );
+    const companyCustomUserTypeResult = await ddbClient.send(
+      companyCustomUserTypeCmd
+    );
 
     const companyCustomUserTypeId = companyCustomUserTypeResult.Items[0];
 
