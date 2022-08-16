@@ -25,12 +25,21 @@ export default function About({
   const [Address, setAddress] = useState(user.address ? user.address : "");
   const [Email, setEmail] = useState(user.email);
   const [UserType, setUserType] = useState({
-    value: user.type ? user.type : "",
-    label: user.type ? user.type : "None",
+    value: user.userType ? user.userType : "",
+    label: user.userType,
   });
-  const [Mobile, setMobile] = useState(user.mobile ? user.mobile : "");
+  const [Mobile, setMobile] = useState(user.contactNumber ? user.contactNumber : "");
   const [Company, setCompany] = useState("LOPHILS");
   const [isDisabled, setisDisabled] = useState(true);
+
+  const options = [
+    { value: "OWNER", label: "Owner" },
+    { value: "LEGALADMIN", label: "Legal Admin" },
+    { value: "BARRISTER", label: "Barrister" },
+    { value: "EXPERT", label: "Expert" },
+    { value: "CLIENT", label: "Client" },
+    { value: "WITNESS", label: "Witness" },
+  ];
 
   const ChangesHaveMade = (obj) => {
     if (
@@ -69,13 +78,15 @@ export default function About({
           let foundIndex = ContactList.findIndex((x) => x.id == user.id);
           let item = {
             id: user.id,
-            name: Firstname + " " + Lastname,
+            firstName: Firstname,
+            lastName: Lastname,
             email: Email,
-            company: Company,
-            address: Address,
-            mobile: Mobile,
-            team: ContactList[foundIndex].team,
+            // company: Company,
+            // address: Address,
+            // contactNumber: Mobile,
+            // team: ContactList[foundIndex].team,
             type: UserType.value,
+            createdAt: user.createdAt
           };
 
           ContactList[foundIndex] = item;
@@ -113,7 +124,8 @@ export default function About({
               {`First Name`}
             </div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`firstname`}
               type="text"
               value={Firstname}
@@ -124,7 +136,8 @@ export default function About({
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`Last Name`}</div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`lastname`}
               type="text"
               value={Lastname}
@@ -133,23 +146,25 @@ export default function About({
             />
           </div>
         </div>
-        <div className="flex flex-col p-1">
+        {/* <div className="flex flex-col p-1">
           <div className="text-xs font-medium text-gray-400">{`Address`}</div>
           <input
-            readOnly={isEditing ? "" : "0"}
+            // readOnly={isEditing ? "" : "0"}
+            disabled={isEditing ? false : true}
             name={`address`}
             type="text"
             value={Address}
             className="rounded-md p-2 border border-gray-300 outline-0 w-full"
             onChange={(e) => setAddress(e.target.value)}
           />
-        </div>
+        </div> */}
 
         <div className="flex flex-row">
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`Email`}</div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`email`}
               type="text"
               value={Email}
@@ -162,7 +177,8 @@ export default function About({
               {`Mobile Number`}
             </div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`mobile`}
               type="text"
               value={Mobile}
@@ -176,10 +192,12 @@ export default function About({
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`User Type`}</div>
             <Select
-              components={{
-                IndicatorSeparator: () => null,
-                DropdownIndicator: DropdownIndicator,
-              }}
+              // components={{
+              //   IndicatorSeparator: () => null,
+              //   DropdownIndicator: DropdownIndicator,
+              // }}
+              isDisabled={isEditing ? false : true}
+              options={options}
               name={`usertype`}
               type="text"
               value={UserType}
@@ -190,12 +208,13 @@ export default function About({
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`Company`}</div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={true}
               name={`company`}
               type="text"
-              value={Company}
+              value={localStorage.getItem("company")}
               className="rounded-md p-2 border border-gray-300 outline-0 w-80"
-              onChange={(e) => setCompany(e.target.value)}
+              //onChange={(e) => setCompany(e.target.value)}
             />
           </div>
         </div>

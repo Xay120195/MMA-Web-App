@@ -234,8 +234,6 @@ export default function Contacts() {
         */
         //Fixed Issue Scrolling ang setting active letter
         const currentScrollPos = window.pageYOffset;
-        // get the current scroll position
-        //console.log(refLetters);
 
         refLetters.current.map((ref, i) => {
           if (ref===null){
@@ -251,13 +249,8 @@ export default function Contacts() {
                 ? refLetters.current[0].offsetTop + 100
                 : refLetters.current[i + 1].offsetTop + 100;
 
-            //get height of list of contacts with specific letter
-
-            //if it matches within the range get it
-
             if (currentScrollPos >= top && currentScrollPos <= bottom) {
               setShortcutSelected(String(ref.id));
-              //set Active Letter if in range
             }
           }else{
 

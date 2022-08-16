@@ -131,13 +131,10 @@ export default function AddContactModal({
   }
 
   const handleSubmit = () => {
-    //console.log("savedata", InputData);
-
     InputData.map((x) => inviteUser(x));
 
     setalertMessage(`User Invitation sent! Please wait for response.`);
     setShowToast(true);
-    
     setTimeout(() => {
       setShowToast(false);
     }, 3000);
