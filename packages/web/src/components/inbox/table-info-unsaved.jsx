@@ -513,7 +513,7 @@ const TableUnsavedInfo = ({
     });
   };
 
-  const handleDeleteAttachment = async (id, index, val, e) => {
+  const handleDeleteAttachment = async (id, rowId, index, val, e) => {
     const params = {
       query: mUpdateAttachmentStatus,
       variables: {
@@ -526,7 +526,21 @@ const TableUnsavedInfo = ({
       console.log(result);
       setAttachmentIsDeleted(val);
       setAttachmentId(index);
-      getUnSavedEmails(emailFilters)
+
+      var objIndex = unSavedEmails.findIndex((obj) => obj.id === rowId);
+
+      const itemsAttachments = unSavedEmails[objIndex].attachments.items.map(
+        (x) => (x.id === id ? { ...x, isDeleted: val } : x)
+      );
+
+      var updateArrAttachment = unSavedEmails.map((obj) => {
+        if (obj.id === rowId) {
+          return { ...obj, attachments: { items: itemsAttachments } };
+        }
+        return obj;
+      });
+
+      setUnsavedEmails(updateArrAttachment);
     });
   }
 
@@ -836,6 +850,7 @@ const TableUnsavedInfo = ({
                                             onClick={(e) =>
                                               handleDeleteAttachment(
                                                 item_attach.id,
+                                                item.id,
                                                 index,
                                                 true,
                                                 e
@@ -850,6 +865,7 @@ const TableUnsavedInfo = ({
                                           onClick={(e) =>
                                             handleDeleteAttachment(
                                               item_attach.id,
+                                              item.id,
                                               index,
                                               false,
                                               e

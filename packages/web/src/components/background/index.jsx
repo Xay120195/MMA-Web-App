@@ -45,20 +45,20 @@ const Background = () => {
   const params = useParams();
   const { matter_id, background_id } = params;
   const [checkAllState, setcheckAllState] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [ShowModalParagraph, setShowModalParagraph] = useState(false);
   const [selectRow, setSelectRow] = useState([]);
   const [newRow, setNewRow] = useState([{}]);
   const [selectedItems, setSelectedItems] = useState([]);
 
-  const [srcIndex, setSrcIndex] = useState("");
+  const [srcIndex, setSrcIndex] = useState('');
   const [checkedState, setCheckedState] = useState(
     new Array(background.length).fill(false)
   );
   const [selectedId, setSelectedId] = useState(0);
   const [totalChecked, settotalChecked] = useState(0);
   const [selectedRowsBG, setSelectedRowsBG] = useState([]);
-  const [paragraph, setParagraph] = useState("");
+  const [paragraph, setParagraph] = useState('');
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [ascDesc, setAscDesc] = useState(null);
   const [activateButton, setActivateButton] = useState(false);
@@ -78,16 +78,16 @@ const Background = () => {
   const [vPrevToken, setVprevToken] = useState([]);
   const [loading, setLoading] = useState(false);
   const [maxLoading, setMaxLoading] = useState(false);
-  const [briefName, setBriefName] = useState("");
-  const [briefId, setBriefId] = useState("");
-  const [validationAlert, setValidationAlert] = useState("");
+  const [briefName, setBriefName] = useState('');
+  const [briefId, setBriefId] = useState('');
+  const [validationAlert, setValidationAlert] = useState('');
   const [alertMessage, setalertMessage] = useState();
   const [showToast, setShowToast] = useState(false);
   const [checkedStateShowHide, setCheckedStateShowHide] = useState([]);
-  const [searchDescription, setSearchDescription] = useState("");
-  const [shareLink, setShareLink] = useState("");
+  const [searchDescription, setSearchDescription] = useState('');
+  const [shareLink, setShareLink] = useState('');
   const [holdDelete, setHoldDelete] = useState(false);
-  const [targetRow, setTargetRow] = useState("");
+  const [targetRow, setTargetRow] = useState('');
   const [highlightRow, setHighlightRow] = useState(null);
 
   const [pastedRows, setPastedRows] = useState([]);
@@ -186,7 +186,7 @@ const Background = () => {
   const [bgName, setBGName] = useState(null);
 
   const getBackground = async () => {
-    console.log("getBackground()");
+    console.log('getBackground()');
     let result = [];
 
     // if (background_id === "000") {
@@ -240,14 +240,14 @@ const Background = () => {
         variables: {
           id: background_id,
           nextToken: null,
-          sortOrder: "ORDER_ASC",
+          sortOrder: 'ORDER_ASC',
         },
       });
     }
 
     var arrConcatPrevToken = vPrevToken.concat(vNextToken);
     setVprevToken([...new Set(arrConcatPrevToken)]);
-    console.log("PREV TOKEN: ", arrConcatPrevToken);
+    console.log('PREV TOKEN: ', arrConcatPrevToken);
 
     var nextToken = backgroundOpt.data.brief.backgrounds.nextToken;
 
@@ -271,7 +271,7 @@ const Background = () => {
       setPageIndex(1);
 
       if (background !== null) {
-        console.log("I AM IN HERE", result);
+        console.log('I AM IN HERE', result);
         // setBackground(sortByOrder(result)); // no sorting needed
         setBackground(sortByOrder(result));
         setMaxLoading(false);
@@ -281,7 +281,7 @@ const Background = () => {
   };
 
   const getBriefs = async () => {
-    console.log("matterid", matter_id);
+    console.log('matterid', matter_id);
     const params = {
       query: qGetName,
       variables: {
@@ -293,7 +293,7 @@ const Background = () => {
 
     await API.graphql(params).then((brief) => {
       const matterFilesList = brief.data.clientMatter.briefs.items;
-      console.log("mfl", matterFilesList);
+      console.log('mfl', matterFilesList);
       matterFilesList.map((x) =>
         x.id === background_id ? setBGName(x.name) : x
       );
@@ -301,7 +301,7 @@ const Background = () => {
   };
 
   const loadMoreBackground = async () => {
-    if (background_id === "000") {
+    if (background_id === '000') {
       // Remove this condition after migration
       if (vNextToken !== null && !loading) {
         setLoading(true);
@@ -313,7 +313,7 @@ const Background = () => {
             id: matter_id,
             limit: 50,
             nextToken: vNextToken,
-            sortOrder: "ORDER_ASC",
+            sortOrder: 'ORDER_ASC',
           },
         });
 
@@ -336,7 +336,7 @@ const Background = () => {
             })
           );
 
-          if (background !== "") {
+          if (background !== '') {
             setTimeout(() => {
               setLoading(false);
               setMaxLoading(false);
@@ -349,7 +349,7 @@ const Background = () => {
           }
         }
       } else {
-        console.log("Last Result!- Migration");
+        console.log('Last Result!- Migration');
         setMaxLoading(true);
       }
     } else {
@@ -363,13 +363,13 @@ const Background = () => {
             id: background_id,
             limit: 50,
             nextToken: vNextToken,
-            sortOrder: "ORDER_ASC",
+            sortOrder: 'ORDER_ASC',
           },
         });
 
         var arrConcatPrevToken = vPrevToken.concat(vNextToken);
         setVprevToken([...new Set(arrConcatPrevToken)]);
-        console.log("PREV TOKEN: ", arrConcatPrevToken);
+        console.log('PREV TOKEN: ', arrConcatPrevToken);
 
         var nextToken = backgroundOpt.data.brief.backgrounds.nextToken;
 
@@ -498,19 +498,19 @@ const Background = () => {
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
-          console.log("Sign out completed.");
-          history.push("/");
+          console.log('Sign out completed.');
+          history.push('/');
         });
 
         function clearLocalStorage() {
-          localStorage.removeItem("userId");
-          localStorage.removeItem("email");
-          localStorage.removeItem("firstName");
-          localStorage.removeItem("lastName");
-          localStorage.removeItem("userType");
-          localStorage.removeItem("company");
-          localStorage.removeItem("companyId");
-          localStorage.removeItem("access");
+          localStorage.removeItem('userId');
+          localStorage.removeItem('email');
+          localStorage.removeItem('firstName');
+          localStorage.removeItem('lastName');
+          localStorage.removeItem('userType');
+          localStorage.removeItem('company');
+          localStorage.removeItem('companyId');
+          localStorage.removeItem('access');
         }
       }, 3000);
     }
@@ -555,7 +555,7 @@ const Background = () => {
         variables: {
           id: background_id,
           nextToken: null,
-          sortOrder: "DATE_ASC",
+          sortOrder: 'DATE_ASC',
         },
       });
 
@@ -582,7 +582,7 @@ const Background = () => {
         }
       }
     } else if (ascDesc === true) {
-      console.log("set order by Date DESC");
+      console.log('set order by Date DESC');
       setAscDesc(false);
       //setBackground(background.sort(compareValues("date", "desc")));
 
@@ -591,7 +591,7 @@ const Background = () => {
         variables: {
           id: background_id,
           nextToken: null,
-          sortOrder: "DATE_DESC",
+          sortOrder: 'DATE_DESC',
         },
       });
 
@@ -618,7 +618,7 @@ const Background = () => {
         }
       }
     } else if (!ascDesc) {
-      console.log("set order by DEFAULT: Order ASC");
+      console.log('set order by DEFAULT: Order ASC');
       setAscDesc(null); // default to sort by order
       getBackground();
       //setBackground(background.sort(compareValues("order")));
@@ -655,31 +655,31 @@ const Background = () => {
   const getPaginateItems = async (action) => {
     let pageList = 20;
 
-    if (action === "next") {
+    if (action === 'next') {
       setPageIndex(pageIndex + pageList);
       setPageSize(pageSize + pageList);
-    } else if (action === "prev") {
+    } else if (action === 'prev') {
       setPageIndex(pageIndex - pageList);
       setPageSize(pageSize - pageList);
     }
   };
 
   function getParameterByName(name, url = window.location.href) {
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
       results = regex.exec(url);
     if (!results) return null;
-    if (!results[2]) return "";
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
   }
 
   function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
   }
 
-  const m_name = getParameterByName("matter_name");
-  const c_name = getParameterByName("client_name");
-  const backgroundRowId = getParameterByName("background_id");
+  const m_name = getParameterByName('matter_name');
+  const c_name = getParameterByName('client_name');
+  const backgroundRowId = getParameterByName('background_id');
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -689,11 +689,11 @@ const Background = () => {
 
   const handleNameContent = (e, name, id) => {
     if (!validationAlert) {
-      setBriefName(!name ? "" : name);
+      setBriefName(!name ? '' : name);
       setBriefId(id);
-      setValidationAlert("");
+      setValidationAlert('');
     } else {
-      setBriefName("");
+      setBriefName('');
     }
   };
 
@@ -704,14 +704,14 @@ const Background = () => {
   };
 
   const handleSaveBriefName = (e, name, id) => {
-    const originalString = briefName.replace(/(<([^>]+)>)/gi, "");
-    const final = originalString.replace(/\&nbsp;/g, " ");
+    const originalString = briefName.replace(/(<([^>]+)>)/gi, '');
+    const final = originalString.replace(/\&nbsp;/g, ' ');
 
     if (briefName.length <= 0) {
-      setValidationAlert("Brief Name is required");
+      setValidationAlert('Brief Name is required');
       setBGName(bgName);
     } else if (briefName === name) {
-      setValidationAlert("");
+      setValidationAlert('');
       const data = {
         id,
         name: e.target.innerHTML,
@@ -724,10 +724,10 @@ const Background = () => {
 
       setTimeout(() => {
         setShowToast(false);
-        setalertMessage("");
+        setalertMessage('');
       }, 1000);
     } else {
-      setValidationAlert("");
+      setValidationAlert('');
       const data = {
         id,
         name: e.target.innerHTML,
@@ -740,7 +740,7 @@ const Background = () => {
 
       setTimeout(() => {
         setShowToast(false);
-        setalertMessage("");
+        setalertMessage('');
       }, 1000);
     }
   };
@@ -789,7 +789,7 @@ const Background = () => {
     }
   };
 
-  const bitly = new BitlyClient("e1540f03fd3f2318262342ac1a0d144e5407f7be", {});
+  const bitly = new BitlyClient('e1540f03fd3f2318262342ac1a0d144e5407f7be', {});
   /* To be used when tinyurl is required
   const convertUrl = async () => {
     let result;
@@ -817,12 +817,12 @@ const Background = () => {
 
   const checkFormat = (str) => {
     var check = str;
-    check = check.replace("%20", " "); //returns my_name
+    check = check.replace('%20', ' '); //returns my_name
     return check;
   };
 
   const style = {
-    paddingLeft: "0rem",
+    paddingLeft: '0rem',
   };
 
   function utf8_to_b64(str) {
@@ -926,7 +926,7 @@ const Background = () => {
           </Link>
         </div>
         <div
-          style={{ position: "sticky", top: "0" }}
+          style={{ position: 'sticky', top: '0' }}
           className="py-5 z-30 ml-4 sbg-gray-100 sm:bg-white hidden sm:block"
         >
           <div className="flex font-bold text-xl">
@@ -1122,7 +1122,7 @@ const Background = () => {
             />
           </div>
           {/* {background !== null && background.length !== 0 && ( */}
-          <div className="hidden sm:block pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
+          <div className="pl-2 py-1 grid grid-cols-10 mb-3 pr-8">
             <div className="col-span-12">
               <span className="z-10 leading-snug font-normal text-center text-blueGray-300 absolute bg-transparent rounded text-base items-center justify-center w-8 py-3 px-3">
                 <IoIcons.IoIosSearch />
@@ -1239,6 +1239,7 @@ const Background = () => {
               <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
                 <div
                   className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
+
                   style={{ height: width > 640 ? "auto" : contentHeight }}
                 >
                   <BlankStateMobile
@@ -1257,7 +1258,7 @@ const Background = () => {
                   id="mobileContent"
                   onScroll={(e) => handleScrollEvent(e)}
                   className="relative flex flex-col overflow-y-auto h-min w-full"
-                  style={{ scrollBehavior: "smooth" }}
+                  style={{ scrollBehavior: 'smooth' }}
                 >
                   {showScrollButton ? (
                     <>

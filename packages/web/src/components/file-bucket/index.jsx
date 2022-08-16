@@ -1175,46 +1175,26 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     //bindList and cache must not be null
     if (bindList && cache) {
-      console.log("current Index", index);
       //clear first
-      console.log("Clearing cache");
+      // console.log("Clearing cache");
       cache?.current.clearAll();
-      console.log("Current row cache", cache.current._rowHeightCache);
-      console.log("Recomputing Row Heights");
-      console.log("ALL ROWS:", bindList?.current?.measureAllRows());
-      bindList?.current?.recomputeRowHeights();
-      console.log("Current row cache", cache.current._rowHeightCache);
-      console.log("forcing Update grid");
-      bindList?.current?.forceUpdateGrid();
-      console.log("Current row cache", cache.current._rowHeightCache);
-      console.groupEnd();
+      //console.log("Current row cache", cache.current._rowHeightCache);
+      //console.log("Recomputing Row Heights");
+      //console.log("ALL ROWS:", bindList?.current?.measureAllRows());
+      bindList?.current?.recomputeRowHeights(index);
+      // console.log("Current row cache", cache.current._rowHeightCache);
+      //console.log("forcing Update grid");
+      bindList?.current?.forceUpdateGrid(index);
+      //console.log("Current row cache", cache.current._rowHeightCache);
+      // console.groupEnd();
     } else {
       alert("List reference not found || cache not found!");
     }
-
-    /* 
-    console.log("cache now:");
-    console.log(
-      Object.keys(cache?.current?._cellHeightCache).map((key, index) => {
-        return {
-          [key]: cache?.current?._cellHeightCache[key] + 50,
-        };
-      })
-    );
-    */
-    /* 
-    console.log("Recomputing height");
-    cache.current._rowHeightCache = { "0-0": 1000 };
-    bindList?.current?.recomputeRowHeights();
-    console.log(cache?.current?._cellHeightCache);
-    //console.log("ROWHEIGHT", cache?.current?.rowHeight);
-    bindList?.current?.forceUpdateGrid();
-    */
   };
 
-  const handleLabelChanged = async (id, e, existingLabels) => {
+  const handleLabelChanged = async (id, e, existingLabels, index) => {
     console.log("event", e, "id", id);
-
+    console.log("index", index);
     var labelsList = [];
 
     /*
@@ -1308,8 +1288,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setShowToast(false);
       setDisableSelect(false);
       getMatterFiles(1);
-      autoAdjustRowHeight(0);
     }, 2000);
+    //auto adjust must be called later than fetching new data
+    setTimeout(() => {
+      autoAdjustRowHeight(index);
+    }, 3000);
+
     // }
   };
 
@@ -1326,11 +1310,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   //description saving
   const handleDetailsContent = (e, details, id) => {
     if (!descAlert) {
-      setTextDetails(!details ? '' : details);
+      setTextDetails(!details ? "" : details);
       setDetId(id);
-      setDesAlert('');
+      setDesAlert("");
     } else {
-      setTextDetails('');
+      setTextDetails("");
     }
     setDescriptionClassId(id);
   };
@@ -1350,11 +1334,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       return obj;
     });
     setMatterFiles(updatedDesc);
-    setDescriptionClassId('');
+    setDescriptionClassId("");
     if (textDetails.length <= 0) {
       setDesAlert("Description can't be empty");
     } else if (textDetails === details) {
-      setDesAlert('');
+      setDesAlert("");
       const data = {
         details: e.target.innerHTML,
       };
@@ -1378,7 +1362,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       });
       setMatterFiles(updatedDesc);
 
-      setDesAlert('');
+      setDesAlert("");
       const data = {
         details: e.target.innerHTML,
       };
@@ -1395,7 +1379,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   async function updateMatterFileDesc(id, data) {
-    console.log('data:', data);
+    console.log("data:", data);
     const request = API.graphql({
       query: mUpdateMatterFileDesc,
       variables: {
@@ -1409,11 +1393,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   //filename saving
   const handleNameContent = (e, name, id) => {
     if (!fileAlert) {
-      setTextName(!name ? '' : name);
+      setTextName(!name ? "" : name);
       setFileId(id);
-      setFileAlert('');
+      setFileAlert("");
     } else {
-      setTextName('');
+      setTextName("");
     }
   };
 
@@ -1425,7 +1409,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     if (textName.length <= 0) {
       setFileAlert("File name can't be empty");
     } else if (textName === name) {
-      setFileAlert('');
+      setFileAlert("");
       const data = {
         name: name,
       };
@@ -1438,7 +1422,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }, 1000);
       }, 1000);
     } else {
-      setFileAlert('');
+      setFileAlert("");
       const data = {
         name: textName,
       };
@@ -1454,7 +1438,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   async function updateMatterFileName(id, data) {
-    console.log('data:', data);
+    console.log("data:", data);
     console.groupEnd();
     return new Promise((resolve, reject) => {
       try {
@@ -1502,9 +1486,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           variables: {
             id: id,
             date:
-              data.date !== null && data.date !== 'null' && data.date !== ''
+              data.date !== null && data.date !== "null" && data.date !== ""
                 ? moment
-                    .utc(moment(new Date(data.date), 'YYYY-MM-DD'))
+                    .utc(moment(new Date(data.date), "YYYY-MM-DD"))
                     .toISOString()
                 : null,
           },
@@ -1523,7 +1507,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         value,
         label,
       }));
-      console.log('optionscheck', newOptions);
+      console.log("optionscheck", newOptions);
       return newOptions;
     } else {
       return null;
@@ -1657,7 +1641,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           },
         ];
 
-        console.log('THIS IS SELECTED', selectedCompleteDataRows);
+        console.log("THIS IS SELECTED", selectedCompleteDataRows);
 
         setIsAllChecked(false);
         const updatedCheckedState = checkedState.map((item, index) =>
@@ -1670,13 +1654,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     if (selectedRows.length > 0) {
       setshowRemoveFileButton(true);
       setShowCopyToBackgroundButton(true);
-      if (background_id !== '000') {
+      if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
     } else {
       setshowRemoveFileButton(false);
       setShowCopyToBackgroundButton(false);
-      if (background_id !== '000') {
+      if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
     }
@@ -1687,7 +1671,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     if (e.target.checked) {
       setshowRemoveFileButton(true);
       setShowCopyToBackgroundButton(true);
-      if (background_id !== '000') {
+      if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
       const xmatterFiles = matterFiles.map(
@@ -1728,7 +1712,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setIsAllChecked(false);
       setshowRemoveFileButton(false);
       setShowCopyToBackgroundButton(false);
-      if (background_id !== '000') {
+      if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
       setSelectedItems([]);
@@ -1811,22 +1795,22 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleSearchFileChange = (e) => {
-    console.log('handleSearchFileChange()', e.target.value);
+    console.log("handleSearchFileChange()", e.target.value);
     setSearchFile(e.target.value);
   };
 
   const filterRecord = (v) => {
-    console.log('filter', v);
+    console.log("filter", v);
     var next = 1;
 
-    if (v === '') {
+    if (v === "") {
       getMatterFiles(next);
     } else {
       const filterRecord = files.filter((x) =>
         x.name.toLowerCase().includes(v.toLowerCase())
       );
 
-      console.log('filterRecord:', filterRecord);
+      console.log("filterRecord:", filterRecord);
       setMatterFiles(filterRecord);
     }
   };
@@ -1895,7 +1879,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   `;
 
   //deleteBackgroundFromLabel
-  const handleDeleteBackground = (rowId, rowFiles, fileId) => {
+  const handleDeleteBackground = (rowId, rowFiles, fileId, index) => {
     //console.log("rowId",rowId);
     //console.log("rowFiles", rowFiles);
     //console.log("fileId", fileId); //remove in rowFiles
@@ -1925,12 +1909,15 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setShowToast(false);
       getMatterFiles(1);
     }, 2000);
+    setTimeout(() => {
+      autoAdjustRowHeight(index);
+    }, 3000);
   };
 
   //filter function
   const handleFilter = async (fileFilter) => {
-    console.log('ff', fileFilter);
-    console.log('filesToFilter', matterFiles);
+    console.log("ff", fileFilter);
+    console.log("filesToFilter", matterFiles);
     setFilterLabels(false);
 
     var next = 1;
@@ -1945,7 +1932,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setMatterFiles(sortByOrder(matterFiles));
       setFilterState(false);
     } else {
-      console.log('labels', labels);
+      console.log("labels", labels);
       var labelsList = labels;
       var labelsIdList = [];
 
@@ -1961,7 +1948,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         ...new Map(labelsIdList.map((x) => [JSON.stringify(x), x])).values(),
       ];
 
-      console.log('labelIds', uniqueIds);
+      console.log("labelIds", uniqueIds);
 
       const result = await API.graphql({
         query: mGetFilesByLabel,
@@ -1971,7 +1958,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       });
 
       setTimeout(() => {
-        console.log('ssss', result);
+        console.log("ssss", result);
         var newFiles = result.data.multipleLabels;
 
         var newFiles1 = [];
@@ -1994,16 +1981,16 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         }
 
         console.log(
-          'putinmatterfiles',
-          removeDuplicateObjectFromArray(newFiles2, 'id')
+          "putinmatterfiles",
+          removeDuplicateObjectFromArray(newFiles2, "id")
         );
         // setMatterFiles(sortByOrder(newFiles2));
         setFilteredFiles(
-          sortByOrder(removeDuplicateObjectFromArray(newFiles2, 'id'))
+          sortByOrder(removeDuplicateObjectFromArray(newFiles2, "id"))
         );
         setFilterState(true);
 
-        console.log('res', result);
+        console.log("res", result);
       }, 5000);
     }
   };
@@ -2038,7 +2025,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           date:
             arrFiles[i].date !== null
               ? moment
-                  .utc(moment(new Date(arrFiles[i].date), 'YYYY-MM-DD'))
+                  .utc(moment(new Date(arrFiles[i].date), "YYYY-MM-DD"))
                   .toISOString()
               : null,
         },
@@ -2076,19 +2063,19 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       setTimeout(() => {
         Auth.signOut().then(() => {
           clearLocalStorage();
-          console.log('Sign out completed.');
-          history.push('/');
+          console.log("Sign out completed.");
+          history.push("/");
         });
 
         function clearLocalStorage() {
-          localStorage.removeItem('userId');
-          localStorage.removeItem('email');
-          localStorage.removeItem('firstName');
-          localStorage.removeItem('lastName');
-          localStorage.removeItem('userType');
-          localStorage.removeItem('company');
-          localStorage.removeItem('companyId');
-          localStorage.removeItem('access');
+          localStorage.removeItem("userId");
+          localStorage.removeItem("email");
+          localStorage.removeItem("firstName");
+          localStorage.removeItem("lastName");
+          localStorage.removeItem("userType");
+          localStorage.removeItem("company");
+          localStorage.removeItem("companyId");
+          localStorage.removeItem("access");
         }
       }, 3000);
     }
@@ -2123,7 +2110,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           matterId: matter_id,
           s3ObjectKey: items.s3ObjectKey,
           size: items.size,
-          name: 'Copy of ' + items.fileName,
+          name: "Copy of " + items.fileName,
           type: items.type,
           order: items.order,
         },
@@ -2140,13 +2127,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       if (index === lengthSelectedRows - 1) {
         selectedCompleteDataRows = [];
         selectedRows = [];
-        console.log('END', selectedCompleteDataRows);
+        console.log("END", selectedCompleteDataRows);
       }
     });
   };
 
   const SortBydate = async () => {
-    console.group('SortBydate()');
+    console.group("SortBydate()");
     // const isAllZero = matterFiles.every(
     //   (item) => item.order >= 0 && item.order !== 0
     // );
@@ -2154,7 +2141,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     setMatterFiles(null); // trigger loading ...
 
     if (ascDesc === null) {
-      console.log('set order by Date ASC, CreatedAt DESC');
+      console.log("set order by Date ASC, CreatedAt DESC");
       setAscDesc(true);
 
       const params = {
@@ -2163,20 +2150,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           matterId: matter_id,
           isDeleted: false,
           nextToken: null,
-          sortOrder: 'DATE_ASC',
+          sortOrder: "DATE_ASC",
         },
       };
 
       await API.graphql(params).then((files) => {
         let matterFilesList = files.data.matterFiles.items;
-        console.log('matterFilesList: ', sortOrder, matterFilesList);
+        console.log("matterFilesList: ", sortOrder, matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
         setFiles(matterFilesList);
         setMatterFiles(matterFilesList); // no need to use sortByOrder
         setMaxLoading(false);
       });
     } else if (ascDesc === true) {
-      console.log('set order by Date DESC, CreatedAt DESC');
+      console.log("set order by Date DESC, CreatedAt DESC");
       setAscDesc(false);
       const params = {
         query: qGetFilesByMatter,
@@ -2184,13 +2171,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           matterId: matter_id,
           isDeleted: false,
           nextToken: null,
-          sortOrder: 'DATE_DESC',
+          sortOrder: "DATE_DESC",
         },
       };
 
       await API.graphql(params).then((files) => {
         let matterFilesList = files.data.matterFiles.items;
-        console.log('matterFilesList: ', sortOrder, matterFilesList);
+        console.log("matterFilesList: ", sortOrder, matterFilesList);
         setVnextToken(files.data.matterFiles.nextToken);
         setFiles(matterFilesList);
         setMatterFiles(matterFilesList); // no need to use sortByOrder
@@ -2198,7 +2185,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       });
     } else if (!ascDesc) {
       setAscDesc(null);
-      console.log('set order by DEFAULT: Order ASC, CreatedAt DESC');
+      console.log("set order by DEFAULT: Order ASC, CreatedAt DESC");
       getMatterFiles();
     }
 
@@ -2206,7 +2193,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const style = {
-    paddingLeft: '0rem',
+    paddingLeft: "0rem",
   };
 
   const showPageReference = async (
@@ -2225,9 +2212,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   function getQueryVariable(variable) {
     var query = window.location.search.substring(1);
-    var vars = query.split('&');
+    var vars = query.split("&");
     for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split('=');
+      var pair = vars[i].split("=");
       if (pair[0] == variable) {
         return pair[1];
       }
@@ -2240,17 +2227,17 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   function getParameterByName(name, url = window.location.href) {
-    name = name.replace(/[\[\]]/g, '\\$&');
-    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
       results = regex.exec(url);
     if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
-  const m_name = getParameterByName('matter_name');
-  const c_name = getParameterByName('client_name');
-  const backgroundRowId = getParameterByName('background_id');
+  const m_name = getParameterByName("matter_name");
+  const c_name = getParameterByName("client_name");
+  const backgroundRowId = getParameterByName("background_id");
   const matter_name = b64_to_utf8(m_name);
   const client_name = b64_to_utf8(c_name);
 
@@ -2258,12 +2245,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     return window.btoa(unescape(encodeURIComponent(str)));
   }
   function showAlert() {
-    alert('No selected Labels on page.');
+    alert("No selected Labels on page.");
   }
 
   const checkFormat = (str) => {
     var check = str;
-    check = check.replace('%20', ' '); //returns my_name
+    check = check.replace("%20", " "); //returns my_name
     return check;
   };
 
@@ -2293,7 +2280,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
   const getBriefs = async () => {
     var opts = [];
-    console.log('matterid', matter_id);
+    console.log("matterid", matter_id);
     const params = {
       query: listBriefs,
       variables: {
@@ -2305,7 +2292,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
     await API.graphql(params).then((brief) => {
       let briefList = brief.data.clientMatter.briefs.items;
-      console.log('mfl', briefList);
+      console.log("mfl", briefList);
       var temp = briefList.map(
         (x) => (opts = [...opts, { label: x.name, value: x.id }])
       );
@@ -2325,7 +2312,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleCopyToBg = async () => {
-    console.log('cb', copyBgOptions);
+    console.log("cb", copyBgOptions);
 
     let temp = copyBgIds;
     var searchIds = [];
@@ -2336,7 +2323,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       );
     }
 
-    console.log('searchthis', searchIds); //ids of backgrounds [id, id] correct
+    console.log("searchthis", searchIds); //ids of backgrounds [id, id] correct
 
     //from old code, attach to bg
     let arrFiles = [];
@@ -2366,9 +2353,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             date:
               arrFiles[i].date !== null
                 ? moment
-                    .utc(moment(new Date(arrFiles[i].date), 'YYYY-MM-DD'))
+                    .utc(moment(new Date(arrFiles[i].date), "YYYY-MM-DD"))
                     .toISOString()
-                : moment.utc(moment(new Date(), 'YYYY-MM-DD')).toISOString(),
+                : moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
           },
         });
 
@@ -2423,7 +2410,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   const handleChangeDescription = (e, description, id, index) => {
-    console.log('ITEMS', e);
+    console.log("ITEMS", e);
     setDescriptionClassId(id);
     setDescriptionClass(false);
 
@@ -2456,7 +2443,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     // });
 
     setDescriptionClass(true);
-    setDescriptionClassId('');
+    setDescriptionClassId("");
 
     if (textDesc.length <= 0) {
       // notify error on description
@@ -2508,13 +2495,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   }
 
   const handleKeyUp = (e) => {
-    if (e.key === 'Shift' && isShiftDown) {
+    if (e.key === "Shift" && isShiftDown) {
       setIsShiftDown(false);
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Shift' && !isShiftDown) {
+    if (e.key === "Shift" && !isShiftDown) {
       setIsShiftDown(true);
     }
   };
@@ -2560,7 +2547,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       selectedCompleteDataRows = xmatterFiles;
       setshowRemoveFileButton(true);
       setShowCopyToBackgroundButton(true);
-      if (background_id !== '000') {
+      if (background_id !== "000") {
         setshowAttachBackgroundButton(true);
       }
     } else {
@@ -2568,7 +2555,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
       selectedCompleteDataRows = [];
       setshowRemoveFileButton(false);
       setShowCopyToBackgroundButton(false);
-      if (background_id !== '000') {
+      if (background_id !== "000") {
         setshowAttachBackgroundButton(false);
       }
     }
@@ -2612,12 +2599,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   useEffect(() => {
-    document.addEventListener('keyup', handleKeyUp, false);
-    document.addEventListener('keydown', handleKeyDown, false);
+    document.addEventListener("keyup", handleKeyUp, false);
+    document.addEventListener("keydown", handleKeyDown, false);
 
     return () => {
-      document.removeEventListener('keyup', handleKeyUp);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyUp, handleKeyDown]);
 
@@ -2645,7 +2632,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             date:
               data.date !== null
                 ? moment
-                    .utc(moment(new Date(data.date), 'YYYY-MM-DD'))
+                    .utc(moment(new Date(data.date), "YYYY-MM-DD"))
                     .toISOString()
                 : null,
           },
@@ -2686,7 +2673,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         )}`;
       }, 200);
     } else {
-      alert('Error encountered!');
+      alert("Error encountered!");
     }
   };
 
@@ -2704,14 +2691,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   function countLines(tag) {
     var divHeight = tag.offsetHeight;
     var lineHeight = parseInt(
-      window.getComputedStyle(tag).getPropertyValue('line-height')
+      window.getComputedStyle(tag).getPropertyValue("line-height")
     );
     var lines = Math.round(divHeight / lineHeight);
     return lines;
   }
 
   useEffect(() => {
-    var headerTag = document.getElementById('headerTag');
+    var headerTag = document.getElementById("headerTag");
     setHeaderLines(countLines(headerTag));
     if (headerReadMore) {
       setContentHeight(height - 94 - headerTag.offsetHeight);
@@ -2720,7 +2707,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         height -
           94 -
           parseInt(
-            window.getComputedStyle(headerTag).getPropertyValue('line-height')
+            window.getComputedStyle(headerTag).getPropertyValue("line-height")
           )
       );
     }
@@ -2761,14 +2748,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   function handleReadMoreStateInner(fileId, bgId) {
     if (
       readMoreStateInner.find((temp) => {
-        return temp === fileId + '/' + bgId;
+        return temp === fileId + "/" + bgId;
       }) === undefined
     ) {
-      setReadMoreStateInner([...readMoreStateInner, fileId + '/' + bgId]);
+      setReadMoreStateInner([...readMoreStateInner, fileId + "/" + bgId]);
     } else {
       setReadMoreStateInner((current) =>
         current.filter((id) => {
-          return id !== fileId + '/' + bgId;
+          return id !== fileId + "/" + bgId;
         })
       );
     }
@@ -2787,7 +2774,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     );
     setReadMoreStateInner((current) =>
       current.filter((id) => {
-        return id.split('/')[0] !== fileId;
+        return id.split("/")[0] !== fileId;
       })
     );
   }
@@ -2821,7 +2808,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   `;
 
   const createBackgroundFromLabel = async (row_id, label, isNew) => {
-    console.log('ROW_ID', row_id, 'INSIDE FROM LABEL', label);
+    console.log("ROW_ID", row_id, "INSIDE FROM LABEL", label);
 
     const mf = matterFiles.filter((item) => row_id.includes(item.id)); // get row details
     // check if brief already exists
@@ -2837,7 +2824,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     let briefId = getBriefByName.data.briefByName.id,
       existingBriefNameLabel = getBriefByName.data.briefByName.labelId;
 
-    if (briefId !== '' && briefId !== null) {
+    if (briefId !== "" && briefId !== null) {
       briefNameExists = true;
     }
 
@@ -2856,10 +2843,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           variables: params,
         });
 
-        console.log('createBrief', createBrief);
+        console.log("createBrief", createBrief);
         briefId = createBrief.data.briefCreate.id;
       } else {
-        console.log('existingBriefNameLabel', existingBriefNameLabel);
+        console.log("existingBriefNameLabel", existingBriefNameLabel);
         if (existingBriefNameLabel === null) {
           const params = {
             id: briefId,
@@ -2892,7 +2879,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         },
       });
 
-      console.log('createBackground', createBackground);
+      console.log("createBackground", createBackground);
       if (createBackground.data.backgroundCreate.id !== null) {
         // Tag File to Background
         await API.graphql({
@@ -2919,7 +2906,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           variables: params,
         });
 
-        console.log('createBrief', createBrief);
+        console.log("createBrief", createBrief);
         briefId = createBrief.data.briefCreate.id;
       } else {
         if (existingBriefNameLabel === null) {
@@ -2939,7 +2926,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         fileDate =
           mf[0].date != null
             ? moment
-                .utc(moment(new Date(mf[0].date), 'YYYY-MM-DD'))
+                .utc(moment(new Date(mf[0].date), "YYYY-MM-DD"))
                 .toISOString()
             : null;
 
@@ -2953,7 +2940,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         },
       });
 
-      console.log('createBackground', createBackground);
+      console.log("createBackground", createBackground);
       if (createBackground.data.backgroundCreate.id !== null) {
         // Tag File to Background
         await API.graphql({
@@ -2968,7 +2955,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   };
 
   useEffect(() => {
-    console.log('TRIGGERED');
+    console.log("TRIGGERED");
     if (isExpandAllActive) {
       let outerStateArray = [];
       let descStateArray = [];
@@ -2977,18 +2964,18 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         outerStateArray = [...outerStateArray, data.id];
         descStateArray = [...descStateArray, data.id];
         data.backgrounds.items.map((background) => {
-          innerStateArray = [...innerStateArray, data.id + '/' + background.id];
+          innerStateArray = [...innerStateArray, data.id + "/" + background.id];
         });
       });
       setReadMoreStateDesc(descStateArray);
       setReadMoreStateOuter(outerStateArray);
       setReadMoreStateInner(innerStateArray);
-      console.log('EXPAND');
+      console.log("EXPAND");
     } else {
       setReadMoreStateDesc([]);
       setReadMoreStateOuter([]);
       setReadMoreStateInner([]);
-      console.log('COLLAPSE');
+      console.log("COLLAPSE");
     }
   }, [isExpandAllActive]);
 
@@ -3010,7 +2997,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   function isReadMoreExpandedInner(fileId, bgId) {
     return (
       readMoreStateInner.find((temp) => {
-        return temp === fileId + '/' + bgId;
+        return temp === fileId + "/" + bgId;
       }) !== undefined
     );
   }
@@ -3018,7 +3005,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
   function countLines(tag) {
     var divHeight = tag.offsetHeight;
     var lineHeight = parseInt(
-      window.getComputedStyle(tag).getPropertyValue('line-height')
+      window.getComputedStyle(tag).getPropertyValue("line-height")
     );
     var lines = Math.round(divHeight / lineHeight);
     return lines;
@@ -3032,22 +3019,22 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     }
   }
   function handleScrollToTop() {
-    let d = document.getElementById('mobileContent');
+    let d = document.getElementById("mobileContent");
     d.scrollTo(0, 0);
   }
 
   useEffect(() => {
     if (matterFiles != null) {
       matterFiles.map((data) => {
-        var descTag = document.getElementById(data.id + '.desc');
+        var descTag = document.getElementById(data.id + ".desc");
         if (descTag !== null) {
           var lines = countLines(descTag);
-          var descButtonTag = document.getElementById(data.id + '.descButton');
+          var descButtonTag = document.getElementById(data.id + ".descButton");
           if (lines > 5) {
             let bool = isReadMoreExpandedOuter(data.id);
-            descButtonTag.style.display = bool ? 'inline-block' : 'none';
+            descButtonTag.style.display = bool ? "inline-block" : "none";
           } else {
-            descButtonTag.style.display = 'none';
+            descButtonTag.style.display = "none";
           }
         }
       });
@@ -3058,7 +3045,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
     <>
       <div
         className={
-          'p-5 static bg-gray-100 sm:bg-white sm:relative flex flex-col min-w-screen min-h-screen sm:min-h-0 sm:min-w-0 break-words sm:shadow-lg sm:rounded contentDiv'
+          "p-5 static bg-gray-100 sm:bg-white sm:relative flex flex-col min-w-screen min-h-screen sm:min-h-0 sm:min-w-0 break-words sm:shadow-lg sm:rounded contentDiv"
         }
       >
         <div className="hidden sm:block flex-1">
@@ -3075,7 +3062,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         </div>
         {/* DON'T DELETE THIS PART. THIS IS A CLONE FOR SCROLLING DOWN */}
         <div
-          style={{ position: 'sticky', top: '0' }}
+          style={{ position: "sticky", top: "0" }}
           className="hidden sm:block py-5 bg-white z-30"
         >
           <p className="font-bold text-xl bg-white w-full">
@@ -3113,14 +3100,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           <div
             className="flex flex-auto"
             style={{
-              position: headerLines > 1 ? 'absolute' : 'static',
-              zIndex: headerLines > 1 ? '-50' : 'auto',
+              position: headerLines > 1 ? "absolute" : "static",
+              zIndex: headerLines > 1 ? "-50" : "auto",
             }}
           >
             <p
               id="headerTag"
               className="sm:hidden font-bold pl-14"
-              style={{ lineHeight: '24px' }}
+              style={{ lineHeight: "24px" }}
             >
               <span className="font-semibold text-base">
                 {checkFormat(client_name)}
@@ -3139,8 +3126,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
             <div className="sm:hidden flex justify-items-start items-start flex-row w-full">
               <p
                 className={
-                  'flex-auto pl-14 sm:hidden ' +
-                  (headerReadMore ? '' : 'truncate')
+                  "flex-auto pl-14 sm:hidden " +
+                  (headerReadMore ? "" : "truncate")
                 }
               >
                 <span className="font-semibold text-base">
@@ -3166,7 +3153,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
         <div
           className="block sm:bg-white sm:z-40 static sm:sticky"
-          style={{ top: '67px' }}
+          style={{ top: "67px" }}
         >
           <nav
             aria-label="Breadcrumb"
@@ -3288,8 +3275,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       <button
                         className={
                           copyBgIds
-                            ? 'px-2 py-2 text-blue-400 text-xs font-semibold ml-16 cursor-pointer'
-                            : 'px-2 py-2 text-blue-200 text-xs font-semibold ml-16'
+                            ? "px-2 py-2 text-blue-400 text-xs font-semibold ml-16 cursor-pointer"
+                            : "px-2 py-2 text-blue-200 text-xs font-semibold ml-16"
                         }
                         onClick={() => handleCopyToBg()}
                         disabled={copyBgIds ? false : true}
@@ -3306,13 +3293,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                       value={selected}
                       showCheckbox
                       className="z-50"
-                      placeholder={'Search'}
+                      placeholder={"Search"}
                     />
                   </div>
                 )}
               </div>
 
-              {showAttachBackgroundButton && backgroundRowId !== '000' && (
+              {showAttachBackgroundButton && backgroundRowId !== "000" && (
                 <button
                   className="bg-blue-400 hover:bg-blue-300 text-white font-semibold py-1 px-5 rounded inline-flex items-center border-0 shadow outline-none focus:outline-none focus:ring"
                   onClick={() => tagBackgroundFile()}
@@ -3362,8 +3349,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                 <button
                   className={
                     filterModalState
-                      ? 'bg-gray-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring '
-                      : 'bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring '
+                      ? "bg-gray-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
+                      : "bg-gray-800 hover:bg-blue-400 text-white font-semibold py-1 px-5 ml-3 rounded items-center border-0 shadow outline-none focus:outline-none focus:ring "
                   }
                   onClick={
                     filterModalState
@@ -3382,7 +3369,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
         </div>
 
         <div className="hidden sm:block px-2 py-0 left-0">
-          <p className={'text-lg mt-3 font-medium'}>FILES</p>
+          <p className={"text-lg mt-3 font-medium"}>FILES</p>
         </div>
 
         {
@@ -3391,27 +3378,27 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
           //   <span className="py-5 px-5">FILTERED FILES</span>
           // ) :
           matterFiles === null ? (
-            <Loading content={'Please wait...'} />
+            <Loading content={"Please wait..."} />
           ) : (
             <>
               {matterFiles.length === 0 &&
-              (searchFile === undefined || searchFile === '') ? (
+              (searchFile === undefined || searchFile === "") ? (
                 <div className="bg-white rounded-lg sm:rounded-none sm:p-5 sm:px-5 sm:py-1 left-0">
                   <div
                     className="w-full flex items-center sm:flex-none sm:h-42 sm:bg-gray-100 sm:rounded-lg sm:border sm:border-gray-200 sm:mb-6 sm:py-1 sm:px-1"
-                    style={{ height: width > 640 ? 'auto' : contentHeight }}
+                    style={{ height: width > 640 ? "auto" : contentHeight }}
                   >
                     {width > 640 ? (
                       <BlankState
-                        title={'items'}
-                        txtLink={'file upload button'}
+                        title={"items"}
+                        txtLink={"file upload button"}
                         handleClick={() => setShowUploadModal(true)}
                       />
                     ) : (
                       <BlankStateMobile
-                        header={'There are no items to show in this view.'}
+                        header={"There are no items to show in this view."}
                         content={
-                          'Any uploaded files in the desktop will appear here'
+                          "Any uploaded files in the desktop will appear here"
                         }
                         svg={Illustration}
                       />
@@ -3428,7 +3415,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                           <ScrollToTop
                             smooth
                             color="rgb(117, 117, 114);"
-                            style={{ padding: '0.4rem' }}
+                            style={{ padding: "0.4rem" }}
                           />
                           <div className="hidden sm:block">
                             <div className="shadow border-b border-gray-200 sm:rounded-lg my-5">
@@ -3436,14 +3423,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                 <table className="table-fixed min-w-full divide-y divide-gray-200 text-xs">
                                   <thead
                                     className="bg-gray-100 z-20"
-                                    style={{ position: 'sticky', top: '235px' }}
+                                    style={{ position: "sticky", top: "235px" }}
                                   >
                                     <tr>
                                       <th
                                         className="px-2 py-4 text-center whitespace-nowrap"
                                         style={{
-                                          minWidth: '5%',
-                                          width: '5.5%',
+                                          minWidth: "5%",
+                                          width: "5.5%",
                                         }}
                                       >
                                         Item No.
@@ -3467,7 +3454,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 alt="Sort"
                                                 title="Sort"
                                                 onClick={SortBydate}
-                                                style={{ cursor: 'pointer' }}
+                                                style={{ cursor: "pointer" }}
                                               />
                                             );
                                           } else if (ascDesc === true) {
@@ -3477,7 +3464,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 alt="Sort"
                                                 title="Sort"
                                                 onClick={SortBydate}
-                                                style={{ cursor: 'pointer' }}
+                                                style={{ cursor: "pointer" }}
                                               />
                                             );
                                           } else if (ascDesc === false) {
@@ -3487,7 +3474,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 alt="Sort"
                                                 title="Sort"
                                                 onClick={SortBydate}
-                                                style={{ cursor: 'pointer' }}
+                                                style={{ cursor: "pointer" }}
                                               />
                                             );
                                           }
@@ -3514,8 +3501,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         {...provider.droppableProps}
                                         className="bg-white divide-y divide-gray-200"
                                         style={{
-                                          width: '100%',
-                                          height: '100vh',
+                                          width: "100%",
+                                          height: "100vh",
                                         }}
                                       >
                                         <WindowScroller>
@@ -3554,10 +3541,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                         <div
                                                           style={{
                                                             ...style,
-                                                            width: '100%',
-                                                            height: '100%',
+                                                            width: "100%",
+                                                            height: "100%",
                                                             border:
-                                                              '1px solid #f0f0f0',
+                                                              "1px solid #f0f0f0",
                                                           }}
                                                         >
                                                           <Draggable
@@ -3588,8 +3575,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     (active &&
                                                                       data.id ===
                                                                         selected)
-                                                                      ? 'rgba(255, 255, 239, 0.767)'
-                                                                      : 'white',
+                                                                      ? "rgba(255, 255, 239, 0.767)"
+                                                                      : "white",
                                                                 }}
                                                               >
                                                                 <td
@@ -3597,9 +3584,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                   className="px-2 py-3 align-top"
                                                                   style={{
                                                                     minWidth:
-                                                                      '5%',
+                                                                      "5%",
                                                                     width:
-                                                                      '5.5%',
+                                                                      "5.5%",
                                                                   }}
                                                                 >
                                                                   <div className="grid grid-cols-1 border-l-2">
@@ -3740,60 +3727,60 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     {getFileType(
                                                                       data.type
                                                                     ) ===
-                                                                    'image' ? (
+                                                                    "image" ? (
                                                                       <GrDocumentImage className="text-2xl" />
                                                                     ) : getFileType(
                                                                         data.type
                                                                       ) ===
-                                                                      'audio' ? (
+                                                                      "audio" ? (
                                                                       <FaRegFileAudio className="text-2xl" />
                                                                     ) : getFileType(
                                                                         data.type
                                                                       ) ===
-                                                                      'video' ? (
+                                                                      "video" ? (
                                                                       <FaRegFileVideo className="text-2xl" />
                                                                     ) : getFileType(
                                                                         data.type
                                                                       ) ===
-                                                                      'text' ? (
+                                                                      "text" ? (
                                                                       <GrDocumentTxt className="text-2xl" />
                                                                     ) : getFileType(
                                                                         data.type
                                                                       ) ===
-                                                                        'application' &&
+                                                                        "application" &&
                                                                       data.type
                                                                         .split(
-                                                                          '.'
+                                                                          "."
                                                                         )
                                                                         .pop() ===
-                                                                        'sheet' ? (
+                                                                        "sheet" ? (
                                                                       <GrDocumentExcel className="text-2xl" />
                                                                     ) : getFileType(
                                                                         data.type
                                                                       ) ===
-                                                                        'application' &&
+                                                                        "application" &&
                                                                       data.type
                                                                         .split(
-                                                                          '.'
+                                                                          "."
                                                                         )
                                                                         .pop() ===
-                                                                        'document' ? (
+                                                                        "document" ? (
                                                                       <GrDocumentWord className="text-2xl" />
                                                                     ) : getFileType(
                                                                         data.type
                                                                       ) ===
-                                                                        'application' &&
+                                                                        "application" &&
                                                                       data.type
                                                                         .split(
-                                                                          '.'
+                                                                          "."
                                                                         )
                                                                         .pop() ===
-                                                                        'text' ? (
+                                                                        "text" ? (
                                                                       <GrDocumentText className="text-2xl" />
                                                                     ) : getFileType(
                                                                         data.type
                                                                       ) ===
-                                                                      'application' ? (
+                                                                      "application" ? (
                                                                       <GrDocumentPdf className="text-2xl" />
                                                                     ) : (
                                                                       <GrDocumentText className="text-2xl" />
@@ -3803,11 +3790,11 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       className="p-2 w-52 font-poppins"
                                                                       style={{
                                                                         cursor:
-                                                                          'auto',
+                                                                          "auto",
                                                                         outlineColor:
-                                                                          'rgb(204, 204, 204, 0.5)',
+                                                                          "rgb(204, 204, 204, 0.5)",
                                                                         outlineWidth:
-                                                                          'thin',
+                                                                          "thin",
                                                                       }}
                                                                       suppressContentEditableWarning={
                                                                         true
@@ -3862,7 +3849,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     {data.id ===
                                                                       fileId &&
                                                                       fileAlert}
-                                                                  </p>{' '}
+                                                                  </p>{" "}
                                                                   {/* do not change */}
                                                                 </td>
                                                                 <td
@@ -3874,20 +3861,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                       className={
                                                                         data.id ===
                                                                         descriptionClassId
-                                                                          ? 'w-full p-2 font-poppins h-full mx-2'
-                                                                          : 'w-full p-2 font-poppins h-full mx-2 single-line'
+                                                                          ? "w-full p-2 font-poppins h-full mx-2"
+                                                                          : "w-full p-2 font-poppins h-full mx-2 single-line"
                                                                       }
                                                                       style={{
                                                                         cursor:
-                                                                          'auto',
+                                                                          "auto",
                                                                         outlineColor:
-                                                                          'rgb(204, 204, 204, 0.5)',
+                                                                          "rgb(204, 204, 204, 0.5)",
                                                                         outlineWidth:
-                                                                          'thin',
+                                                                          "thin",
                                                                         maxHeight:
-                                                                          '100px',
+                                                                          "100px",
                                                                         overflowY:
-                                                                          'auto',
+                                                                          "auto",
                                                                       }}
                                                                       suppressContentEditableWarning={
                                                                         true
@@ -3932,7 +3919,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     data.details ===
                                                                       undefined ||
                                                                     data.details ===
-                                                                      '' ||
+                                                                      "" ||
                                                                     data.details
                                                                       .length <
                                                                       47 ? (
@@ -3967,20 +3954,20 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           className={
                                                                             background.id ===
                                                                             descriptionClassId
-                                                                              ? 'w-full p-2 font-poppins h-full mx-2'
-                                                                              : 'w-96 p-2 font-poppins h-full mx-2 single-line'
+                                                                              ? "w-full p-2 font-poppins h-full mx-2"
+                                                                              : "w-96 p-2 font-poppins h-full mx-2 single-line"
                                                                           }
                                                                           style={{
                                                                             cursor:
-                                                                              'auto',
+                                                                              "auto",
                                                                             outlineColor:
-                                                                              'rgb(204, 204, 204, 0.5)',
+                                                                              "rgb(204, 204, 204, 0.5)",
                                                                             outlineWidth:
-                                                                              'thin',
+                                                                              "thin",
                                                                             maxHeight:
-                                                                              '35px',
+                                                                              "35px",
                                                                             overflowY:
-                                                                              'auto',
+                                                                              "auto",
                                                                           }}
                                                                           suppressContentEditableWarning
                                                                           onClick={(
@@ -3991,7 +3978,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                               background.description,
                                                                               background.id,
                                                                               index +
-                                                                                '-' +
+                                                                                "-" +
                                                                                 i
                                                                             )
                                                                           }
@@ -4024,7 +4011,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ) =>
                                                                             (itemsRef.current[
                                                                               index +
-                                                                                '-' +
+                                                                                "-" +
                                                                                 i
                                                                             ] =
                                                                               el)
@@ -4037,7 +4024,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                               background.description,
                                                                               background.id,
                                                                               index +
-                                                                                '-' +
+                                                                                "-" +
                                                                                 i
                                                                             )
                                                                           }
@@ -4047,7 +4034,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                         background.description ===
                                                                           undefined ||
                                                                         background.description ===
-                                                                          '' ||
+                                                                          "" ||
                                                                         background
                                                                           .description
                                                                           .length <
@@ -4100,14 +4087,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                     className={`flex flex-row justify-center items-center border border-gray-300 px-1 py-1 mr-2 focus:ring mt-4 shadow-md`}
                                                                     style={{
                                                                       width:
-                                                                        '110px',
+                                                                        "110px",
                                                                     }}
                                                                   >
                                                                     {ShowLabel[0]
                                                                       .index ===
                                                                     index
-                                                                      ? 'Cancel Label'
-                                                                      : 'Add Label'}
+                                                                      ? "Cancel Label"
+                                                                      : "Add Label"}
                                                                   </button>
 
                                                                   {ShowLabel[0]
@@ -4134,7 +4121,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ) => ({
                                                                             ...base,
                                                                             zIndex:
-                                                                              '1000',
+                                                                              "1000",
                                                                           }),
                                                                         control:
                                                                           (
@@ -4143,9 +4130,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ) => ({
                                                                             ...base,
                                                                             position:
-                                                                              'absolute',
+                                                                              "absolute",
                                                                             minWidth:
-                                                                              '230px',
+                                                                              "230px",
                                                                           }),
                                                                       }}
                                                                       options={
@@ -4164,7 +4151,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           e,
                                                                           data
                                                                             .labels
-                                                                            .items
+                                                                            .items,
+                                                                          index
                                                                         )
                                                                       }
                                                                       placeholder="Labels"
@@ -4300,9 +4288,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                           ></div>
                                                                         ) : (
                                                                           <>
-                                                                            <div className="flex">
+                                                                            <div className="flex mb-1.5 h-10.5">
                                                                               <div
-                                                                                className="h-10.5 items-center w-24 py-3 p-1 mt-1.5 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex"
+                                                                                className="h-10 items-center w-24 p-1 text-xs bg-gray-100  hover:bg-gray-900 hover:text-white rounded-md cursor-pointer flex"
                                                                                 index={
                                                                                   index
                                                                                 }
@@ -4316,13 +4304,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                 }
                                                                               >
                                                                                 <b>
-                                                                                  {'Row' +
-                                                                                    ' ' +
+                                                                                  {"Row" +
+                                                                                    " " +
                                                                                     background.order}
                                                                                 </b>
                                                                               </div>
                                                                               <div
-                                                                                className="ml-2 mr-2 h-10.5 items-center w-6 py-3 p-1 mt-1.5 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-lg cursor-pointer flex justify-center"
+                                                                                className="ml-2 mr-2 h-10 items-center w-6 p-1 text-xs text-red-400 bg-gray-100  hover:bg-gray-900 hover:text-white rounded-md cursor-pointer flex justify-center"
                                                                                 index={
                                                                                   index
                                                                                 }
@@ -4330,7 +4318,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                                                   handleDeleteBackground(
                                                                                     background.id,
                                                                                     background.files,
-                                                                                    data.id
+                                                                                    data.id,
+                                                                                    index
                                                                                   )
                                                                                 }
                                                                               >
@@ -4383,12 +4372,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                 >
                                   {isExpandAllActive ? (
                                     <>
-                                      &nbsp;Collapse All{' '}
+                                      &nbsp;Collapse All{" "}
                                       <FiChevronsUp className="inline" />
                                     </>
                                   ) : (
                                     <>
-                                      &nbsp;Expand All{' '}
+                                      &nbsp;Expand All{" "}
                                       <FiChevronsDown className="inline" />
                                     </>
                                   )}
@@ -4399,7 +4388,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                               id="mobileContent"
                               onScroll={(e) => handleScrollEvent(e)}
                               className="px-5 overflow-y-auto h-min"
-                              style={{ scrollBehavior: 'smooth' }}
+                              style={{ scrollBehavior: "smooth" }}
                             >
                               {showScrollButton ? (
                                 <>
@@ -4409,9 +4398,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   >
                                     <BiArrowToTop
                                       style={{
-                                        color: 'white',
-                                        display: 'block',
-                                        margin: 'auto',
+                                        color: "white",
+                                        display: "block",
+                                        margin: "auto",
                                       }}
                                     />
                                   </div>
@@ -4426,7 +4415,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                   style={{
                                     borderBottomWidth:
                                       index + 1 !== arr.length ? 2 : 0,
-                                    borderBottomStyle: 'dashed',
+                                    borderBottomStyle: "dashed",
                                     paddingTop: index === 0 ? 0 : 20,
                                     paddingBottom:
                                       index + 1 !== arr.length ? 20 : 0,
@@ -4437,8 +4426,8 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       <div
                                         className="absolute left-0 right-0 mx-auto bottom-2 rounded-full bg-gray-200"
                                         style={{
-                                          height: '5.5px',
-                                          width: '5.5px',
+                                          height: "5.5px",
+                                          width: "5.5px",
                                         }}
                                       ></div>
                                       <div className="font-semibold text-cyan-400">
@@ -4448,10 +4437,10 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                         className="relative flex-auto mb-2"
                                         style={{
                                           backgroundImage:
-                                            'linear-gradient(#e5e7eb, #e5e7eb)',
-                                          backgroundSize: '1px 100%',
-                                          backgroundRepeat: 'no-repeat',
-                                          backgroundPosition: 'center center',
+                                            "linear-gradient(#e5e7eb, #e5e7eb)",
+                                          backgroundSize: "1px 100%",
+                                          backgroundRepeat: "no-repeat",
+                                          backgroundPosition: "center center",
                                         }}
                                       ></div>
                                     </div>
@@ -4462,9 +4451,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           (data.date !== undefined)
                                             ? dateFormat(
                                                 data.date,
-                                                'dd mmmm yyyy'
+                                                "dd mmmm yyyy"
                                               )
-                                            : 'NO DATE'}
+                                            : "NO DATE"}
                                         </p>
                                         <div className="flex flex-row">
                                           <div className="flex-auto">
@@ -4473,14 +4462,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 !isReadMoreExpandedOuter(
                                                   data.id
                                                 )
-                                                  ? 'line-clamp-2'
-                                                  : ''
+                                                  ? "line-clamp-2"
+                                                  : ""
                                               }
                                               dangerouslySetInnerHTML={{
                                                 __html: data.name,
                                               }}
                                               style={{
-                                                wordBreak: 'break-word',
+                                                wordBreak: "break-word",
                                               }}
                                             ></p>
                                           </div>
@@ -4492,13 +4481,13 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                           />
                                         </div>
                                         <p
-                                          id={data.id + '.desc'}
+                                          id={data.id + ".desc"}
                                           className="mt-1 absolute text-red-200 pointer-events-none invisible"
                                           dangerouslySetInnerHTML={{
                                             __html: data.details,
                                           }}
                                           style={{
-                                            wordBreak: 'break-word',
+                                            wordBreak: "break-word",
                                             top: -10000,
                                             zIndex: -1000,
                                           }}
@@ -4508,25 +4497,25 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             (isReadMoreExpandedOuter(data.id) &&
                                             data.details
                                               ? !isReadMoreExpandedDesc(data.id)
-                                                ? ' line-clamp-5 '
-                                                : ' '
-                                              : ' hidden ') + ' mt-1'
+                                                ? " line-clamp-5 "
+                                                : " "
+                                              : " hidden ") + " mt-1"
                                           }
                                           dangerouslySetInnerHTML={{
                                             __html: data.details,
                                           }}
-                                          style={{ wordBreak: 'break-word' }}
+                                          style={{ wordBreak: "break-word" }}
                                         ></p>
                                         <button
-                                          id={data.id + '.descButton'}
+                                          id={data.id + ".descButton"}
                                           className="text-cyan-400"
                                           onClick={() =>
                                             handleReadMoreStateDesc(data.id)
                                           }
                                         >
                                           {isReadMoreExpandedDesc(data.id)
-                                            ? 'read less...'
-                                            : 'read more...'}
+                                            ? "read less..."
+                                            : "read more..."}
                                         </button>
                                         <button
                                           className={
@@ -4536,17 +4525,17 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             (data.backgrounds.items === null ||
                                               data.backgrounds.items.length ===
                                                 0) &&
-                                            data.details !== '' &&
+                                            data.details !== "" &&
                                             data.details !== null
-                                              ? 'block'
-                                              : 'hidden') +
-                                            ' text-cyan-400 mt-1'
+                                              ? "block"
+                                              : "hidden") +
+                                            " text-cyan-400 mt-1"
                                           }
                                           onClick={() =>
                                             handleReadMoreStateOuter(data.id)
                                           }
                                         >
-                                          read more{' '}
+                                          read more{" "}
                                           <FiChevronDown className="inline" />
                                         </button>
                                       </div>
@@ -4558,9 +4547,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                 (isReadMoreExpandedOuter(
                                                   data.id
                                                 ) || counter == arr.length - 1
-                                                  ? 'block'
-                                                  : 'hidden') +
-                                                ' flex flex-row mt-1'
+                                                  ? "block"
+                                                  : "hidden") +
+                                                " flex flex-row mt-1"
                                               }
                                               key={background.id}
                                             >
@@ -4569,9 +4558,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   (isReadMoreExpandedOuter(
                                                     data.id
                                                   )
-                                                    ? 'text-cyan-400'
-                                                    : 'text-gray-300') +
-                                                  ' font-semibold'
+                                                    ? "text-cyan-400"
+                                                    : "text-gray-300") +
+                                                  " font-semibold"
                                                 }
                                               >
                                                 {index + 1}.{counter + 1}
@@ -4582,9 +4571,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                     (!isReadMoreExpandedOuter(
                                                       data.id
                                                     )
-                                                      ? 'block'
-                                                      : 'hidden') +
-                                                    ' text-cyan-400'
+                                                      ? "block"
+                                                      : "hidden") +
+                                                    " text-cyan-400"
                                                   }
                                                 >
                                                   <button
@@ -4594,7 +4583,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       )
                                                     }
                                                   >
-                                                    read more{' '}
+                                                    read more{" "}
                                                     <FiChevronDown className="inline" />
                                                   </button>
                                                 </p>
@@ -4604,9 +4593,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       (isReadMoreExpandedOuter(
                                                         data.id
                                                       )
-                                                        ? 'inline-block'
-                                                        : 'hidden') +
-                                                      ' font-medium'
+                                                        ? "inline-block"
+                                                        : "hidden") +
+                                                      " font-medium"
                                                     }
                                                   >
                                                     {(background.date !==
@@ -4615,9 +4604,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       undefined)
                                                       ? dateFormat(
                                                           background.date,
-                                                          'dd mmmm yyyy'
+                                                          "dd mmmm yyyy"
                                                         )
-                                                      : 'NO DATE'}
+                                                      : "NO DATE"}
                                                     &nbsp;
                                                   </span>
                                                   <button
@@ -4628,9 +4617,9 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       background.description !==
                                                         null &&
                                                       background.description !==
-                                                        ''
-                                                        ? 'inline-block'
-                                                        : 'hidden'
+                                                        ""
+                                                        ? "inline-block"
+                                                        : "hidden"
                                                     }
                                                     onClick={() =>
                                                       handleReadMoreStateInner(
@@ -4644,12 +4633,12 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                       background.id
                                                     ) ? (
                                                       <span>
-                                                        &nbsp; read more{' '}
+                                                        &nbsp; read more{" "}
                                                         <FiChevronDown className="inline" />
                                                       </span>
                                                     ) : (
                                                       <span>
-                                                        &nbsp; read less{' '}
+                                                        &nbsp; read less{" "}
                                                         <FiChevronUp className="inline" />
                                                       </span>
                                                     )}
@@ -4663,14 +4652,14 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                                   data.id,
                                                   background.id
                                                 )
-                                                  ? 'block'
-                                                  : 'hidden'
+                                                  ? "block"
+                                                  : "hidden"
                                               }
                                               dangerouslySetInnerHTML={{
                                                 __html: background.description,
                                               }}
                                               style={{
-                                                wordBreak: 'break-word',
+                                                wordBreak: "break-word",
                                               }}
                                             ></p>
                                           </>
@@ -4678,7 +4667,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                       )}
                                       {isReadMoreExpandedDesc(data.id) |
                                         isReadMoreExpandedOuter(data.id) &&
-                                      ((data.details !== '') &
+                                      ((data.details !== "") &
                                         (data.details !== undefined) &
                                         (data.details !== null)) |
                                         ((data.backgrounds.items !== null) &
@@ -4690,7 +4679,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                                             handleCollapseAll(data.id)
                                           }
                                         >
-                                          collapse all{' '}
+                                          collapse all{" "}
                                           <FiChevronUp className="inline" />
                                         </button>
                                       ) : (
@@ -4711,7 +4700,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
                         <NoResultState
                           searchKey={searchFile}
                           message={
-                            'Check the spelling, try a more general term or look up a specific File.'
+                            "Check the spelling, try a more general term or look up a specific File."
                           }
                         />
                       </div>
@@ -4732,7 +4721,7 @@ query getFilesByMatter($isDeleted: Boolean, $limit: Int, $matterId: ID, $nextTok
 
       {showUploadModal && (
         <UploadLinkModal
-          title={''}
+          title={""}
           handleSave={handleUploadLink}
           bucketName={matter_id}
           handleModalClose={handleModalClose}
