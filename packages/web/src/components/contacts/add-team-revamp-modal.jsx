@@ -38,6 +38,16 @@ export default function AddTeamModal({
   const [IsHovering, setIsHovering] = useState(false);
   const [TeamName, setTeamName] = useState("");
 
+
+ const mCreateTeam = `
+ mutation createTeam($companyId: ID, $name: String) {
+  teamCreate(companyId: $companyId, name: $name){
+    id
+  }
+}
+  `;
+
+
   function StopPropagate(e) {
     e.stopPropagation();
   }

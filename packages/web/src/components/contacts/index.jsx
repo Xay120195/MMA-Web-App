@@ -45,7 +45,7 @@ export default function Contacts() {
   const [defaultCompany, setDefaultCompany] = useState("");
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowAddTeamModal, setShowAddTeamModal] = useState(false);
-  const [TeamList, setTeamList] = useState(teamdummy);
+  const [TeamList, setTeamList] = useState();
   const [ShowBurst, setShowBurst] = useState(false);
   const hideToast = () => {
     setShowToast(false);
@@ -69,7 +69,7 @@ export default function Contacts() {
   }
   `;
 
-    const qGetTeams = `
+  const qGetTeams = `
   query getTeamsByCompany($id: String) {
   company(id: $id) {
     teams {
@@ -82,66 +82,72 @@ export default function Contacts() {
 }
   `;
 
-    function onlyUnique(value, index, self) {
-      return self.indexOf(value) === index;
-    }
-    //Added 3 seconds turning to light blue when adding an entry
-    //Added fix for scrolling issue
-    useEffect(
-      (e) => {
-        anime({
-          targets: rows.current,
-          opacity: [0.4, 1],
-          duration: 1500,
-          easing: "cubicBezier(.5, .05, .1, .3)",
-        });
-
-        refLetters.current = refLetters.current.slice(0, alphabetArray.length);
-      },
-      [ContactList]
-    );
-
-    let getContacts = async () => {
-      const params = {
-        query: qGetContacts,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-        },
-      };
-
-      await API.graphql(params).then((companyUsers) => {
-        console.log("usersssss", companyUsers);
-        var temp = companyUsers.data.company.users.items;
-        temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
-        temp.map(
-          (x) =>
-            (x.firstName =
-              x.firstName.charAt(0).toUpperCase() +
-              x.firstName.slice(1).toLowerCase())
-        );
-        setDefaultCompany(companyUsers.data.company.name);
-        setContactList(temp);
-        //Sync the displayed letters only with the existing contacts
-        setAlphabets(
-          temp
-            .map((user) => user.firstName[0]) //get the first letter
-            .filter(onlyUnique)
-            .sort((a, b) => a.localeCompare(b))
-        );
+  function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+  }
+  //Added 3 seconds turning to light blue when adding an entry
+  //Added fix for scrolling issue
+  useEffect(
+    (e) => {
+      anime({
+        targets: rows.current,
+        opacity: [0.4, 1],
+        duration: 1500,
+        easing: "cubicBezier(.5, .05, .1, .3)",
       });
+
+      refLetters.current = refLetters.current.slice(0, alphabetArray.length);
+    },
+    [ContactList]
+  );
+
+  let getContacts = async () => {
+    const params = {
+      query: qGetContacts,
+      variables: {
+        companyId: localStorage.getItem("companyId"),
+      },
     };
 
-    let getTeams = async () => {
-      const params = {
-        query: qGetTeams,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-        },
-      };
+    await API.graphql(params).then((companyUsers) => {
+      console.log("usersssss", companyUsers);
+      var temp = companyUsers.data.company.users.items;
+      temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
+      temp.map(
+        (x) =>
+          (x.firstName =
+            x.firstName.charAt(0).toUpperCase() +
+            x.firstName.slice(1).toLowerCase())
+      );
+      setDefaultCompany(companyUsers.data.company.name);
+      setContactList(temp);
+      //Sync the displayed letters only with the existing contacts
+      setAlphabets(
+        temp
+          .map((user) => user.firstName[0]) //get the first letter
+          .filter(onlyUnique)
+          .sort((a, b) => a.localeCompare(b))
+      );
+    });
+  };
 
-      await API.graphql(params).then((teams) => {
-        console.log("teams", teams);
-        /* 
+  let getTeams = async () => {
+    const params = {
+      query: qGetTeams,
+      variables: {
+        companyId: localStorage.getItem("companyId"),
+      },
+    };
+
+    await API.graphql(params).then((teams) => {
+      console.log("teams", teams);
+      if (teams.data.company == null) {
+        setTeamList([]);
+        console.log(TeamList);
+      } else {
+        console.log("teamlist not null:", TeamList);
+      }
+      /* 
       var temp = companyUsers.data.company.users.items;
       temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
       temp.map(
@@ -160,8 +166,8 @@ export default function Contacts() {
           .sort((a, b) => a.localeCompare(b))
       );
       */
-      });
-    };
+    });
+  };
 
   const handleEditModal = (user) => {
     //Added edit modal open
