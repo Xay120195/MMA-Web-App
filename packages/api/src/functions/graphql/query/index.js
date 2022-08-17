@@ -3,33 +3,26 @@ const {
   GetItemCommand,
   ScanCommand,
   QueryCommand,
-  BatchGetItemCommand,
+  BatchGetItemCommand
 } = require("@aws-sdk/client-dynamodb");
 const { marshall, unmarshall } = require("@aws-sdk/util-dynamodb");
 const { getUser, listUsers } = require("../../../services/UserService");
 const { getRFI, listRFIs } = require("../../../services/RFIService");
 const {
   getCustomUserType,
-  listCustomUserTypes,
+  listCustomUserTypes
 } = require("../../../services/CustomUserTypeService");
 const { getTeam, listTeams } = require("../../../services/TeamService");
-const {
-  getRequest,
-  listRequests,
-} = require("../../../services/RequestService");
-const {
-  getFile,
-  getMatterFiles,
-  listFiles,
-} = require("../../../services/MatterFileService");
+const { getRequest, listRequests } = require("../../../services/RequestService");
+const { getFile, getMatterFiles, listFiles } = require("../../../services/MatterFileService");
 
 async function getCompany(data) {
   try {
     const param = {
       TableName: "CompanyTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -39,7 +32,7 @@ async function getCompany(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -48,7 +41,7 @@ async function getCompany(data) {
 async function listPages() {
   try {
     const param = {
-      TableName: "PageTable",
+      TableName: "PageTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -58,7 +51,7 @@ async function listPages() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -69,7 +62,7 @@ async function listPages() {
 async function listFeatures() {
   try {
     const param = {
-      TableName: "FeatureTable",
+      TableName: "FeatureTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -81,7 +74,7 @@ async function listFeatures() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -92,7 +85,7 @@ async function listFeatures() {
 async function listClients() {
   try {
     const param = {
-      TableName: "ClientsTable",
+      TableName: "ClientsTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -102,7 +95,7 @@ async function listClients() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -113,7 +106,7 @@ async function listClients() {
 async function listCompanies() {
   try {
     const param = {
-      TableName: "CompanyTable",
+      TableName: "CompanyTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -123,7 +116,7 @@ async function listCompanies() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -134,7 +127,7 @@ async function listCompanies() {
 async function listMatters() {
   try {
     const param = {
-      TableName: "MatterTable",
+      TableName: "MatterTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -144,7 +137,7 @@ async function listMatters() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -155,7 +148,7 @@ async function listMatters() {
 async function listLabels() {
   try {
     const param = {
-      TableName: "LabelsTable",
+      TableName: "LabelsTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -165,7 +158,7 @@ async function listLabels() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -175,7 +168,7 @@ async function listLabels() {
 async function listClientMatters() {
   try {
     const param = {
-      TableName: "ClientMatterTable",
+      TableName: "ClientMatterTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -185,7 +178,7 @@ async function listClientMatters() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -196,7 +189,7 @@ async function listBackgrounds() {
   try {
     const param = {
       TableName: "BackgroundsTable",
-      ScanIndexForward: false,
+      ScanIndexForward: false
     };
 
     const cmd = new ScanCommand(param);
@@ -206,7 +199,7 @@ async function listBackgrounds() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -220,8 +213,8 @@ async function getCompanyAccessType(data) {
       IndexName: "byCompany",
       KeyConditionExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
-        ":companyId": data.companyId,
-      }),
+        ":companyId": data.companyId
+      })
     };
 
     const cmd = new QueryCommand(param);
@@ -231,9 +224,7 @@ async function getCompanyAccessType(data) {
     var parseResponse = result;
 
     if (data.userType) {
-      parseResponse = result.filter(
-        (userType) => userType.userType === data.userType
-      );
+      parseResponse = result.filter((userType) => userType.userType === data.userType);
     }
 
     if (data.customUserType) {
@@ -248,7 +239,7 @@ async function getCompanyAccessType(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -259,8 +250,8 @@ async function getFeature(data) {
     const param = {
       TableName: "FeatureTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -269,7 +260,7 @@ async function getFeature(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -280,8 +271,8 @@ async function getPage(data) {
     const param = {
       TableName: "PageTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -290,7 +281,7 @@ async function getPage(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -301,8 +292,8 @@ async function getClient(data) {
     const param = {
       TableName: "ClientsTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -311,7 +302,7 @@ async function getClient(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -322,8 +313,8 @@ async function getMatter(data) {
     const param = {
       TableName: "MatterTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -332,7 +323,7 @@ async function getMatter(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -343,8 +334,8 @@ async function getLabel(data) {
     const param = {
       TableName: "LabelsTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -353,7 +344,7 @@ async function getLabel(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -373,24 +364,22 @@ async function bulkGetLabels(data) {
       const labelsParam = {
         RequestItems: {
           LabelsTable: {
-            Keys: labelIds,
-          },
-        },
+            Keys: labelIds
+          }
+        }
       };
 
       const labelsCommand = new BatchGetItemCommand(labelsParam);
       const labelsResult = await ddbClient.send(labelsCommand);
 
-      const objLabels = labelsResult.Responses.LabelsTable.map((i) =>
-        unmarshall(i)
-      );
+      const objLabels = labelsResult.Responses.LabelsTable.map((i) => unmarshall(i));
 
       return objLabels;
     }
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -403,8 +392,8 @@ async function listColumnSettingsByTable(data) {
       IndexName: "byTableName",
       KeyConditionExpression: "tableName = :tableName",
       ExpressionAttributeValues: marshall({
-        ":tableName": data.tableName,
-      }),
+        ":tableName": data.tableName
+      })
     };
 
     const cmd = new QueryCommand(param);
@@ -415,7 +404,7 @@ async function listColumnSettingsByTable(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -426,8 +415,8 @@ async function getBackground(data) {
     const param = {
       TableName: "BackgroundsTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -436,7 +425,7 @@ async function getBackground(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -448,8 +437,8 @@ async function getClientMatter(data) {
     const param = {
       TableName: "ClientMatterTable",
       Key: marshall({
-        id: clientMatterId,
-      }),
+        id: clientMatterId
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -460,7 +449,7 @@ async function getClientMatter(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -476,42 +465,33 @@ async function getUserColumnSettings(data) {
       IndexName: "byUser",
       KeyConditionExpression: "userId = :userId",
       ExpressionAttributeValues: marshall({
-        ":userId": userId,
-      }),
+        ":userId": userId
+      })
     };
 
-    const userColumnSettingsCommand = new QueryCommand(
-      userColumnSettingsParams
-    );
-    const userColumnSettingsRequest = await ddbClient.send(
-      userColumnSettingsCommand
-    );
+    const userColumnSettingsCommand = new QueryCommand(userColumnSettingsParams);
+    const userColumnSettingsRequest = await ddbClient.send(userColumnSettingsCommand);
 
-    const columnSettingsIds = userColumnSettingsRequest.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.columnSettings.id }));
+    const columnSettingsIds = userColumnSettingsRequest.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.columnSettings.id })
+    );
 
     if (columnSettingsIds.length != 0) {
       const ColumnSettingsParams = {
         RequestItems: {
           ColumnSettingsTable: {
-            Keys: columnSettingsIds,
-          },
-        },
+            Keys: columnSettingsIds
+          }
+        }
       };
 
-      const columnSettingsCommand = new BatchGetItemCommand(
-        ColumnSettingsParams
-      );
+      const columnSettingsCommand = new BatchGetItemCommand(ColumnSettingsParams);
       const columnSettingsResult = await ddbClient.send(columnSettingsCommand);
 
-      const objColumnSettings =
-        columnSettingsResult.Responses.ColumnSettingsTable.map((i) =>
-          unmarshall(i)
-        );
-      const objUserColumnSettings = userColumnSettingsRequest.Items.map((i) =>
+      const objColumnSettings = columnSettingsResult.Responses.ColumnSettingsTable.map((i) =>
         unmarshall(i)
       );
+      const objUserColumnSettings = userColumnSettingsRequest.Items.map((i) => unmarshall(i));
 
       result = objUserColumnSettings
         .map((item) => {
@@ -523,15 +503,12 @@ async function getUserColumnSettings(data) {
         .filter(({ columnSettings }) => columnSettings.tableName === tableName);
     }
 
-    const resp =
-      Object.keys(result).length !== 0 && result !== null && result !== {}
-        ? result
-        : [];
+    const resp = Object.keys(result).length !== 0 && result !== null && result !== {} ? result : [];
     return resp;
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -542,8 +519,8 @@ async function getBrief(data) {
     const param = {
       TableName: "BriefTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -552,7 +529,7 @@ async function getBrief(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -563,16 +540,15 @@ async function getBriefByName(data) {
     const { clientMatterId, name } = data;
     const ExpressionAttributeValues = {
       ":clientMatterId": clientMatterId,
-      ":isDeleted": false,
+      ":isDeleted": false
     };
 
     const cmBriefParam = {
       TableName: "ClientMatterBriefTable",
       IndexName: "byClientMatter",
       KeyConditionExpression: "clientMatterId = :clientMatterId",
-      FilterExpression:
-        "isDeleted = :isDeleted OR attribute_not_exists(isDeleted)",
-      ExpressionAttributeValues: marshall(ExpressionAttributeValues),
+      FilterExpression: "isDeleted = :isDeleted OR attribute_not_exists(isDeleted)",
+      ExpressionAttributeValues: marshall(ExpressionAttributeValues)
     };
 
     const cmBriefCmd = new QueryCommand(cmBriefParam);
@@ -586,23 +562,19 @@ async function getBriefByName(data) {
       const briefParam = {
         RequestItems: {
           BriefTable: {
-            Keys: briefIds,
-          },
-        },
+            Keys: briefIds
+          }
+        }
       };
 
       const briefCommand = new BatchGetItemCommand(briefParam);
       const briefResult = await ddbClient.send(briefCommand);
 
-      const objBriefs = briefResult.Responses.BriefTable.map((i) =>
-        unmarshall(i)
-      );
+      const objBriefs = briefResult.Responses.BriefTable.map((i) => unmarshall(i));
 
       const response = objCMBrief
         .map((item) => {
-          const filterBrief = objBriefs.find(
-            (u) => u.id === item.briefId && u.name === name
-          );
+          const filterBrief = objBriefs.find((u) => u.id === item.briefId && u.name === name);
 
           if (filterBrief !== undefined) {
             return { ...item, ...filterBrief };
@@ -614,13 +586,13 @@ async function getBriefByName(data) {
     } else {
       return {
         items: [{ id: "" }],
-        nextToken: null,
+        nextToken: null
       };
     }
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -629,7 +601,7 @@ async function getBriefByName(data) {
 async function listBriefs() {
   try {
     const param = {
-      TableName: "BriefTable",
+      TableName: "BriefTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -639,7 +611,7 @@ async function listBriefs() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -651,8 +623,8 @@ async function getGmailMessage(data) {
     const param = {
       TableName: "GmailMessageTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -661,7 +633,7 @@ async function getGmailMessage(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -673,8 +645,8 @@ async function getAttachment(data) {
     const param = {
       TableName: "GmailMessageAttachment",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
     const cmd = new GetItemCommand(param);
     const { Item } = await ddbClient.send(cmd);
@@ -682,7 +654,7 @@ async function getAttachment(data) {
   } catch (e) {
     const resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -691,7 +663,7 @@ async function getAttachment(data) {
 async function listGmailMessages() {
   try {
     const param = {
-      TableName: "GmailMessageTable",
+      TableName: "GmailMessageTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -701,7 +673,7 @@ async function listGmailMessages() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -828,7 +800,10 @@ const resolvers = {
     team: async (ctx) => {
       return getTeam(ctx.arguments);
     },
-  },
+    defaultUserType: () => {
+      return ["OWNER", "LEGALADMIN", "BARRISTER", "EXPERT", "CLIENT", "WITNESS"];
+    }
+  }
 };
 
 exports.handler = async (ctx) => {
