@@ -814,7 +814,12 @@ custom:
         field: members
         request: false
         response: false
-
+      - dataSource: LambdaQueryDS
+        type: Query
+        field: defaultUserType
+        request: false
+        response: false
+        
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA
