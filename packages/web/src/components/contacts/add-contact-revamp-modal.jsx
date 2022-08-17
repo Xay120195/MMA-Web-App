@@ -278,10 +278,6 @@ export default function AddContactModal({
                   />
                 </div>
 
-
-                
-
-
                 {/* <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`Client Name`}
@@ -317,7 +313,7 @@ export default function AddContactModal({
                     }
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
-                </div> */}
+                </div> 
               </div>
 
               <div className="flex flex-row">
@@ -325,17 +321,18 @@ export default function AddContactModal({
                   <div className="text-sm font-medium text-gray-400">
                     {`Client`}
                   </div>
-                    <CreatableSelect
-                              // options={clientsOptions}
-                      isClearable
-                      isSearchable
-                              // onChange={handleClientChanged}
-                              // value={selectedClient}
-                      placeholder="Client"
-                      className="w-56 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
-                    />
-              </div>
-
+                  <CreatableSelect
+                    // options={clientsOptions}
+                    isClearable
+                    isSearchable
+                    // onChange={handleClientChanged}
+                    // value={selectedClient}
+                    placeholder="Client"
+                    className="w-56 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                  />
+                </div>
+*/}
+                {/* 
               <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`Matter`}
@@ -350,7 +347,7 @@ export default function AddContactModal({
                       className=" w-56 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
                     />
               </div>
-
+*/}
               </div>
             </div>
           ))}

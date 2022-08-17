@@ -10,7 +10,9 @@ export default function DeleteModal({
   ContactList,
   getContacts,
   setalertMessage,
-  setShowToast
+  setShowToast,
+  isTeam,
+  getTeams,
 }) {
   function StopPropagate(e) {
     e.stopPropagation();
@@ -81,16 +83,50 @@ export default function DeleteModal({
     );
   };
 
-  const mDeleteUser=`mutation deleteUser($companyId: ID, $email: AWSEmail, $id: ID) {
+  const mDeleteTeam = `mutation deleteTeam($id: ID) {
+  teamDelete(id: $id) {
+    id
+  }
+}`;
+  const mDeleteUser = `mutation deleteUser($companyId: ID, $email: AWSEmail, $id: ID) {
     userDelete(id: $id, companyId: $companyId, email: $email) {
       id
     }
   }`;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     close();
-    deleteUser(toDeleteid, userCompanyId, userEmail);
+    if (isTeam) {
+      await deleteTeam(toDeleteid);
+    } else {
+      deleteUser(toDeleteid, userCompanyId, userEmail);
+    }
+  };
 
+  const deleteTeam = async (id) => {
+    const request = await API.graphql({
+      query: mDeleteTeam,
+      variables: {
+        id: id,
+      },
+    });
+
+    console.log("mDeleteTeam", request);
+
+    if (request) {
+      await getTeams();
+      setalertMessage(`Team Deleted Sucessfully`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 5000);
+    } else {
+      setalertMessage(`Cannot Delete Team. Please contact support`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 4000);
+    }
   };
 
   function deleteUser(userid, usercompanyId, useremail) {
@@ -99,33 +135,30 @@ export default function DeleteModal({
       variables: {
         id: userid,
         companyId: usercompanyId,
-        email: useremail
+        email: useremail,
       },
     });
- 
-    if(request){
+
+    if (request) {
       var contactsCopy = ContactList;
-      contactsCopy.map((x, index)=>
-        x.id === userid ? 
-          contactsCopy.splice(index, 1) : x
+      contactsCopy.map((x, index) =>
+        x.id === userid ? contactsCopy.splice(index, 1) : x
       );
       setContactList(contactsCopy);
-      
+
       setalertMessage(`User Deleted Sucessfully`);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
         getContacts();
       }, 5000);
-    }else{
+    } else {
       setalertMessage(`Cannot Delete User. Please contact support`);
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
       }, 4000);
     }
-    
-    
   }
 
   const Delete = () => {
@@ -139,7 +172,7 @@ export default function DeleteModal({
         className="px-16 py-1 flex flex-row font-medium text-md justify-center
           items-center text-white bg-red-500 rounded-md gap-2 hover:bg-white
           hover:text-red-500 border border-red-500"
-          >
+      >
         Delete
         <svg
           width="16"
