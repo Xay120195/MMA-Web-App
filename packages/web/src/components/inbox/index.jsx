@@ -451,13 +451,10 @@ const Inbox = () => {
   }
 
   const handleSearchGmailChange = (e) => {
-    console.log("handleSearchGmailChange()", e.target.value);
     setSearchGmail(e.target.value);
   };
 
   const filterRecord = (v) => {
-    console.log("filter", v);
-
     if(openTab === 1) {
       if (v === "") {
         getUnSavedEmails(emailFilters);
@@ -465,7 +462,6 @@ const Inbox = () => {
         const filterRecord = unSavedEmails.filter((x) =>
           x.subject.toLowerCase().includes(v.toLowerCase())
         );
-        console.log("filterRecord:", filterRecord);
         setUnsavedEmails(filterRecord);
       }
     } else {
@@ -475,14 +471,10 @@ const Inbox = () => {
         const filterRecord = savedEmails.filter((x) =>
           x.subject.toLowerCase().includes(v.toLowerCase())
         );
-
-        console.log("filterRecord:", filterRecord);
         setSavedEmails(filterRecord);
       }
     }
   };
-
-  console.log("Correct Values: ", unSavedEmails);
 
   return (
     <>
