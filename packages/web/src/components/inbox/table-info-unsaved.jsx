@@ -98,12 +98,9 @@ const TableUnsavedInfo = ({
   const [isShiftDown, setIsShiftDown] = useState(false);
   const [lastSelectedItem, setLastSelectedItem] = useState(null);
   const companyId = localStorage.getItem("companyId");
-
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
-
   const [enabledArrays, setEnabledArrays] = useState([]);
-
   const [options, setOptions] = useState(null);
   const [ShowAddLabel, setShowAddLabel] = useState([{ index: 0, show: false }]);
   const [ShowLabelDescription, setShowLabelDescription] = useState(false);
@@ -567,7 +564,6 @@ const TableUnsavedInfo = ({
       console("List reference not found || cache not found!");
     }
   };
-
   
   return (
     <>
