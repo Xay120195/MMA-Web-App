@@ -49,7 +49,7 @@ export default function Contacts() {
   const [defaultCompany, setDefaultCompany] = useState("");
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowAddTeamModal, setShowAddTeamModal] = useState(false);
-  const [TeamList, setTeamList] = useState(teamdummy);
+  const [TeamList, setTeamList] = useState(null);
   const [ShowBurst, setShowBurst] = useState(false);
   const hideToast = () => {
     setShowToast(false);
@@ -101,6 +101,25 @@ export default function Contacts() {
 }
   `;
 
+
+  const qGetTeamsWithMembers = `query getTeamMembers($id: ID) {
+  team(id: $id) {
+    id
+    name
+    members {
+      items {
+        id
+        userType
+        user {
+          id
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+}`;
+
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
   }
@@ -151,41 +170,24 @@ export default function Contacts() {
   };
 
   let getTeams = async () => {
+    console.log("Company ID", localStorage.getItem("companyId"));
     const params = {
-      query: qGetTeams,
+      query: qGetTeamsWithMembers,
       variables: {
-        companyId: localStorage.getItem("companyId"),
+        id: localStorage.getItem("companyId"),
       },
     };
 
     await API.graphql(params).then((teams) => {
       console.log("teams", teams);
       if (teams.data.company == null) {
-        //setTeamList([]);
-        console.log(TeamList);
+        setTeamList([]);
+        console.log("teamlist is null", teams);
       } else {
-        console.log("teamlist not null:", TeamList);
+        console.log("Successfully set team", teams.data.company.teams.items);
+        setTeamList(teams.data.company.teams.items);
       }
-      /* 
-      var temp = companyUsers.data.company.users.items;
-      temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
-      temp.map(
-        (x) =>
-          (x.firstName =
-            x.firstName.charAt(0).toUpperCase() +
-            x.firstName.slice(1).toLowerCase())
-      );
-      setDefaultCompany(companyUsers.data.company.name);
-      setContactList(temp);
-      console.log("contacts", temp);
-      //Sync the displayed letters only with the existing contacts
-      setAlphabets(
-        temp
-          .map((user) => user.firstName[0]) //get the first letter
-          .filter(onlyUnique)
-          .sort((a, b) => a.localeCompare(b))
-      );
-      */
+
     });
   };
 
@@ -274,9 +276,10 @@ export default function Contacts() {
   useEffect(() => {
     if (ContactList === null) {
       getContacts();
-      
     }
+
     getTeams();
+
     window.addEventListener(
       "scroll",
       () => {
@@ -301,10 +304,10 @@ export default function Contacts() {
         const currentScrollPos = window.pageYOffset;
 
         refLetters.current.map((ref, i) => {
-          if (ref===null){
-            refLetters.current.splice(refLetters.current.indexOf(ref), 1)
+          if (ref === null) {
+            refLetters.current.splice(refLetters.current.indexOf(ref), 1);
           }
-        })
+        });
 
         refLetters.current.forEach((ref, i) => {
           if (ref !== null) {
@@ -317,8 +320,7 @@ export default function Contacts() {
             if (currentScrollPos >= top && currentScrollPos <= bottom) {
               setShortcutSelected(String(ref.id));
             }
-          }else{
-
+          } else {
           }
         });
       },
@@ -578,6 +580,8 @@ export default function Contacts() {
               setContactList={setContactList}
               ShowBurst={ShowBurst}
               getTeams={getTeams}
+              setalertMessage={setalertMessage}
+              setShowToast={setShowToast}
             />
           )}
         </div>
@@ -621,6 +625,7 @@ export default function Contacts() {
           TeamList={TeamList}
           getContacts={getContacts}
           setShowBurst={setShowBurst}
+          getTeams={getTeams}
         />
       )}
       {showToast && (

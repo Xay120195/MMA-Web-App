@@ -16,6 +16,9 @@ export default function TeamsTab({
   ContactList,
   setContactList,
   ShowBurst,
+  getTeams,
+  setalertMessage,
+  setShowToast
 }) {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [TeamList, setTeamList] = useState(teams);
@@ -25,17 +28,17 @@ export default function TeamsTab({
   const [CurrentTeam, setCurrentTeam] = useState();
   const [ToDeleteID, setToDeleteID] = useState();
 
-
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
   }
   useEffect(() => {
+    console.log("INSIDE TAB", teams);
     setTeamList(teams);
   }, [teams]);
 
   useEffect(() => {
     setAlphabets(
-      TeamList.map((team) => team.teamName[0])
+      TeamList.map((team) => team.name[0])
         .filter(onlyUnique)
         .sort((a, b) => a.localeCompare(b))
     );
@@ -44,14 +47,14 @@ export default function TeamsTab({
   const handleSort = (sortedReverse, sortBy) => {
     if (sortedReverse) {
       if (sortBy === "name") {
-        setTeamList(teams.sort((a, b) => a.teamName.localeCompare(b.teamName)));
+        setTeamList(teams.sort((a, b) => a.name.localeCompare(b.name)));
         Alphabets.sort();
         alphabetArray.sort();
       }
     } else {
       if (sortBy === "name") {
         setTeamList(
-          teams.sort((a, b) => a.teamName.localeCompare(b.teamName)).reverse()
+          teams.sort((a, b) => a.name.localeCompare(b.name)).reverse()
         );
         Alphabets.sort().reverse();
         alphabetArray.sort().reverse();
@@ -134,19 +137,35 @@ export default function TeamsTab({
                   {TeamList &&
                     TeamList.map(
                       (team, index) =>
-                        team.teamName.charAt(0) === letter && (
+                        team.name.charAt(0) === letter && (
                           <tr key={team.id} className={"stripe opacity-100"}>
                             <td className="p-2">
                               <div className="flex items-center gap-x-2 ">
-                                <span>{team.teamName}'s Team</span>
+                                <span>{team.name}'s Team</span>
                                 <span className="text-xs rounded-full bg-gray-200 font-medium p-1">
-                                  {team.members.length} members
+                                  {/*team.members.length*/} 5 members
                                 </span>
                               </div>
                             </td>
                             <td className="p-2 text-right">
                               <div className="relative text-right left-0">
                                 <span>
+                                  {/* We have no members in backend teams yet replace with dummy*/}
+
+                                  {new Array(5).fill(0).map((x, i) => (
+                                    <img
+                                      alt={``}
+                                      className="absolute rounded-full w-8 h-8 border-2 border-white"
+                                      style={{
+                                        zIndex: i,
+                                        right: `${i * 25}px`,
+                                        top: "-15px",
+                                      }}
+                                      src={`https://i.pravatar.cc/70?img=${i}`}
+                                    />
+                                  ))}
+
+                                  {/* 
                                   {team.members.map((x, i) => (
                                     <img
                                       alt={``}
@@ -159,6 +178,7 @@ export default function TeamsTab({
                                       src={`https://i.pravatar.cc/70?img=${i}`}
                                     />
                                   ))}
+                                  */}
                                 </span>
                               </div>
                             </td>
@@ -197,6 +217,10 @@ export default function TeamsTab({
           toDeleteid={ToDeleteID}
           setContactList={setTeamList}
           ContactList={TeamList}
+          isTeam={true}
+          getTeams={getTeams}
+          setalertMessage={setalertMessage}
+          setShowToast={setShowToast}
         />
       )}
       {ShowEditModal && (

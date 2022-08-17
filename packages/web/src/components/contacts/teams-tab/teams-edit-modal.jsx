@@ -34,7 +34,14 @@ function uuidv4() {
 
 const LOCAL_STORAGE_KEY = "clientApp.teams";
 
-export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTeam }) {
+
+
+export default function TeamsEditModal({
+  close,
+  setTeamList,
+  TeamList,
+  CurrentTeam,
+}) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isEditing, setisEditing] = useState(false);
@@ -45,6 +52,13 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
   const [Image, setImage] = useState();
 
   const inputFile = useRef(null);
+
+  const mUpdateTeam = `mutation updateTeam($id: ID, $name: String) {
+  teamUpdate(name: $name, id: $id) {
+    id
+  }
+} `;
+
   useEffect((e) => {
     anime({
       targets: modalContainer.current,

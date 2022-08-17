@@ -49,6 +49,9 @@ export default function AddTeamModal({
   `;
 
 
+
+
+  
   function StopPropagate(e) {
     e.stopPropagation();
   }
@@ -118,23 +121,27 @@ export default function AddTeamModal({
 
   const handleAddTeam = async () => {
     console.group("Handle add team");
-    const request = API.graphql({
+    console.log("Company ID", localStorage.getItem("companyId"));
+    const request = await API.graphql({
       query: mCreateTeam,
       variables: {
         //$companyId: ID, $name: String
         companyId: localStorage.getItem("companyId"),
-        name: TeamName,
+        name: toTitleCase(TeamName),
       },
     });
 
     console.log("mCreateTeam", request);
 
-    setShowBurst(true);
-    setTimeout(() => {
-      setShowBurst(false);
-      getTeams();
-    }, 3000);
-
+    if (request) {
+      setShowBurst(true);
+      await getTeams();
+      setTimeout(() => {
+        setShowBurst(false);
+      }, 3000);
+    } else {
+      alert("Failed to add teams");
+    }
     console.groupEnd();
   };
 
@@ -163,21 +170,6 @@ export default function AddTeamModal({
         }
       }
   `;
-
-  async function inviteUser(data) {
-    const request = API.graphql({
-      query: mInviteUser,
-      variables: {
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        userType: data.userType,
-        company: data.company, //{id: companyID, name: companyName}
-      },
-    });
-
-    console.log("successful", request);
-  }
 
   const handleSubmit = () => {
     generateFinal();
@@ -326,7 +318,8 @@ export default function AddTeamModal({
             disabled={isDisabled}
             onClick={() => {
               //generateFinal();
-              handleSubmit();
+              //handleSubmit();
+              handleAddTeam();
               close();
             }}
             className={
