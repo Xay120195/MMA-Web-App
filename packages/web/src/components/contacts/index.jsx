@@ -143,8 +143,10 @@ export default function Contacts() {
 }
 `;
 
-  const mTagTeamMember = `mutation tagTeamMember($teamId: ID, $members: [MemberInput] = [{userId: ID, userType: UserType}, {userId: ID, userType: UserType}, {userId: ID, userType: UserType}]) {
-  teamMemberTag(teamId: $teamId, members: $members)
+  const mTagTeamMember = `mutation tagTeamMember($teamId: ID, $members: [MemberInput]) {
+  teamMemberTag(teamId: $teamId, members: $members) {
+    id
+  }
 }`;
 
   let tagTeamMember = async (teamId, members) => {
