@@ -157,7 +157,7 @@ const TableUnsavedInfo = ({
     setShowToast(false);
   };
 
-  const handleSaveDesc = async (e, id, rowId) => {
+  const handleSaveDesc = async (e, id, rowId, index) => {
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -180,6 +180,7 @@ const TableUnsavedInfo = ({
       setUnsavedEmails(updateArrAttachment);
       setResultMessage("Successfully updated.");
       setShowToast(true);
+      autoAdjustRowHeight(index);
     }
   };
 
@@ -260,7 +261,7 @@ const TableUnsavedInfo = ({
     setEnabledArrays(temp);
   };
 
-  const handleSaveMainDesc = async (e, id) => {
+  const handleSaveMainDesc = async (e, id, rowId) => {
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -278,6 +279,7 @@ const TableUnsavedInfo = ({
         return emails;
       });
       setUnsavedEmails(newArrDescription);
+      autoAdjustRowHeight(rowId);
     }
   };
 
@@ -544,6 +546,10 @@ const TableUnsavedInfo = ({
     });
   }
 
+  const handleOnKeyupRows = (e, rowId) => {
+    autoAdjustRowHeight(rowId);
+  }
+
   const autoAdjustRowHeight = (index) => {
     //bindList and cache must not be null
     console.log("Items", bindList);
@@ -557,6 +563,7 @@ const TableUnsavedInfo = ({
     }
   };
 
+  
   return (
     <>
       <table
@@ -779,19 +786,20 @@ const TableUnsavedInfo = ({
                                     cursor: "auto",
                                     outlineColor: "rgb(204, 204, 204, 0.5)",
                                     outlineWidth: "thin",
-                                    minHeight: "35px",
-                                    maxHeight: "35px",
+                                    //minHeight: "35px",
+                                    //maxHeight: "35px",
                                     overflow: "auto",
                                   }}
                                   suppressContentEditableWarning
                                   dangerouslySetInnerHTML={{
                                     __html: item.description,
                                   }}
-                                  onBlur={(e) => handleSaveMainDesc(e, item.id)}
+                                  onBlur={(e) => handleSaveMainDesc(e, item.id, index)}
+                                  onInput={(e) => handleOnKeyupRows(e, index)}
                                   contentEditable={true}
                                 ></p>
                                 {item.attachments.items.map(
-                                  (item_attach, index) => (
+                                  (item_attach, indexAttachments) => (
                                     <React.Fragment key={item_attach.id}>
                                       <div className="flex items-start mt-2">
                                         <p
@@ -824,9 +832,9 @@ const TableUnsavedInfo = ({
                                             outlineColor:
                                               "rgb(204, 204, 204, 0.5)",
                                             outlineWidth: "thin",
-                                            minHeight: "35px",
-                                            maxHeight: "35px",
-                                            overflow: "auto",
+                                            //minHeight: "35px",
+                                            //maxHeight: "35px",
+                                            //overflow: "auto",
                                           }}
                                           suppressContentEditableWarning
                                           dangerouslySetInnerHTML={{
@@ -836,9 +844,11 @@ const TableUnsavedInfo = ({
                                             handleSaveDesc(
                                               e,
                                               item_attach.id,
-                                              item.id
+                                              item.id,
+                                              index
                                             )
                                           }
+                                          onInput={(e) => handleOnKeyupRows(e, index)}
                                           contentEditable=
                                             {!item_attach.isDeleted || item_attach.isDeleted === null ? 
                                               true : false
@@ -851,7 +861,7 @@ const TableUnsavedInfo = ({
                                               handleDeleteAttachment(
                                                 item_attach.id,
                                                 item.id,
-                                                index,
+                                                indexAttachments,
                                                 true,
                                                 e
                                               )
@@ -866,7 +876,7 @@ const TableUnsavedInfo = ({
                                             handleDeleteAttachment(
                                               item_attach.id,
                                               item.id,
-                                              index,
+                                              indexAttachments,
                                               false,
                                               e
                                             )
