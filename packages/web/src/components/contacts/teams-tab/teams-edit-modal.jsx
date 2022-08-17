@@ -34,7 +34,17 @@ function uuidv4() {
 
 const LOCAL_STORAGE_KEY = "clientApp.teams";
 
-export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTeam }) {
+
+
+export default function TeamsEditModal({
+  close,
+  setTeamList,
+  TeamList,
+  CurrentTeam,
+  getCompanyUsers,
+  CompanyUsers,
+  UserTypes,
+}) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isEditing, setisEditing] = useState(false);
@@ -45,6 +55,18 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
   const [Image, setImage] = useState();
 
   const inputFile = useRef(null);
+
+  const mUpdateTeam = `mutation updateTeam($id: ID, $name: String) {
+  teamUpdate(name: $name, id: $id) {
+    id
+  }
+} `;
+
+  const mTagTeamMember = `
+  mutation tagTeamMember($teamId: ID, $members: [MemberInput] = [{userId: ID, userType: UserType}, {userId: ID, userType: UserType}, {userId: ID, userType: UserType}]) {
+  teamMemberTag(teamId: $teamId, members: $members)
+}`;
+
   useEffect((e) => {
     anime({
       targets: modalContainer.current,
@@ -64,7 +86,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
 
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      JSON.stringify(CurrentTeam.members)
+      JSON.stringify(CurrentTeam.members.items)
     );
     const stored = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
 
@@ -72,8 +94,10 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
       setInputData(stored);
     }
 
-    setTeamName(CurrentTeam.teamName);
+    setTeamName(CurrentTeam.name);
     setImage(CurrentTeam.image);
+    console.log("Company Users", CompanyUsers);
+    console.log("INSIDE User Types", UserTypes);
   }, []);
 
   const RowCard = ({ image, member }) => {
@@ -98,11 +122,11 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
 
   const ChangesHaveMade = (obj, i) => {
     console.log("HIT");
-    if (CurrentTeam.members[i]) {
+    if (CurrentTeam.members.items[i]) {
       if (
-        obj.name !== CurrentTeam.members[i].name ||
-        obj.userType !== CurrentTeam.members[i].userType ||
-        TeamName !== CurrentTeam.teamName ||
+        obj.name !== CurrentTeam.members.items[i].name ||
+        obj.userType !== CurrentTeam.members.items[i].userType ||
+        TeamName !== CurrentTeam.name ||
         Image !== CurrentTeam.image
       ) {
         return true;
@@ -333,9 +357,9 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
 
             <div className={`flex flex-col justify-start gap-1 items-start`}>
               <div className="text-base font-semibold flex flex-row gap-2">
-                {`${CurrentTeam.teamName}'s Team`} {isEditing && <FiEdit />}
+                {`${CurrentTeam.name}'s Team`} {isEditing && <FiEdit />}
               </div>
-              <div className="pl-2 uppercase rounded-full bg-gray-200 font-semibold p-0.5 text-xs">{`${CurrentTeam.members.length} members`}</div>
+              <div className="pl-2 uppercase rounded-full bg-gray-200 font-semibold p-0.5 text-xs">{`${CurrentTeam.members.items.length} members`}</div>
             </div>
             {isEditing ? <CancelButton /> : <EditTeamButton />}
           </div>
@@ -384,7 +408,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
                             DropdownIndicator: DropdownIndicator,
                           }}
                           name={`name`}
-                          options={options}
+                          options={CompanyUsers}
                           type="text"
                           value={{
                             value: x.name,
@@ -407,7 +431,7 @@ export default function TeamsEditModal({ close, setTeamList, TeamList, CurrentTe
                             DropdownIndicator: DropdownIndicator,
                           }}
                           name={`userType`}
-                          options={options2}
+                          options={UserTypes}
                           type="text"
                           isDisabled={!isEditing}
                           value={{

@@ -49,8 +49,10 @@ export default function Contacts() {
   const [defaultCompany, setDefaultCompany] = useState("");
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowAddTeamModal, setShowAddTeamModal] = useState(false);
-  const [TeamList, setTeamList] = useState(teamdummy);
+  const [TeamList, setTeamList] = useState([]);
   const [ShowBurst, setShowBurst] = useState(false);
+  const [CompanyUsers, setCompanyUsers] = useState([]);
+  const [UserTypes, setUserTypes] = useState([]);
   const hideToast = () => {
     setShowToast(false);
   };
@@ -88,7 +90,7 @@ export default function Contacts() {
   }
   `;
 
-    const qGetTeams = `
+  const qGetTeams = `
   query getTeamsByCompany($id: String) {
   company(id: $id) {
     teams {
@@ -101,66 +103,141 @@ export default function Contacts() {
 }
   `;
 
-    function onlyUnique(value, index, self) {
-      return self.indexOf(value) === index;
+  const qGetTeamsWithMembers = `
+  query getTeamMembers($id: ID) {
+  team(id: $id) {
+    id
+    name
+    members {
+      items {
+        id
+        userType
+        user {
+          id
+          firstName
+          lastName
+        }
+      }
     }
-    //Added 3 seconds turning to light blue when adding an entry
-    //Added fix for scrolling issue
-    useEffect(
-      (e) => {
-        anime({
-          targets: rows.current,
-          opacity: [0.4, 1],
-          duration: 1500,
-          easing: "cubicBezier(.5, .05, .1, .3)",
-        });
+  }
+}`;
 
-        refLetters.current = refLetters.current.slice(0, alphabetArray.length);
+  const qGetCompanyUsers = `
+  query getCompanyUsers($id: String) {
+  company(id: $id) {
+    id
+    users {
+      items {
+        id
+        firstName
+        lastName
+        email
+      }
+    }
+  }
+}`;
+
+  const qListUserTypes = `
+  query getDefaultUserTypes {
+  defaultUserType
+}
+`;
+
+  const mTagTeamMember = `mutation tagTeamMember($teamId: ID, $members: [MemberInput]) {
+  teamMemberTag(teamId: $teamId, members: $members) {
+    id
+  }
+}`;
+
+  let tagTeamMember = async (teamId, members) => {
+    console.log("teamId", teamId);
+    console.log("members", members);
+    const params = {
+      query: mTagTeamMember,
+      variables: {
+        teamId: teamId,
+        members: members,
       },
-      [ContactList]
-    );
-
-    let getContacts = async () => {
-      const params = {
-        query: qGetContacts,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-        },
-      };
-
-      await API.graphql(params).then((companyUsers) => {
-        console.log("usersssss", companyUsers);
-        var temp = companyUsers.data.company.users.items;
-        temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
-        temp.map(
-          (x) =>
-            (x.firstName =
-              x.firstName.charAt(0).toUpperCase() +
-              x.firstName.slice(1).toLowerCase())
-        );
-        setDefaultCompany(companyUsers.data.company.name);
-        setContactList(temp);
-        //Sync the displayed letters only with the existing contacts
-        setAlphabets(
-          temp
-            .map((user) => user.firstName[0]) //get the first letter
-            .filter(onlyUnique)
-            .sort((a, b) => a.localeCompare(b))
-        );
-      });
     };
 
-    let getTeams = async () => {
-      const params = {
-        query: qGetTeams,
-        variables: {
-          companyId: localStorage.getItem("companyId"),
-        },
-      };
+    const request = await API.graphql(params);
+    console.log("TagTeamMember", request);
+  };
 
-      await API.graphql(params).then((teams) => {
-        console.log("teams", teams);
-        /* 
+  let getCompanyUsers = async () => {
+    const params = {
+      query: qGetCompanyUsers,
+      variables: {
+        id: localStorage.getItem("companyId"),
+      },
+    };
+
+    await API.graphql(params).then((users) => {
+      console.log("users", users);
+      if (users.data.company == null) {
+        setCompanyUsers([]);
+      } else {
+        users.data.company.users.items.map((user, idx) => {
+          console.log("USER", user, " ", idx);
+          let name = user.firstName + " " + user.lastName;
+          let temp = {
+            value: name,
+            label: name,
+            id: user.id,
+          };
+          setCompanyUsers((prev) => [...prev, temp]);
+        });
+      }
+    });
+  };
+
+  let getUserTypes = async () => {
+    const params = {
+      query: qListUserTypes,
+    };
+
+    await API.graphql(params).then((userTypes) => {
+      if (userTypes.data.defaultUserType) {
+        console.log("userTypes", userTypes.data.defaultUserType);
+        userTypes.data.defaultUserType.map((userType) => {
+          let oUserType = {
+            value: userType,
+            label: userType,
+          };
+          setUserTypes((prev) => [...prev, oUserType]);
+        });
+      }
+    });
+  };
+  function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+  }
+  //Added 3 seconds turning to light blue when adding an entry
+  //Added fix for scrolling issue
+  useEffect(
+    (e) => {
+      anime({
+        targets: rows.current,
+        opacity: [0.4, 1],
+        duration: 1500,
+        easing: "cubicBezier(.5, .05, .1, .3)",
+      });
+
+      refLetters.current = refLetters.current.slice(0, alphabetArray.length);
+    },
+    [ContactList]
+  );
+
+  let getContacts = async () => {
+    const params = {
+      query: qGetContacts,
+      variables: {
+        companyId: localStorage.getItem("companyId"),
+      },
+    };
+
+    await API.graphql(params).then((companyUsers) => {
+      console.log("usersssss", companyUsers);
       var temp = companyUsers.data.company.users.items;
       temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
       temp.map(
@@ -171,7 +248,6 @@ export default function Contacts() {
       );
       setDefaultCompany(companyUsers.data.company.name);
       setContactList(temp);
-      console.log("contacts", temp);
       //Sync the displayed letters only with the existing contacts
       setAlphabets(
         temp
@@ -179,9 +255,56 @@ export default function Contacts() {
           .filter(onlyUnique)
           .sort((a, b) => a.localeCompare(b))
       );
-      */
-      });
+    });
+  };
+
+  useEffect(() => {
+    console.log("teamlist", TeamList);
+  }, [TeamList]);
+
+  let getTeams = async () => {
+    console.log("Company ID", localStorage.getItem("companyId"));
+    setTeamList([]); //clear first when called
+    let params = {
+      query: qGetTeams,
+      variables: {
+        id: localStorage.getItem("companyId"),
+      },
     };
+
+    await API.graphql(params).then((teams) => {
+      console.log("teams", teams);
+      if (teams.data.company == null) {
+        setTeamList([]);
+        console.log("teamlist is null", teams);
+      } else {
+        console.log("Successfully set team", teams.data.company.teams.items);
+        //setTeamList(teams.data.company.teams.items);
+
+        //get the actual team
+        teams.data.company.teams.items.map(async (team) => {
+          params = {
+            query: qGetTeamsWithMembers,
+            variables: {
+              id: team.id,
+            },
+          };
+
+          await API.graphql(params).then((team) => {
+            console.log(team.data.team);
+            if (team.data.team) {
+              let temp = {
+                id: team.data.team.id,
+                name: team.data.team.name,
+                members: team.data.team.members,
+              };
+              setTeamList((prev) => [...prev, temp]);
+            }
+          });
+        });
+      }
+    });
+  };
 
   const handleEditModal = (user) => {
     //Added edit modal open
@@ -268,9 +391,12 @@ export default function Contacts() {
   useEffect(() => {
     if (ContactList === null) {
       getContacts();
-      
     }
+
     getTeams();
+    getCompanyUsers();
+    getUserTypes();
+
     window.addEventListener(
       "scroll",
       () => {
@@ -295,10 +421,10 @@ export default function Contacts() {
         const currentScrollPos = window.pageYOffset;
 
         refLetters.current.map((ref, i) => {
-          if (ref===null){
-            refLetters.current.splice(refLetters.current.indexOf(ref), 1)
+          if (ref === null) {
+            refLetters.current.splice(refLetters.current.indexOf(ref), 1);
           }
-        })
+        });
 
         refLetters.current.forEach((ref, i) => {
           if (ref !== null) {
@@ -311,8 +437,7 @@ export default function Contacts() {
             if (currentScrollPos >= top && currentScrollPos <= bottom) {
               setShortcutSelected(String(ref.id));
             }
-          }else{
-
+          } else {
           }
         });
       },
@@ -535,13 +660,21 @@ export default function Contacts() {
                                         onClick={() => handleEditModal(contact)}
                                       />
                                     </button>
-                                    <button className=
-                                    {contact.id === localStorage.getItem("userId") ? 
-                                    "hidden" : "p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200"}
+                                    <button
+                                      className={
+                                        contact.id ===
+                                        localStorage.getItem("userId")
+                                          ? "hidden"
+                                          : "p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200"
+                                      }
                                     >
                                       <CgTrash
                                         onClick={() =>
-                                          handleDeleteModal(contact.id, contact.email, contact.company)
+                                          handleDeleteModal(
+                                            contact.id,
+                                            contact.email,
+                                            contact.company
+                                          )
                                         }
                                       />
                                     </button>
@@ -563,6 +696,11 @@ export default function Contacts() {
               ContactList={ContactList}
               setContactList={setContactList}
               ShowBurst={ShowBurst}
+              getTeams={getTeams}
+              setalertMessage={setalertMessage}
+              setShowToast={setShowToast}
+              UserTypes={UserTypes}
+              CompanyUsers={CompanyUsers}
             />
           )}
         </div>
@@ -589,7 +727,6 @@ export default function Contacts() {
         )}
       </main>
 
-
       {showAddContactModal && (
         <AddContactModal
           close={() => setshowAddContactModal(false)}
@@ -607,12 +744,15 @@ export default function Contacts() {
           TeamList={TeamList}
           getContacts={getContacts}
           setShowBurst={setShowBurst}
+          getTeams={getTeams}
+          UserTypes={UserTypes}
+          CompanyUsers={CompanyUsers}
+          tagTeamMember={tagTeamMember}
         />
       )}
       {showToast && (
         <ToastNotification title={alertMessage} hideToast={hideToast} />
       )}
-
     </>
   );
 }
