@@ -467,37 +467,42 @@ const TableUnsavedInfo = ({
     var mainLabels = labelsList;
     var cmid;
 
-    if (cmidarr.length > 0) {
-      cmid = cmidarr[0].client.id;
-    } else {
-      cmid = "";
-    }
-
-    if (labelsList.length > 0 || labelsList !== null) {
-      for (var i = 0; i < labelsList.length; i++) {
-        // console.log("optionscheck",labelsList[i]);
-
-        if (mainLabels[i].labelsExtracted.length === 0) {
-          return [];
-        } else {
-          if (mainLabels[i].cmid === cmid) {
-            if (mainLabels[i].labelsExtracted.length === 0) {
-              return [];
-            } else {
-              const newOptions = mainLabels[i].labelsExtracted.map(
-                ({ id: value, name: label }) => ({
-                  value,
-                  label,
-                })
-              );
-              return newOptions;
+    setTimeout(() => {
+      if (cmidarr.length > 0) {
+        cmid = cmidarr[0].client.id;
+      } else {
+        cmid = "";
+      }
+  
+      if (labelsList.length > 0 || labelsList !== null) {
+        for (var i = 0; i < labelsList.length; i++) {
+          // console.log("optionscheck",labelsList[i]);
+  
+          if (mainLabels[i].labelsExtracted.length === 0) {
+            return [{value: "test", label: "no labels extracted"}];
+          } else {
+            if (mainLabels[i].cmid === cmid) {
+              // if (mainLabels[i].labelsExtracted.length === 0) {
+              //   return [];
+              // } else {
+                const newOptions = mainLabels[i].labelsExtracted.map(
+                  ({ id: value, name: label }) => ({
+                    value,
+                    label,
+                  })
+                );
+                return newOptions;
+              //}
             }
           }
         }
+      } else {
+        return [{value: "test", label: "labelsList null"}];
       }
-    } else {
-      return [];
-    }
+
+    }, 2000);
+
+    
   };
 
   const previewAndDownloadFile = async (id) => {
