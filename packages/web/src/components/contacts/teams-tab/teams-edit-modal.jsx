@@ -41,6 +41,9 @@ export default function TeamsEditModal({
   setTeamList,
   TeamList,
   CurrentTeam,
+  getCompanyUsers,
+  CompanyUsers,
+  UserTypes,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -58,6 +61,11 @@ export default function TeamsEditModal({
     id
   }
 } `;
+
+  const mTagTeamMember = `
+  mutation tagTeamMember($teamId: ID, $members: [MemberInput] = [{userId: ID, userType: UserType}, {userId: ID, userType: UserType}, {userId: ID, userType: UserType}]) {
+  teamMemberTag(teamId: $teamId, members: $members)
+}`;
 
   useEffect((e) => {
     anime({
@@ -78,7 +86,7 @@ export default function TeamsEditModal({
 
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      JSON.stringify(CurrentTeam.members)
+      JSON.stringify(CurrentTeam.members.items)
     );
     const stored = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
 
@@ -86,8 +94,10 @@ export default function TeamsEditModal({
       setInputData(stored);
     }
 
-    setTeamName(CurrentTeam.teamName);
+    setTeamName(CurrentTeam.name);
     setImage(CurrentTeam.image);
+    console.log("Company Users", CompanyUsers);
+    console.log("INSIDE User Types", UserTypes);
   }, []);
 
   const RowCard = ({ image, member }) => {
@@ -112,11 +122,11 @@ export default function TeamsEditModal({
 
   const ChangesHaveMade = (obj, i) => {
     console.log("HIT");
-    if (CurrentTeam.members[i]) {
+    if (CurrentTeam.members.items[i]) {
       if (
-        obj.name !== CurrentTeam.members[i].name ||
-        obj.userType !== CurrentTeam.members[i].userType ||
-        TeamName !== CurrentTeam.teamName ||
+        obj.name !== CurrentTeam.members.items[i].name ||
+        obj.userType !== CurrentTeam.members.items[i].userType ||
+        TeamName !== CurrentTeam.name ||
         Image !== CurrentTeam.image
       ) {
         return true;
@@ -347,9 +357,9 @@ export default function TeamsEditModal({
 
             <div className={`flex flex-col justify-start gap-1 items-start`}>
               <div className="text-base font-semibold flex flex-row gap-2">
-                {`${CurrentTeam.teamName}'s Team`} {isEditing && <FiEdit />}
+                {`${CurrentTeam.name}'s Team`} {isEditing && <FiEdit />}
               </div>
-              <div className="pl-2 uppercase rounded-full bg-gray-200 font-semibold p-0.5 text-xs">{`${CurrentTeam.members.length} members`}</div>
+              <div className="pl-2 uppercase rounded-full bg-gray-200 font-semibold p-0.5 text-xs">{`${CurrentTeam.members.items.length} members`}</div>
             </div>
             {isEditing ? <CancelButton /> : <EditTeamButton />}
           </div>
@@ -398,7 +408,7 @@ export default function TeamsEditModal({
                             DropdownIndicator: DropdownIndicator,
                           }}
                           name={`name`}
-                          options={options}
+                          options={CompanyUsers}
                           type="text"
                           value={{
                             value: x.name,
@@ -421,7 +431,7 @@ export default function TeamsEditModal({
                             DropdownIndicator: DropdownIndicator,
                           }}
                           name={`userType`}
-                          options={options2}
+                          options={UserTypes}
                           type="text"
                           isDisabled={!isEditing}
                           value={{

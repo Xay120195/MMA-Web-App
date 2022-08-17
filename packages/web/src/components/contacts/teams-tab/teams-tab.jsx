@@ -18,7 +18,9 @@ export default function TeamsTab({
   ShowBurst,
   getTeams,
   setalertMessage,
-  setShowToast
+  setShowToast,
+  UserTypes,
+  CompanyUsers,
 }) {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [TeamList, setTeamList] = useState(teams);
@@ -37,12 +39,17 @@ export default function TeamsTab({
   }, [teams]);
 
   useEffect(() => {
+    console.log("UserTypes", UserTypes);
+  }, [UserTypes]);
+
+  useEffect(() => {
     setAlphabets(
       TeamList.map((team) => team.name[0])
         .filter(onlyUnique)
         .sort((a, b) => a.localeCompare(b))
     );
   }, [TeamList]);
+
 
   const handleSort = (sortedReverse, sortBy) => {
     if (sortedReverse) {
@@ -134,6 +141,7 @@ export default function TeamsTab({
                       </div>
                     </td>
                   </tr>
+
                   {TeamList &&
                     TeamList.map(
                       (team, index) =>
@@ -143,14 +151,14 @@ export default function TeamsTab({
                               <div className="flex items-center gap-x-2 ">
                                 <span>{team.name}'s Team</span>
                                 <span className="text-xs rounded-full bg-gray-200 font-medium p-1">
-                                  {/*team.members.length*/} 5 members
+                                  {team.members.items.length} members
                                 </span>
                               </div>
                             </td>
                             <td className="p-2 text-right">
                               <div className="relative text-right left-0">
                                 <span>
-                                  {/* We have no members in backend teams yet replace with dummy*/}
+                                  {/* We have no members in backend teams yet replace with dummy
 
                                   {new Array(5).fill(0).map((x, i) => (
                                     <img
@@ -164,21 +172,25 @@ export default function TeamsTab({
                                       src={`https://i.pravatar.cc/70?img=${i}`}
                                     />
                                   ))}
-
-                                  {/* 
-                                  {team.members.map((x, i) => (
-                                    <img
-                                      alt={``}
-                                      className="absolute rounded-full w-8 h-8 border-2 border-white"
-                                      style={{
-                                        zIndex: i,
-                                        right: `${i * 25}px`,
-                                        top: "-15px",
-                                      }}
-                                      src={`https://i.pravatar.cc/70?img=${i}`}
-                                    />
-                                  ))}
                                   */}
+
+                                  {team.members.items.length === 0 ||
+                                  team.members.items === [] ? (
+                                    <div>No member found</div>
+                                  ) : (
+                                    team.members.items.map((x, i) => (
+                                      <img
+                                        alt={``}
+                                        className="absolute rounded-full w-8 h-8 border-2 border-white"
+                                        style={{
+                                          zIndex: i,
+                                          right: `${i * 25}px`,
+                                          top: "-15px",
+                                        }}
+                                        src={`https://i.pravatar.cc/70?img=${i}`}
+                                      />
+                                    ))
+                                  )}
                                 </span>
                               </div>
                             </td>
@@ -187,6 +199,7 @@ export default function TeamsTab({
                                 <button className="p-3 w-max font-semibold text-gray-500 rounded-full hover:bg-gray-200">
                                   <FaEdit
                                     onClick={() => {
+                                      console.log("SETTING TEAM", team);
                                       setShowEditModal(true);
                                       setCurrentTeam(team);
                                     }}
@@ -230,6 +243,8 @@ export default function TeamsTab({
           setTeamList={setTeamList}
           TeamList={TeamList}
           CurrentTeam={CurrentTeam}
+          CompanyUsers={CompanyUsers}
+          UserTypes={UserTypes}
         />
       )}
     </>

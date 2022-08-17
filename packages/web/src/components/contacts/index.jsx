@@ -49,8 +49,10 @@ export default function Contacts() {
   const [defaultCompany, setDefaultCompany] = useState("");
   const [Alphabets, setAlphabets] = useState([]);
   const [ShowAddTeamModal, setShowAddTeamModal] = useState(false);
-  const [TeamList, setTeamList] = useState(null);
+  const [TeamList, setTeamList] = useState([]);
   const [ShowBurst, setShowBurst] = useState(false);
+  const [CompanyUsers, setCompanyUsers] = useState([]);
+  const [UserTypes, setUserTypes] = useState([]);
   const hideToast = () => {
     setShowToast(false);
   };
@@ -101,8 +103,8 @@ export default function Contacts() {
 }
   `;
 
-
-  const qGetTeamsWithMembers = `query getTeamMembers($id: ID) {
+  const qGetTeamsWithMembers = `
+  query getTeamMembers($id: ID) {
   team(id: $id) {
     id
     name
@@ -120,6 +122,91 @@ export default function Contacts() {
   }
 }`;
 
+  const qGetCompanyUsers = `
+  query getCompanyUsers($id: String) {
+  company(id: $id) {
+    id
+    users {
+      items {
+        id
+        firstName
+        lastName
+        email
+      }
+    }
+  }
+}`;
+
+  const qListUserTypes = `
+  query getDefaultUserTypes {
+  defaultUserType
+}
+`;
+
+  const mTagTeamMember = `mutation tagTeamMember($teamId: ID, $members: [MemberInput] = [{userId: ID, userType: UserType}, {userId: ID, userType: UserType}, {userId: ID, userType: UserType}]) {
+  teamMemberTag(teamId: $teamId, members: $members)
+}`;
+
+  let tagTeamMember = async (teamId, members) => {
+    console.log("teamId", teamId);
+    console.log("members", members);
+    const params = {
+      query: mTagTeamMember,
+      variables: {
+        teamId: teamId,
+        members: members,
+      },
+    };
+
+    const request = await API.graphql(params);
+    console.log("TagTeamMember", request);
+  };
+
+  let getCompanyUsers = async () => {
+    const params = {
+      query: qGetCompanyUsers,
+      variables: {
+        id: localStorage.getItem("companyId"),
+      },
+    };
+
+    await API.graphql(params).then((users) => {
+      console.log("users", users);
+      if (users.data.company == null) {
+        setCompanyUsers([]);
+      } else {
+        users.data.company.users.items.map((user, idx) => {
+          console.log("USER", user, " ", idx);
+          let name = user.firstName + " " + user.lastName;
+          let temp = {
+            value: name,
+            label: name,
+            id: user.id,
+          };
+          setCompanyUsers((prev) => [...prev, temp]);
+        });
+      }
+    });
+  };
+
+  let getUserTypes = async () => {
+    const params = {
+      query: qListUserTypes,
+    };
+
+    await API.graphql(params).then((userTypes) => {
+      if (userTypes.data.defaultUserType) {
+        console.log("userTypes", userTypes.data.defaultUserType);
+        userTypes.data.defaultUserType.map((userType) => {
+          let oUserType = {
+            value: userType,
+            label: userType,
+          };
+          setUserTypes((prev) => [...prev, oUserType]);
+        });
+      }
+    });
+  };
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
   }
@@ -169,10 +256,15 @@ export default function Contacts() {
     });
   };
 
+  useEffect(() => {
+    console.log("teamlist", TeamList);
+  }, [TeamList]);
+
   let getTeams = async () => {
     console.log("Company ID", localStorage.getItem("companyId"));
-    const params = {
-      query: qGetTeamsWithMembers,
+    setTeamList([]); //clear first when called
+    let params = {
+      query: qGetTeams,
       variables: {
         id: localStorage.getItem("companyId"),
       },
@@ -185,9 +277,30 @@ export default function Contacts() {
         console.log("teamlist is null", teams);
       } else {
         console.log("Successfully set team", teams.data.company.teams.items);
-        setTeamList(teams.data.company.teams.items);
-      }
+        //setTeamList(teams.data.company.teams.items);
 
+        //get the actual team
+        teams.data.company.teams.items.map(async (team) => {
+          params = {
+            query: qGetTeamsWithMembers,
+            variables: {
+              id: team.id,
+            },
+          };
+
+          await API.graphql(params).then((team) => {
+            console.log(team.data.team);
+            if (team.data.team) {
+              let temp = {
+                id: team.data.team.id,
+                name: team.data.team.name,
+                members: team.data.team.members,
+              };
+              setTeamList((prev) => [...prev, temp]);
+            }
+          });
+        });
+      }
     });
   };
 
@@ -279,6 +392,8 @@ export default function Contacts() {
     }
 
     getTeams();
+    getCompanyUsers();
+    getUserTypes();
 
     window.addEventListener(
       "scroll",
@@ -582,6 +697,8 @@ export default function Contacts() {
               getTeams={getTeams}
               setalertMessage={setalertMessage}
               setShowToast={setShowToast}
+              UserTypes={UserTypes}
+              CompanyUsers={CompanyUsers}
             />
           )}
         </div>
@@ -626,6 +743,9 @@ export default function Contacts() {
           getContacts={getContacts}
           setShowBurst={setShowBurst}
           getTeams={getTeams}
+          UserTypes={UserTypes}
+          CompanyUsers={CompanyUsers}
+          tagTeamMember={tagTeamMember}
         />
       )}
       {showToast && (

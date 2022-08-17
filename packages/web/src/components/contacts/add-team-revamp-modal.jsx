@@ -4,6 +4,7 @@ import Select from "react-select";
 import { API, input } from "aws-amplify";
 
 import anime from "animejs";
+import { format } from "prettier";
 
 const options = [
   { value: "Thomas Edison", label: "Thomas Edison" },
@@ -32,15 +33,18 @@ export default function AddTeamModal({
   getContacts,
   setShowBurst,
   getTeams,
+  UserTypes,
+  CompanyUsers,
+  tagTeamMember,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isDisabled, setisDisabled] = useState(false);
   const [IsHovering, setIsHovering] = useState(false);
   const [TeamName, setTeamName] = useState("");
+  const [FinalData, setFinalData] = useState([]);
 
-
- const mCreateTeam = `
+  const mCreateTeam = `
  mutation createTeam($companyId: ID, $name: String) {
   teamCreate(companyId: $companyId, name: $name){
     id
@@ -48,10 +52,6 @@ export default function AddTeamModal({
 }
   `;
 
-
-
-
-  
   function StopPropagate(e) {
     e.stopPropagation();
   }
@@ -81,21 +81,37 @@ export default function AddTeamModal({
   const [InputData, setInputData] = useState([
     {
       id: uuidv4(),
-      name: "",
+      firstName: "",
+      lastName: "",
       userType: "",
+      userId: "",
     },
   ]);
 
   const validate = (obj) => {
-    if (obj.name && obj.userType && TeamName) {
+    if (obj.firstName && obj.lastName && obj.userType && TeamName) {
       return true;
     } else return false;
   };
 
   useEffect(() => {
     const validations = InputData.map((input) => validate(input));
+    let oFinal = InputData.map((input) => {
+      let final = {
+        userId: input.userId,
+        userType: input.userType,
+      };
+
+      return final;
+    });
+
+    setFinalData(oFinal);
     setisDisabled(validations.includes(false));
   }, [InputData, TeamName]);
+
+  useEffect(() => {
+    console.log("FinalData", FinalData);
+  }, [FinalData]);
 
   const handleOnChange = (e, i, property) => {
     const { value } = e.target;
@@ -104,9 +120,33 @@ export default function AddTeamModal({
     setInputData(list);
   };
 
+  const buildName = (value) => {
+    console.log(value.split(" "));
+    let arr = value.split(" ");
+    if (arr.length > 2) {
+      return {
+        firstName: arr[0] + " " + arr[1],
+        lastName: arr[2],
+      };
+    } else {
+      return {
+        firstName: arr[0],
+        lastName: arr[1],
+      };
+    }
+  };
+
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
-    list[i][property] = e.value;
+    if (property === "name") {
+      let name = buildName(e.value);
+      list[i]["firstName"] = name.firstName;
+      list[i]["lastName"] = name.lastName;
+      list[i]["userId"] = e.id;
+      console.log("ID", e.id);
+    } else {
+      list[i][property] = e.value;
+    }
     setInputData(list);
   };
 
@@ -134,6 +174,7 @@ export default function AddTeamModal({
     console.log("mCreateTeam", request);
 
     if (request) {
+      await tagTeamMember(request.data.teamCreate.id, FinalData);
       setShowBurst(true);
       await getTeams();
       setTimeout(() => {
@@ -239,11 +280,11 @@ export default function AddTeamModal({
                   </div>
                   <Select
                     name={`name`}
-                    options={options}
+                    options={CompanyUsers}
                     type="text"
                     value={{
-                      value: x.name,
-                      label: x.name,
+                      value: x.firstName + " " + x.lastName,
+                      label: x.firstName + " " + x.lastName,
                     }}
                     onChange={(e, val) => handleSelectChange(e, val, i, `name`)}
                     className="rounded-md  w-80 focus:border-gray-100 text-gray-400"
@@ -255,7 +296,7 @@ export default function AddTeamModal({
                   </div>
                   <Select
                     name={`userType`}
-                    options={options}
+                    options={UserTypes}
                     type="text"
                     value={{
                       value: x.userType,
@@ -291,8 +332,10 @@ export default function AddTeamModal({
                 ...InputData,
                 {
                   id: uuidv4(),
-                  name: "",
+                  firstName: "",
+                  lastName: "",
                   userType: "",
+                  userId: "",
                 },
               ]);
             }}
