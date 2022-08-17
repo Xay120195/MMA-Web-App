@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { alphabetArray } from "../alphabet";
+import { alphabetArray } from "../../../constants/Alphabet";
 import { CgTrash, CgSortAz, CgSortZa } from "react-icons/cg";
 import { FaEdit } from "react-icons/fa";
 import BlankStateTeams from "./blank-state";

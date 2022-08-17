@@ -10,7 +10,7 @@ import { API } from "aws-amplify";
 import AddContactModal from "./add-contact-revamp-modal";
 import DeleteModal from "./delete-modal";
 import User from "./user";
-import { alphabetArray } from "./alphabet";
+import { alphabetArray } from "../../constants/Alphabet";
 import ContactInformationModal from "./contact-information-modal";
 import dummy from "./dummy.json";
 import TeamsTab from "./teams-tab/teams-tab";
