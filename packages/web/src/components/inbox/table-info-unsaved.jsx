@@ -706,8 +706,8 @@ const TableUnsavedInfo = ({
                                     </div>
                                     {show && snippetId === item.id && (
                                       <div
-                                        ref={(el) => (ref.current[index] = el)}
-                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                        ref={ref}
+                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-screen overflow-auto"
                                         id={item.id}
                                       >
                                         <p>From : {item.from}</p>
