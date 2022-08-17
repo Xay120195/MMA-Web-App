@@ -1,9 +1,9 @@
-import '../../assets/styles/AccountSettings.css';
-import './contacts.css';
+import "../../assets/styles/AccountSettings.css";
+import "./contacts.css";
 
-import { CgChevronLeft, CgSortAz, CgSortZa, CgTrash } from 'react-icons/cg';
-import { FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
-import { Link, useHistory } from 'react-router-dom';
+import { CgChevronLeft, CgSortAz, CgSortZa, CgTrash } from "react-icons/cg";
+import { FaEdit, FaTrash, FaUsers } from "react-icons/fa";
+import { Link, useHistory } from "react-router-dom";
 import React, { useEffect, useState, useRef } from "react";
 import anime from "animejs";
 import { API } from "aws-amplify";
@@ -12,12 +12,11 @@ import DeleteModal from "./delete-modal";
 import User from "./user";
 import { alphabetArray } from "../../constants/Alphabet";
 import ContactInformationModal from "./contact-information-modal";
-import dummy from "./dummy.json";
-import TeamsTab from "./teams-tab/teams-tab";
-import teamdummy from "./teams-tab/teams.json";
-import AddTeamModal from "./add-team-revamp-modal";
-import ToastNotification from '../toast-notification';
 
+import TeamsTab from "./teams-tab/teams-tab";
+
+import AddTeamModal from "./add-team-revamp-modal";
+import ToastNotification from "../toast-notification";
 
 export default function Contacts() {
   const [showAddContactModal, setshowAddContactModal] = useState(false);
@@ -156,8 +155,8 @@ export default function Contacts() {
       query: mTagTeamMember,
       variables: {
         teamId: teamId,
-        members: members,
-      },
+        members: members
+      }
     };
 
     const request = await API.graphql(params);
@@ -168,8 +167,8 @@ export default function Contacts() {
     const params = {
       query: qGetCompanyUsers,
       variables: {
-        id: localStorage.getItem("companyId"),
-      },
+        id: localStorage.getItem("companyId")
+      }
     };
 
     await API.graphql(params).then((users) => {
@@ -183,7 +182,7 @@ export default function Contacts() {
           let temp = {
             value: name,
             label: name,
-            id: user.id,
+            id: user.id
           };
           setCompanyUsers((prev) => [...prev, temp]);
         });
@@ -193,7 +192,7 @@ export default function Contacts() {
 
   let getUserTypes = async () => {
     const params = {
-      query: qListUserTypes,
+      query: qListUserTypes
     };
 
     await API.graphql(params).then((userTypes) => {
@@ -202,7 +201,7 @@ export default function Contacts() {
         userTypes.data.defaultUserType.map((userType) => {
           let oUserType = {
             value: userType,
-            label: userType,
+            label: userType
           };
           setUserTypes((prev) => [...prev, oUserType]);
         });
@@ -220,7 +219,7 @@ export default function Contacts() {
         targets: rows.current,
         opacity: [0.4, 1],
         duration: 1500,
-        easing: "cubicBezier(.5, .05, .1, .3)",
+        easing: "cubicBezier(.5, .05, .1, .3)"
       });
 
       refLetters.current = refLetters.current.slice(0, alphabetArray.length);
@@ -232,8 +231,8 @@ export default function Contacts() {
     const params = {
       query: qGetContacts,
       variables: {
-        companyId: localStorage.getItem("companyId"),
-      },
+        companyId: localStorage.getItem("companyId")
+      }
     };
 
     await API.graphql(params).then((companyUsers) => {
@@ -242,9 +241,7 @@ export default function Contacts() {
       temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
       temp.map(
         (x) =>
-          (x.firstName =
-            x.firstName.charAt(0).toUpperCase() +
-            x.firstName.slice(1).toLowerCase())
+          (x.firstName = x.firstName.charAt(0).toUpperCase() + x.firstName.slice(1).toLowerCase())
       );
       setDefaultCompany(companyUsers.data.company.name);
       setContactList(temp);
@@ -268,8 +265,8 @@ export default function Contacts() {
     let params = {
       query: qGetTeams,
       variables: {
-        id: localStorage.getItem("companyId"),
-      },
+        id: localStorage.getItem("companyId")
+      }
     };
 
     await API.graphql(params).then((teams) => {
@@ -286,8 +283,8 @@ export default function Contacts() {
           params = {
             query: qGetTeamsWithMembers,
             variables: {
-              id: team.id,
-            },
+              id: team.id
+            }
           };
 
           await API.graphql(params).then((team) => {
@@ -296,7 +293,7 @@ export default function Contacts() {
               let temp = {
                 id: team.data.team.id,
                 name: team.data.team.name,
-                members: team.data.team.members,
+                members: team.data.team.members
               };
               setTeamList((prev) => [...prev, temp]);
             }
@@ -332,14 +329,10 @@ export default function Contacts() {
       }
     } else {
       if (sortBy === "firstName") {
-        ContactList.sort((a, b) =>
-          a.firstName.localeCompare(b.firstName)
-        ).reverse();
+        ContactList.sort((a, b) => a.firstName.localeCompare(b.firstName)).reverse();
         alphabetArray.sort().reverse();
       } else if (sortBy === "userType") {
-        ContactList.sort((a, b) =>
-          a.userType.localeCompare(b.userType)
-        ).reverse();
+        ContactList.sort((a, b) => a.userType.localeCompare(b.userType)).reverse();
         alphabetArray.sort().reverse();
       }
     }
@@ -384,8 +377,7 @@ export default function Contacts() {
 
   const scrollToView = (target) => {
     const el = document.getElementById(target);
-    el &&
-      window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" }); //added fixed scrolling
+    el && window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" }); //added fixed scrolling
   };
 
   useEffect(() => {
@@ -450,10 +442,7 @@ export default function Contacts() {
       <main className="pl-0 p-5 sm:pl-20 w-full ">
         {/* header */}
         <div className="sticky top-0 py-4 flex items-center gap-2 bg-white z-10">
-          <div
-            onClick={() => history.replace("/dashboard")}
-            className="w-8 py-5 cursor-pointer"
-          >
+          <div onClick={() => history.replace("/dashboard")} className="w-8 py-5 cursor-pointer">
             <CgChevronLeft />
           </div>
           <div>
@@ -461,8 +450,7 @@ export default function Contacts() {
               <span className="text-lg font-bold">Contacts</span>{" "}
               <span className="text-lg font-light">
                 {" "}
-                of {localStorage.getItem("firstName")}{" "}
-                {localStorage.getItem("lastName")}
+                of {localStorage.getItem("firstName")} {localStorage.getItem("lastName")}
               </span>
             </p>
             <div className="flex items-center gap-3 text-gray-500">
@@ -542,18 +530,13 @@ export default function Contacts() {
                     key={letter}
                     onClick={(e) => {
                       //To prevent double setting shortcut selecting only set if user is in bottom of screen
-                      if (
-                        window.innerHeight + window.scrollY >=
-                        document.body.offsetHeight
-                      ) {
+                      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
                         setShortcutSelected(letter);
                       }
                       scrollToView(letter);
                     }}
                     style={{
-                      transform: `translateX(${
-                        letter === shortcutSelected ? "10px" : "0px"
-                      })`,
+                      transform: `translateX(${letter === shortcutSelected ? "10px" : "0px"})`
                     }}
                     className={`text-center text-gray-400 cursor-pointer transition-all font-bold  hover:scale-110 hover:text-blue-600 ${
                       shortcutSelected === letter && "text-cyan-500"
@@ -656,14 +639,11 @@ export default function Contacts() {
                                 <td className="p-2">
                                   <div className="flex items-center gap-x-2">
                                     <button className="p-3 w-max font-semibold text-gray-500 rounded-full hover:bg-gray-200">
-                                      <FaEdit
-                                        onClick={() => handleEditModal(contact)}
-                                      />
+                                      <FaEdit onClick={() => handleEditModal(contact)} />
                                     </button>
                                     <button
                                       className={
-                                        contact.id ===
-                                        localStorage.getItem("userId")
+                                        contact.id === localStorage.getItem("userId")
                                           ? "hidden"
                                           : "p-3 text-red-400 w-max font-semibold rounded-full hover:bg-gray-200"
                                       }
@@ -750,9 +730,7 @@ export default function Contacts() {
           tagTeamMember={tagTeamMember}
         />
       )}
-      {showToast && (
-        <ToastNotification title={alertMessage} hideToast={hideToast} />
-      )}
+      {showToast && <ToastNotification title={alertMessage} hideToast={hideToast} />}
     </>
   );
 }
