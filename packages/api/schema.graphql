@@ -613,6 +613,7 @@ type Query {
   gmailAttachment(id: String): GmailMessageAttachment
   teams: [Team]
   team(id: ID): Team
+  defaultUserType: [UserType]
 }
 
 type Mutation {
