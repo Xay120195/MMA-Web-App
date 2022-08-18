@@ -159,6 +159,7 @@ export default function AddTeamModal({
   const handleAddTeam = async () => {
     console.group("Handle add team");
     console.log("Company ID", localStorage.getItem("companyId"));
+    setisLoading(true);
     const request = await API.graphql({
       query: mCreateTeam,
       variables: {
@@ -171,7 +172,6 @@ export default function AddTeamModal({
     console.log("mCreateTeam", request);
 
     if (request) {
-      setisLoading(true);
       await tagTeamMember(request.data.teamCreate.id, FinalData);
       await getTeams();
       setTimeout(() => {
