@@ -1,18 +1,10 @@
-import React, {
-  useState,
-  useContext,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
-import About from "./contact-information-modal-tabs/about";
-
+import React, { useState, useEffect, useRef } from "react";
 import { FiEdit } from "react-icons/fi";
-import clientmatter from "./clientmatter.json";
 import anime from "animejs";
+import AboutTab from "./contact-information-modal-tabs/about";
 import TeamTab from "./contact-information-modal-tabs/team";
 import ClientMatterTab from "./contact-information-modal-tabs/clientmatter";
+
 const ExitButton = ({ close }) => {
   return (
     <button
@@ -43,13 +35,11 @@ export default function ContactInformationModal({
   user,
   image,
   ContactList,
-  setContactList,
+  setContactList
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
-
   const [isEditing, setisEditing] = useState(false);
-
   const [SelectedTab, setSelectedTab] = useState("About");
 
   useEffect((e) => {
@@ -64,14 +54,15 @@ export default function ContactInformationModal({
           scale: [0.9, 1],
           opacity: [0, 1],
           duration: 100,
-          easing: "easeInOutQuad",
+          easing: "easeInOutQuad"
         });
-      },
+      }
     });
   }, []);
-  useEffect(() => {
-    console.log(SelectedTab);
-  }, [SelectedTab]);
+  // useEffect(() => {
+  //   console.log(SelectedTab);
+  // }, [SelectedTab]);
+
   const MiniNav = () => {
     return Tabs.map((tab, idx) => (
       <button
@@ -128,8 +119,7 @@ export default function ContactInformationModal({
             <ExitButton close={close} />
           </div>
           <div className="">
-            Contacts with access to the portal will automatically receive
-            invitation via email.
+            Contacts with access to the portal will automatically receive invitation via email.
           </div>
 
           {/*Profile*/}
@@ -157,18 +147,10 @@ export default function ContactInformationModal({
             </div>
             <div className="flex flex-row mb-4 w-full h-0.5">
               <div
-                className={
-                  SelectedTab === "About"
-                    ? "bg-cyan-500 w-28"
-                    : "bg-gray-300 w-28"
-                }
+                className={SelectedTab === "About" ? "bg-cyan-500 w-28" : "bg-gray-300 w-28"}
               ></div>
               <div
-                className={
-                  SelectedTab === "Teams"
-                    ? "bg-cyan-500  w-32"
-                    : "bg-gray-300  w-32"
-                }
+                className={SelectedTab === "Teams" ? "bg-cyan-500  w-32" : "bg-gray-300  w-32"}
               ></div>
               <div
                 className={
@@ -182,7 +164,7 @@ export default function ContactInformationModal({
           </div>
           {/*Tabs */}
           {SelectedTab === "About" ? (
-            <About
+            <AboutTab
               close={close}
               user={user}
               isEditing={isEditing}
@@ -201,7 +183,7 @@ export default function ContactInformationModal({
             <ClientMatterTab
               close={close}
               isEditing={isEditing}
-              clientmatter={clientmatter}
+              clientmatter={user.clientMatters.items}
             />
           )}
         </div>

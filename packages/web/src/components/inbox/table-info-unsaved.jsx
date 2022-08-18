@@ -9,6 +9,7 @@ import { FaEye, FaTrash } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
+import '../../assets/styles/Inbox.css';
 import {
   CustomMenuList,
   CustomValueContainer,
@@ -98,12 +99,9 @@ const TableUnsavedInfo = ({
   const [isShiftDown, setIsShiftDown] = useState(false);
   const [lastSelectedItem, setLastSelectedItem] = useState(null);
   const companyId = localStorage.getItem("companyId");
-
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
-
   const [enabledArrays, setEnabledArrays] = useState([]);
-
   const [options, setOptions] = useState(null);
   const [ShowAddLabel, setShowAddLabel] = useState([{ index: 0, show: false }]);
   const [ShowLabelDescription, setShowLabelDescription] = useState(false);
@@ -117,6 +115,7 @@ const TableUnsavedInfo = ({
   );
 
   const handleSnippet = (e) => {
+    console.log(e);
     setSnippetId(e.target.id);
     setShow(true);
   };
@@ -157,7 +156,7 @@ const TableUnsavedInfo = ({
     setShowToast(false);
   };
 
-  const handleSaveDesc = async (e, id, rowId) => {
+  const handleSaveDesc = async (e, id, rowId, index) => {
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -180,6 +179,7 @@ const TableUnsavedInfo = ({
       setUnsavedEmails(updateArrAttachment);
       setResultMessage("Successfully updated.");
       setShowToast(true);
+      autoAdjustRowHeight(index);
     }
   };
 
@@ -260,7 +260,7 @@ const TableUnsavedInfo = ({
     setEnabledArrays(temp);
   };
 
-  const handleSaveMainDesc = async (e, id) => {
+  const handleSaveMainDesc = async (e, id, rowId) => {
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -278,6 +278,7 @@ const TableUnsavedInfo = ({
         return emails;
       });
       setUnsavedEmails(newArrDescription);
+      autoAdjustRowHeight(rowId);
     }
   };
 
@@ -467,37 +468,42 @@ const TableUnsavedInfo = ({
     var mainLabels = labelsList;
     var cmid;
 
-    if (cmidarr.length > 0) {
-      cmid = cmidarr[0].client.id;
-    } else {
-      cmid = "";
-    }
-
-    if (labelsList.length > 0 || labelsList !== null) {
-      for (var i = 0; i < labelsList.length; i++) {
-        // console.log("optionscheck",labelsList[i]);
-
-        if (mainLabels[i].labelsExtracted.length === 0) {
-          return [];
-        } else {
-          if (mainLabels[i].cmid === cmid) {
-            if (mainLabels[i].labelsExtracted.length === 0) {
-              return [];
-            } else {
-              const newOptions = mainLabels[i].labelsExtracted.map(
-                ({ id: value, name: label }) => ({
-                  value,
-                  label,
-                })
-              );
-              return newOptions;
+    setTimeout(() => {
+      if (cmidarr.length > 0) {
+        cmid = cmidarr[0].client.id;
+      } else {
+        cmid = "";
+      }
+  
+      if (labelsList.length > 0 || labelsList !== null) {
+        for (var i = 0; i < labelsList.length; i++) {
+          // console.log("optionscheck",labelsList[i]);
+  
+          if (mainLabels[i].labelsExtracted.length === 0) {
+            return [{value: "test", label: "no labels extracted"}];
+          } else {
+            if (mainLabels[i].cmid === cmid) {
+              // if (mainLabels[i].labelsExtracted.length === 0) {
+              //   return [];
+              // } else {
+                const newOptions = mainLabels[i].labelsExtracted.map(
+                  ({ id: value, name: label }) => ({
+                    value,
+                    label,
+                  })
+                );
+                return newOptions;
+              //}
             }
           }
         }
+      } else {
+        return [{value: "test", label: "labelsList null"}];
       }
-    } else {
-      return [];
-    }
+
+    }, 2000);
+
+    
   };
 
   const previewAndDownloadFile = async (id) => {
@@ -544,6 +550,10 @@ const TableUnsavedInfo = ({
     });
   }
 
+  const handleOnKeyupRows = (e, rowId) => {
+    autoAdjustRowHeight(rowId);
+  }
+
   const autoAdjustRowHeight = (index) => {
     //bindList and cache must not be null
     console.log("Items", bindList);
@@ -556,7 +566,7 @@ const TableUnsavedInfo = ({
       console("List reference not found || cache not found!");
     }
   };
-
+  
   return (
     <>
       <table
@@ -701,8 +711,8 @@ const TableUnsavedInfo = ({
                                     </div>
                                     {show && snippetId === item.id && (
                                       <div
-                                        ref={(el) => (ref.current[index] = el)}
-                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                        ref={ref}
+                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-screen overflow-auto"
                                         id={item.id}
                                       >
                                         <p>From : {item.from}</p>
@@ -779,19 +789,20 @@ const TableUnsavedInfo = ({
                                     cursor: "auto",
                                     outlineColor: "rgb(204, 204, 204, 0.5)",
                                     outlineWidth: "thin",
-                                    minHeight: "35px",
-                                    maxHeight: "35px",
+                                    //minHeight: "35px",
+                                    //maxHeight: "35px",
                                     overflow: "auto",
                                   }}
                                   suppressContentEditableWarning
                                   dangerouslySetInnerHTML={{
                                     __html: item.description,
                                   }}
-                                  onBlur={(e) => handleSaveMainDesc(e, item.id)}
+                                  onBlur={(e) => handleSaveMainDesc(e, item.id, index)}
+                                  onInput={(e) => handleOnKeyupRows(e, index)}
                                   contentEditable={true}
                                 ></p>
                                 {item.attachments.items.map(
-                                  (item_attach, index) => (
+                                  (item_attach, indexAttachments) => (
                                     <React.Fragment key={item_attach.id}>
                                       <div className="flex items-start mt-2">
                                         <p
@@ -824,9 +835,9 @@ const TableUnsavedInfo = ({
                                             outlineColor:
                                               "rgb(204, 204, 204, 0.5)",
                                             outlineWidth: "thin",
-                                            minHeight: "35px",
-                                            maxHeight: "35px",
-                                            overflow: "auto",
+                                            //minHeight: "35px",
+                                            //maxHeight: "35px",
+                                            //overflow: "auto",
                                           }}
                                           suppressContentEditableWarning
                                           dangerouslySetInnerHTML={{
@@ -836,9 +847,11 @@ const TableUnsavedInfo = ({
                                             handleSaveDesc(
                                               e,
                                               item_attach.id,
-                                              item.id
+                                              item.id,
+                                              index
                                             )
                                           }
+                                          onInput={(e) => handleOnKeyupRows(e, index)}
                                           contentEditable=
                                             {!item_attach.isDeleted || item_attach.isDeleted === null ? 
                                               true : false
@@ -851,7 +864,7 @@ const TableUnsavedInfo = ({
                                               handleDeleteAttachment(
                                                 item_attach.id,
                                                 item.id,
-                                                index,
+                                                indexAttachments,
                                                 true,
                                                 e
                                               )
@@ -866,7 +879,7 @@ const TableUnsavedInfo = ({
                                             handleDeleteAttachment(
                                               item_attach.id,
                                               item.id,
-                                              index,
+                                              indexAttachments,
                                               false,
                                               e
                                             )

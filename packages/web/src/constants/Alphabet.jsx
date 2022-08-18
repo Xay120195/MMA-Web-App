@@ -24,5 +24,5 @@ export const alphabetArray = [
   "W",
   "X",
   "Y",
-  "Z",
+  "Z"
 ];

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { CgTrash } from "react-icons/cg";
 import Select from "react-select";
 import { API, input } from "aws-amplify";
-
 import anime from "animejs";
+import CreatableSelect from 'react-select/creatable';
 
 const options = [
   { value: "OWNER", label: "Owner" },
@@ -23,17 +23,13 @@ function uuidv4() {
   );
 }
 
-function toTitleCase(str) {
-  return str.replace(/\w\S*/g, function (txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
-}
-
 export default function AddContactModal({
   close,
   setContactList,
   ContactList,
   getContacts,
+  setalertMessage,
+  setShowToast
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -103,32 +99,6 @@ export default function AddContactModal({
     setInputData(list);
   };
 
-  // const generateFinalObj = (obj, state) => {
-  //   return {
-  //     id: uuidv4(),
-  //     name: toTitleCase(obj.firstname + " " + obj.lastname),
-  //     email: obj.email,
-  //     team: obj.team,
-  //     type: obj.usertype,
-  //     company: obj.company,
-  //     isNewlyAdded: state,
-  //   };
-  // };
-
-  // const generateFinal = () => {
-  //   setContactList(
-  //     ContactList.concat(
-  //       InputData.map((input) => generateFinalObj(input, true))
-  //     )
-  //   );
-  //   setTimeout(() => {
-  //     setContactList(
-  //       ContactList.concat(
-  //         InputData.map((input) => generateFinalObj(input, false))
-  //       )
-  //     );
-  //   }, 3000);
-  // };
   const mInviteUser = `
       mutation inviteUser ($email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput) {
         userInvite(
@@ -158,18 +128,17 @@ export default function AddContactModal({
         company: data.company, //{id: companyID, name: companyName}
       },
     });
-
-    console.log("successful", request);
+    //console.log("successful", request);
   }
 
   const handleSubmit = () => {
-    console.log("savedata", InputData);
-
     InputData.map((x) => inviteUser(x));
 
+    setalertMessage(`User Invitation sent! Please wait for response.`);
+    setShowToast(true);
     setTimeout(() => {
-      getContacts();
-    }, 2000);
+      setShowToast(false);
+    }, 3000);
   };
 
   return (
@@ -308,6 +277,7 @@ export default function AddContactModal({
                     disabled={true}
                   />
                 </div>
+
                 {/* <div className="flex flex-col p-1">
                   <div className="text-sm font-medium text-gray-400">
                     {`Client Name`}
@@ -343,7 +313,41 @@ export default function AddContactModal({
                     }
                     className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                   />
-                </div> */}
+                </div> 
+              </div>
+
+              <div className="flex flex-row">
+                <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Client`}
+                  </div>
+                  <CreatableSelect
+                    // options={clientsOptions}
+                    isClearable
+                    isSearchable
+                    // onChange={handleClientChanged}
+                    // value={selectedClient}
+                    placeholder="Client"
+                    className="w-56 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                  />
+                </div>
+*/}
+                {/* 
+              <div className="flex flex-col p-1">
+                  <div className="text-sm font-medium text-gray-400">
+                    {`Matter`}
+                  </div>
+                    <CreatableSelect
+                              // options={clientsOptions}
+                      isClearable
+                      isSearchable
+                              // onChange={handleClientChanged}
+                              // value={selectedClient}
+                      placeholder="Enter Matter"
+                      className=" w-56 placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                    />
+              </div>
+*/}
               </div>
             </div>
           ))}
