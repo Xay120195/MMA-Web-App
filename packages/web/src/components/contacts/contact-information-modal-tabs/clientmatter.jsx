@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import loading from "./loading-ani.gif";
+import Loading from "../../loading/loading";
 import { MdSave } from "react-icons/md";
 import Select, { components } from "react-select";
 
@@ -8,7 +8,6 @@ import { IoIosSearch } from "react-icons/io";
 import { CgTrash } from "react-icons/cg";
 import SingleSelect from "./customSelect";
 import { IoCaretDown } from "react-icons/io5";
-import User from "../user";
 import { useFieldArray } from "react-hook-form";
 export const options = [
   { value: "No Selected", label: "No Selected" },
@@ -16,7 +15,7 @@ export const options = [
   { value: "Testing lang e", label: "Testing lang e" },
   { value: "zxcasd", label: "zxcasd" },
   { value: "asdaszxc", label: "asdaszxc" },
-  { value: "ryery", label: "ryery" },
+  { value: "ryery", label: "ryery" }
 ];
 
 const LOCAL_STORAGE_KEY = "clientApp.matter";
@@ -27,12 +26,10 @@ export default function ClientMatterTab({
   isEditing,
   ContactList,
   setContactList,
-  clientmatter,
+  clientmatter
 }) {
   const [isLoading, setisLoading] = useState(true);
-
   const [isDisabled, setisDisabled] = useState(true);
-
   const [InputData, setInputData] = useState(clientmatter);
   const [IsHovering, setIsHovering] = useState(false);
 
@@ -44,10 +41,7 @@ export default function ClientMatterTab({
       }
     } else {
       if (
-        (obj.header &&
-          obj.subheader &&
-          obj.type &&
-          obj.header !== client.header) ||
+        (obj.header && obj.subheader && obj.type && obj.header !== client.header) ||
         obj.subheader !== client.subheader ||
         obj.type !== client.type
       ) {
@@ -86,7 +80,6 @@ export default function ClientMatterTab({
       setInputData(stored);
     }
   }, []);
-  
 
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
@@ -107,13 +100,13 @@ export default function ClientMatterTab({
     setInputData(InputData.filter((_, idx) => idx !== index));
   };
 
-  const Loading = () => {
-    return (
-      <div className="flex justify-center items-center h-60">
-        <img src={loading} width="80" height="80"></img>
-      </div>
-    );
-  };
+  // const Loading = () => {
+  //   return (
+  //     <div className="flex justify-center items-center h-60">
+  //       <img src={loading} width="80" height="80"></img>
+  //     </div>
+  //   );
+  // };
 
   const AddMore = (id) => {
     return (
@@ -128,8 +121,8 @@ export default function ClientMatterTab({
             {
               header: "",
               subheader: "",
-              type: "",
-            },
+              type: ""
+            }
           ]);
         }}
         className={
@@ -179,7 +172,7 @@ export default function ClientMatterTab({
                     <Select
                       components={{
                         IndicatorSeparator: () => null,
-                        DropdownIndicator: DropdownIndicator,
+                        DropdownIndicator: DropdownIndicator
                       }}
                       placeholder={`Search`}
                       name={`header`}
@@ -187,12 +180,10 @@ export default function ClientMatterTab({
                       type="text"
                       value={{
                         value: x.header,
-                        label: x.header,
+                        label: x.header
                       }}
                       isDisabled={!isEditing}
-                      onChange={(e, val) =>
-                        handleSelectChange(e, val, i, `header`)
-                      }
+                      onChange={(e, val) => handleSelectChange(e, val, i, `header`)}
                       className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                     />
                   </div>
@@ -205,7 +196,7 @@ export default function ClientMatterTab({
                       options={options}
                       value={{
                         value: x.subheader,
-                        label: x.subheader,
+                        label: x.subheader
                       }}
                       i={i}
                     />
@@ -215,19 +206,17 @@ export default function ClientMatterTab({
                     <Select
                       components={{
                         IndicatorSeparator: () => null,
-                        DropdownIndicator: DropdownIndicator,
+                        DropdownIndicator: DropdownIndicator
                       }}
                       name={`type`}
                       options={options}
                       type="text"
                       value={{
                         value: x.type,
-                        label: x.type,
+                        label: x.type
                       }}
                       isDisabled={!isEditing}
-                      onChange={(e, val) =>
-                        handleSelectChange(e, val, i, `type`)
-                      }
+                      onChange={(e, val) => handleSelectChange(e, val, i, `type`)}
                       className="rounded-md w-56 focus:border-gray-100 text-gray-400"
                     />
                   </div>
@@ -235,7 +224,7 @@ export default function ClientMatterTab({
                   <div className="flex flex-col p-1">
                     <div className="opacity-0">1</div>
 
-                    {isEditing && InputData.length > 1  && (
+                    {isEditing && InputData.length > 1 && (
                       <CgTrash
                         className="border border-gray-200 text-4xl p-2 cursor-pointer hover:bg-gray-100"
                         color={`lightcoral`}
@@ -258,9 +247,7 @@ export default function ClientMatterTab({
                       {matter.type}
                     </div>
                   </div>
-                  <div className="text-gray-400 text-md font-medium">
-                    {matter.subheader}
-                  </div>
+                  <div className="text-gray-400 text-md font-medium">{matter.subheader}</div>
                 </div>
               ))}
             </>

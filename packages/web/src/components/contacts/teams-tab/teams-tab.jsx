@@ -4,9 +4,7 @@ import { CgTrash, CgSortAz, CgSortZa } from "react-icons/cg";
 import { FaEdit } from "react-icons/fa";
 import BlankStateTeams from "./blank-state";
 import DeleteModal from "../delete-modal";
-import dummy from "./teams.json";
-import illustrations from "./images/illustrations.png";
-import burst from "../teams-tab/images/celebratory_burst.gif";
+import burst from "../../../assets/images/celebratory_burst.gif";
 import TeamsEditModal from "./teams-edit-modal";
 import { API } from "aws-amplify";
 export default function TeamsTab({
@@ -20,11 +18,11 @@ export default function TeamsTab({
   setalertMessage,
   setShowToast,
   UserTypes,
-  CompanyUsers,
+  CompanyUsers
 }) {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [TeamList, setTeamList] = useState(teams);
-  const [Alphabets, setAlphabets] = useState([]);
+  const [Alphabet, setAlphabet] = useState([]);
   const [ShowDeleteModal, setShowDeleteModal] = useState(false);
   const [ShowEditModal, setShowEditModal] = useState(false);
   const [CurrentTeam, setCurrentTeam] = useState();
@@ -43,27 +41,24 @@ export default function TeamsTab({
   }, [UserTypes]);
 
   useEffect(() => {
-    setAlphabets(
+    setAlphabet(
       TeamList.map((team) => team.name[0])
         .filter(onlyUnique)
         .sort((a, b) => a.localeCompare(b))
     );
   }, [TeamList]);
 
-
   const handleSort = (sortedReverse, sortBy) => {
     if (sortedReverse) {
       if (sortBy === "name") {
         setTeamList(teams.sort((a, b) => a.name.localeCompare(b.name)));
-        Alphabets.sort();
+        Alphabet.sort();
         alphabetArray.sort();
       }
     } else {
       if (sortBy === "name") {
-        setTeamList(
-          teams.sort((a, b) => a.name.localeCompare(b.name)).reverse()
-        );
-        Alphabets.sort().reverse();
+        setTeamList(teams.sort((a, b) => a.name.localeCompare(b.name)).reverse());
+        Alphabet.sort().reverse();
         alphabetArray.sort().reverse();
       }
     }
@@ -97,7 +92,7 @@ export default function TeamsTab({
     <>
       {ShowBurst && (
         <div className="absolute z-10">
-          <img src={burst} width="1720" height="980" />
+          <img src={burst} width="1720" height="980" alt="" />
         </div>
       )}
       {TeamList.length === 0 ? (
@@ -119,7 +114,7 @@ export default function TeamsTab({
             </thead>
             {/* content */}
             <tbody className="relative">
-              {Alphabets.map((letter, idx) => (
+              {Alphabet.map((letter, idx) => (
                 <>
                   <tr
                     ref={(el) => (refLetters.current[idx] = el)}
@@ -174,8 +169,7 @@ export default function TeamsTab({
                                   ))}
                                   */}
 
-                                  {team.members.items.length === 0 ||
-                                  team.members.items === [] ? (
+                                  {team.members.items.length === 0 || team.members.items === [] ? (
                                     <div>No member found</div>
                                   ) : (
                                     team.members.items.map((x, i) => (
@@ -185,7 +179,7 @@ export default function TeamsTab({
                                         style={{
                                           zIndex: i,
                                           right: `${i * 25}px`,
-                                          top: "-15px",
+                                          top: "-15px"
                                         }}
                                         src={`https://i.pravatar.cc/70?img=${i}`}
                                       />

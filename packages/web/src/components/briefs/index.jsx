@@ -154,6 +154,15 @@ export default function Briefs() {
   }
   `;
 
+  const mCreateLabel = `
+    mutation createLabel($clientMatterId: String, $name: String) {
+        labelCreate(clientMatterId:$clientMatterId, name:$name) {
+            id
+            name
+        }
+    }
+  `;
+
   const mUpdateBriefName = `mutation updateBriefName($id: ID, $name: String) {
     briefUpdate(id: $id, name: $name) {
       id
@@ -194,8 +203,7 @@ export default function Briefs() {
     console.log("briefname", briefname);
 
     // alert(briefname);
-
-    const addBrief = await API.graphql({
+    const params = {
       query: mCreateBrief,
       variables: {
         clientMatterId: matter_id,
@@ -203,24 +211,40 @@ export default function Briefs() {
         date: moment.utc(moment(new Date(), "YYYY-MM-DD")).toISOString(),
         order: 0,
       },
+    };
+
+    await API.graphql(params).then((brief) => {
+      const getID = brief.data.briefCreate.id;
+
+      // Add new labls when brief is created
+      const createLabel = API.graphql({
+        query: mCreateLabel,
+        variables: {
+          clientMatterId: matter_id,
+          name: briefname,
+        },
+      });
+
+      console.log("createLabel", createLabel);
+      if (createLabel.data == null) {
+        console.error("Failed to create label");
+      }
+      console.groupEnd();
+      
+      handleModalClose();
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        getBriefs();
+        history.push(
+          `${
+            AppRoutes.BACKGROUND
+          }/${matter_id}/${getID}/?matter_name=${utf8_to_b64(
+            matter_name
+          )}&client_name=${utf8_to_b64(client_name)}`
+        );
+      }, 3000);
     });
-
-    console.log("brief", addBrief);
-    const getID = addBrief.data.briefCreate.id;
-
-    handleModalClose();
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-      getBriefs();
-      history.push(
-        `${
-          AppRoutes.BACKGROUND
-        }/${matter_id}/${getID}/?matter_name=${utf8_to_b64(
-          matter_name
-        )}&client_name=${utf8_to_b64(client_name)}`
-      );
-    }, 3000);
   };
 
   const handleModalClose = () => {
