@@ -23,6 +23,7 @@ export default function TeamsTab({
   isLoading,
   setisLoading,
   tagTeamMember,
+ 
 }) {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [TeamList, setTeamList] = useState(teams);
