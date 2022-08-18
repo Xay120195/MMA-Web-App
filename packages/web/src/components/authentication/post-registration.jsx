@@ -104,9 +104,13 @@ export default function PostRegistration() {
       createCompanyAccessType(c.data.companyCreate.id, pageAcess, usertypes);
     });
 
-    await createUser(user).then((u) => {
-      history.push(AppRoutes.POSTAUTHENTICATION);
-    });
+    await createUser(user)
+      .then((u) => {
+        history.push(AppRoutes.POSTAUTHENTICATION);
+      })
+      .catch((e) => {
+        setError(e.errors[0].message);
+      });
   }
 
   function createCompany(company) {
