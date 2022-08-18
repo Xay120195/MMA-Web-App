@@ -78,6 +78,22 @@ export default function AddContactModal(props) {
       }
   `;
 
+  const mTagClientMatter = 
+  `mutation tagUserClientMatter($clientMatterId: [ID], $userId: ID) {
+    userClientMatterTag(clientMatterId: $clientMatterId, userId: $userId) {
+      id
+    }
+  }
+  `;
+
+  const mUntagAllClientMatter = 
+  `mutation untagUserClientMatters($userId: ID) {
+    userClientMatterUntag(userId: $userId) {
+      id
+    }
+  }  
+  `;
+
   async function inviteUser(user) {
     return new Promise((resolve, reject) => {
       try {
@@ -206,6 +222,36 @@ export default function AddContactModal(props) {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div className="relative flex-auto ro">
+                  <p className="input-name">Client</p>
+                  <div className="relative my-2">
+                    <CreatableSelect
+                              // options={clientsOptions}
+                      isClearable
+                      isSearchable
+                              // onChange={handleClientChanged}
+                              // value={selectedClient}
+                      placeholder="Client"
+                      className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                    />
+                  </div>
+              </div>
+
+              <div className="relative flex-auto ro">
+                  <p className="input-name">Matter</p>
+                  <div className="relative my-2">
+                    <CreatableSelect
+                              // options={clientsOptions}
+                      isClearable
+                      isSearchable
+                              // onChange={handleClientChanged}
+                              // value={selectedClient}
+                      placeholder="Enter Matter"
+                      className="placeholder-blueGray-300 text-blueGray-600 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                    />
+                  </div>
               </div>
 
               {/* </div> */}

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import Select, { components } from "react-select";
 import { IoCaretDown } from "react-icons/io5";
 import { MdSave } from "react-icons/md";
+import { API } from "aws-amplify";
+import ToastNotification from "../../toast-notification";
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -12,7 +14,7 @@ function uuidv4() {
     ).toString(16)
   );
 }
-export default function About({
+export default function AboutTab({
   close,
   user,
   isEditing,
@@ -25,12 +27,27 @@ export default function About({
   const [Address, setAddress] = useState(user.address ? user.address : "");
   const [Email, setEmail] = useState(user.email);
   const [UserType, setUserType] = useState({
-    value: user.type ? user.type : "",
-    label: user.type ? user.type : "None",
+    value: user.userType ? user.userType : "",
+    label: user.userType,
   });
-  const [Mobile, setMobile] = useState(user.mobile ? user.mobile : "");
+  const [Mobile, setMobile] = useState(user.contactNumber ? user.contactNumber : "");
   const [Company, setCompany] = useState("LOPHILS");
   const [isDisabled, setisDisabled] = useState(true);
+
+  const [showToast, setShowToast] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+  const hideToast = () => {
+    setShowToast(false);
+  };
+
+  const options = [
+    { value: "OWNER", label: "Owner" },
+    { value: "LEGALADMIN", label: "Legal Admin" },
+    { value: "BARRISTER", label: "Barrister" },
+    { value: "EXPERT", label: "Expert" },
+    { value: "CLIENT", label: "Client" },
+    { value: "WITNESS", label: "Witness" },
+  ];
 
   const ChangesHaveMade = (obj) => {
     if (
@@ -62,6 +79,31 @@ export default function About({
     user,
   ]);
 
+  const mUpdateUser = `
+  mutation updateUser($contactNumber: String, $email: AWSEmail!, $firstName: String, $id: ID!, $lastName: String, $profilePicture: String, $userType: UserType) {
+    userUpdate(
+      contactNumber: $contactNumber
+      firstName: $firstName
+      id: $id
+      lastName: $lastName
+      profilePicture: $profilePicture
+      userType: $userType
+      email: $email
+    ) {
+      id
+    }
+  }
+  `;
+
+  async function editUser(user) {
+      const request = API.graphql({
+        query: mUpdateUser,
+        variables: user,
+      });
+
+      console.log("success", request);
+  }
+
   const SaveButton = () => {
     return (
       <button
@@ -69,18 +111,33 @@ export default function About({
           let foundIndex = ContactList.findIndex((x) => x.id == user.id);
           let item = {
             id: user.id,
-            name: Firstname + " " + Lastname,
+            firstName: Firstname,
+            lastName: Lastname,
             email: Email,
-            company: Company,
-            address: Address,
-            mobile: Mobile,
-            team: ContactList[foundIndex].team,
-            type: UserType.value,
+            // company: Company,
+            // address: Address,
+            contactNumber: Mobile,
+            // team: ContactList[foundIndex].team,
+            userType: UserType.value,
+            createdAt: user.createdAt
           };
 
+
+          editUser(item);
+
+          
           ContactList[foundIndex] = item;
           setContactList(ContactList);
           close();
+
+          setResultMessage(
+            "Successfully edited the details"
+          );
+          setShowToast(true);
+
+          setTimeout(() => {
+            setShowToast(false);
+          }, 2000);
         }}
         className={
           isDisabled
@@ -113,7 +170,8 @@ export default function About({
               {`First Name`}
             </div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`firstname`}
               type="text"
               value={Firstname}
@@ -124,7 +182,8 @@ export default function About({
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`Last Name`}</div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`lastname`}
               type="text"
               value={Lastname}
@@ -133,25 +192,27 @@ export default function About({
             />
           </div>
         </div>
-        <div className="flex flex-col p-1">
+        {/* <div className="flex flex-col p-1">
           <div className="text-xs font-medium text-gray-400">{`Address`}</div>
           <input
-            readOnly={isEditing ? "" : "0"}
+            // readOnly={isEditing ? "" : "0"}
+            disabled={isEditing ? false : true}
             name={`address`}
             type="text"
             value={Address}
             className="rounded-md p-2 border border-gray-300 outline-0 w-full"
             onChange={(e) => setAddress(e.target.value)}
           />
-        </div>
+        </div> */}
 
         <div className="flex flex-row">
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`Email`}</div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`email`}
-              type="text"
+              type="email"
               value={Email}
               className="rounded-md p-2 border border-gray-300 outline-0 w-80"
               onChange={(e) => setEmail(e.target.value)}
@@ -162,7 +223,8 @@ export default function About({
               {`Mobile Number`}
             </div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={isEditing ? false : true}
               name={`mobile`}
               type="text"
               value={Mobile}
@@ -176,31 +238,40 @@ export default function About({
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`User Type`}</div>
             <Select
-              components={{
-                IndicatorSeparator: () => null,
-                DropdownIndicator: DropdownIndicator,
-              }}
+              // components={{
+              //   IndicatorSeparator: () => null,
+              //   DropdownIndicator: DropdownIndicator,
+              // }}
+              isDisabled={isEditing ? false : true}
+              options={options}
               name={`usertype`}
               type="text"
               value={UserType}
               className="outline-0 w-80"
-              onChange={(e, val) => setUserType(val)}
+              onChange={(e, val) => {console.log("value", e);setUserType(e)}}
             />
           </div>
           <div className="flex flex-col p-1">
             <div className="text-xs font-medium text-gray-400">{`Company`}</div>
             <input
-              readOnly={isEditing ? "" : "0"}
+              // readOnly={isEditing ? "" : "0"}
+              disabled={true}
               name={`company`}
               type="text"
-              value={Company}
+              value={localStorage.getItem("company")}
               className="rounded-md p-2 border border-gray-300 outline-0 w-80"
-              onChange={(e) => setCompany(e.target.value)}
+              //onChange={(e) => setCompany(e.target.value)}
             />
           </div>
         </div>
       </div>
       {isEditing && <SaveButton />}
+      {showToast && resultMessage && (
+                <ToastNotification
+                  title={resultMessage}
+                  hideToast={hideToast}
+                />
+              )}
     </>
   );
 }

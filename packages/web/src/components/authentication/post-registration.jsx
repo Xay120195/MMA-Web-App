@@ -6,13 +6,58 @@ import { AppRoutes } from "../../constants/AppRoutes";
 export default function PostRegistration() {
   const [error, setError] = useState(null);
 
+  const getDefaults = `query getDefaults {
+    defaultUserType
+    pages {
+      id
+      name
+      features {
+        id
+        name
+      }
+    }
+  }`;
+
+  const mCreateCompany = `mutation createCompany($name: String, $representative: RepresentativeInput){
+    companyCreate(
+      name: $name
+      representative: $representative
+    ) {
+      id
+      name
+    }
+  }`;
+
+  const mCreateCompanyAccessType = `mutation createCompanyAccessType($companyId: String, $userType: [UserType], $access: [AccessInput]){
+    companyAccessTypeCreate(
+      companyId: $companyId
+      userType: $userType
+      access: $access
+    ) {
+      id
+    }
+  }`;
+
+  const mCreateUser = `mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput){
+    userCreate(
+      id: $id
+      email: $email
+      firstName: $firstName
+      lastName: $lastName
+      userType: $userType
+      company: $company
+    ) {
+      id
+    }
+  }`;
+
   let history = useHistory();
 
   useEffect(() => {
     let getUser = async () => {
       try {
         await Auth.currentAuthenticatedUser({
-          bypassCache: true, // Optional, By default is false. If set to true, this call will send a request to Cognito to get the latest user data
+          bypassCache: true // Optional, By default is false. If set to true, this call will send a request to Cognito to get the latest user data
         }).then((cognitoUserInfo) => {
           setAccountDetails(cognitoUserInfo);
         });
@@ -24,30 +69,20 @@ export default function PostRegistration() {
   });
 
   const setAccountDetails = async (cognitoUserInfo) => {
-    const getAllPages = `
-    query getAllPages {
-      pages {
-        id
-        name
-        features {
-          id
-          name
-        }
-      }
-    }
-  `;
-
-    const access = await API.graphql({
-      query: getAllPages,
+    const dafaults = await API.graphql({
+      query: getDefaults
     });
+
+    const pages = dafaults.data.pages;
+    const usertypes = dafaults.data.defaultUserType;
 
     const company = {
       name: cognitoUserInfo.attributes["custom:company_name"],
       representative: {
         id: cognitoUserInfo.attributes["sub"],
         firstName: cognitoUserInfo.attributes["given_name"],
-        lastName: cognitoUserInfo.attributes["family_name"],
-      },
+        lastName: cognitoUserInfo.attributes["family_name"]
+      }
     };
 
     const user = {
@@ -57,16 +92,16 @@ export default function PostRegistration() {
       email: cognitoUserInfo.attributes["email"],
       company: company,
       userType: "OWNER",
-      access: access.data.pages,
+      access: pages
     };
 
-    createAccount(company, access.data.pages, user);
+    createAccount(company, pages, usertypes, user);
   };
 
-  async function createAccount(company, pageAcess, user) {
+  async function createAccount(company, pageAcess, usertypes, user) {
     await createCompany(company).then((c) => {
       user["company"] = c.data.companyCreate;
-      createCompanyAccessType(c.data.companyCreate.id, pageAcess);
+      createCompanyAccessType(c.data.companyCreate.id, pageAcess, usertypes);
     });
 
     await createUser(user).then((u) => {
@@ -79,7 +114,7 @@ export default function PostRegistration() {
       try {
         const request = API.graphql({
           query: mCreateCompany,
-          variables: company,
+          variables: company
         });
 
         resolve(request);
@@ -90,25 +125,16 @@ export default function PostRegistration() {
     });
   }
 
-  async function createCompanyAccessType(companyId, pageAccess) {
+  async function createCompanyAccessType(companyId, pageAccess, usertypes) {
     return new Promise((resolve, reject) => {
       try {
-        const defaultUserTypes = [
-          "OWNER",
-          "LEGALADMIN",
-          "BARRISTER",
-          "EXPERT",
-          "CLIENT",
-          "WITNESS",
-        ];
-
         const request = API.graphql({
           query: mCreateCompanyAccessType,
           variables: {
             companyId: companyId,
             access: pageAccess,
-            userType: defaultUserTypes,
-          },
+            userType: usertypes
+          }
         });
 
         resolve(request);
@@ -124,7 +150,7 @@ export default function PostRegistration() {
       try {
         const request = API.graphql({
           query: mCreateUser,
-          variables: user,
+          variables: user
         });
 
         resolve(request);
@@ -134,45 +160,6 @@ export default function PostRegistration() {
       }
     });
   }
-
-  const mCreateCompany = `
-  mutation createCompany($name: String, $representative: RepresentativeInput){
-    companyCreate(
-      name: $name
-      representative: $representative
-    ) {
-      id
-      name
-    }
-  }
-`;
-
-  const mCreateCompanyAccessType = `
-  mutation createCompanyAccessType($companyId: String, $userType: [UserType], $access: [AccessInput]){
-    companyAccessTypeCreate(
-      companyId: $companyId
-      userType: $userType
-      access: $access
-    ) {
-      id
-    }
-  }
-`;
-
-  const mCreateUser = `
-  mutation createUser($id: ID!, $email: AWSEmail, $firstName: String, $lastName: String, $userType: UserType, $company: CompanyInput){
-    userCreate(
-      id: $id
-      email: $email
-      firstName: $firstName
-      lastName: $lastName
-      userType: $userType
-      company: $company
-    ) {
-      id
-    }
-  }
-`;
 
   return <p>{error ? `Oops! Something went wrong. ${error}` : null}</p>;
 }
