@@ -9,6 +9,7 @@ import { FaEye, FaTrash } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
+import '../../assets/styles/Inbox.css';
 import {
   CustomMenuList,
   CustomValueContainer,
@@ -114,6 +115,7 @@ const TableUnsavedInfo = ({
   );
 
   const handleSnippet = (e) => {
+    console.log(e);
     setSnippetId(e.target.id);
     setShow(true);
   };
