@@ -177,7 +177,7 @@ custom:
         response: false
       - dataSource: LambdaUserDS
         type: User
-        field: clientMatters
+        field: clientMatterAccess
         request: false
         response: false
       - dataSource: LambdaUserDS
