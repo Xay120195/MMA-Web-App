@@ -7,6 +7,7 @@ import DeleteModal from "../delete-modal";
 import burst from "../../../assets/images/celebratory_burst.gif";
 import TeamsEditModal from "./teams-edit-modal";
 import { API } from "aws-amplify";
+import Loading from "../../loading/loading";
 export default function TeamsTab({
   teams,
   shortcutSelected,
@@ -18,7 +19,10 @@ export default function TeamsTab({
   setalertMessage,
   setShowToast,
   UserTypes,
-  CompanyUsers
+  CompanyUsers,
+  isLoading,
+  setisLoading,
+  tagTeamMember,
 }) {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [TeamList, setTeamList] = useState(teams);
@@ -57,7 +61,9 @@ export default function TeamsTab({
       }
     } else {
       if (sortBy === "name") {
-        setTeamList(teams.sort((a, b) => a.name.localeCompare(b.name)).reverse());
+        setTeamList(
+          teams.sort((a, b) => a.name.localeCompare(b.name)).reverse()
+        );
         Alphabet.sort().reverse();
         alphabetArray.sort().reverse();
       }
@@ -91,11 +97,15 @@ export default function TeamsTab({
   return (
     <>
       {ShowBurst && (
-        <div className="absolute z-10">
+        <div className="absolute z-100">
           <img src={burst} width="1720" height="980" alt="" />
         </div>
       )}
-      {TeamList.length === 0 ? (
+      {isLoading ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <Loading />
+        </div>
+      ) : TeamList.length === 0 ? (
         <BlankStateTeams />
       ) : (
         <div className="w-full py-2">
@@ -169,7 +179,8 @@ export default function TeamsTab({
                                   ))}
                                   */}
 
-                                  {team.members.items.length === 0 || team.members.items === [] ? (
+                                  {team.members.items.length === 0 ||
+                                  team.members.items === [] ? (
                                     <div>No member found</div>
                                   ) : (
                                     team.members.items.map((x, i) => (
@@ -179,7 +190,7 @@ export default function TeamsTab({
                                         style={{
                                           zIndex: i,
                                           right: `${i * 25}px`,
-                                          top: "-15px"
+                                          top: "-15px",
                                         }}
                                         src={`https://i.pravatar.cc/70?img=${i}`}
                                       />
@@ -228,6 +239,7 @@ export default function TeamsTab({
           getTeams={getTeams}
           setalertMessage={setalertMessage}
           setShowToast={setShowToast}
+          setisLoading={setisLoading}
         />
       )}
       {ShowEditModal && (
@@ -239,6 +251,11 @@ export default function TeamsTab({
           CurrentTeam={CurrentTeam}
           CompanyUsers={CompanyUsers}
           UserTypes={UserTypes}
+          setisLoading={setisLoading}
+          tagTeamMember={tagTeamMember}
+          getTeams={getTeams}
+          setalertMessage={setalertMessage}
+          setShowToast={setShowToast}
         />
       )}
     </>
