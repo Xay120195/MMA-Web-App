@@ -640,7 +640,7 @@ type Mutation {
   briefSoftDelete(id: ID): Brief
   briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int, labelId: ID): Brief
   clientCreate(name: String, companyId: String): Client
-  clientMatterCreate(companyId: String, client: ClientInput, matter: MatterInput): ClientMatter
+  clientMatterCreate(companyId: String, userId: ID, client: ClientInput, matter: MatterInput): ClientMatter
   clientMatterDelete(id: ID): ClientMatter
   columnSettingsCreate(name: String, label: String, tableName: ViewTable!): ColumnSettings
   companyAccessTypeCreate(

@@ -707,7 +707,22 @@ async function createClientMatter(data) {
 
     const companyClientMatterRes = await ddbClient.send(companyClientMatterCmd);
 
-    resp = companyClientMatterRes ? rawParams : {};
+    const userClientMatterParams = {
+      id: v4(),
+      userId: data.userId,
+      clientMatterId: rawParams.id,
+      userType: "OWNER",
+      customUserType: null
+    };
+
+    const userClientMatterCmd = new PutItemCommand({
+      TableName: "UserClientMatterTable",
+      Item: marshall(userClientMatterParams)
+    });
+
+    const userClientMatterRes = await ddbClient.send(userClientMatterCmd);
+
+    resp = rawParams;
   } catch (e) {
     resp = {
       error: e.message,
