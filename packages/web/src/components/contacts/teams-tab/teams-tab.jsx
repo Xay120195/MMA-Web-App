@@ -20,6 +20,9 @@ export default function TeamsTab({
   setShowToast,
   UserTypes,
   CompanyUsers,
+  isLoading,
+  setisLoading,
+  tagTeamMember,
 }) {
   const [IsSortedReverse, setIsSortedReverse] = useState(false);
   const [TeamList, setTeamList] = useState(teams);
@@ -28,7 +31,7 @@ export default function TeamsTab({
   const [ShowEditModal, setShowEditModal] = useState(false);
   const [CurrentTeam, setCurrentTeam] = useState();
   const [ToDeleteID, setToDeleteID] = useState();
-  const [isLoading, setisLoading] = useState(false);
+
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
   }
@@ -249,6 +252,10 @@ export default function TeamsTab({
           CompanyUsers={CompanyUsers}
           UserTypes={UserTypes}
           setisLoading={setisLoading}
+          tagTeamMember={tagTeamMember}
+          getTeams={getTeams}
+          setalertMessage={setalertMessage}
+          setShowToast={setShowToast}
         />
       )}
     </>

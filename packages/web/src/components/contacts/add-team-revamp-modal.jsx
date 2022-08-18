@@ -36,6 +36,7 @@ export default function AddTeamModal({
   UserTypes,
   CompanyUsers,
   tagTeamMember,
+  setisLoading,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -51,7 +52,6 @@ export default function AddTeamModal({
   }
 }
   `;
-
 
   useEffect((e) => {
     anime({
@@ -171,11 +171,15 @@ export default function AddTeamModal({
     console.log("mCreateTeam", request);
 
     if (request) {
+      setisLoading(true);
       await tagTeamMember(request.data.teamCreate.id, FinalData);
-      setShowBurst(true);
       await getTeams();
       setTimeout(() => {
-        setShowBurst(false);
+        setisLoading(false);
+        setShowBurst(true);
+        setTimeout(() => {
+          setShowBurst(false);
+        }, 2000);
       }, 3000);
     } else {
       alert("Failed to add teams");

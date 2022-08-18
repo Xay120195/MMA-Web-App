@@ -6,7 +6,7 @@ import { BsCloudSlash } from "react-icons/bs";
 import { IoCaretDown } from "react-icons/io5";
 
 import { MdSave } from "react-icons/md";
-
+import { API } from "aws-amplify";
 import { CgTrash } from "react-icons/cg";
 import Select, { components } from "react-select";
 import { FaObjectUngroup } from "react-icons/fa";
@@ -34,8 +34,6 @@ function uuidv4() {
 
 const LOCAL_STORAGE_KEY = "clientApp.teams";
 
-
-
 export default function TeamsEditModal({
   close,
   setTeamList,
@@ -44,6 +42,11 @@ export default function TeamsEditModal({
   getCompanyUsers,
   CompanyUsers,
   UserTypes,
+  tagTeamMember,
+  getTeams,
+  setisLoading,
+  setalertMessage,
+  setShowToast,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -53,8 +56,9 @@ export default function TeamsEditModal({
   const [IsHovering, setIsHovering] = useState(false);
   const [InputData, setInputData] = useState([]);
   const [Image, setImage] = useState();
-
+  const [FinalData, setFinalData] = useState([]);
   const inputFile = useRef(null);
+  const [Length, setLength] = useState(0);
 
   const mUpdateTeam = `mutation updateTeam($id: ID, $name: String) {
   teamUpdate(name: $name, id: $id) {
@@ -62,10 +66,54 @@ export default function TeamsEditModal({
   }
 } `;
 
-  const mTagTeamMember = `
-  mutation tagTeamMember($teamId: ID, $members: [MemberInput] = [{userId: ID, userType: UserType}, {userId: ID, userType: UserType}, {userId: ID, userType: UserType}]) {
-  teamMemberTag(teamId: $teamId, members: $members)
-}`;
+  const updateTeamName = async (id, name) => {
+    const teamName = await API.graphql({
+      query: mUpdateTeam,
+      variables: {
+        name: name,
+        id: id,
+      },
+    });
+
+    console.log("mUpdateTeamName", teamName);
+    if (teamName) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const handleSubmit = async (teamid, members) => {
+    console.log("TeamList", TeamList);
+    let foundIndex = TeamList.findIndex((x) => x.id === CurrentTeam.id);
+
+    let team = {
+      id: TeamList[foundIndex].id,
+      name: TeamName.replace("'s team", ""),
+      members: {
+        items: InputData.map((x) => {
+          return { user: x };
+        }),
+      },
+    };
+
+    TeamList[foundIndex] = team;
+
+    setTeamList(TeamList);
+
+    await tagTeamMember(CurrentTeam.id, FinalData);
+    await updateTeamName(CurrentTeam.id, TeamName);
+    setalertMessage("Successfully edited the details");
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+    //setisLoading(true);
+    //await getTeams();
+    //setTimeout(() => {
+    //setisLoading(false);
+    //}, 1500);
+  };
 
   useEffect((e) => {
     console.log("CURRENT TEAM", CurrentTeam);
@@ -89,11 +137,12 @@ export default function TeamsEditModal({
       LOCAL_STORAGE_KEY,
       JSON.stringify(
         CurrentTeam.members.items.map((x) => {
+          console.log("USERUSER", x);
           return {
-            id: x.id,
             firstName: x.user.firstName,
             lastName: x.user.lastName,
             userType: x.user.userType,
+            userId: x.user.id,
           };
         })
       )
@@ -106,6 +155,7 @@ export default function TeamsEditModal({
 
     setTeamName(CurrentTeam.name);
     setImage(CurrentTeam.image);
+    setLength(CurrentTeam.members.items.length);
     console.log("Company Users", CompanyUsers);
     console.log("INSIDE User Types", UserTypes);
   }, []);
@@ -132,32 +182,59 @@ export default function TeamsEditModal({
 
   const ChangesHaveMade = (obj, i) => {
     console.log("HIT");
+    console.log("obj", obj, "at index:", i);
+
     if (CurrentTeam.members.items[i]) {
+      console.log(
+        "CurrentTeam.members.items[i]",
+        CurrentTeam.members.items[i].user
+      );
       if (
         obj.firstName !== CurrentTeam.members.items[i].user.firstName ||
         obj.lastName !== CurrentTeam.members.items[i].user.lastName ||
         obj.userType !== CurrentTeam.members.items[i].user.userType ||
-        TeamName !== CurrentTeam.name ||
-        Image !== CurrentTeam.image
+        TeamName !== CurrentTeam.name
       ) {
         return true;
       } else {
         return false;
       }
     } else {
-      return true;
+      if (obj.firstName !== "" && obj.lastName !== "" && obj.userType !== "") {
+        return true;
+      }
+      return false;
     }
   };
 
   const validate = (obj, i) => {
     //Detect if null && changes have been made
+    //console.log("CALLED");
+    //console.log("VALIDATE OBJ", obj);
+
+    console.log("ilen", InputData.length);
+    console.log("currlen", CurrentTeam.members.items.length);
+    if (CurrentTeam.members.items.length > InputData.length) {
+      console.log("HIT |TRUE");
+      return true;
+    }
+
+    let changes = ChangesHaveMade(obj, i);
+    console.log("Changes", changes);
     if (
-      obj.firstName &&
-      obj.lastName &&
-      obj.userType &&
+      obj.firstName !== "" &&
+      obj.lastName !== "" &&
+      obj.userType !== "" &&
       TeamName &&
-      ChangesHaveMade(obj, i)
+      changes
     ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  const validateNull = (obj, i) => {
+    if (obj.firstName !== "" && obj.lastName !== "" && obj.userType !== "") {
       return true;
     } else {
       return false;
@@ -165,11 +242,31 @@ export default function TeamsEditModal({
   };
 
   useEffect(() => {
+    console.log("IDATA", InputData);
     const validations =
       InputData && InputData.map((input, i) => validate(input, i));
+    const nullValues =
+      InputData && InputData.map((input, i) => validateNull(input, i));
+    let oFinal = InputData.map((input) => {
+      let final = {
+        userId: input.userId,
+        userType: input.userType,
+      };
+
+      return final;
+    });
+
+    setFinalData(oFinal);
     setisDisabled(!validations.includes(true));
+    if (nullValues.includes(false)) {
+      setisDisabled(true);
+    }
     console.log(validations);
-  }, [InputData, TeamName, Image]);
+  }, [InputData, TeamName, Image, InputData.length]);
+
+  useEffect(() => {
+    console.log("FINALDATA", FinalData);
+  }, [FinalData]);
 
   const buildName = (value) => {
     console.log(value.split(" "));
@@ -258,17 +355,10 @@ export default function TeamsEditModal({
     return (
       <button
         onClick={() => {
-          let foundIndex = TeamList.findIndex((x) => x.id === CurrentTeam.id);
-
-          let team = {
-            id: TeamList[foundIndex].id,
-            image: Image,
-            teamName: TeamName.replace("'s team", ""),
-            members: InputData,
-          };
-
-          TeamList[foundIndex] = team;
-          setTeamList(TeamList);
+          /* 
+         
+          */
+          handleSubmit();
           close();
         }}
         className={

@@ -115,13 +115,19 @@ export default function DeleteModal({
     console.log("mDeleteTeam", request);
 
     if (request) {
-      setisLoading(true);
-      await getTeams();
+      var contactsCopy = ContactList;
+      contactsCopy.map((x, index) =>
+        x.id === id ? contactsCopy.splice(index, 1) : x
+      );
+
+      setContactList(contactsCopy);
+      //setisLoading(true);
+      //await getTeams();
       setalertMessage(`Team Deleted Sucessfully`);
       setShowToast(true);
-      setTimeout(() => {
-        setisLoading(false);
-      }, 1500);
+      //setTimeout(() => {
+        //setisLoading(false);
+      //}, 1500);
       setTimeout(() => {
         setShowToast(false);
       }, 5000);
