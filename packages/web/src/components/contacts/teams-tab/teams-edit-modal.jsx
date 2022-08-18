@@ -68,6 +68,7 @@ export default function TeamsEditModal({
 }`;
 
   useEffect((e) => {
+    console.log("CURRENT TEAM", CurrentTeam);
     anime({
       targets: modalContainer.current,
       opacity: [0, 1],
@@ -86,10 +87,19 @@ export default function TeamsEditModal({
 
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      JSON.stringify(CurrentTeam.members.items)
+      JSON.stringify(
+        CurrentTeam.members.items.map((x) => {
+          return {
+            id: x.id,
+            firstName: x.user.firstName,
+            lastName: x.user.lastName,
+            userType: x.user.userType,
+          };
+        })
+      )
     );
     const stored = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-
+    console.log("stored", stored);
     if (stored?.length > 0) {
       setInputData(stored);
     }
@@ -111,7 +121,7 @@ export default function TeamsEditModal({
             height={34}
             className={"rounded-full "}
           ></img>
-          <div>{member.name}</div>
+          <div>{member.firstName + " " + member.lastName}</div>
           <div className="ml-auto uppercase rounded-2xl bg-gray-200 font-semibold p-1 text-xs text-black">
             {member.userType}
           </div>
@@ -124,8 +134,9 @@ export default function TeamsEditModal({
     console.log("HIT");
     if (CurrentTeam.members.items[i]) {
       if (
-        obj.name !== CurrentTeam.members.items[i].name ||
-        obj.userType !== CurrentTeam.members.items[i].userType ||
+        obj.firstName !== CurrentTeam.members.items[i].user.firstName ||
+        obj.lastName !== CurrentTeam.members.items[i].user.lastName ||
+        obj.userType !== CurrentTeam.members.items[i].user.userType ||
         TeamName !== CurrentTeam.name ||
         Image !== CurrentTeam.image
       ) {
@@ -140,7 +151,13 @@ export default function TeamsEditModal({
 
   const validate = (obj, i) => {
     //Detect if null && changes have been made
-    if (obj.name && obj.userType && TeamName && ChangesHaveMade(obj, i)) {
+    if (
+      obj.firstName &&
+      obj.lastName &&
+      obj.userType &&
+      TeamName &&
+      ChangesHaveMade(obj, i)
+    ) {
       return true;
     } else {
       return false;
@@ -154,9 +171,33 @@ export default function TeamsEditModal({
     console.log(validations);
   }, [InputData, TeamName, Image]);
 
+  const buildName = (value) => {
+    console.log(value.split(" "));
+    let arr = value.split(" ");
+    if (arr.length > 2) {
+      return {
+        firstName: arr[0] + " " + arr[1],
+        lastName: arr[2],
+      };
+    } else {
+      return {
+        firstName: arr[0],
+        lastName: arr[1],
+      };
+    }
+  };
+
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
-    list[i][property] = e.value;
+    if (property === "name") {
+      let name = buildName(e.value);
+      list[i]["firstName"] = name.firstName;
+      list[i]["lastName"] = name.lastName;
+      list[i]["userId"] = e.id;
+      console.log("ID", e.id);
+    } else {
+      list[i][property] = e.value;
+    }
     setInputData(list);
   };
 
@@ -186,7 +227,8 @@ export default function TeamsEditModal({
             ...InputData,
             {
               id: uuidv4(),
-              name: "",
+              firstName: "",
+              lastName: "",
               userType: "",
             },
           ]);
@@ -411,8 +453,8 @@ export default function TeamsEditModal({
                           options={CompanyUsers}
                           type="text"
                           value={{
-                            value: x.name,
-                            label: x.name,
+                            value: x.firstName + " " + x.lastName,
+                            label: x.firstName + " " + x.lastName,
                           }}
                           styles={customStyles}
                           isDisabled={!isEditing}

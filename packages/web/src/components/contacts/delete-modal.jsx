@@ -13,6 +13,7 @@ export default function DeleteModal({
   setShowToast,
   isTeam,
   getTeams,
+  setisLoading,
 }) {
   function StopPropagate(e) {
     e.stopPropagation();
@@ -114,9 +115,13 @@ export default function DeleteModal({
     console.log("mDeleteTeam", request);
 
     if (request) {
+      setisLoading(true);
       await getTeams();
       setalertMessage(`Team Deleted Sucessfully`);
       setShowToast(true);
+      setTimeout(() => {
+        setisLoading(false);
+      }, 1500);
       setTimeout(() => {
         setShowToast(false);
       }, 5000);
@@ -147,6 +152,7 @@ export default function DeleteModal({
       setContactList(contactsCopy);
 
       setalertMessage(`User Deleted Sucessfully`);
+
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);

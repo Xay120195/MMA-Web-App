@@ -109,12 +109,11 @@ export default function Contacts() {
     name
     members {
       items {
-        id
-        userType
         user {
           id
           firstName
           lastName
+          userType
         }
       }
     }
@@ -155,8 +154,8 @@ export default function Contacts() {
       query: mTagTeamMember,
       variables: {
         teamId: teamId,
-        members: members
-      }
+        members: members,
+      },
     };
 
     const request = await API.graphql(params);
@@ -167,8 +166,8 @@ export default function Contacts() {
     const params = {
       query: qGetCompanyUsers,
       variables: {
-        id: localStorage.getItem("companyId")
-      }
+        id: localStorage.getItem("companyId"),
+      },
     };
 
     await API.graphql(params).then((users) => {
@@ -182,7 +181,7 @@ export default function Contacts() {
           let temp = {
             value: name,
             label: name,
-            id: user.id
+            id: user.id,
           };
           setCompanyUsers((prev) => [...prev, temp]);
         });
@@ -192,7 +191,7 @@ export default function Contacts() {
 
   let getUserTypes = async () => {
     const params = {
-      query: qListUserTypes
+      query: qListUserTypes,
     };
 
     await API.graphql(params).then((userTypes) => {
@@ -201,7 +200,7 @@ export default function Contacts() {
         userTypes.data.defaultUserType.map((userType) => {
           let oUserType = {
             value: userType,
-            label: userType
+            label: userType,
           };
           setUserTypes((prev) => [...prev, oUserType]);
         });
@@ -219,7 +218,7 @@ export default function Contacts() {
         targets: rows.current,
         opacity: [0.4, 1],
         duration: 1500,
-        easing: "cubicBezier(.5, .05, .1, .3)"
+        easing: "cubicBezier(.5, .05, .1, .3)",
       });
 
       refLetters.current = refLetters.current.slice(0, alphabetArray.length);
@@ -231,8 +230,8 @@ export default function Contacts() {
     const params = {
       query: qGetContacts,
       variables: {
-        companyId: localStorage.getItem("companyId")
-      }
+        companyId: localStorage.getItem("companyId"),
+      },
     };
 
     await API.graphql(params).then((companyUsers) => {
@@ -241,7 +240,9 @@ export default function Contacts() {
       temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
       temp.map(
         (x) =>
-          (x.firstName = x.firstName.charAt(0).toUpperCase() + x.firstName.slice(1).toLowerCase())
+          (x.firstName =
+            x.firstName.charAt(0).toUpperCase() +
+            x.firstName.slice(1).toLowerCase())
       );
       setDefaultCompany(companyUsers.data.company.name);
       setContactList(temp);
@@ -255,18 +256,15 @@ export default function Contacts() {
     });
   };
 
-  useEffect(() => {
-    console.log("teamlist", TeamList);
-  }, [TeamList]);
-
   let getTeams = async () => {
     console.log("Company ID", localStorage.getItem("companyId"));
-    setTeamList([]); //clear first when called
+    setTeamList([]);
+    //clear first when called
     let params = {
       query: qGetTeams,
       variables: {
-        id: localStorage.getItem("companyId")
-      }
+        id: localStorage.getItem("companyId"),
+      },
     };
 
     await API.graphql(params).then((teams) => {
@@ -283,8 +281,8 @@ export default function Contacts() {
           params = {
             query: qGetTeamsWithMembers,
             variables: {
-              id: team.id
-            }
+              id: team.id,
+            },
           };
 
           await API.graphql(params).then((team) => {
@@ -293,7 +291,7 @@ export default function Contacts() {
               let temp = {
                 id: team.data.team.id,
                 name: team.data.team.name,
-                members: team.data.team.members
+                members: team.data.team.members,
               };
               setTeamList((prev) => [...prev, temp]);
             }
@@ -329,10 +327,14 @@ export default function Contacts() {
       }
     } else {
       if (sortBy === "firstName") {
-        ContactList.sort((a, b) => a.firstName.localeCompare(b.firstName)).reverse();
+        ContactList.sort((a, b) =>
+          a.firstName.localeCompare(b.firstName)
+        ).reverse();
         alphabetArray.sort().reverse();
       } else if (sortBy === "userType") {
-        ContactList.sort((a, b) => a.userType.localeCompare(b.userType)).reverse();
+        ContactList.sort((a, b) =>
+          a.userType.localeCompare(b.userType)
+        ).reverse();
         alphabetArray.sort().reverse();
       }
     }
@@ -377,14 +379,14 @@ export default function Contacts() {
 
   const scrollToView = (target) => {
     const el = document.getElementById(target);
-    el && window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" }); //added fixed scrolling
+    el &&
+      window.scroll({ left: 0, top: el.offsetTop + 100, behavior: "smooth" }); //added fixed scrolling
   };
 
   useEffect(() => {
     if (ContactList === null) {
       getContacts();
     }
-
     getTeams();
     getCompanyUsers();
     getUserTypes();

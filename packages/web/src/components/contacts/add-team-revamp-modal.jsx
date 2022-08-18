@@ -52,9 +52,6 @@ export default function AddTeamModal({
 }
   `;
 
-  function StopPropagate(e) {
-    e.stopPropagation();
-  }
 
   useEffect((e) => {
     anime({
