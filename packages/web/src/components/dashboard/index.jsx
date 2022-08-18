@@ -71,6 +71,7 @@ export default function Dashboard() {
   //restructure data from matterlist
   const { listmatters, loading, errorMatter, toastMessage, toast } = matterlist;
   const companyId = localStorage.getItem('companyId');
+  const userId = localStorage.getItem('userId');
 
   const {
     register,
@@ -177,7 +178,7 @@ export default function Dashboard() {
         name: matterName.label,
       };
 
-    addClientMatter(client, matter, companyId, dispatch);
+    addClientMatter(client, matter, companyId, userId, dispatch);
   };
 
   const handleModalClose = () => {
