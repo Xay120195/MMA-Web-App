@@ -36,6 +36,7 @@ export default function AddTeamModal({
   UserTypes,
   CompanyUsers,
   tagTeamMember,
+  setisLoading,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -51,10 +52,6 @@ export default function AddTeamModal({
   }
 }
   `;
-
-  function StopPropagate(e) {
-    e.stopPropagation();
-  }
 
   useEffect((e) => {
     anime({
@@ -162,6 +159,7 @@ export default function AddTeamModal({
   const handleAddTeam = async () => {
     console.group("Handle add team");
     console.log("Company ID", localStorage.getItem("companyId"));
+    setisLoading(true);
     const request = await API.graphql({
       query: mCreateTeam,
       variables: {
@@ -175,10 +173,13 @@ export default function AddTeamModal({
 
     if (request) {
       await tagTeamMember(request.data.teamCreate.id, FinalData);
-      setShowBurst(true);
       await getTeams();
       setTimeout(() => {
-        setShowBurst(false);
+        setisLoading(false);
+        setShowBurst(true);
+        setTimeout(() => {
+          setShowBurst(false);
+        }, 2000);
       }, 3000);
     } else {
       alert("Failed to add teams");
@@ -279,6 +280,14 @@ export default function AddTeamModal({
                     {`Member`} {i + 1}
                   </div>
                   <Select
+                    menuPortalTarget={document.body}
+                    styles={{
+                      container: (base) => ({
+                        ...base,
+                        zIndex: "99999",
+                      }),
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
                     name={`name`}
                     options={CompanyUsers}
                     type="text"
@@ -295,6 +304,14 @@ export default function AddTeamModal({
                     {`User Type`}
                   </div>
                   <Select
+                    menuPortalTarget={document.body}
+                    styles={{
+                      container: (base) => ({
+                        ...base,
+                        zIndex: "99999",
+                      }),
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
                     name={`userType`}
                     options={UserTypes}
                     type="text"
