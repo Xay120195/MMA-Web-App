@@ -62,7 +62,7 @@ export default function TeamTab({
           let foundIndex = ContactList.findIndex((x) => x.id === user.id);
           console.log("FOUND", ContactList[foundIndex]);
 
-          tagTeamMember();
+          //tagTeamMember();
           /*
           let item = {
             id: ContactList[foundIndex].id,
