@@ -280,6 +280,14 @@ export default function AddTeamModal({
                     {`Member`} {i + 1}
                   </div>
                   <Select
+                    menuPortalTarget={document.body}
+                    styles={{
+                      container: (base) => ({
+                        ...base,
+                        zIndex: "99999",
+                      }),
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
                     name={`name`}
                     options={CompanyUsers}
                     type="text"
@@ -296,6 +304,14 @@ export default function AddTeamModal({
                     {`User Type`}
                   </div>
                   <Select
+                    menuPortalTarget={document.body}
+                    styles={{
+                      container: (base) => ({
+                        ...base,
+                        zIndex: "99999",
+                      }),
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
                     name={`userType`}
                     options={UserTypes}
                     type="text"

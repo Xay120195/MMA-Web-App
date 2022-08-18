@@ -539,6 +539,14 @@ export default function TeamsEditModal({
                             IndicatorSeparator: () => null,
                             DropdownIndicator: DropdownIndicator,
                           }}
+                          menuPortalTarget={document.body}
+                          styles={{
+                            container: (base) => ({
+                              ...base,
+                              zIndex: "99999",
+                            }),
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
                           name={`name`}
                           options={CompanyUsers}
                           type="text"
@@ -546,7 +554,7 @@ export default function TeamsEditModal({
                             value: x.firstName + " " + x.lastName,
                             label: x.firstName + " " + x.lastName,
                           }}
-                          styles={customStyles}
+                          //styles={customStyles}
                           isDisabled={!isEditing}
                           onChange={(e, val) =>
                             handleSelectChange(e, val, i, `name`)
@@ -557,7 +565,14 @@ export default function TeamsEditModal({
                       <div className="flex flex-col p-1">
                         <div className="text-sm font-medium text-gray-400">{`User Type`}</div>
                         <Select
-                          styles={customStyles}
+                          menuPortalTarget={document.body}
+                          styles={{
+                            container: (base) => ({
+                              ...base,
+                              zIndex: "99999",
+                            }),
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
                           components={{
                             IndicatorSeparator: () => null,
                             DropdownIndicator: DropdownIndicator,
