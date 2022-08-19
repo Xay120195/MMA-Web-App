@@ -70,7 +70,7 @@ export default function Contacts() {
           email
           userType
           contactNumber
-          clientMatterAccess {
+          clientMatterAccess(companyId: $companyId) {
             items {
               id
               userType
