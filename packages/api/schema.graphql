@@ -739,12 +739,12 @@ type Mutation {
     companyId: ID
     clientMatterAccess: [UserClientMatterAccessInput]
   ): [UserClientMatterAccess]
-  # userClientMatterTagAll(
-  #   userId: ID
-  #   userType: UserType
-  #   customUserType: CustomUserTypeInput
-  # ): [UserClientMatterAccess]
-  userClientMatterUntag(userId: ID, companyId: ID): UserClientMatterAccess
+  userClientMatterTagAll(
+    userId: ID
+    companyId: ID
+    userType: UserType
+    customUserType: CustomUserTypeInput
+  ): [UserClientMatterAccess]
   gmailMessageCreate(
     companyId: ID
     messageId: String

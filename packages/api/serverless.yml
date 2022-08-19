@@ -172,6 +172,11 @@ custom:
         response: false
       - dataSource: LambdaMutationDS
         type: Mutation
+        field: userClientMatterTagAll
+        request: false
+        response: false
+      - dataSource: LambdaMutationDS
+        type: Mutation
         field: userClientMatterUntag
         request: false
         response: false
@@ -819,7 +824,7 @@ custom:
         field: defaultUserType
         request: false
         response: false
-        
+
     # Data Sources
     dataSources:
       - type: AWS_LAMBDA
