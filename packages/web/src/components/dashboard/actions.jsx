@@ -14,9 +14,9 @@ import {
 } from "./constants";
 import { API } from "aws-amplify";
 
-const qUserClientMatterAccess = `query getUserClientMatters($id: String) {
+const qUserClientMatterAccess = `query getUserClientMatters($id: String, $companyId: String) {
   user(id: $id) {
-    clientMatterAccess {
+    clientMatterAccess(companyId: $companyId) {
       items {
         id
         userType
@@ -78,7 +78,8 @@ export const getUserClientMatterAccess = async () => {
   const userClientMatterAccess = await API.graphql({
     query: qUserClientMatterAccess,
     variables: {
-      id: localStorage.getItem("userId")
+      id: localStorage.getItem("userId"),
+      companyId: localStorage.getItem("companyId")
     }
   });
 
@@ -109,9 +110,9 @@ export const getMatterList = async (dispatch, companyId) => {
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
 
-      const userClientMatterAccess = await getUserClientMatterAccess().catch((e) => {
-        console.log(e.errors[0].message);
-      });
+      // const userClientMatterAccess = await getUserClientMatterAccess().catch((e) => {
+      //   console.error(e.errors[0].message);
+      // });
 
       // result = result
       //   .map((item) => {

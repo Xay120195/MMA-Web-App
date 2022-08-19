@@ -197,7 +197,7 @@ type User {
   customUserType: CustomUserType
   profilePicture: String
   organisations: UserCompanyConn
-  clientMatterAccess(companyId: ID, limit: Int, nextToken: String): UserClientMatterAccessConn
+  clientMatterAccess(companyId: String, limit: Int, nextToken: String): UserClientMatterAccessConn
   teams(limit: Int, nextToken: String): UserTeamConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
