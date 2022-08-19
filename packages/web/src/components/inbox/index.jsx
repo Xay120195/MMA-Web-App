@@ -371,21 +371,20 @@ const Inbox = () => {
           clientMattersOpt.data.company.clientMatters.items[i].labels.items
         ); //array of options
         console.log(
-          'cmid',
+          'clientmatterId',
           clientMattersOpt.data.company.clientMatters.items[i].client.id
         );
         store = [
           ...store,
           {
-            cmid: clientMattersOpt.data.company.clientMatters.items[i].client
-              .id,
+            cmid: clientMattersOpt.data.company.clientMatters.items[i].id,
             labelsExtracted:
               clientMattersOpt.data.company.clientMatters.items[i].labels.items,
           },
         ];
       }
 
-      console.log('extractedlabels', store);
+      console.log('all labels', store);
       setLabelsList(store);
     }
   };
