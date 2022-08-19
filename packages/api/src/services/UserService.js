@@ -67,7 +67,7 @@ export async function listUsers() {
 
 export async function listUserClientMatterAccess(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { companyId, limit, nextToken } = ctx.arguments;
 
   let indexName = "byUser",
     isAscending = false,
@@ -78,9 +78,12 @@ export async function listUserClientMatterAccess(ctx) {
       TableName: "UserClientMatterTable",
       IndexName: indexName,
       KeyConditionExpression: "userId = :userId",
+      FilterExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
-        ":userId": id
+        ":userId": id,
+        ":companyId": companyId
       }),
+
       ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
@@ -92,6 +95,7 @@ export async function listUserClientMatterAccess(ctx) {
     }
 
     const userClientMatterCommand = new QueryCommand(userClientMatterParams);
+
     const userClientMatterResult = await ddbClient.send(userClientMatterCommand);
 
     const clientMatterIds = userClientMatterResult.Items.map((i) => unmarshall(i)).map((f) =>

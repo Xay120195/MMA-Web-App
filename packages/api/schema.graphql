@@ -197,7 +197,7 @@ type User {
   customUserType: CustomUserType
   profilePicture: String
   organisations: UserCompanyConn
-  clientMatterAccess(limit: Int, nextToken: String): UserClientMatterAccessConn
+  clientMatterAccess(companyId: String, limit: Int, nextToken: String): UserClientMatterAccessConn
   teams(limit: Int, nextToken: String): UserTeamConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -222,6 +222,7 @@ type UserColumnSettings {
 type UserClientMatterAccess {
   id: ID
   user: User
+  company: Company
   clientMatter: ClientMatter
   userType: UserType
   customUserType: CustomUserType
@@ -640,7 +641,12 @@ type Mutation {
   briefSoftDelete(id: ID): Brief
   briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int, labelId: ID): Brief
   clientCreate(name: String, companyId: String): Client
-  clientMatterCreate(companyId: String, userId: ID, client: ClientInput, matter: MatterInput): ClientMatter
+  clientMatterCreate(
+    companyId: String
+    userId: ID
+    client: ClientInput
+    matter: MatterInput
+  ): ClientMatter
   clientMatterDelete(id: ID): ClientMatter
   columnSettingsCreate(name: String, label: String, tableName: ViewTable!): ColumnSettings
   companyAccessTypeCreate(
@@ -728,8 +734,17 @@ type Mutation {
     customUserType: CustomUserTypeInput
     profilePicture: String
   ): User
-  userClientMatterTag(userId: ID, clientMatterAccess: [UserClientMatterAccessInput]): [UserClientMatterAccess]
-  userClientMatterUntag(userId: ID): UserClientMatterAccess
+  userClientMatterTag(
+    userId: ID
+    companyId: ID
+    clientMatterAccess: [UserClientMatterAccessInput]
+  ): [UserClientMatterAccess]
+  # userClientMatterTagAll(
+  #   userId: ID
+  #   userType: UserType
+  #   customUserType: CustomUserTypeInput
+  # ): [UserClientMatterAccess]
+  userClientMatterUntag(userId: ID, companyId: ID): UserClientMatterAccess
   gmailMessageCreate(
     companyId: ID
     messageId: String
