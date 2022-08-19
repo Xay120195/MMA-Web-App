@@ -17,26 +17,38 @@ const options = [
 ];
 
 
-export default function TeamTab({ close, user, isEditing, ContactList, setContactList }) {
+export default function TeamTab({
+  close,
+  user,
+  isEditing,
+  ContactList,
+  setContactList,
+  tagTeamMember,
+  TeamOptions,
+  UserTypes,
+}) {
   const [isDisabled, setisDisabled] = useState(true);
   const [IsHovering, setIsHovering] = useState(false);
   const [InputData, setInputData] = useState([
     {
+      userId: user.id,
       team: user.team ? user.team : "",
-      usertype: user.type ? user.team : "",
+      userType: user.type ? user.team : "",
     },
   ]);
 
+  const [FinalData, setFinalData] = useState([]);
+
   const validate = (obj, index) => {
     if (index > 0) {
-      if (obj.team && obj.usertype) {
+      if (obj.team && obj.userType) {
         return true;
       } else return false;
     } else {
       if (
         obj.team &&
-        obj.usertype &&
-        (obj.team !== user.team || obj.usertype !== user.type)
+        obj.userType &&
+        (obj.team !== user.team || obj.userType !== user.type)
       ) {
         return true;
       } else return false;
@@ -48,7 +60,10 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
       <button
         onClick={() => {
           let foundIndex = ContactList.findIndex((x) => x.id === user.id);
+          console.log("FOUND", ContactList[foundIndex]);
 
+          //tagTeamMember();
+          /*
           let item = {
             id: ContactList[foundIndex].id,
             name: ContactList[foundIndex].name,
@@ -66,6 +81,7 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
 
           ContactList[foundIndex] = item;
           setContactList(ContactList);
+           */
           close();
         }}
         className={
@@ -82,8 +98,26 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
 
   useEffect(() => {
     const validations = InputData.map((input, idx) => validate(input, idx));
+
+    console.log(user);
+
+    let oFinal = InputData.map((input) => {
+      let final = {
+        userId: input.userId,
+        userType: input.userType,
+      };
+
+      return final;
+    });
+
+    setFinalData(oFinal);
+
     setisDisabled(!validations.includes(true));
   }, [InputData, user]);
+
+  useEffect(() => {
+    console.log("FINALDATA", FinalData);
+  }, [FinalData]);
 
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
@@ -131,8 +165,9 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
           setInputData([
             ...InputData,
             {
+              userId: user.id,
               team: "",
-              usertype: "",
+              userType: "",
             },
           ]);
         }}
@@ -167,14 +202,21 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
                 IndicatorSeparator: () => null,
                 DropdownIndicator: DropdownIndicator,
               }}
+              menuPortalTarget={document.body}
+              styles={{
+                container: (base) => ({
+                  ...base,
+                  zIndex: "99999",
+                }),
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
               name={`team`}
-              options={options}
+              options={TeamOptions}
               type="text"
               value={{
                 value: x.team,
                 label: x.team,
               }}
-              styles={customStyles}
               isDisabled={!isEditing}
               onChange={(e, val) => handleSelectChange(e, val, i, `team`)}
               className="rounded-md w-80 focus:border-gray-100 text-gray-400"
@@ -183,20 +225,27 @@ export default function TeamTab({ close, user, isEditing, ContactList, setContac
           <div className="flex flex-col p-1">
             <div className="text-sm font-medium text-gray-400">{`User Type`}</div>
             <Select
-              styles={customStyles}
+              menuPortalTarget={document.body}
+              styles={{
+                container: (base) => ({
+                  ...base,
+                  zIndex: "99999",
+                }),
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
               components={{
                 IndicatorSeparator: () => null,
                 DropdownIndicator: DropdownIndicator,
               }}
-              name={`usertype`}
-              options={options}
+              name={`userType`}
+              options={UserTypes}
               type="text"
               isDisabled={!isEditing}
               value={{
-                value: x.usertype,
-                label: x.usertype,
+                value: x.userType,
+                label: x.userType,
               }}
-              onChange={(e, val) => handleSelectChange(e, val, i, `usertype`)}
+              onChange={(e, val) => handleSelectChange(e, val, i, `userType`)}
               className="rounded-md w-80 focus:border-gray-100 text-gray-400 bg-white"
             />
           </div>
