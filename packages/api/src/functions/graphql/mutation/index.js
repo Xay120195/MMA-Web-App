@@ -710,6 +710,7 @@ async function createClientMatter(data) {
     const userClientMatterParams = {
       id: v4(),
       userId: data.userId,
+      companyId: data.companyId,
       clientMatterId: rawParams.id,
       userType: "OWNER",
       customUserType: null
@@ -1735,8 +1736,10 @@ async function tagUserClientMatter(data) {
       TableName: "UserClientMatterTable",
       IndexName: "byUser",
       KeyConditionExpression: "userId = :userId",
+      FilterExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
-        ":userId": data.userId
+        ":userId": data.userId,
+        ":companyId": data.companyId
       }),
       ProjectionExpression: "id"
     };
@@ -1764,6 +1767,7 @@ async function tagUserClientMatter(data) {
       const params = {
         id: v4(),
         userId: data.userId,
+        companyId: data.companyId,
         clientMatterId: clientMatterId,
         userType: userType ? userType : null,
         customUserType: customUserType ? customUserType : null
@@ -1829,8 +1833,10 @@ async function untagUserClientMatter(data) {
       TableName: "UserClientMatterTable",
       IndexName: "byUser",
       KeyConditionExpression: "userId = :userId",
+      FilterExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
-        ":userId": data.userId
+        ":userId": data.userId,
+        ":companyId": data.companyId
       }),
       ProjectionExpression: "id"
     };
