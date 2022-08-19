@@ -467,19 +467,22 @@ const TableUnsavedInfo = ({
     var mainLabels = labelsList;
     var cmid;
 
-    setTimeout(() => {
       if (cmidarr.length > 0) {
-        cmid = cmidarr[0].client.id;
+        cmid = cmidarr[0].id;
       } else {
         cmid = "";
       }
+
+      console.log("main labels", mainLabels);
+      console.log("cmidarr", cmidarr);
   
       if (labelsList.length > 0 || labelsList !== null) {
         for (var i = 0; i < labelsList.length; i++) {
           // console.log("optionscheck",labelsList[i]);
   
           if (mainLabels[i].labelsExtracted.length === 0) {
-            return [{value: "test", label: "no labels extracted"}];
+            // return [{value: "test", label: "no labels extracted"}];
+            return [];
           } else {
             if (mainLabels[i].cmid === cmid) {
               // if (mainLabels[i].labelsExtracted.length === 0) {
@@ -497,12 +500,9 @@ const TableUnsavedInfo = ({
           }
         }
       } else {
-        return [{value: "test", label: "labelsList null"}];
+        // return [{value: "test", label: "labelsList null"}];
+        return [];
       }
-
-    }, 2000);
-
-    
   };
 
   const previewAndDownloadFile = async (id) => {
