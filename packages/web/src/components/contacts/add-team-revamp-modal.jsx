@@ -4,6 +4,7 @@ import Select from "react-select";
 import { API, input } from "aws-amplify";
 
 import anime from "animejs";
+import { format } from "prettier";
 
 const options = [
   { value: "Thomas Edison", label: "Thomas Edison" },
@@ -31,16 +32,26 @@ export default function AddTeamModal({
   TeamList,
   getContacts,
   setShowBurst,
+  getTeams,
+  UserTypes,
+  CompanyUsers,
+  tagTeamMember,
+  setisLoading,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
   const [isDisabled, setisDisabled] = useState(false);
   const [IsHovering, setIsHovering] = useState(false);
   const [TeamName, setTeamName] = useState("");
+  const [FinalData, setFinalData] = useState([]);
 
-  function StopPropagate(e) {
-    e.stopPropagation();
+  const mCreateTeam = `
+ mutation createTeam($companyId: ID, $name: String) {
+  teamCreate(companyId: $companyId, name: $name){
+    id
   }
+}
+  `;
 
   useEffect((e) => {
     anime({
@@ -67,21 +78,37 @@ export default function AddTeamModal({
   const [InputData, setInputData] = useState([
     {
       id: uuidv4(),
-      name: "",
+      firstName: "",
+      lastName: "",
       userType: "",
+      userId: "",
     },
   ]);
 
   const validate = (obj) => {
-    if (obj.name && obj.userType && TeamName) {
+    if (obj.firstName && obj.lastName && obj.userType && TeamName) {
       return true;
     } else return false;
   };
 
   useEffect(() => {
     const validations = InputData.map((input) => validate(input));
+    let oFinal = InputData.map((input) => {
+      let final = {
+        userId: input.userId,
+        userType: input.userType,
+      };
+
+      return final;
+    });
+
+    setFinalData(oFinal);
     setisDisabled(validations.includes(false));
   }, [InputData, TeamName]);
+
+  useEffect(() => {
+    console.log("FinalData", FinalData);
+  }, [FinalData]);
 
   const handleOnChange = (e, i, property) => {
     const { value } = e.target;
@@ -90,9 +117,33 @@ export default function AddTeamModal({
     setInputData(list);
   };
 
+  const buildName = (value) => {
+    console.log(value.split(" "));
+    let arr = value.split(" ");
+    if (arr.length > 2) {
+      return {
+        firstName: arr[0] + " " + arr[1],
+        lastName: arr[2],
+      };
+    } else {
+      return {
+        firstName: arr[0],
+        lastName: arr[1],
+      };
+    }
+  };
+
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
-    list[i][property] = e.value;
+    if (property === "name") {
+      let name = buildName(e.value);
+      list[i]["firstName"] = name.firstName;
+      list[i]["lastName"] = name.lastName;
+      list[i]["userId"] = e.id;
+      console.log("ID", e.id);
+    } else {
+      list[i][property] = e.value;
+    }
     setInputData(list);
   };
 
@@ -105,7 +156,38 @@ export default function AddTeamModal({
     };
   };
 
-  const generateFinal = () => {
+  const handleAddTeam = async () => {
+    console.group("Handle add team");
+    console.log("Company ID", localStorage.getItem("companyId"));
+    setisLoading(true);
+    const request = await API.graphql({
+      query: mCreateTeam,
+      variables: {
+        //$companyId: ID, $name: String
+        companyId: localStorage.getItem("companyId"),
+        name: toTitleCase(TeamName),
+      },
+    });
+
+    console.log("mCreateTeam", request);
+
+    if (request) {
+      await tagTeamMember(request.data.teamCreate.id, FinalData);
+      await getTeams();
+      setTimeout(() => {
+        setisLoading(false);
+        setShowBurst(true);
+        setTimeout(() => {
+          setShowBurst(false);
+        }, 2000);
+      }, 3000);
+    } else {
+      alert("Failed to add teams");
+    }
+    console.groupEnd();
+  };
+
+  const generateFinal = async () => {
     setTeamList(TeamList.concat(generateFinalObj(true)));
     setShowBurst(true);
     setTimeout(() => {
@@ -130,21 +212,6 @@ export default function AddTeamModal({
         }
       }
   `;
-
-  async function inviteUser(data) {
-    const request = API.graphql({
-      query: mInviteUser,
-      variables: {
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        userType: data.userType,
-        company: data.company, //{id: companyID, name: companyName}
-      },
-    });
-
-    console.log("successful", request);
-  }
 
   const handleSubmit = () => {
     generateFinal();
@@ -213,12 +280,20 @@ export default function AddTeamModal({
                     {`Member`} {i + 1}
                   </div>
                   <Select
+                    menuPortalTarget={document.body}
+                    styles={{
+                      container: (base) => ({
+                        ...base,
+                        zIndex: "99999",
+                      }),
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
                     name={`name`}
-                    options={options}
+                    options={CompanyUsers}
                     type="text"
                     value={{
-                      value: x.name,
-                      label: x.name,
+                      value: x.firstName + " " + x.lastName,
+                      label: x.firstName + " " + x.lastName,
                     }}
                     onChange={(e, val) => handleSelectChange(e, val, i, `name`)}
                     className="rounded-md  w-80 focus:border-gray-100 text-gray-400"
@@ -229,8 +304,16 @@ export default function AddTeamModal({
                     {`User Type`}
                   </div>
                   <Select
+                    menuPortalTarget={document.body}
+                    styles={{
+                      container: (base) => ({
+                        ...base,
+                        zIndex: "99999",
+                      }),
+                      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    }}
                     name={`userType`}
-                    options={options}
+                    options={UserTypes}
                     type="text"
                     value={{
                       value: x.userType,
@@ -266,8 +349,10 @@ export default function AddTeamModal({
                 ...InputData,
                 {
                   id: uuidv4(),
-                  name: "",
+                  firstName: "",
+                  lastName: "",
                   userType: "",
+                  userId: "",
                 },
               ]);
             }}
@@ -293,7 +378,8 @@ export default function AddTeamModal({
             disabled={isDisabled}
             onClick={() => {
               //generateFinal();
-              handleSubmit();
+              //handleSubmit();
+              handleAddTeam();
               close();
             }}
             className={

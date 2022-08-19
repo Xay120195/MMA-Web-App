@@ -14,7 +14,7 @@ function uuidv4() {
     ).toString(16)
   );
 }
-export default function About({
+export default function AboutTab({
   close,
   user,
   isEditing,

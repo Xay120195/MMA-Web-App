@@ -9,6 +9,7 @@ import { FaEye, FaTrash } from "react-icons/fa";
 import { Base64 } from "js-base64";
 import html2pdf from "html2pdf.js";
 import googleLogin from "../../assets/images/gmail-print.png";
+import '../../assets/styles/Inbox.css';
 import {
   CustomMenuList,
   CustomValueContainer,
@@ -98,12 +99,9 @@ const TableUnsavedInfo = ({
   const [isShiftDown, setIsShiftDown] = useState(false);
   const [lastSelectedItem, setLastSelectedItem] = useState(null);
   const companyId = localStorage.getItem("companyId");
-
   const [showToast, setShowToast] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
-
   const [enabledArrays, setEnabledArrays] = useState([]);
-
   const [options, setOptions] = useState(null);
   const [ShowAddLabel, setShowAddLabel] = useState([{ index: 0, show: false }]);
   const [ShowLabelDescription, setShowLabelDescription] = useState(false);
@@ -117,6 +115,7 @@ const TableUnsavedInfo = ({
   );
 
   const handleSnippet = (e) => {
+    console.log(e);
     setSnippetId(e.target.id);
     setShow(true);
   };
@@ -157,7 +156,7 @@ const TableUnsavedInfo = ({
     setShowToast(false);
   };
 
-  const handleSaveDesc = async (e, id, rowId) => {
+  const handleSaveDesc = async (e, id, rowId, index) => {
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -180,6 +179,7 @@ const TableUnsavedInfo = ({
       setUnsavedEmails(updateArrAttachment);
       setResultMessage("Successfully updated.");
       setShowToast(true);
+      autoAdjustRowHeight(index);
     }
   };
 
@@ -200,7 +200,7 @@ const TableUnsavedInfo = ({
     });
   }
 
-  const handleClientMatter = async (e, gmailMessageId) => {
+  const handleClientMatter = async (e, gmailMessageId, rowId) => {
     if (e.value !== null) {
       API.graphql({
         query: mTagEmailClientMatter,
@@ -247,6 +247,7 @@ const TableUnsavedInfo = ({
         API.graphql(params).then((result) => {
           const emailList = result.data.company.gmailMessages.items;
           setUnsavedEmails(emailList);
+          autoAdjustRowHeight(rowId);
         });
 
         setResultMessage("Successfully updated.");
@@ -260,7 +261,7 @@ const TableUnsavedInfo = ({
     setEnabledArrays(temp);
   };
 
-  const handleSaveMainDesc = async (e, id) => {
+  const handleSaveMainDesc = async (e, id, rowId) => {
     const data = {
       id: id,
       description: e.target.innerHTML,
@@ -278,6 +279,7 @@ const TableUnsavedInfo = ({
         return emails;
       });
       setUnsavedEmails(newArrDescription);
+      autoAdjustRowHeight(rowId);
     }
   };
 
@@ -360,16 +362,52 @@ const TableUnsavedInfo = ({
     }
   }`;
 
-  const handleAddLabel = async (e, gmid, index) => {
+  const handleAddLabel = async (e, gmid, index, clientMatterId) => {
     var selectedLabels = [];
     var taggedLabels = [];
+    
+    /* Added Label 
+    const cmId = clientMatterId.map((obj) => {
+        obj = obj.id;
+        return obj;
+    });
+
+    const eValue = e.map((obj) => {
+        obj = obj.label;
+        return obj;
+    });
+
+    const isNew = e.map((obj) => {
+        obj = obj.__isNew__;
+        return obj;
+    });
+
+    if(isNew[0]) {
+      // Add new labls when brief is created
+      API.graphql({
+        query: mCreateLabel,
+        variables: {
+          clientMatterId: cmId[0],
+          name: eValue[0],
+        },
+      }).then((result) => {
+        for (var i = 0; i < e.length; i++) {
+          selectedLabels = [...selectedLabels, result.data.labelCreate.id];
+          taggedLabels = [...taggedLabels, { id: result.data.labelCreate.id, name: e[i].label }];
+        }
+      });
+    } else {
+      for (var i = 0; i < e.length; i++) {
+        selectedLabels = [...selectedLabels, e[i].value];
+        taggedLabels = [...taggedLabels, { id: e[i].value, name: e[i].label }];
+      }
+    }*/
 
     for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
       taggedLabels = [...taggedLabels, { id: e[i].value, name: e[i].label }];
     }
-
-    console.log("selectedLabels", selectedLabels);
+    
     if (e.length > 0) {
       const result = await API.graphql({
         query: mAddEmailLabel,
@@ -378,6 +416,7 @@ const TableUnsavedInfo = ({
           gmailMessageId: gmid,
         },
       });
+      console.log("selectedLabels - Saved Labels", selectedLabels);
     } else {
       const result = await API.graphql({
         query: mAddEmailLabel,
@@ -386,8 +425,8 @@ const TableUnsavedInfo = ({
           gmailMessageId: gmid,
         },
       });
+      console.log("selectedLabels - Blank Labels", selectedLabels);
     }
-    console.log("MainArray", unSavedEmails);
 
     const newArrLabels = unSavedEmails;
 
@@ -514,7 +553,8 @@ const TableUnsavedInfo = ({
     };
 
     await API.graphql(params).then((result) => {
-      window.open(result.data.gmailAttachment.downloadURL);
+      //window.open(result.data.gmailAttachment.downloadURL);
+      console.log(result.data.gmailAttachment.downloadURL);
     });
   };
 
@@ -549,6 +589,10 @@ const TableUnsavedInfo = ({
     });
   }
 
+  const handleOnKeyupRows = (e, rowId) => {
+    autoAdjustRowHeight(rowId);
+  }
+
   const autoAdjustRowHeight = (index) => {
     //bindList and cache must not be null
     console.log("Items", bindList);
@@ -561,7 +605,7 @@ const TableUnsavedInfo = ({
       console("List reference not found || cache not found!");
     }
   };
-
+  
   return (
     <>
       <table
@@ -706,8 +750,8 @@ const TableUnsavedInfo = ({
                                     </div>
                                     {show && snippetId === item.id && (
                                       <div
-                                        ref={(el) => (ref.current[index] = el)}
-                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-60 overflow-auto"
+                                        ref={ref}
+                                        className="fixed rounded shadow bg-white p-6 z-50 w-2/3 max-h-screen overflow-auto"
                                         id={item.id}
                                       >
                                         <p>From : {item.from}</p>
@@ -784,19 +828,20 @@ const TableUnsavedInfo = ({
                                     cursor: "auto",
                                     outlineColor: "rgb(204, 204, 204, 0.5)",
                                     outlineWidth: "thin",
-                                    minHeight: "35px",
-                                    maxHeight: "35px",
+                                    //minHeight: "35px",
+                                    //maxHeight: "35px",
                                     overflow: "auto",
                                   }}
                                   suppressContentEditableWarning
                                   dangerouslySetInnerHTML={{
                                     __html: item.description,
                                   }}
-                                  onBlur={(e) => handleSaveMainDesc(e, item.id)}
+                                  onBlur={(e) => handleSaveMainDesc(e, item.id, index)}
+                                  onInput={(e) => handleOnKeyupRows(e, index)}
                                   contentEditable={true}
                                 ></p>
                                 {item.attachments.items.map(
-                                  (item_attach, index) => (
+                                  (item_attach, indexAttachments) => (
                                     <React.Fragment key={item_attach.id}>
                                       <div className="flex items-start mt-2">
                                         <p
@@ -829,9 +874,9 @@ const TableUnsavedInfo = ({
                                             outlineColor:
                                               "rgb(204, 204, 204, 0.5)",
                                             outlineWidth: "thin",
-                                            minHeight: "35px",
-                                            maxHeight: "35px",
-                                            overflow: "auto",
+                                            //minHeight: "35px",
+                                            //maxHeight: "35px",
+                                            //overflow: "auto",
                                           }}
                                           suppressContentEditableWarning
                                           dangerouslySetInnerHTML={{
@@ -841,9 +886,11 @@ const TableUnsavedInfo = ({
                                             handleSaveDesc(
                                               e,
                                               item_attach.id,
-                                              item.id
+                                              item.id,
+                                              index
                                             )
                                           }
+                                          onInput={(e) => handleOnKeyupRows(e, index)}
                                           contentEditable=
                                             {!item_attach.isDeleted || item_attach.isDeleted === null ? 
                                               true : false
@@ -856,7 +903,7 @@ const TableUnsavedInfo = ({
                                               handleDeleteAttachment(
                                                 item_attach.id,
                                                 item.id,
-                                                index,
+                                                indexAttachments,
                                                 true,
                                                 e
                                               )
@@ -871,7 +918,7 @@ const TableUnsavedInfo = ({
                                             handleDeleteAttachment(
                                               item_attach.id,
                                               item.id,
-                                              index,
+                                              indexAttachments,
                                               false,
                                               e
                                             )
@@ -1018,7 +1065,7 @@ const TableUnsavedInfo = ({
                                         ? false
                                         : true
                                     }
-                                    onChange={(e) => handleAddLabel(e, item.id, index)}
+                                    onChange={(e) => handleAddLabel(e, item.id, index, item.clientMatters.items)}
                                     placeholder="Labels"
                                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                   />
@@ -1206,7 +1253,7 @@ const TableUnsavedInfo = ({
                                     options={matterList}
                                     isSearchable
                                     onChange={(options, e) =>
-                                      handleClientMatter(options, item.id)
+                                      handleClientMatter(options, item.id, index)
                                     }
                                     noOptionsMessage={() => "No result found"}
                                     isValidNewOption={() => false}

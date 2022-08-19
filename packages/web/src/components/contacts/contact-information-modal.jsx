@@ -1,18 +1,10 @@
-import React, {
-  useState,
-  useContext,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
-import About from "./contact-information-modal-tabs/about";
-
+import React, { useState, useEffect, useRef } from "react";
 import { FiEdit } from "react-icons/fi";
-import clientmatter from "./clientmatter.json";
 import anime from "animejs";
+import AboutTab from "./contact-information-modal-tabs/about";
 import TeamTab from "./contact-information-modal-tabs/team";
 import ClientMatterTab from "./contact-information-modal-tabs/clientmatter";
+
 const ExitButton = ({ close }) => {
   return (
     <button
@@ -44,12 +36,13 @@ export default function ContactInformationModal({
   image,
   ContactList,
   setContactList,
+  tagTeamMember,
+  TeamOptions,
+  UserTypes,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
-
   const [isEditing, setisEditing] = useState(false);
-
   const [SelectedTab, setSelectedTab] = useState("About");
 
   useEffect((e) => {
@@ -69,9 +62,10 @@ export default function ContactInformationModal({
       },
     });
   }, []);
-  useEffect(() => {
-    console.log(SelectedTab);
-  }, [SelectedTab]);
+  // useEffect(() => {
+  //   console.log(SelectedTab);
+  // }, [SelectedTab]);
+
   const MiniNav = () => {
     return Tabs.map((tab, idx) => (
       <button
@@ -182,7 +176,7 @@ export default function ContactInformationModal({
           </div>
           {/*Tabs */}
           {SelectedTab === "About" ? (
-            <About
+            <AboutTab
               close={close}
               user={user}
               isEditing={isEditing}
@@ -196,12 +190,15 @@ export default function ContactInformationModal({
               isEditing={isEditing}
               ContactList={ContactList}
               setContactList={setContactList}
+              tagTeamMember={tagTeamMember}
+              TeamOptions={TeamOptions}
+              UserTypes={UserTypes}
             />
           ) : (
             <ClientMatterTab
               close={close}
               isEditing={isEditing}
-              clientmatter={clientmatter}
+              clientmatter={user.clientMatters.items}
             />
           )}
         </div>

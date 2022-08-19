@@ -556,7 +556,7 @@ export default function FileBucket() {
 
     console.log("updateBrief", updateBrief);
 
-    /* 
+    /*
     for (const matterFile of request?.data?.matterFileBulkCreate) {
         console.log("Binding File", matterFile.name, " to a 'Background' label");
         await bindMatterToDefaultLabel(matterFile.id, brief);
@@ -715,13 +715,13 @@ query listLabels($clientMatterId: ID) {
 }
 `;
 
-  const mCreateLabel = `
-mutation createLabel($clientMatterId: String, $name: String) {
-    labelCreate(clientMatterId:$clientMatterId, name:$name) {
-        id
-        name
-    }
-}
+const mCreateLabel = `
+  mutation createLabel($clientMatterId: String, $name: String) {
+      labelCreate(clientMatterId:$clientMatterId, name:$name) {
+          id
+          name
+      }
+  }
 `;
 
   const mTagFileLabel = `

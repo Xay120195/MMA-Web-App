@@ -168,6 +168,7 @@ const Inbox = () => {
   };
   const [waitUnSaved, setWaitUnSaved] = useState(false);
   const [waitSaved, setWaitSaved] = useState(false);
+  const [searchGmail, setSearchGmail] = useState();
 
   useEffect(() => {
     function start() {
@@ -185,7 +186,14 @@ const Inbox = () => {
 
     console.log('UseEffect: Refresh Token', refreshToken);
     console.log('UseEffect: Login Data', loginData);
+
   }, []);
+
+  useEffect(() => {
+    if (searchGmail !== undefined) {
+      filterRecord(searchGmail);
+    }
+  }, [searchGmail]);
 
   var emailIntegration = localStorage.getItem('emailAddressIntegration');
 
@@ -441,8 +449,31 @@ const Inbox = () => {
     return sort;
   }
 
-  console.log('Render: refreshToken:', refreshToken);
-  console.log('Render: loginData:', loginData);
+  const handleSearchGmailChange = (e) => {
+    setSearchGmail(e.target.value);
+  };
+
+  const filterRecord = (v) => {
+    if(openTab === 1) {
+      if (v === "") {
+        getUnSavedEmails(emailFilters);
+      } else {
+        const filterRecord = unSavedEmails.filter((x) =>
+          x.subject.toLowerCase().includes(v.toLowerCase())
+        );
+        setUnsavedEmails(filterRecord);
+      }
+    } else {
+      if (v === "") {
+        getSavedEmails(emailFilters);
+      } else {
+        const filterRecord = savedEmails.filter((x) =>
+          x.subject.toLowerCase().includes(v.toLowerCase())
+        );
+        setSavedEmails(filterRecord);
+      }
+    }
+  };
 
   return (
     <>
@@ -495,6 +526,7 @@ const Inbox = () => {
                   type="text"
                   className="flex-shrink flex-grow leading-normal w-px flex-1 border-0 h-10 border-grey-light rounded rounded-l-none px-3 self-center relative text-sm outline-none"
                   placeholder="Type to search all emails ..."
+                  onChange={(e) => handleSearchGmailChange(e) }
                 />
                 <button
                   onClick={() => setshowFiltersModal(true)}

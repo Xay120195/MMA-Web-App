@@ -10,9 +10,31 @@ import {
   CREATE_MATTER_ERROR,
   DELETE_MATTER_REQUEST,
   DELETE_MATTER_SUCCESS,
-  DELETE_MATTER_ERROR,
+  DELETE_MATTER_ERROR
 } from "./constants";
 import { API } from "aws-amplify";
+
+const qUserClientMatterAccess = `query getUserClientMatters($id: String, $companyId: String) {
+  user(id: $id) {
+    clientMatterAccess(companyId: $companyId) {
+      items {
+        id
+        userType
+        clientMatter {
+          id
+          client {
+            id
+            name
+          }
+          matter {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+}`;
 
 const listClientMatters = `
 query listClientMatters($companyId: String) {
@@ -36,8 +58,8 @@ query listClientMatters($companyId: String) {
 `;
 
 const createClientMatter = `
-  mutation createClientMatter($companyId: String, $client: ClientInput, $matter:MatterInput) {
-    clientMatterCreate(companyId: $companyId, client: $client, matter:$matter) {
+  mutation createClientMatter($companyId: String, $userId: ID, $client: ClientInput, $matter:MatterInput) {
+    clientMatterCreate(companyId: $companyId, userId:$userId, client: $client, matter:$matter) {
       id
     }
 }
@@ -51,12 +73,29 @@ const deleteClientMatter = `
 }
 `;
 
+//fetch user client matter access
+export const getUserClientMatterAccess = async () => {
+  const userClientMatterAccess = await API.graphql({
+    query: qUserClientMatterAccess,
+    variables: {
+      id: localStorage.getItem("userId"),
+      companyId: localStorage.getItem("companyId")
+    }
+  });
+
+  const clientMatterIds = userClientMatterAccess.data.user.clientMatterAccess.items.map(
+    (i) => i.clientMatter.id
+  );
+
+  return clientMatterIds;
+};
+
 //fetch client matters
 export const getMatterList = async (dispatch, companyId) => {
   try {
     dispatch({
       type: MATTER_REQUEST,
-      payload: { loading: true },
+      payload: { loading: true }
     });
 
     let result = [];
@@ -64,65 +103,33 @@ export const getMatterList = async (dispatch, companyId) => {
     const clientMattersOpt = await API.graphql({
       query: listClientMatters,
       variables: {
-        companyId: companyId,
-      },
+        companyId: companyId
+      }
     });
 
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
       result = clientMattersOpt.data.company.clientMatters.items;
 
-    // Initialize filebucket/background orders
-    
-    //   const mInitMatterFileOrders = `
-    //   mutation initializeOrder($clientMatterId: ID) {
-    //     matterFileBulkInitializeOrders(clientMatterId: $clientMatterId) {
-    //       id
-    //     }
-    //   }
-    // `;
+      // const userClientMatterAccess = await getUserClientMatterAccess().catch((e) => {
+      //   console.error(e.errors[0].message);
+      // });
 
-    //   const mInitBackgroundOrders = `
-    //   mutation initializeOrder($clientMatterId: ID) {
-    //     backgroundBulkInitializeOrders(clientMatterId: $clientMatterId) {
-    //       id
-    //     }
-    //   }
-    // `;
+      // result = result
+      //   .map((item) => {
+      //     const filterLabel = userClientMatterAccess.find((u) => u === item.id);
 
-    //   let x = 0;
-
-    //   result.map(async (i) => {
-    //     x++;
-    //     let matterId = i.id;
-
-    //     if (x <= result.length) {
-    //       await API.graphql({
-    //         query: mInitMatterFileOrders,
-    //         variables: { clientMatterId: matterId },
-    //       }).then((res) => {
-    //         console.log(matterId, "File Bucket: Initial Sorting Successful!");
-    //         console.log(res);
-    //       });
-
-    //       await API.graphql({
-    //         query: mInitBackgroundOrders,
-    //         variables: { clientMatterId: matterId },
-    //       }).then((res) => {
-    //         console.log(matterId, "Background: Initial Sorting Successful!");
-    //         console.log(res);
-    //       });
-    //     }
-    //   });
+      //     if (filterLabel !== undefined) {
+      //       return item;
+      //     }
+      //   })
+      //   .filter((a) => a !== undefined);
 
       const dummyPersonResponsible = {
         id: localStorage.getItem("userId"),
-        name:
-          localStorage.getItem("firstName") +
-          " " +
-          localStorage.getItem("lastName"),
+        name: localStorage.getItem("firstName") + " " + localStorage.getItem("lastName"),
         email: localStorage.getItem("email"),
         profile_picture:
-          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
+          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940"
       };
 
       var filtered = result.filter(function (el) {
@@ -131,35 +138,35 @@ export const getMatterList = async (dispatch, companyId) => {
 
       var apdPr = filtered.map((v) => ({
         ...v,
-        substantially_responsible: dummyPersonResponsible,
+        substantially_responsible: dummyPersonResponsible
       }));
       var apdMn = apdPr.map((v) => ({
         ...v,
-        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(-4)}/${v.client.id.slice(
           -4
-        )}/${v.client.id.slice(-4)}}`,
+        )}}`
       }));
     }
     //dispatch data to reducers
 
     dispatch({
       type: MATTER_SUCCESS,
-      payload: { matterlist: apdMn ? apdMn : [] },
+      payload: { matterlist: apdMn ? apdMn : [] }
     });
   } catch (error) {
     dispatch({
       type: MATTER_ERROR,
-      payload: error,
+      payload: error
     });
   }
 };
 
 //create new client matters
-export const addClientMatter = async (client, matter, companyId, dispatch) => {
+export const addClientMatter = async (client, matter, companyId, userId, dispatch) => {
   try {
     dispatch({
       type: CREATE_MATTER_REQUEST,
-      payload: { loading: true },
+      payload: { loading: true }
     });
     console.log(client);
 
@@ -167,9 +174,10 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
       query: createClientMatter,
       variables: {
         companyId: companyId,
+        userId: userId,
         client: client,
-        matter: matter,
-      },
+        matter: matter
+      }
     });
 
     let result = [];
@@ -177,8 +185,8 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
     const clientMattersOpt = await API.graphql({
       query: listClientMatters,
       variables: {
-        companyId: companyId,
-      },
+        companyId: companyId
+      }
     });
 
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
@@ -189,7 +197,7 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
         name: "Adrian Silva",
         email: "adrian.silva@lophils.com",
         profile_picture:
-          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
+          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940"
       };
 
       var filtered = result.filter(function (el) {
@@ -198,13 +206,13 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
 
       var apdPr = filtered.map((v) => ({
         ...v,
-        substantially_responsible: dummyPersonResponsible,
+        substantially_responsible: dummyPersonResponsible
       }));
       var apdMn = apdPr.map((v) => ({
         ...v,
-        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(-4)}/${v.client.id.slice(
           -4
-        )}/${v.client.id.slice(-4)}}`,
+        )}}`
       }));
     }
     //dispatch data to reducers
@@ -212,35 +220,31 @@ export const addClientMatter = async (client, matter, companyId, dispatch) => {
       type: CREATE_MATTER_SUCCESS,
       payload: {
         matterlist: apdMn,
-        message: `Successfully created Client ${client.name} and Matter ${matter.name}`,
-      },
+        message: `Successfully created Client ${client.name} and Matter ${matter.name}`
+      }
     });
   } catch (error) {
     dispatch({
       type: CREATE_MATTER_ERROR,
-      payload: error,
+      payload: error
     });
   }
 };
 
 //delete client and matter
-export const deleteMatterClient = async (
-  selectedClientMatter,
-  dispatch,
-  companyId
-) => {
+export const deleteMatterClient = async (selectedClientMatter, dispatch, companyId) => {
   try {
     dispatch({
       type: DELETE_MATTER_REQUEST,
-      payload: { loading: true },
+      payload: { loading: true }
     });
 
     if (selectedClientMatter !== null && selectedClientMatter !== undefined) {
       await API.graphql({
         query: deleteClientMatter,
         variables: {
-          id: selectedClientMatter,
-        },
+          id: selectedClientMatter
+        }
       });
     }
 
@@ -249,8 +253,8 @@ export const deleteMatterClient = async (
     const clientMattersOpt = await API.graphql({
       query: listClientMatters,
       variables: {
-        companyId: companyId,
-      },
+        companyId: companyId
+      }
     });
 
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
@@ -261,7 +265,7 @@ export const deleteMatterClient = async (
         name: "Adrian Silva",
         email: "adrian.silva@lophils.com",
         profile_picture:
-          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
+          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940"
       };
 
       var filtered = result.filter(function (el) {
@@ -270,13 +274,13 @@ export const deleteMatterClient = async (
 
       var apdPr = filtered.map((v) => ({
         ...v,
-        substantially_responsible: dummyPersonResponsible,
+        substantially_responsible: dummyPersonResponsible
       }));
       var apdMn = apdPr.map((v) => ({
         ...v,
-        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(-4)}/${v.client.id.slice(
           -4
-        )}/${v.client.id.slice(-4)}}`,
+        )}}`
       }));
     }
     //dispatch data to reducers
@@ -284,13 +288,13 @@ export const deleteMatterClient = async (
       type: DELETE_MATTER_SUCCESS,
       payload: {
         matterlist: apdMn ? apdMn : [],
-        message: `Successfully deleted`,
-      },
+        message: `Successfully deleted`
+      }
     });
   } catch (error) {
     dispatch({
       type: DELETE_MATTER_ERROR,
-      payload: error,
+      payload: error
     });
   }
 };
@@ -300,7 +304,7 @@ export const searchMatterClient = async (companyId, searchMatter, dispatch) => {
   try {
     dispatch({
       type: SEARCH_MATTER_REQUEST,
-      payload: { loading: true },
+      payload: { loading: true }
     });
 
     let result = [];
@@ -308,8 +312,8 @@ export const searchMatterClient = async (companyId, searchMatter, dispatch) => {
     const clientMattersOpt = await API.graphql({
       query: listClientMatters,
       variables: {
-        companyId: companyId,
-      },
+        companyId: companyId
+      }
     });
 
     if (clientMattersOpt.data.company.clientMatters.items !== null) {
@@ -320,7 +324,7 @@ export const searchMatterClient = async (companyId, searchMatter, dispatch) => {
         name: "Adrian Silva",
         email: "adrian.silva@lophils.com",
         profile_picture:
-          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940",
+          "https://as1.ftcdn.net/v2/jpg/03/64/62/36/1000_F_364623643_58jOINqUIeYmkrH7go1smPaiYujiyqit.jpg?auto=compress&cs=tinysrgb&h=650&w=940"
       };
 
       var filtered = result.filter(function (el) {
@@ -329,13 +333,13 @@ export const searchMatterClient = async (companyId, searchMatter, dispatch) => {
 
       var apdPr = filtered.map((v) => ({
         ...v,
-        substantially_responsible: dummyPersonResponsible,
+        substantially_responsible: dummyPersonResponsible
       }));
       var apdMn = apdPr.map((v) => ({
         ...v,
-        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(
+        matter_number: `{${v.matter.name.charAt(2)}-${v.matter.id.slice(-4)}/${v.client.id.slice(
           -4
-        )}/${v.client.id.slice(-4)}}`,
+        )}}`
       }));
     }
 
@@ -348,15 +352,15 @@ export const searchMatterClient = async (companyId, searchMatter, dispatch) => {
     dispatch({
       type: SEARCH_MATTER_SUCCESS,
       payload: {
-        matterlist: matterslists,
-      },
+        matterlist: matterslists
+      }
     });
 
     //dispatch data to reducers
   } catch (error) {
     dispatch({
       type: SEARCH_MATTER_ERROR,
-      payload: error,
+      payload: error
     });
   }
 };
