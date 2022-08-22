@@ -35,20 +35,16 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Git checkout
         uses: actions/checkout@v2
-      # Change Directory
-      - name: Change Directory
-        run: |
-          cd packages/web
       # Install packages
       - name: Install packages
         run: |
-          npm install --force
+          cd packages/web && npm install --force
 
       # Build an optimized production build
       - name: Production build
         run: |
           unset CI
-          run build
+          cd packages/web && npm run build
 
       # Deploy to the S3 server
       - name: Deploy to S3
