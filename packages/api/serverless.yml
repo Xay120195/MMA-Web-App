@@ -83,7 +83,7 @@ custom:
   dynamodb:
     # If you only want to use DynamoDB Local in some stages, declare them here
     stages:
-      - dev1
+      - dev
     start:
       port: 8000
       heapInitial: 200m
