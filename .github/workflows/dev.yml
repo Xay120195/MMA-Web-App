@@ -45,7 +45,7 @@ jobs:
       - name: Production build
         run: |
           unset CI
-          cd packages/web && run build
+          cd packages/web && npm run build
 
       # Deploy to the S3 server
       - name: Deploy to S3
