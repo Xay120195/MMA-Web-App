@@ -45,6 +45,14 @@ jobs:
         run: |
           unset CI
           cd packages/web && npm run build
+        env:
+          REACT_APP_GOOGLE_CLIENT_ID: "799883109821-5s6kdis6b63ehko6s3u3nhufalu36nqc.apps.googleusercontent.com"
+          REACT_APP_GRAPHQL_ENDPOINT: "https://vhcqn2rfubg2zgnxftfxwc6jmu.appsync-api.ap-southeast-1.amazonaws.com/graphql"
+          REACT_APP_S3_UPLOAD_BUCKET: "mma-webapp-dev-bucket"
+          REACT_APP_S3_GMAIL_ATTACHMENT_BUCKET: "mma-gmail-attachments-dev-bucket"
+          REACT_APP_COGNITO_IDENTITY_POOL_ID: "ap-southeast-1:8e05ef71-bcb0-49b7-8647-a5e374c29650"
+          REACT_APP_COGNITO_USER_POOL_ID: "ap-southeast-1_MEc05kKCz"
+          REACT_APP_COGNITO_USER_POOL_WEB_CLIENT_ID: "5v76eog0tihe426h04nne9bims"  
 
       # Deploy to the S3 server
       - name: Deploy to S3
