@@ -6,7 +6,7 @@ import { BsCloudSlash } from "react-icons/bs";
 import { IoCaretDown } from "react-icons/io5";
 
 import { MdSave } from "react-icons/md";
-
+import { API } from "aws-amplify";
 import { CgTrash } from "react-icons/cg";
 import Select, { components } from "react-select";
 import { FaObjectUngroup } from "react-icons/fa";
@@ -34,8 +34,6 @@ function uuidv4() {
 
 const LOCAL_STORAGE_KEY = "clientApp.teams";
 
-
-
 export default function TeamsEditModal({
   close,
   setTeamList,
@@ -44,6 +42,11 @@ export default function TeamsEditModal({
   getCompanyUsers,
   CompanyUsers,
   UserTypes,
+  tagTeamMember,
+  getTeams,
+  setisLoading,
+  setalertMessage,
+  setShowToast,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -53,8 +56,9 @@ export default function TeamsEditModal({
   const [IsHovering, setIsHovering] = useState(false);
   const [InputData, setInputData] = useState([]);
   const [Image, setImage] = useState();
-
+  const [FinalData, setFinalData] = useState([]);
   const inputFile = useRef(null);
+  const [Length, setLength] = useState(0);
 
   const mUpdateTeam = `mutation updateTeam($id: ID, $name: String) {
   teamUpdate(name: $name, id: $id) {
@@ -62,12 +66,57 @@ export default function TeamsEditModal({
   }
 } `;
 
-  const mTagTeamMember = `
-  mutation tagTeamMember($teamId: ID, $members: [MemberInput] = [{userId: ID, userType: UserType}, {userId: ID, userType: UserType}, {userId: ID, userType: UserType}]) {
-  teamMemberTag(teamId: $teamId, members: $members)
-}`;
+  const updateTeamName = async (id, name) => {
+    const teamName = await API.graphql({
+      query: mUpdateTeam,
+      variables: {
+        name: name,
+        id: id,
+      },
+    });
+
+    console.log("mUpdateTeamName", teamName);
+    if (teamName) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const handleSubmit = async (teamid, members) => {
+    console.log("TeamList", TeamList);
+    let foundIndex = TeamList.findIndex((x) => x.id === CurrentTeam.id);
+
+    let team = {
+      id: TeamList[foundIndex].id,
+      name: TeamName.replace("'s team", ""),
+      members: {
+        items: InputData.map((x) => {
+          return { user: x };
+        }),
+      },
+    };
+
+    TeamList[foundIndex] = team;
+
+    setTeamList(TeamList);
+
+    await tagTeamMember(CurrentTeam.id, FinalData);
+    await updateTeamName(CurrentTeam.id, TeamName);
+    setalertMessage("Successfully edited the details");
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+    //setisLoading(true);
+    //await getTeams();
+    //setTimeout(() => {
+    //setisLoading(false);
+    //}, 1500);
+  };
 
   useEffect((e) => {
+    console.log("CURRENT TEAM", CurrentTeam);
     anime({
       targets: modalContainer.current,
       opacity: [0, 1],
@@ -86,16 +135,27 @@ export default function TeamsEditModal({
 
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      JSON.stringify(CurrentTeam.members.items)
+      JSON.stringify(
+        CurrentTeam.members.items.map((x) => {
+          console.log("USERUSER", x);
+          return {
+            firstName: x.user.firstName,
+            lastName: x.user.lastName,
+            userType: x.user.userType,
+            userId: x.user.id,
+          };
+        })
+      )
     );
     const stored = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-
+    console.log("stored", stored);
     if (stored?.length > 0) {
       setInputData(stored);
     }
 
     setTeamName(CurrentTeam.name);
     setImage(CurrentTeam.image);
+    setLength(CurrentTeam.members.items.length);
     console.log("Company Users", CompanyUsers);
     console.log("INSIDE User Types", UserTypes);
   }, []);
@@ -111,7 +171,7 @@ export default function TeamsEditModal({
             height={34}
             className={"rounded-full "}
           ></img>
-          <div>{member.name}</div>
+          <div>{member.firstName + " " + member.lastName}</div>
           <div className="ml-auto uppercase rounded-2xl bg-gray-200 font-semibold p-1 text-xs text-black">
             {member.userType}
           </div>
@@ -122,25 +182,59 @@ export default function TeamsEditModal({
 
   const ChangesHaveMade = (obj, i) => {
     console.log("HIT");
+    console.log("obj", obj, "at index:", i);
+
     if (CurrentTeam.members.items[i]) {
+      console.log(
+        "CurrentTeam.members.items[i]",
+        CurrentTeam.members.items[i].user
+      );
       if (
-        obj.name !== CurrentTeam.members.items[i].name ||
-        obj.userType !== CurrentTeam.members.items[i].userType ||
-        TeamName !== CurrentTeam.name ||
-        Image !== CurrentTeam.image
+        obj.firstName !== CurrentTeam.members.items[i].user.firstName ||
+        obj.lastName !== CurrentTeam.members.items[i].user.lastName ||
+        obj.userType !== CurrentTeam.members.items[i].user.userType ||
+        TeamName !== CurrentTeam.name
       ) {
         return true;
       } else {
         return false;
       }
     } else {
-      return true;
+      if (obj.firstName !== "" && obj.lastName !== "" && obj.userType !== "") {
+        return true;
+      }
+      return false;
     }
   };
 
   const validate = (obj, i) => {
     //Detect if null && changes have been made
-    if (obj.name && obj.userType && TeamName && ChangesHaveMade(obj, i)) {
+    //console.log("CALLED");
+    //console.log("VALIDATE OBJ", obj);
+
+    console.log("ilen", InputData.length);
+    console.log("currlen", CurrentTeam.members.items.length);
+    if (CurrentTeam.members.items.length > InputData.length) {
+      console.log("HIT |TRUE");
+      return true;
+    }
+
+    let changes = ChangesHaveMade(obj, i);
+    console.log("Changes", changes);
+    if (
+      obj.firstName !== "" &&
+      obj.lastName !== "" &&
+      obj.userType !== "" &&
+      TeamName &&
+      changes
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  const validateNull = (obj, i) => {
+    if (obj.firstName !== "" && obj.lastName !== "" && obj.userType !== "") {
       return true;
     } else {
       return false;
@@ -148,15 +242,59 @@ export default function TeamsEditModal({
   };
 
   useEffect(() => {
+    console.log("IDATA", InputData);
     const validations =
       InputData && InputData.map((input, i) => validate(input, i));
+    const nullValues =
+      InputData && InputData.map((input, i) => validateNull(input, i));
+    let oFinal = InputData.map((input) => {
+      let final = {
+        userId: input.userId,
+        userType: input.userType,
+      };
+
+      return final;
+    });
+
+    setFinalData(oFinal);
     setisDisabled(!validations.includes(true));
+    if (nullValues.includes(false)) {
+      setisDisabled(true);
+    }
     console.log(validations);
-  }, [InputData, TeamName, Image]);
+  }, [InputData, TeamName, Image, InputData.length]);
+
+  useEffect(() => {
+    console.log("FINALDATA", FinalData);
+  }, [FinalData]);
+
+  const buildName = (value) => {
+    console.log(value.split(" "));
+    let arr = value.split(" ");
+    if (arr.length > 2) {
+      return {
+        firstName: arr[0] + " " + arr[1],
+        lastName: arr[2],
+      };
+    } else {
+      return {
+        firstName: arr[0],
+        lastName: arr[1],
+      };
+    }
+  };
 
   const handleSelectChange = (e, val, i, property) => {
     const list = [...InputData];
-    list[i][property] = e.value;
+    if (property === "name") {
+      let name = buildName(e.value);
+      list[i]["firstName"] = name.firstName;
+      list[i]["lastName"] = name.lastName;
+      list[i]["userId"] = e.id;
+      console.log("ID", e.id);
+    } else {
+      list[i][property] = e.value;
+    }
     setInputData(list);
   };
 
@@ -186,7 +324,8 @@ export default function TeamsEditModal({
             ...InputData,
             {
               id: uuidv4(),
-              name: "",
+              firstName: "",
+              lastName: "",
               userType: "",
             },
           ]);
@@ -216,17 +355,10 @@ export default function TeamsEditModal({
     return (
       <button
         onClick={() => {
-          let foundIndex = TeamList.findIndex((x) => x.id === CurrentTeam.id);
-
-          let team = {
-            id: TeamList[foundIndex].id,
-            image: Image,
-            teamName: TeamName.replace("'s team", ""),
-            members: InputData,
-          };
-
-          TeamList[foundIndex] = team;
-          setTeamList(TeamList);
+          /* 
+         
+          */
+          handleSubmit();
           close();
         }}
         className={
@@ -407,14 +539,22 @@ export default function TeamsEditModal({
                             IndicatorSeparator: () => null,
                             DropdownIndicator: DropdownIndicator,
                           }}
+                          menuPortalTarget={document.body}
+                          styles={{
+                            container: (base) => ({
+                              ...base,
+                              zIndex: "99999",
+                            }),
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
                           name={`name`}
                           options={CompanyUsers}
                           type="text"
                           value={{
-                            value: x.name,
-                            label: x.name,
+                            value: x.firstName + " " + x.lastName,
+                            label: x.firstName + " " + x.lastName,
                           }}
-                          styles={customStyles}
+                          //styles={customStyles}
                           isDisabled={!isEditing}
                           onChange={(e, val) =>
                             handleSelectChange(e, val, i, `name`)
@@ -425,7 +565,14 @@ export default function TeamsEditModal({
                       <div className="flex flex-col p-1">
                         <div className="text-sm font-medium text-gray-400">{`User Type`}</div>
                         <Select
-                          styles={customStyles}
+                          menuPortalTarget={document.body}
+                          styles={{
+                            container: (base) => ({
+                              ...base,
+                              zIndex: "99999",
+                            }),
+                            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                          }}
                           components={{
                             IndicatorSeparator: () => null,
                             DropdownIndicator: DropdownIndicator,

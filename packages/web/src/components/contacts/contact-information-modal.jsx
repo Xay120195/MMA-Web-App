@@ -35,7 +35,10 @@ export default function ContactInformationModal({
   user,
   image,
   ContactList,
-  setContactList
+  setContactList,
+  tagTeamMember,
+  TeamOptions,
+  UserTypes,
 }) {
   const modalContainer = useRef(null);
   const modalContent = useRef(null);
@@ -54,9 +57,9 @@ export default function ContactInformationModal({
           scale: [0.9, 1],
           opacity: [0, 1],
           duration: 100,
-          easing: "easeInOutQuad"
+          easing: "easeInOutQuad",
         });
-      }
+      },
     });
   }, []);
   // useEffect(() => {
@@ -119,7 +122,8 @@ export default function ContactInformationModal({
             <ExitButton close={close} />
           </div>
           <div className="">
-            Contacts with access to the portal will automatically receive invitation via email.
+            Contacts with access to the portal will automatically receive
+            invitation via email.
           </div>
 
           {/*Profile*/}
@@ -147,10 +151,18 @@ export default function ContactInformationModal({
             </div>
             <div className="flex flex-row mb-4 w-full h-0.5">
               <div
-                className={SelectedTab === "About" ? "bg-cyan-500 w-28" : "bg-gray-300 w-28"}
+                className={
+                  SelectedTab === "About"
+                    ? "bg-cyan-500 w-28"
+                    : "bg-gray-300 w-28"
+                }
               ></div>
               <div
-                className={SelectedTab === "Teams" ? "bg-cyan-500  w-32" : "bg-gray-300  w-32"}
+                className={
+                  SelectedTab === "Teams"
+                    ? "bg-cyan-500  w-32"
+                    : "bg-gray-300  w-32"
+                }
               ></div>
               <div
                 className={
@@ -178,6 +190,9 @@ export default function ContactInformationModal({
               isEditing={isEditing}
               ContactList={ContactList}
               setContactList={setContactList}
+              tagTeamMember={tagTeamMember}
+              TeamOptions={TeamOptions}
+              UserTypes={UserTypes}
             />
           ) : (
             <ClientMatterTab

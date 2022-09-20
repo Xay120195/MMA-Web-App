@@ -200,7 +200,7 @@ const TableUnsavedInfo = ({
     });
   }
 
-  const handleClientMatter = async (e, gmailMessageId) => {
+  const handleClientMatter = async (e, gmailMessageId, rowId) => {
     if (e.value !== null) {
       API.graphql({
         query: mTagEmailClientMatter,
@@ -247,6 +247,7 @@ const TableUnsavedInfo = ({
         API.graphql(params).then((result) => {
           const emailList = result.data.company.gmailMessages.items;
           setUnsavedEmails(emailList);
+          autoAdjustRowHeight(rowId);
         });
 
         setResultMessage("Successfully updated.");
@@ -361,16 +362,52 @@ const TableUnsavedInfo = ({
     }
   }`;
 
-  const handleAddLabel = async (e, gmid, index) => {
+  const handleAddLabel = async (e, gmid, index, clientMatterId) => {
     var selectedLabels = [];
     var taggedLabels = [];
+    
+    /* Added Label 
+    const cmId = clientMatterId.map((obj) => {
+        obj = obj.id;
+        return obj;
+    });
+
+    const eValue = e.map((obj) => {
+        obj = obj.label;
+        return obj;
+    });
+
+    const isNew = e.map((obj) => {
+        obj = obj.__isNew__;
+        return obj;
+    });
+
+    if(isNew[0]) {
+      // Add new labls when brief is created
+      API.graphql({
+        query: mCreateLabel,
+        variables: {
+          clientMatterId: cmId[0],
+          name: eValue[0],
+        },
+      }).then((result) => {
+        for (var i = 0; i < e.length; i++) {
+          selectedLabels = [...selectedLabels, result.data.labelCreate.id];
+          taggedLabels = [...taggedLabels, { id: result.data.labelCreate.id, name: e[i].label }];
+        }
+      });
+    } else {
+      for (var i = 0; i < e.length; i++) {
+        selectedLabels = [...selectedLabels, e[i].value];
+        taggedLabels = [...taggedLabels, { id: e[i].value, name: e[i].label }];
+      }
+    }*/
 
     for (var i = 0; i < e.length; i++) {
       selectedLabels = [...selectedLabels, e[i].value];
       taggedLabels = [...taggedLabels, { id: e[i].value, name: e[i].label }];
     }
-
-    console.log("selectedLabels", selectedLabels);
+    
     if (e.length > 0) {
       const result = await API.graphql({
         query: mAddEmailLabel,
@@ -379,6 +416,7 @@ const TableUnsavedInfo = ({
           gmailMessageId: gmid,
         },
       });
+      console.log("selectedLabels - Saved Labels", selectedLabels);
     } else {
       const result = await API.graphql({
         query: mAddEmailLabel,
@@ -387,8 +425,8 @@ const TableUnsavedInfo = ({
           gmailMessageId: gmid,
         },
       });
+      console.log("selectedLabels - Blank Labels", selectedLabels);
     }
-    console.log("MainArray", unSavedEmails);
 
     const newArrLabels = unSavedEmails;
 
@@ -468,19 +506,22 @@ const TableUnsavedInfo = ({
     var mainLabels = labelsList;
     var cmid;
 
-    setTimeout(() => {
       if (cmidarr.length > 0) {
-        cmid = cmidarr[0].client.id;
+        cmid = cmidarr[0].id;
       } else {
         cmid = "";
       }
+
+      console.log("main labels", mainLabels);
+      console.log("cmidarr", cmidarr);
   
       if (labelsList.length > 0 || labelsList !== null) {
         for (var i = 0; i < labelsList.length; i++) {
           // console.log("optionscheck",labelsList[i]);
   
           if (mainLabels[i].labelsExtracted.length === 0) {
-            return [{value: "test", label: "no labels extracted"}];
+            // return [{value: "test", label: "no labels extracted"}];
+            return [];
           } else {
             if (mainLabels[i].cmid === cmid) {
               // if (mainLabels[i].labelsExtracted.length === 0) {
@@ -498,12 +539,9 @@ const TableUnsavedInfo = ({
           }
         }
       } else {
-        return [{value: "test", label: "labelsList null"}];
+        // return [{value: "test", label: "labelsList null"}];
+        return [];
       }
-
-    }, 2000);
-
-    
   };
 
   const previewAndDownloadFile = async (id) => {
@@ -515,7 +553,8 @@ const TableUnsavedInfo = ({
     };
 
     await API.graphql(params).then((result) => {
-      window.open(result.data.gmailAttachment.downloadURL);
+      //window.open(result.data.gmailAttachment.downloadURL);
+      console.log(result.data.gmailAttachment.downloadURL);
     });
   };
 
@@ -1026,7 +1065,7 @@ const TableUnsavedInfo = ({
                                         ? false
                                         : true
                                     }
-                                    onChange={(e) => handleAddLabel(e, item.id, index)}
+                                    onChange={(e) => handleAddLabel(e, item.id, index, item.clientMatters.items)}
                                     placeholder="Labels"
                                     className="-mt-4 w-60 placeholder-blueGray-300 text-blueGray-600 text-xs bg-white rounded border-0 shadow outline-none focus:outline-none focus:ring z-100"
                                   />
@@ -1214,7 +1253,7 @@ const TableUnsavedInfo = ({
                                     options={matterList}
                                     isSearchable
                                     onChange={(options, e) =>
-                                      handleClientMatter(options, item.id)
+                                      handleClientMatter(options, item.id, index)
                                     }
                                     noOptionsMessage={() => "No result found"}
                                     isValidNewOption={() => false}

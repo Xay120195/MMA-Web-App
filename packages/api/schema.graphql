@@ -27,11 +27,7 @@ type Brief {
   name: String
   date: String
   order: Int
-  backgrounds(
-    limit: Int
-    nextToken: String
-    sortOrder: OrderBy
-  ): BriefBackgroundConn
+  backgrounds(limit: Int, nextToken: String, sortOrder: OrderBy): BriefBackgroundConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
   labelId: ID # not null if brief is created through label
@@ -48,18 +44,10 @@ type ClientMatter {
   id: ID!
   matter: Matter
   client: Client
-  backgrounds(
-    limit: Int
-    nextToken: String
-    sortOrder: OrderBy
-  ): ClientMatterBackgroundConn
+  backgrounds(limit: Int, nextToken: String, sortOrder: OrderBy): ClientMatterBackgroundConn
   labels(limit: Int, nextToken: String): ClientMatterLabelConn
   rfis(limit: Int, nextToken: String, isDeleted: Boolean): ClientMatterRFIConn
-  briefs(
-    limit: Int
-    nextToken: String
-    isDeleted: Boolean
-  ): ClientMatterBriefConn
+  briefs(limit: Int, nextToken: String, isDeleted: Boolean): ClientMatterBriefConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
@@ -82,11 +70,7 @@ type Company {
   matters(limit: Int, nextToken: String): CompanyMatterConn
   customUserTypes(limit: Int, nextToken: String): CompanyCustomUserTypeConn
   teams(limit: Int, nextToken: String): CompanyTeamConn
-  clientMatters(
-    limit: Int
-    nextToken: String
-    sortOrder: OrderBy
-  ): CompanyClientMatterConn
+  clientMatters(limit: Int, nextToken: String, sortOrder: OrderBy): CompanyClientMatterConn
   gmailMessages(
     limit: Int
     nextToken: String
@@ -213,7 +197,7 @@ type User {
   customUserType: CustomUserType
   profilePicture: String
   organisations: UserCompanyConn
-  clientMatters(limit: Int, nextToken: String): UserClientMatterConn
+  clientMatterAccess(companyId: String, limit: Int, nextToken: String): UserClientMatterAccessConn
   teams(limit: Int, nextToken: String): UserTeamConn
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
@@ -233,6 +217,15 @@ type UserColumnSettings {
   isVisible: Boolean
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+type UserClientMatterAccess {
+  id: ID
+  user: User
+  company: Company
+  clientMatter: ClientMatter
+  userType: UserType
+  customUserType: CustomUserType
 }
 
 type GmailMessage {
@@ -428,6 +421,13 @@ input MemberInput {
   userType: UserType
   customUserType: CustomUserTypeInput
 }
+
+input UserClientMatterAccessInput {
+  clientMatterId: ID
+  userType: UserType
+  customUserType: CustomUserTypeInput
+}
+
 # Relationships / Conns
 type BackgroundFileConn {
   items: [File]
@@ -528,8 +528,8 @@ type RFIRequestsConn {
   nextToken: String
 }
 
-type UserClientMatterConn {
-  items: [ClientMatter]
+type UserClientMatterAccessConn {
+  items: [UserClientMatterAccess]
   nextToken: String
 }
 
@@ -574,7 +574,11 @@ type Query {
   columnSettings(tableName: ViewTable): [ColumnSettings]
   companies: [Company]
   company(id: String): Company
-  companyAccessType(companyId: String, userType: UserType, customUserType: CustomUserTypeInput): [CompanyAccessType]
+  companyAccessType(
+    companyId: String
+    userType: UserType
+    customUserType: CustomUserTypeInput
+  ): [CompanyAccessType]
   feature(id: String): Feature
   features: [Feature]
   file(id: ID): File
@@ -619,24 +623,11 @@ type Query {
 type Mutation {
   backgroundBulkDelete(id: [ID]): [Background]
   backgroundBulkUpdateOrders(arrangement: [ArrangementInput]): [Background]
-  backgroundCreate(
-    description: String
-    date: AWSDateTime
-    briefId: ID
-    order: Int
-  ): Background
-  backgroundBulkCreate(
-    briefId: String
-    backgrounds: [BackgroundInput]
-  ): [Background]
+  backgroundCreate(description: String, date: AWSDateTime, briefId: ID, order: Int): Background
+  backgroundBulkCreate(briefId: String, backgrounds: [BackgroundInput]): [Background]
   backgroundDelete(id: ID): Background
   backgroundFileTag(backgroundId: ID, files: [FileInput]): Background
-  backgroundUpdate(
-    id: ID
-    date: AWSDateTime
-    description: String
-    order: Int
-  ): Background
+  backgroundUpdate(id: ID, date: AWSDateTime, description: String, order: Int): Background
   briefBackgroundTag(briefId: ID, background: [BackgroundInput]): [Brief]
   briefCreate(
     name: String
@@ -648,25 +639,16 @@ type Mutation {
   briefBackgroundUntag(briefId: ID, background: [BackgroundInput]): Brief
   briefDelete(id: ID): Brief
   briefSoftDelete(id: ID): Brief
-  briefUpdate(
-    id: ID
-    name: String
-    date: AWSDateTime
-    order: Int
-    labelId: ID
-  ): Brief
+  briefUpdate(id: ID, name: String, date: AWSDateTime, order: Int, labelId: ID): Brief
   clientCreate(name: String, companyId: String): Client
   clientMatterCreate(
     companyId: String
+    userId: ID
     client: ClientInput
     matter: MatterInput
   ): ClientMatter
   clientMatterDelete(id: ID): ClientMatter
-  columnSettingsCreate(
-    name: String
-    label: String
-    tableName: ViewTable!
-  ): ColumnSettings
+  columnSettingsCreate(name: String, label: String, tableName: ViewTable!): ColumnSettings
   companyAccessTypeCreate(
     companyId: String
     userType: [UserType]
@@ -713,35 +695,15 @@ type Mutation {
     date: AWSDateTime
     labels: [LabelInput]
   ): File
-  pageCreate(
-    name: String
-    label: String
-    route: String
-    features: [FeatureInput]
-  ): Page
+  pageCreate(name: String, label: String, route: String, features: [FeatureInput]): Page
   rfiCreate(name: String, clientMatterId: String): RFI
   rfiUpdate(id: ID, name: String, description: String, order: Int): RFI
   rfiDelete(id: ID): RFI
   rfiSoftDelete(id: ID): RFI
-  requestCreate(
-    question: String
-    answer: String
-    itemNo: String
-    order: Int
-    rfiId: ID
-  ): Request
-  requestUpdate(
-    id: ID
-    question: String
-    answer: String
-    itemNo: String
-    order: Int
-  ): Request
+  requestCreate(question: String, answer: String, itemNo: String, order: Int, rfiId: ID): Request
+  requestUpdate(id: ID, question: String, answer: String, itemNo: String, order: Int): Request
   requestDelete(id: ID): Request
-  userColumnSettingsCreate(
-    userId: ID
-    columnSettings: [ColumnSettingsInput]
-  ): UserColumnSettings
+  userColumnSettingsCreate(userId: ID, columnSettings: [ColumnSettingsInput]): UserColumnSettings
   userColumnSettingsUpdate(id: ID, isVisible: Boolean): UserColumnSettings
   userCreate(
     id: ID!
@@ -772,8 +734,17 @@ type Mutation {
     customUserType: CustomUserTypeInput
     profilePicture: String
   ): User
-  userClientMatterTag(userId: ID, clientMatterId: [ID]): User
-  userClientMatterUntag(userId: ID): User
+  userClientMatterTag(
+    userId: ID
+    companyId: ID
+    clientMatterAccess: [UserClientMatterAccessInput]
+  ): [UserClientMatterAccess]
+  userClientMatterTagAll(
+    userId: ID
+    companyId: ID
+    userType: UserType
+    customUserType: CustomUserTypeInput
+  ): [UserClientMatterAccess]
   gmailMessageCreate(
     companyId: ID
     messageId: String
@@ -784,17 +755,11 @@ type Mutation {
     connectedEmail: String
     receivedAt: String
   ): GmailMessage
-  gmailMessageClientMatterTag(
-    gmailMessageId: String
-    clientMatterId: ID
-  ): GmailMessage
+  gmailMessageClientMatterTag(gmailMessageId: String, clientMatterId: ID): GmailMessage
   gmailMessageClientMatterUntag(gmailMessageId: String): GmailMessage
   gmailMessageLabelTag(gmailMessageId: String, labelId: [ID]): GmailMessage
   gmailMessageLabelUntag(gmailMessageId: String): GmailMessage
-  gmailAttachmentLabelTag(
-    attachmentId: String
-    labelId: [ID]
-  ): GmailMessageAttachment
+  gmailAttachmentLabelTag(attachmentId: String, labelId: [ID]): GmailMessageAttachment
   gmailAttachmentLabelUntag(attachmentId: String): GmailMessageAttachment
   gmailMessageSave(id: ID, companyId: ID, isSaved: Boolean): GmailMessage
   gmailMessageSoftDelete(id: ID, companyId: ID): GmailMessage
@@ -817,11 +782,7 @@ type Mutation {
     order: Int
   ): GmailMessageAttachment
   gmailMessageDescriptionUpdate(id: String, description: String): GmailMessage
-  gmailMessageAttachmentUpdate(
-    id: ID
-    details: String
-    isDeleted: Boolean
-  ): GmailMessageAttachment
+  gmailMessageAttachmentUpdate(id: ID, details: String, isDeleted: Boolean): GmailMessageAttachment
   customUserTypeCreate(name: String, companyId: ID): CustomUserType
   customUserTypeUpdate(id: ID, name: String): CustomUserType
   customUserTypeDelete(id: ID): CustomUserType

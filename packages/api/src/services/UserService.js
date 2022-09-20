@@ -7,11 +7,12 @@ const {
   DeleteItemCommand,
   UpdateItemCommand,
   BatchGetItemCommand,
+  BatchWriteItemCommand
 } = require("@aws-sdk/client-dynamodb");
 import {
   AdminCreateUserCommand,
   AdminDeleteUserCommand,
-  AdminUpdateUserAttributesCommand,
+  AdminUpdateUserAttributesCommand
 } from "@aws-sdk/client-cognito-identity-provider";
 
 import identityClient from "../lib/cognito-identity-provider-client";
@@ -26,8 +27,8 @@ export async function getUser(data) {
     const param = {
       TableName: "UserTable",
       Key: marshall({
-        id: data.id,
-      }),
+        id: data.id
+      })
     };
 
     const cmd = new GetItemCommand(param);
@@ -36,7 +37,7 @@ export async function getUser(data) {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
   }
 
@@ -47,7 +48,7 @@ export async function listUsers() {
   let resp = {};
   try {
     const param = {
-      TableName: "UserTable",
+      TableName: "UserTable"
     };
 
     const cmd = new ScanCommand(param);
@@ -57,7 +58,7 @@ export async function listUsers() {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -65,9 +66,9 @@ export async function listUsers() {
   return resp;
 }
 
-export async function listUserClientMatter(ctx) {
+export async function listUserClientMatterAccess(ctx) {
   const { id } = ctx.source;
-  const { limit, nextToken } = ctx.arguments;
+  const { companyId, limit, nextToken } = ctx.arguments;
 
   let indexName = "byUser",
     isAscending = false,
@@ -78,13 +79,16 @@ export async function listUserClientMatter(ctx) {
       TableName: "UserClientMatterTable",
       IndexName: indexName,
       KeyConditionExpression: "userId = :userId",
+      FilterExpression: "companyId = :companyId",
       ExpressionAttributeValues: marshall({
         ":userId": id,
+        ":companyId": companyId
       }),
+
       ScanIndexForward: isAscending,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
+        : undefined
     };
 
     if (limit !== undefined) {
@@ -92,13 +96,12 @@ export async function listUserClientMatter(ctx) {
     }
 
     const userClientMatterCommand = new QueryCommand(userClientMatterParams);
-    const userClientMatterResult = await ddbClient.send(
-      userClientMatterCommand
-    );
 
-    const clientMatterIds = userClientMatterResult.Items.map((i) =>
-      unmarshall(i)
-    ).map((f) => marshall({ id: f.clientMatterId }));
+    const userClientMatterResult = await ddbClient.send(userClientMatterCommand);
+
+    const clientMatterIds = userClientMatterResult.Items.map((i) => unmarshall(i)).map((f) =>
+      marshall({ id: f.clientMatterId })
+    );
 
     if (clientMatterIds.length !== 0) {
       let unique = clientMatterIds
@@ -113,30 +116,26 @@ export async function listUserClientMatter(ctx) {
       const clientMattersParams = {
         RequestItems: {
           ClientMatterTable: {
-            Keys: uniqueClientMatterIds,
-          },
-        },
+            Keys: uniqueClientMatterIds
+          }
+        }
       };
 
       const clientMattersCommand = new BatchGetItemCommand(clientMattersParams);
       const clientMattersResult = await ddbClient.send(clientMattersCommand);
 
-      const objClientMatters =
-        clientMattersResult.Responses.ClientMatterTable.map((i) =>
-          unmarshall(i)
-        );
-      const objUserClientMatter = userClientMatterResult.Items.map((i) =>
+      const objClientMatters = clientMattersResult.Responses.ClientMatterTable.map((i) =>
         unmarshall(i)
       );
 
+      const objUserClientMatter = userClientMatterResult.Items.map((i) => unmarshall(i));
+
       const response = objUserClientMatter
         .map((item) => {
-          const filterClientMatter = objClientMatters.find(
-            (u) => u.id === item.clientMatterId
-          );
+          const filterClientMatter = objClientMatters.find((u) => u.id === item.clientMatterId);
 
           if (filterClientMatter !== undefined) {
-            return { ...item, ...filterClientMatter };
+            return { ...item, ...{ clientMatter: filterClientMatter } };
           }
         })
         .filter((a) => a !== undefined);
@@ -144,26 +143,220 @@ export async function listUserClientMatter(ctx) {
       return {
         items: response,
         nextToken: userClientMatterResult.LastEvaluatedKey
-          ? Buffer.from(
-              JSON.stringify(userClientMatterResult.LastEvaluatedKey)
-            ).toString("base64")
-          : null,
+          ? Buffer.from(JSON.stringify(userClientMatterResult.LastEvaluatedKey)).toString("base64")
+          : null
       };
     } else {
       return {
         items: [],
-        nextToken: null,
+        nextToken: null
       };
     }
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
   return response;
 }
+
+export async function tagUserClientMatter(data) {
+  let resp = {};
+
+  console.log("tagUserClientMatter()");
+  try {
+    const arrItems = [];
+    const arrResponse = [];
+
+    const userClientMatterIdParams = {
+      TableName: "UserClientMatterTable",
+      IndexName: "byUser",
+      KeyConditionExpression: "userId = :userId",
+      FilterExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":userId": data.userId,
+        ":companyId": data.companyId
+      }),
+      ProjectionExpression: "id"
+    };
+
+    const userClientMatterIdCmd = new QueryCommand(userClientMatterIdParams);
+
+    const userClientMatterIdRes = await ddbClient.send(userClientMatterIdCmd);
+
+    if (userClientMatterIdRes.Count !== 0) {
+      for (var a = 0; a < userClientMatterIdRes.Items.length; a++) {
+        var userClientMatterId = {
+          id: userClientMatterIdRes.Items[a].id
+        };
+        arrItems.push({
+          DeleteRequest: {
+            Key: userClientMatterId
+          }
+        });
+      }
+    }
+
+    for (var i = 0; i < data.clientMatterAccess.length; i++) {
+      const { clientMatterId, userType, customUserType } = data.clientMatterAccess[i];
+
+      const params = {
+        id: v4(),
+        userId: data.userId,
+        companyId: data.companyId,
+        clientMatterId: clientMatterId,
+        userType: userType ? userType : null,
+        customUserType: customUserType ? customUserType : null
+      };
+      arrResponse.push(params);
+      arrItems.push({
+        PutRequest: {
+          Item: marshall(params)
+        }
+      });
+    }
+
+    let batches = [],
+      current_batch = [],
+      item_count = 0;
+
+    arrItems.forEach((data) => {
+      item_count++;
+      current_batch.push(data);
+
+      // Chunk items to 25
+      if (item_count % 25 == 0) {
+        batches.push(current_batch);
+        current_batch = [];
+      }
+    });
+
+    // Add the last batch if it has records and is not equal to 25
+    if (current_batch.length > 0 && current_batch.length != 25) {
+      batches.push(current_batch);
+    }
+
+    batches.forEach(async (data) => {
+      const userClientMatterParams = {
+        RequestItems: {
+          UserClientMatterTable: data
+        }
+      };
+
+      const userClientMatterCmd = new BatchWriteItemCommand(userClientMatterParams);
+      await ddbClient.send(userClientMatterCmd);
+    });
+
+    resp = arrResponse;
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
+export async function tagAllUserClientMatter(data) {
+  let resp = {};
+
+  try {
+    const compCMParam = {
+      TableName: "CompanyClientMatterTable",
+      IndexName: "byCompany",
+      KeyConditionExpression: "companyId = :companyId",
+      ExpressionAttributeValues: marshall({
+        ":companyId": data.companyId
+      }),
+      ProjectionExpression: "clientMatterId"
+    };
+
+    const compCMCmd = new QueryCommand(compCMParam);
+    const compCMResult = await ddbClient.send(compCMCmd);
+
+    const clientMatterIds = compCMResult.Items.map((i) => unmarshall(i));
+
+    const clientMatterAccess = clientMatterIds.map((cmi) => {
+      const item = {
+        ...cmi
+      };
+
+      if (data.userType) {
+        item.userType = data.userType;
+      }
+
+      if (data.customUserType) {
+        item.customUserType = data.customUserType;
+      }
+
+      return item;
+    });
+
+    const userClientMatterParams = {
+      userId: data.userId,
+      companyId: data.companyId,
+      clientMatterAccess: clientMatterAccess
+    };
+
+    return tagUserClientMatter(userClientMatterParams);
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack
+    };
+    console.log(resp);
+  }
+}
+
+export async function untagUserClientMatter(data) {
+  let resp = {};
+
+  try {
+    const userClientMatterIdParams = {
+      TableName: "UserClientMatterTable",
+      IndexName: "byUser",
+      KeyConditionExpression: "userId = :userId",
+      FilterExpression: "clientMatterId = :clientMatterId",
+      ExpressionAttributeValues: marshall({
+        ":userId": data.userId,
+        ":clientMatterId": data.clientMatterId
+      }),
+      ProjectionExpression: "id"
+    };
+
+    const userClientMatterIdCmd = new QueryCommand(userClientMatterIdParams);
+    const userClientMatterIdRes = await ddbClient.send(userClientMatterIdCmd);
+
+    let userClientMatterId = userClientMatterIdRes.Items.map((a) => unmarshall(a))
+      .map((x) => x.id)
+      .filter(function (item, i, ar) {
+        return ar.indexOf(item) === i;
+      });
+
+    if (userClientMatterId.length !== 0) {
+      const cmd = new DeleteItemCommand({
+        TableName: "UserClientMatterTable",
+        Key: marshall({ id: userClientMatterId[0] })
+      });
+      await ddbClient.send(cmd);
+    }
+
+    resp = { id: userClientMatterId[0] };
+  } catch (e) {
+    resp = {
+      error: e.message,
+      errorStack: e.stack
+    };
+    console.log(resp);
+  }
+
+  return resp;
+}
+
 export async function listUserTeams(ctx) {
   const { id } = ctx.source;
   const { limit, nextToken } = ctx.arguments;
@@ -174,12 +367,12 @@ export async function listUserTeams(ctx) {
       IndexName: "byMember",
       KeyConditionExpression: "memberId = :memberId",
       ExpressionAttributeValues: marshall({
-        ":memberId": id,
+        ":memberId": id
       }),
       ScanIndexForward: false,
       ExclusiveStartKey: nextToken
         ? JSON.parse(Buffer.from(nextToken, "base64").toString("utf8"))
-        : undefined,
+        : undefined
     };
 
     if (limit !== undefined) {
@@ -196,17 +389,15 @@ export async function listUserTeams(ctx) {
       const teamsParam = {
         RequestItems: {
           TeamTable: {
-            Keys: teamIds,
-          },
-        },
+            Keys: teamIds
+          }
+        }
       };
 
       const teamsCmd = new BatchGetItemCommand(teamsParam);
       const teamsResult = await ddbClient.send(teamsCmd);
 
-      const objTeams = teamsResult.Responses.TeamTable.map((i) =>
-        unmarshall(i)
-      );
+      const objTeams = teamsResult.Responses.TeamTable.map((i) => unmarshall(i));
       const objCompTeams = userTeamsResult.Items.map((i) => unmarshall(i));
 
       const response = objCompTeams
@@ -222,21 +413,19 @@ export async function listUserTeams(ctx) {
       return {
         items: response,
         nextToken: userTeamsResult.LastEvaluatedKey
-          ? Buffer.from(
-              JSON.stringify(userTeamsResult.LastEvaluatedKey)
-            ).toString("base64")
-          : null,
+          ? Buffer.from(JSON.stringify(userTeamsResult.LastEvaluatedKey)).toString("base64")
+          : null
       };
     } else {
       return {
         items: [],
-        nextToken: null,
+        nextToken: null
       };
     }
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -254,13 +443,13 @@ export async function createUser(data) {
       userType: data.userType ? data.userType : null,
       company: data.company,
       createdAt: toUTC(new Date()),
-      customUserType: data.customUserType ? data.customUserType : null,
+      customUserType: data.customUserType ? data.customUserType : null
     };
 
     const param = marshall(rawParams);
     const cmd = new PutItemCommand({
       TableName: "UserTable",
-      Item: param,
+      Item: param
     });
 
     const request = await ddbClient.send(cmd);
@@ -269,11 +458,11 @@ export async function createUser(data) {
       id: v4(),
       userId: data.id,
       companyId: data.company.id,
-      createdAt: toUTC(new Date()),
+      createdAt: toUTC(new Date())
     };
     const putCompUserCmd = new PutItemCommand({
       TableName: "CompanyUserTable",
-      Item: marshall(compUserParam),
+      Item: marshall(compUserParam)
     });
 
     await ddbClient.send(putCompUserCmd);
@@ -282,7 +471,7 @@ export async function createUser(data) {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
   }
   return resp;
@@ -297,8 +486,8 @@ export async function deleteUser(userId, companyId, email) {
       IndexName: "byUser",
       KeyConditionExpression: "userId = :userId",
       ExpressionAttributeValues: marshall({
-        ":userId": userId,
-      }),
+        ":userId": userId
+      })
     };
 
     const compUsersCmd = new QueryCommand(compUsersParam);
@@ -314,28 +503,26 @@ export async function deleteUser(userId, companyId, email) {
 
       await deleteCognitoUser({
         UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
-        Username: email,
+        Username: email
       });
 
       const cmd = new DeleteItemCommand({
         TableName: "UserTable",
-        Key: marshall({ id: userId }),
+        Key: marshall({ id: userId })
       });
       await ddbClient.send(cmd);
     }
 
-    const filterByCompanyId = compUsersItems.filter(
-      (u) => u.companyId === companyId
-    );
+    const filterByCompanyId = compUsersItems.filter((u) => u.companyId === companyId);
 
     if (filterByCompanyId.length != 0) {
       const companyUserId = {
-        id: filterByCompanyId[0].id,
+        id: filterByCompanyId[0].id
       };
 
       const companyUserCmd = new DeleteItemCommand({
         TableName: "CompanyUserTable",
-        Key: marshall(companyUserId),
+        Key: marshall(companyUserId)
       });
       await ddbClient.send(companyUserCmd);
     }
@@ -344,7 +531,7 @@ export async function deleteUser(userId, companyId, email) {
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -356,15 +543,12 @@ export async function updateUser(id, data) {
   let resp = {};
 
   try {
-    const {
-      ExpressionAttributeNames,
-      ExpressionAttributeValues,
-      UpdateExpression,
-    } = getUpdateExpressions(data);
+    const { ExpressionAttributeNames, ExpressionAttributeValues, UpdateExpression } =
+      getUpdateExpressions(data);
 
     const param = {
       id,
-      ...data,
+      ...data
     };
 
     const cmd = new UpdateItemCommand({
@@ -372,7 +556,7 @@ export async function updateUser(id, data) {
       Key: marshall({ id }),
       UpdateExpression,
       ExpressionAttributeNames,
-      ExpressionAttributeValues,
+      ExpressionAttributeValues
     });
     await ddbClient.send(cmd);
 
@@ -382,20 +566,20 @@ export async function updateUser(id, data) {
       UserAttributes: [
         {
           Name: "given_name",
-          Value: data.firstName,
+          Value: data.firstName
         },
         {
           Name: "family_name",
-          Value: data.lastName,
-        },
-      ],
+          Value: data.lastName
+        }
+      ]
     });
 
     resp = param;
   } catch (e) {
     resp = {
       error: e.message,
-      errorStack: e.stack,
+      errorStack: e.stack
     };
     console.log(resp);
   }
@@ -411,13 +595,13 @@ export async function inviteUser(data) {
     UserAttributes: [
       {
         Name: "email",
-        Value: data.email,
+        Value: data.email
       },
       {
         Name: "email_verified",
-        Value: "true",
-      },
-    ],
+        Value: "true"
+      }
+    ]
   });
 
   data.id = user.id;
@@ -427,8 +611,7 @@ export async function inviteUser(data) {
 async function createCognitoUser(input) {
   const cmd = new AdminCreateUserCommand(input);
   const resp = await identityClient.send(cmd);
-  const id = resp.User.Attributes.filter((attrib) => attrib.Name === "sub")[0]
-    .Value;
+  const id = resp.User.Attributes.filter((attrib) => attrib.Name === "sub")[0].Value;
   resp.id = id;
   return resp;
 }
@@ -460,6 +643,6 @@ export function getUpdateExpressions(data) {
   return {
     UpdateExpression: updateExp,
     ExpressionAttributeNames: names,
-    ExpressionAttributeValues: marshall(values),
+    ExpressionAttributeValues: marshall(values)
   };
 }

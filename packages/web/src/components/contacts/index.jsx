@@ -52,6 +52,8 @@ export default function Contacts() {
   const [ShowBurst, setShowBurst] = useState(false);
   const [CompanyUsers, setCompanyUsers] = useState([]);
   const [UserTypes, setUserTypes] = useState([]);
+  const [isLoading, setisLoading] = useState(false);
+  const [TeamOptions, setTeamOptions] = useState([]);
   const hideToast = () => {
     setShowToast(false);
   };
@@ -65,22 +67,30 @@ export default function Contacts() {
           id
           firstName
           lastName
-          createdAt
           email
           userType
           contactNumber
-          clientMatters {
+          clientMatterAccess(companyId: $companyId) {
             items {
               id
-              createdAt
-              client {
+              userType
+              clientMatter {
                 id
-                name
+                client {
+                  id
+                  name
+                }
+                matter {
+                  id
+                  name
+                }
               }
-              matter {
-                id
-                name
-              }
+            }
+          }
+          teams {
+            items {
+              id
+              name
             }
           }
         }
@@ -109,12 +119,11 @@ export default function Contacts() {
     name
     members {
       items {
-        id
-        userType
         user {
           id
           firstName
           lastName
+          userType
         }
       }
     }
@@ -236,6 +245,7 @@ export default function Contacts() {
     };
 
     await API.graphql(params).then((companyUsers) => {
+      console.log("Getting Contacts");
       console.log("usersssss", companyUsers);
       var temp = companyUsers.data.company.users.items;
       temp.sort((a, b) => a.firstName.localeCompare(b.firstName));
@@ -255,13 +265,30 @@ export default function Contacts() {
     });
   };
 
-  useEffect(() => {
-    console.log("teamlist", TeamList);
-  }, [TeamList]);
+  const addTeam = async (teams, teamList) => {
+    for (const team of teams.data.company.teams.items) {
+      let params = {
+        query: qGetTeamsWithMembers,
+        variables: {
+          id: team.id
+        }
+      };
+      await API.graphql(params).then((team) => {
+        console.log(team.data.team);
+        if (team.data.team) {
+          let temp = {
+            id: team.data.team.id,
+            name: team.data.team.name,
+            members: team.data.team.members
+          };
+          teamList.push(temp);
+          console.log("Local teamlist", teamList);
+        }
+      });
+    }
+  };
 
-  let getTeams = async () => {
-    console.log("Company ID", localStorage.getItem("companyId"));
-    setTeamList([]); //clear first when called
+  let getTeamOptions = async () => {
     let params = {
       query: qGetTeams,
       variables: {
@@ -269,7 +296,27 @@ export default function Contacts() {
       }
     };
 
-    await API.graphql(params).then((teams) => {
+    const teams = await API.graphql(params);
+
+    const fin = teams.data.company.teams.items.map((team) => {
+      return { value: team.name, label: team.name, id: team.id };
+    });
+
+    setTeamOptions(fin);
+  };
+
+  let getTeams = async () => {
+    console.log("Company ID", localStorage.getItem("companyId"));
+    setTeamList([]);
+    //clear first when called
+    let params = {
+      query: qGetTeams,
+      variables: {
+        id: localStorage.getItem("companyId")
+      }
+    };
+
+    await API.graphql(params).then(async (teams) => {
       console.log("teams", teams);
       if (teams.data.company == null) {
         setTeamList([]);
@@ -279,6 +326,11 @@ export default function Contacts() {
         //setTeamList(teams.data.company.teams.items);
 
         //get the actual team
+        //let teamList = [];
+        //teamList = [];
+
+        //await addTeam(teams, teamList);
+
         teams.data.company.teams.items.map(async (team) => {
           params = {
             query: qGetTeamsWithMembers,
@@ -296,6 +348,8 @@ export default function Contacts() {
                 members: team.data.team.members
               };
               setTeamList((prev) => [...prev, temp]);
+              //teamList.push(temp);
+              //console.log("Local teamlist", teamList);
             }
           });
         });
@@ -384,10 +438,10 @@ export default function Contacts() {
     if (ContactList === null) {
       getContacts();
     }
-
     getTeams();
     getCompanyUsers();
     getUserTypes();
+    getTeamOptions();
 
     window.addEventListener(
       "scroll",
@@ -436,6 +490,10 @@ export default function Contacts() {
       { passive: true }
     );
   }, []);
+
+  useEffect(() => {
+    console.log("teamOptions", TeamOptions);
+  }, [TeamOptions]);
 
   return (
     <>
@@ -626,7 +684,11 @@ export default function Contacts() {
                                   </div>
                                 </td>
                                 <td className="p-2">{contact.email}</td>
-                                <td className="p-2"> </td>
+                                <td className="p-2">
+                                  {contact.teams?.items.map((t) => (
+                                    <p key={t.id}>{t.name}</p>
+                                  ))}{" "}
+                                </td>
                                 <td className="p-2 w-64 ">
                                   <div className="flex items-center gap-x-2 ">
                                     <p className="font-semibold text-xs rounded-full bg-blue-100 px-2 py-1">
@@ -681,6 +743,9 @@ export default function Contacts() {
               setShowToast={setShowToast}
               UserTypes={UserTypes}
               CompanyUsers={CompanyUsers}
+              isLoading={isLoading}
+              setisLoading={setisLoading}
+              tagTeamMember={tagTeamMember}
             />
           )}
         </div>
@@ -703,6 +768,9 @@ export default function Contacts() {
             setContactList={setContactList}
             close={() => setShowEditModal(false)}
             user={CurrentUser}
+            tagTeamMember={tagTeamMember}
+            TeamOptions={TeamOptions}
+            UserTypes={UserTypes}
           />
         )}
       </main>
@@ -728,6 +796,7 @@ export default function Contacts() {
           UserTypes={UserTypes}
           CompanyUsers={CompanyUsers}
           tagTeamMember={tagTeamMember}
+          setisLoading={setisLoading}
         />
       )}
       {showToast && <ToastNotification title={alertMessage} hideToast={hideToast} />}

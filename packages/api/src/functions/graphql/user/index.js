@@ -1,5 +1,5 @@
 const {
-  listUserClientMatter,
+  listUserClientMatterAccess,
   listUserTeams,
 } = require("../../../services/UserService");
 const {
@@ -8,8 +8,8 @@ const {
 
 const resolvers = {
   User: {
-    clientMatters: async (ctx) => {
-      return listUserClientMatter(ctx);
+    clientMatterAccess: async (ctx) => {
+      return listUserClientMatterAccess(ctx);
     },
     customUserType: async (ctx) => {
       const { userType, customUserType } = ctx.source;
